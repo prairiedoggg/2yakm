@@ -5,7 +5,7 @@ export const commonError = {
     EXPIRED_TOKEN: { name: 'ExpiredToken', message: '토큰이 만료됨' },
   };
   
-  export function createError(name: string, message: string, status: number) {
+export function createError(name: string, message: string, status: number) {
     const error = new Error(message) as any;
     error.name = name;
     error.status = status;

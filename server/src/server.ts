@@ -5,7 +5,6 @@ import specs from './swagger';
 const app = express();
 const port = process.env.PORT || 3000;
 
-
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
 
 app.listen(port, () => {
