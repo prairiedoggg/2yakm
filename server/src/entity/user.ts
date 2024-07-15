@@ -1,8 +1,8 @@
 export interface User {
     userId: string;
     email?: string;
-    username: string;
-    nickname: string;
+    userName: string;
+    nickName: string;
     profileImg: string;
     role: boolean;
     kakaoId: string;
