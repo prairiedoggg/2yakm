@@ -1,16 +1,13 @@
 import { Request, Response, NextFunction } from 'express';
-import jwt from 'jsonwebtoken';
-import { commonError, createError } from '../utils/error';
+const jwt = require('jsonwebtoken');
+const { commonError, createError } = require('../utils/error');
+require('dotenv').config();
 
 interface CustomRequest extends Request {
-  user?: string | object;
+  user?: any;
 }
 
-const authByToken = async (
-  req: CustomRequest,
-  res: Response,
-  next: NextFunction
-) => {
+const authByToken = async (req: CustomRequest, res: Response, next: NextFunction) => {
   const token = req.cookies.jwt;
 
   if (!token) {
@@ -24,34 +21,18 @@ const authByToken = async (
   }
 
   try {
-    const user = await jwt.verify(token, process.env.SECRET_KEY as string);
+    const user = jwt.verify(token, process.env.JWT_SECRET);
     req.user = user;
     next();
-  } catch (error) {
-    if (error instanceof jwt.JsonWebTokenError) {
-      return next(
-        createError(
-          commonError.INVALID_TOKEN.name,
-          commonError.INVALID_TOKEN.message,
-          401
-        )
-      );
-    }
-
-    if (error instanceof jwt.TokenExpiredError) {
-      // 토큰 만료 시 처리
-      res.clearCookie('jwt');
-      return next(
-        createError(
-          commonError.EXPIRED_TOKEN.name,
-          commonError.EXPIRED_TOKEN.message,
-          401
-        )
-      );
-    }
-
-    next(error);
+  } catch (err) {
+    next(
+      createError(
+        commonError.INVALID_TOKEN.name,
+        commonError.INVALID_TOKEN.message,
+        401
+      )
+    );
   }
 };
 
-export { authByToken };
+module.exports = authByToken;

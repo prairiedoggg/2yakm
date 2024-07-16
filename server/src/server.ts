@@ -1,11 +1,3 @@
-// import express from 'express';
-// import swaggerUi from 'swagger-ui-express';
-// import specs from './swagger';
-// import pg from 'pg';
-// import fs from 'fs';
-// import path from 'path';
-// import { fileURLToPath } from 'url';
-// import dotenv from 'dotenv';
 const express = require('express');
 const swaggerUi = require('swagger-ui-express');
 const specs = require('./swagger');
@@ -13,6 +5,7 @@ const dotenv = require('dotenv');
 const bodyParser = require('body-parser');
 
 const reviewRouter = require('./routes/review_route');
+const authRoutes = require('./routes/auth_routes');
 
 dotenv.config();
 
@@ -28,6 +21,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 // const __dirname = path.dirname(__filename);
 
 app.use('/review', reviewRouter);
+app.use('/api', authRoutes);
 
 app.listen(port, () => {
   console.log(`Server is running http://localhost:${port}`);
