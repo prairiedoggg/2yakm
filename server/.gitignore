@@ -42,3 +42,6 @@ Desktop.ini
 *.ntvs*
 *.njsproj
 *.sln
+
+# PostgreSQL Certificates
+certs/*.pem
