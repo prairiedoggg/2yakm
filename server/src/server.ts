@@ -1,21 +1,29 @@
-import express from 'express';
-import swaggerUi from 'swagger-ui-express';
-import specs from './swagger';
-import pg from 'pg';
-import fs from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
-import dotenv from 'dotenv';
+// import express from 'express';
+// import swaggerUi from 'swagger-ui-express';
+// import specs from './swagger';
+// import pg from 'pg';
+// import fs from 'fs';
+// import path from 'path';
+// import { fileURLToPath } from 'url';
+// import dotenv from 'dotenv';
+const express = require('express');
+const swaggerUi = require('swagger-ui-express');
+const spec = require('./swagger');
+const pg = require('pg');
+const fs = require('fs');
+const path = require('path');
+const dotenv = require('dotenv');
+
 dotenv.config();
 
 const app = express();
 const port = process.env.PORT || 3000;
 
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(spec));
 
-// ESM에서는 __dirname을 사용할 수 없어서 만들어줘야함
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+// // ESM에서는 __dirname을 사용할 수 없어서 만들어줘야함
+// const __filename = fileURLToPath(import.meta.url);
+// const __dirname = path.dirname(__filename);
 
 const { Pool } = pg;
 const pool = new Pool({
