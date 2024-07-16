@@ -1,10 +1,10 @@
-import { NOTFOUND } from 'dns';
 import { Response, Request } from 'express';
 const reviewService = require('../services/reviewService');
 
 // 리뷰 생성 컨트롤러
 const createReview = async (req: Request, res: Response) => {
-  const { drugId, drugName, userId, role, content } = req.body;
+  const { drugId } = req.params;
+  const { drugName, userId, role, content } = req.body;
 
   try {
     const review = await reviewService.createReview(
