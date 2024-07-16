@@ -6,7 +6,11 @@ interface CustomRequest extends Request {
   user?: string | object;
 }
 
-const authByToken = async (req: CustomRequest, res: Response, next: NextFunction) => {
+const authByToken = async (
+  req: CustomRequest,
+  res: Response,
+  next: NextFunction
+) => {
   const token = req.cookies.jwt;
 
   if (!token) {
