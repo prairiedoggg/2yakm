@@ -3,6 +3,8 @@ const swaggerUi = require('swagger-ui-express');
 const specs = require('./swagger');
 const dotenv = require('dotenv');
 const bodyParser = require('body-parser');
+const cors = require('cors');
+const helmet = require('helmet');
 const cookieParser = require('cookie-parser');
 
 const reviewRouter = require('./routes/review_route');
@@ -12,6 +14,17 @@ dotenv.config();
 
 const app = express();
 const port = process.env.PORT || 3000;
+
+// CORS
+app.use(
+  cors({
+    origin: true,
+    credentials: true
+  })
+);
+
+// Helmet
+app.use(helmet());
 
 app.use(express.json());
 
