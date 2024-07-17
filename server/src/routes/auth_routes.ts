@@ -43,7 +43,6 @@ router.post('/login', loginController);
  *                 message:
  *                   type: string
  *                 user:
- *                   $ref: '#/components/schemas/User'
  *       409:
  *         description: 사용자 이미 존재함
  */

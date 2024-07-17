@@ -21,7 +21,7 @@ const authByToken = async (req: CustomRequest, res: Response, next: NextFunction
   }
 
   try {
-    const user = jwt.verify(token, process.env.JWT_SECRET);
+    const user = jwt.verify(token, process.env.SECRET_KEY);
     req.user = user;
     next();
   } catch (err) {
