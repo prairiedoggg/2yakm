@@ -38,9 +38,39 @@ const router = Router();
  *               content: "열은 빨리 내리는데, 요즘 대체약들이 좋은 약들이 많아졌어요."
  *     responses:
  *       201:
- *         description: The created review.
+ *         description: 리뷰 생성 완료
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 reviewId:
+ *                   type: integer
+ *                 drugId:
+ *                   type: integer
+ *                 drugName:
+ *                   type: string
+ *                 userId:
+ *                   type: string
+ *                 role:
+ *                   type: boolean
+ *                 content:
+ *                   type: string
+ *                 created_at:
+ *                   type: string
+ *                   format: date-time
+ *               example:
+ *                 reviewId: 18
+ *                 drugId: 58373
+ *                 drugName: "타이레놀"
+ *                 userId: "fjk3f8dkf"
+ *                 role: false
+ *                 content: "전 먹어봤는데 별로였어요"
+ *                 created_at: "2024-07-16T20:37:08.325Z"
+ *       400:
+ *         description: 입력되지 않은 항목이 있음
  *       500:
- *         description: Some server error
+ *         description: 리뷰 생성 실패
  */
 router.post('/:drugId', reviewController.createReview);
 
@@ -73,11 +103,41 @@ router.post('/:drugId', reviewController.createReview);
  *               userId: "fjk49djfh3"
  *     responses:
  *       200:
- *         description: The updated review
+ *         description: 리뷰 수정 완료
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 reviewId:
+ *                   type: integer
+ *                 drugId:
+ *                   type: integer
+ *                 drugName:
+ *                   type: string
+ *                 userId:
+ *                   type: string
+ *                 role:
+ *                   type: boolean
+ *                 content:
+ *                   type: string
+ *                 created_at:
+ *                   type: string
+ *                   format: date-time
+ *               example:
+ *                 reviewId: 18
+ *                 drugId: 58373
+ *                 drugName: "타이레놀"
+ *                 userId: "fjk3f8dkf"
+ *                 role: false
+ *                 content: "생각해보니까 타이레놀이 가장 좋아요!"
+ *                 created_at: "2024-07-16T20:37:08.325Z"
+ *       400:
+ *         description: 입력되지 않은 항목이 있음
  *       404:
- *         description: Review not found
+ *         description: 수정할 리뷰를 찾을 수 없음
  *       500:
- *         description: Some server error
+ *         description: 리뷰 수정 실패
  */
 // 사용자 리뷰 수정
 router.put('/:reviewId', reviewController.updateReview);
@@ -108,11 +168,11 @@ router.put('/:reviewId', reviewController.updateReview);
  *               userId: "fjk49djfh3"
  *     responses:
  *       200:
- *         description: Review deleted successfully
+ *         description: 리뷰 삭제 성공
  *       404:
- *         description: Review not found
+ *         description: 삭제할 리뷰를 찾을 수 없음
  *       500:
- *         description: Some server error
+ *         description: 리뷰 삭제 실패
  */
 // 사용자 리뷰 삭제
 router.delete('/:reviewId', reviewController.deleteReview);

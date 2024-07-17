@@ -1,13 +1,14 @@
 const { pool } = require('../db');
+const { Review } = require('../entity/review');
 
 // 리뷰 생성 서비스
-const createReview = async (
+exports.createReview = async (
   drugId: number,
   drugName: string,
   userId: string,
   role: boolean,
   content: string
-) => {
+): Promise<typeof Review | null> => {
   // 매개변수화된 쿼리 (SQL 인젝션 공격을 방지할 수 있음)
   try {
     const query = `
@@ -18,18 +19,19 @@ const createReview = async (
     const values = [drugId, drugName, userId, role, content];
     const { rows } = await pool.query(query, values);
 
-    return rows[0];
+    return rows.length ? rows[0] : null;
   } catch (err: any) {
     console.log(err);
+    throw err;
   }
 };
 
 // 리뷰 수정 서비스
-const updateReview = async (
+exports.updateReview = async (
   reviewId: number,
   userId: string,
   content: string
-) => {
+): Promise<typeof Review | null> => {
   try {
     const query = `
         UPDATE reviews
@@ -40,14 +42,18 @@ const updateReview = async (
     const values = [content, reviewId];
     const { rows } = await pool.query(query, values);
 
-    return rows[0];
+    return rows.length ? rows[0] : null;
   } catch (err: any) {
     console.log(err);
+    throw err;
   }
 };
 
 // 리뷰 삭제 서비스
-const deleteReview = async (reviewId: number, userId: string) => {
+exports.deleteReview = async (
+  reviewId: number,
+  userId: string
+): Promise<typeof Review | null> => {
   try {
     const query = `
         DELETE FROM reviews
@@ -57,14 +63,17 @@ const deleteReview = async (reviewId: number, userId: string) => {
     const values = [reviewId];
     const { rows } = await pool.query(query, values);
 
-    return rows[0];
+    return rows.length ? rows[0] : null;
   } catch (err: any) {
     console.log(err);
+    throw err;
   }
 };
 
 // 해당 약의 모든 리뷰 조회 서비스
-const getDrugAllReview = async (drugId: number) => {
+exports.getDrugAllReview = async (
+  drugId: number
+): Promise<(typeof Review)[]> => {
   try {
     const query = `
         SELECT * FROM reviews
@@ -77,11 +86,14 @@ const getDrugAllReview = async (drugId: number) => {
     return rows;
   } catch (err: any) {
     console.log(err);
+    throw err;
   }
 };
 
 // 해당 유저의 모든 리뷰 조회 서비스
-const getUserAllReview = async (userId: string) => {
+exports.getUserAllReview = async (
+  userId: string
+): Promise<(typeof Review)[]> => {
   try {
     const query = `
         SELECT * FROM reviews
@@ -94,13 +106,6 @@ const getUserAllReview = async (userId: string) => {
     return rows;
   } catch (err: any) {
     console.log(err);
+    throw err;
   }
-};
-
-module.exports = {
-  createReview,
-  updateReview,
-  deleteReview,
-  getDrugAllReview,
-  getUserAllReview
 };
