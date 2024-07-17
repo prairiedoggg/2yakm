@@ -1,5 +1,5 @@
 const { Calendar } = require('../entity/calendar');
-const {pool} = require('../db');
+const { pool } = require('../db');
 
 exports.getAllCalendars = async (userId: string): Promise<typeof Calendar[]> => {
   const text = 'SELECT * FROM calendar WHERE userId = $1';
@@ -28,6 +28,7 @@ exports.updateCalendar = async (id: string, calendar: typeof Calendar): Promise<
   const result = await pool.query(text, values);
   return result.rows[0] || null;
 };
+
 exports.deleteCalendar = async (id: string): Promise<boolean> => {
   const text = 'DELETE FROM calendar WHERE id = $1';
   const values = [id];

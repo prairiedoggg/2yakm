@@ -3,11 +3,27 @@ const calendarService = require('../services/calender_service');
 const { uploadToS3 } = require('../config/imgUploads');
 
 exports.getAllCalendars = async (req: Request, res: Response, next: NextFunction) => {
-  // ... existing code ...
+  try {
+    const { userId } = req.params;
+    const calendars = await calendarService.getAllCalendars(userId);
+    res.status(200).json(calendars);
+  } catch (error) {
+    next(error);
+  }
 };
 
 exports.getCalendarById = async (req: Request, res: Response, next: NextFunction) => {
-  // ... existing code ...
+  try {
+    const { id } = req.params;
+    const calendar = await calendarService.getCalendarById(id);
+    if (calendar) {
+      res.status(200).json(calendar);
+    } else {
+      res.status(404).json({ message: 'Calendar not found' });
+    }
+  } catch (error) {
+    next(error);
+  }
 };
 
 exports.createCalendar = [
