@@ -1,10 +1,11 @@
 export interface Calendar {
+    id: string;
     userId: string;
-    date: number;
+    date: Date;
     calImg: string;
     condition: string;
     weight: number;
     temperature: number;
-    bodySugar: number;
-    alarm: number;
+    bloodsugar: number;
+    alarm: Date;
 }

@@ -13,6 +13,8 @@ dotenv.config();
 const app = express();
 const port = process.env.PORT || 3000;
 
+app.use(express.json());
+
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -28,3 +30,8 @@ app.use('/auth', authRouter);
 app.listen(port, () => {
   console.log(`Server is running http://localhost:${port}`);
 });
+
+app.use('/api/calenders', calenderRoutes);
+app.use('/api/upload', uploadRoutes);
+
+module.exports = app;

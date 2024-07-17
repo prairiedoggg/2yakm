@@ -1,10 +1,10 @@
-const pg = require('pg');
+const { Pool } = require('pg');
 const fs = require('fs');
 const path = require('path');
 const dotenv = require('dotenv');
+
 dotenv.config();
 
-const { Pool } = pg;
 const pool = new Pool({
   user: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
@@ -33,4 +33,4 @@ pool.connect((err: any) => {
   }
 });
 
-module.exports = { pool };
+module.exports = {pool};
