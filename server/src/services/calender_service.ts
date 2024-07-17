@@ -28,7 +28,6 @@ exports.updateCalendar = async (id: string, calendar: typeof Calendar): Promise<
   const result = await pool.query(text, values);
   return result.rows[0] || null;
 };
-
 exports.deleteCalendar = async (id: string): Promise<boolean> => {
   const text = 'DELETE FROM calendar WHERE id = $1';
   const values = [id];

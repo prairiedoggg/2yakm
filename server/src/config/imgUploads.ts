@@ -15,16 +15,23 @@ const uploadToMemory = multer({ storage: multer.memoryStorage() });
 
 // S3에 업로드하는 multer 설정
 const uploadToS3 = multer({
-  storage: multerS3 ({
+  storage: multerS3({
     s3: s3,
     bucket: process.env.AWS_BUCKET_NAME,
-      metadata: function (req: any, file: { fieldname: any; }, cb: (arg0: null, arg1: { fieldName: any; }) => void) {
+    metadata: function (req: any, file: { fieldname: any; }, cb: (arg0: null, arg1: { fieldName: any; }) => void) {
       cb(null, { fieldName: file.fieldname });
     },
     key: function (req: any, file: { originalname: any; }, cb: (arg0: null, arg1: string) => void) {
       cb(null, `${Date.now().toString()}-${file.originalname}`);
     },
   }),
+  fileFilter: (req: any, file: any, cb: any) => {
+    if (file.fieldname === 'calImg') {
+      cb(null, true);
+    } else {
+      cb(new multer.MulterError('LIMIT_UNEXPECTED_FILE', file.fieldname));
+    }
+  }
 });
 
 module.exports = {
