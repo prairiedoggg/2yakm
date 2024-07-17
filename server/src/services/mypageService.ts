@@ -4,7 +4,7 @@ const { pool } = require('../db');
 
 class MypageService {
   async getUserProfile(userId: string): Promise<{ email: string; username: string }> {
-    const result = await pool.query('SELECT email, username FROM users WHERE id = $1', [userId]);
+    const result = await pool.query('SELECT email, username FROM users WHERE userid = $1', [userId]);
     if (result.rows.length === 0) {
       throw new Error('User not found');
     }
@@ -12,33 +12,29 @@ class MypageService {
     return { email, username };
   }
 
-  async updateUserProfile(userId: string, updateData: Partial<typeof User>): Promise<{ email: string; username: string }> {
-    const fields: string[] = [];
-    const values: any[] = [];
-    let index = 1;
+  updateUserProfile = async (userId: string, updateData: any) => {
+    
+    const client = await pool.connect();
 
-    for (const [key, value] of Object.entries(updateData)) {
-      fields.push(`${key} = $${index}`);
-      values.push(value);
-      index++;
-    }
-    values.push(userId);
-
-    const result = await pool.query(
-      `UPDATE users SET ${fields.join(', ')} WHERE id = $${index} RETURNING email, username`,
-      values
-    );
-
-    if (result.rows.length === 0) {
-      throw new Error('User not found');
-    }
-    const { email, username } = result.rows[0];
-    return { email, username };
+    try {                  
+      const query = `
+        UPDATE users 
+        SET username = $1, email = $2
+        WHERE userid = $3
+        RETURNING *`;
+    
+      const values = [updateData.username, updateData.email, userId];
+      const result = await client.query(query, values);
+      return result.rows[0];
   }
+  finally {
+    client.release();
+  }
+};
 
   async updateProfilePicture(userId: string, profilePicture: string): Promise<string> {
     const result = await pool.query(
-      'UPDATE users SET profilePicture = $1 WHERE id = $2 RETURNING profilePicture',
+      'UPDATE users SET profilePicture = $1 WHERE userid = $2 RETURNING profilePicture',
       [profilePicture, userId]
     );
 

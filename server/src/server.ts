@@ -6,7 +6,7 @@ const cors = require('cors');
 const helmet = require('helmet');
 const path = require('path');
 
-const mypageRoute = require('./routes/mypage_route');
+const mypage_route = require('./routes/mypage_route');
 const app = express();
 
 const port = process.env.PORT || 3000;
@@ -28,7 +28,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
-app.use('/mypage', mypageRoute);
+app.use('/mypage', mypage_route);
 
 app.listen(port, () => {
   console.log(`Server is running http://localhost:${port}`);
