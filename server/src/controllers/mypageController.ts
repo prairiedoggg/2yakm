@@ -1,4 +1,4 @@
-const { MypageService } = require('../services/mypage_service');
+const { MypageService } = require('../services/mypageService');
 const multer = require('multer');
 const mypageService = new MypageService();
 const path = require('path');

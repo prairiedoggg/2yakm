@@ -1,4 +1,4 @@
-const { getUserProfile, updateUserProfile, updateProfilePicture, upload } = require('../controllers/mypage_controller');
+const { getUserProfile, updateUserProfile, updateProfilePicture, upload } = require('../controllers/mypageController');
 const express = require('express');
 const router = express.Router();
 

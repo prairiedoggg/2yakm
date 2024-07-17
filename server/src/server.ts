@@ -6,7 +6,7 @@ const cors = require('cors');
 const helmet = require('helmet');
 const path = require('path');
 
-const mypageRoute = require('./routes/mypageRoute');
+const mypageRoute = require('./routes/mypage_route');
 const app = express();
 
 const port = process.env.PORT || 3000;
