@@ -1,6 +1,4 @@
-const User = require('../entity/user')
 const { pool } = require('../db');
-
 
 class MypageService {
   async getUserProfile(userId: string): Promise<{ email: string; username: string }> {
