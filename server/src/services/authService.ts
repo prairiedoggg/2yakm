@@ -3,24 +3,26 @@ const jwt = require('jsonwebtoken');
 const { createError } = require('../utils/error');
 const { pool } = require('../db');
 const dotenv = require('dotenv');
+const axios = require('axios');
 
 dotenv.config();
 
-// User 인터페이스 정의
+// User 인터페이스
 interface User {
   id: number;
   email: string;
   username: string;
   password: string;
+  kakaoid?: string;
 }
 
-// User 응답 타입 정의 (password 필드 없음)
+// User 응답 (password 필드 없음)
 interface UserResponse {
   email: string;
   username: string;
 }
 
-// 로그인 서비스 함수
+// 로그인
 const loginService = async (email: string, password: string): Promise<{ token: string; refreshToken: string }> => {
   const client = await pool.connect();
   try {
@@ -39,7 +41,7 @@ const loginService = async (email: string, password: string): Promise<{ token: s
       throw createError('InvalidCredentials', '비밀번호가 틀렸습니다.', 401);
     }
 
-    const payload = { id: user.id, email: user.email };
+    const payload = { id: user.id, email: user.email, role: user.role };
     const token = jwt.sign(payload, process.env.SECRET_KEY, { expiresIn: '1h' });
     const refreshToken = jwt.sign(payload, process.env.REFRESH_TOKEN_SECRET_KEY, { expiresIn: '7d' });
 
@@ -51,7 +53,7 @@ const loginService = async (email: string, password: string): Promise<{ token: s
   }
 };
 
-// 회원가입 서비스 함수
+// 회원가입 롤은 펄스 
 const signupService = async (email: string, username: string, password: string, confirmPassword: string): Promise<UserResponse> => {
   const client = await pool.connect();
   try {
@@ -71,10 +73,10 @@ const signupService = async (email: string, username: string, password: string, 
     const hashedPassword = await bcrypt.hash(password, saltRounds);
 
     const insertUserQuery = `
-      INSERT INTO users (email, username, password) VALUES ($1, $2, $3)
+      INSERT INTO users (email, username, password, role) VALUES ($1, $2, $3)
       RETURNING email, username
     `;
-    const insertUserValues = [email, username, hashedPassword];
+    const insertUserValues = [email, username, hashedPassword, false];
     const newUserResult = await client.query(insertUserQuery, insertUserValues);
     const newUser = newUserResult.rows[0];
 
@@ -86,7 +88,7 @@ const signupService = async (email: string, username: string, password: string, 
   }
 };
 
-// 토큰 갱신 서비스 함수
+// 토큰 갱신
 const refreshTokenService = async (refreshToken: string): Promise<string> => {
   if (!refreshToken) {
     throw createError('NoRefreshToken', '토큰이 없습니다.', 401);
@@ -103,8 +105,81 @@ const refreshTokenService = async (refreshToken: string): Promise<string> => {
   return newToken;
 };
 
+// 카카오 로그인
+const kakaoLoginService = async (code: string) => {
+  const redirectUri = 'http://localhost:3000/auth/kakao/callback';
+  const kakaoTokenUrl = `https://kauth.kakao.com/oauth/token`;
+
+  try {
+    const tokenResponse = await axios.post(kakaoTokenUrl, null, {
+      params: {
+        grant_type: 'authorization_code',
+        client_id: process.env.KAKAO_CLIENT_ID,
+        redirect_uri: redirectUri,
+        code,
+      },
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+    });
+
+    const { access_token } = tokenResponse.data;
+
+    const userInfoResponse = await axios.get('https://kapi.kakao.com/v2/user/me', {
+      headers: {
+        Authorization: `Bearer ${access_token}`,
+      },
+    });
+
+    const { id, kakao_account, properties } = userInfoResponse.data;
+    const email = kakao_account.email || null;
+    const username = properties.nickname || kakao_account.profile.nickname || null;
+
+    // 이메일과 닉네임이 없는 경우 예외 처리
+    if (!email && !username) {
+      throw createError('KakaoAuthError', '카카오에서 사용자 정보가 충분하지 않습니다.', 400);
+    }
+
+    // 이메일이 없을 경우 대체 이메일 생성
+    const userEmail = email || `${id}@kakao.com`;
+    const defaultPassword = 'kakao_login_password';
+
+    // 사용자 정보 DB에 저장 및 JWT 발급
+    const client = await pool.connect();
+    try {
+      const checkUserQuery = 'SELECT * FROM users WHERE kakaoid = $1';
+      const checkUserValues = [id];
+      const existingUserResult = await client.query(checkUserQuery, checkUserValues);
+
+      let user;
+      if (existingUserResult.rows.length > 0) {
+        user = existingUserResult.rows[0];
+      } else {
+        const insertUserQuery = `
+          INSERT INTO users (email, username, password, kakaoid) VALUES ($1, $2, $3, $4)
+          RETURNING *
+        `;
+        const insertUserValues = [userEmail, username, defaultPassword, id];
+        const newUserResult = await client.query(insertUserQuery, insertUserValues);
+        user = newUserResult.rows[0];
+      }
+
+      const payload = { id: user.id, email: user.email };
+      const token = jwt.sign(payload, process.env.SECRET_KEY, { expiresIn: '1h' });
+      const refreshToken = jwt.sign(payload, process.env.REFRESH_TOKEN_SECRET_KEY, { expiresIn: '7d' });
+
+      return { token, refreshToken };
+    } finally {
+      client.release();
+    }
+  } catch (error) {
+    throw createError('KakaoAuthError', '카카오 인증 실패', 500);
+  }
+};
+
 module.exports = {
   loginService,
   signupService,
   refreshTokenService,
+  kakaoLoginService,
 };

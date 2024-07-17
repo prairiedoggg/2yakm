@@ -1,6 +1,5 @@
 const express = require('express');
-const { loginController, signupController, refreshTokenController } = require('../controllers/authController');
-// const { loginService, signupService } = require('../services/authService');
+const { loginController, signupController, refreshTokenController, kakaoLoginController } = require('../controllers/authController');
 const router = express.Router();
 
 /**
@@ -47,6 +46,30 @@ router.post('/login', loginController);
  *         description: 사용자 이미 존재함
  */
 router.post('/signup', signupController);
+
+/**
+ * @swagger
+ * /auth/kakao/callback:
+ *   get:
+ *     summary: 카카오 로그인 콜백
+ *     tags: [Auth]
+ *     responses:
+ *       200:
+ *         description: 로그인 성공
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                 token:
+ *                   type: string
+ *       500:
+ *         description: 서버 오류
+ */
+router.get('/kakao/callback', kakaoLoginController);
+
 router.post('/token', refreshTokenController);
 
 module.exports = router;
