@@ -9,6 +9,10 @@ const cookieParser = require('cookie-parser');
 
 const reviewRouter = require('./routes/review_route');
 const authRouter = require('./routes/auth_route');
+// const calenderRouter = require('./routes/calendar_routes');
+// const uploadRouter = require('./routes/uploadRoutes');
+const calenderRoutes = require('./routes/calenderRoutes');
+const uploadRoutes = require('./routes/uploadRoutes');
 
 dotenv.config();
 
@@ -25,26 +29,20 @@ app.use(
 
 // Helmet
 app.use(helmet());
-
 app.use(express.json());
-
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieParser());
 
-// // ESM에서는 __dirname을 사용할 수 없어서 만들어줘야함
-// const __filename = fileURLToPath(import.meta.url);
-// const __dirname = path.dirname(__filename);
-
 app.use('/review', reviewRouter);
 app.use('/auth', authRouter);
+// app.use('/api/calenders', calenderRouter);
+// app.use('/api/upload', uploadRouter);
+app.use('/api/calenders', calenderRoutes);
+app.use('/api/upload', uploadRoutes);
+
 
 app.listen(port, () => {
   console.log(`Server is running http://localhost:${port}`);
 });
-
-app.use('/api/calenders', calenderRoutes);
-app.use('/api/upload', uploadRoutes);
-
-module.exports = app;

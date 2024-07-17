@@ -23,7 +23,7 @@ interface UserResponse {
 }
 
 // 로그인
-const loginService = async (email: string, password: string): Promise<{ token: string; refreshToken: string }> => {
+exports.loginService = async (email: string, password: string): Promise<{ token: string; refreshToken: string }> => {
   const client = await pool.connect();
   try {
     const query = 'SELECT * FROM users WHERE email = $1';
@@ -43,7 +43,7 @@ const loginService = async (email: string, password: string): Promise<{ token: s
 
     const payload = { id: user.id, email: user.email, role: user.role };
     const token = jwt.sign(payload, process.env.SECRET_KEY, { expiresIn: '1h' });
-    const refreshToken = jwt.sign(payload, process.env.REFRESH_TOKEN_SECRET_KEY, { expiresIn: '7d' });
+    const refreshToken = jwt.sign({ id: user.id }, process.env.REFRESH_TOKEN_SECRET_KEY, { expiresIn: '7d' });
 
     return { token, refreshToken };
   } catch (error) {
@@ -54,7 +54,7 @@ const loginService = async (email: string, password: string): Promise<{ token: s
 };
 
 // 회원가입
-const signupService = async (email: string, username: string, password: string, confirmPassword: string): Promise<UserResponse> => {
+exports.signupService = async (email: string, username: string, password: string, confirmPassword: string): Promise<UserResponse> => {
   const client = await pool.connect();
   try {
     const checkUserQuery = 'SELECT * FROM users WHERE email = $1';
@@ -89,7 +89,7 @@ const signupService = async (email: string, username: string, password: string, 
 };
 
 // 토큰 갱신
-const refreshTokenService = async (refreshToken: string): Promise<string> => {
+exports.refreshTokenService = async (refreshToken: string): Promise<string> => {
   if (!refreshToken) {
     throw createError('NoRefreshToken', '토큰이 없습니다.', 401);
   }
@@ -106,7 +106,7 @@ const refreshTokenService = async (refreshToken: string): Promise<string> => {
 };
 
 // 카카오 로그인
-const kakaoLoginService = async (code: string) => {
+exports.kakaoLoginService = async (code: string): Promise<{ token: string; refreshToken: string }> => {
   const redirectUri = 'http://localhost:3000/auth/kakao/callback';
   const kakaoTokenUrl = `https://kauth.kakao.com/oauth/token`;
 
@@ -156,17 +156,17 @@ const kakaoLoginService = async (code: string) => {
         user = existingUserResult.rows[0];
       } else {
         const insertUserQuery = `
-          INSERT INTO users (email, username, password, kakaoid) VALUES ($1, $2, $3, $4)
+          INSERT INTO users (email, username, password, role, kakaoid) VALUES ($1, $2, $3, $4, $5)
           RETURNING *
         `;
-        const insertUserValues = [userEmail, username, defaultPassword, id];
+        const insertUserValues = [userEmail, username, defaultPassword, false, id];
         const newUserResult = await client.query(insertUserQuery, insertUserValues);
         user = newUserResult.rows[0];
       }
 
       const payload = { id: user.id, email: user.email };
       const token = jwt.sign(payload, process.env.SECRET_KEY, { expiresIn: '1h' });
-      const refreshToken = jwt.sign(payload, process.env.REFRESH_TOKEN_SECRET_KEY, { expiresIn: '7d' });
+      const refreshToken = jwt.sign({ id: user.id }, process.env.REFRESH_TOKEN_SECRET_KEY, { expiresIn: '7d' });
 
       return { token, refreshToken };
     } finally {
@@ -175,11 +175,4 @@ const kakaoLoginService = async (code: string) => {
   } catch (error) {
     throw createError('KakaoAuthError', '카카오 인증 실패', 500);
   }
-};
-
-module.exports = {
-  loginService,
-  signupService,
-  refreshTokenService,
-  kakaoLoginService,
 };

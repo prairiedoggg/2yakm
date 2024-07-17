@@ -8,10 +8,6 @@
     "start": "ts-node src/server.ts",
     "build": "tsc",
     "dev": "ts-node-dev src/server.ts"
-    "build": "tsc",
-    "dev": "ts-node-dev src/server.ts"
-    "build": "tsc",
-    "dev": "ts-node-dev src/server.ts"
   },
   "keywords": [],
   "author": "",

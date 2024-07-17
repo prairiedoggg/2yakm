@@ -3,7 +3,7 @@ const { loginService, signupService, refreshTokenService, kakaoLoginService } = 
 const { createError } = require('../utils/error');
 
 // 로그인
-const loginController = async (req: Request, res: Response, next: NextFunction) => {
+exports.loginController = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { email, password } = req.body;
     const result = await loginService(email, password);
@@ -16,7 +16,7 @@ const loginController = async (req: Request, res: Response, next: NextFunction) 
 };
 
 // 회원가입
-const signupController = async (req: Request, res: Response, next: NextFunction) => {
+exports.signupController = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { email, username, password, confirmPassword } = req.body;
     if (!email || !username || !password || !confirmPassword) {
@@ -30,7 +30,7 @@ const signupController = async (req: Request, res: Response, next: NextFunction)
 };
 
 // 토큰 갱신
-const refreshTokenController = async (req: Request, res: Response, next: NextFunction) => {
+exports.refreshTokenController = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const refreshToken = req.cookies.refreshToken;
     const newToken = await refreshTokenService(refreshToken);
@@ -42,7 +42,7 @@ const refreshTokenController = async (req: Request, res: Response, next: NextFun
 };
 
 // 카카오 로그인
-const kakaoLoginController = async (req: Request, res: Response, next: NextFunction) => {
+exports.kakaoLoginController = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { code } = req.query;
     const result = await kakaoLoginService(code);
@@ -52,11 +52,4 @@ const kakaoLoginController = async (req: Request, res: Response, next: NextFunct
   } catch (error) {
     next(error)
   }
-};
-
-module.exports = {
-  loginController,
-  signupController,
-  refreshTokenController,
-  kakaoLoginController,
 };
