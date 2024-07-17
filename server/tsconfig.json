@@ -8,12 +8,15 @@
     "forceConsistentCasingInFileNames": true,
     "moduleResolution": "node",
     "outDir": "./dist",
-    "rootDir": "./src"
+    "rootDir": "./src",
+    "moduleDetection": "force"
   },
   "include": ["src/**/*.ts"],
   "exclude": ["node_modules"],
   "ts-node": {
     "esm": false,
     "experimentalSpecifierResolution": "node"
+    
+
   }
 }
