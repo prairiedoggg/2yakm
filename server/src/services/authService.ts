@@ -53,7 +53,7 @@ const loginService = async (email: string, password: string): Promise<{ token: s
   }
 };
 
-// 회원가입 롤은 펄스 
+// 회원가입
 const signupService = async (email: string, username: string, password: string, confirmPassword: string): Promise<UserResponse> => {
   const client = await pool.connect();
   try {
@@ -73,7 +73,7 @@ const signupService = async (email: string, username: string, password: string, 
     const hashedPassword = await bcrypt.hash(password, saltRounds);
 
     const insertUserQuery = `
-      INSERT INTO users (email, username, password, role) VALUES ($1, $2, $3)
+      INSERT INTO users (email, username, password, role) VALUES ($1, $2, $3, $4)
       RETURNING email, username
     `;
     const insertUserValues = [email, username, hashedPassword, false];
