@@ -4,9 +4,9 @@ const reviewService = require('../services/reviewService');
 // 리뷰 생성 컨트롤러
 exports.createReview = async (req: Request, res: Response): Promise<void> => {
   const { drugId } = req.params;
-  const { drugName, userId, role, content } = req.body;
+  const { userId, role, content } = req.body;
 
-  if (!drugName || !userId || role === undefined || !content) {
+  if (!userId || role === undefined || !content) {
     res.status(400).send('입력되지 않은 항목이 있습니다.');
     return;
   }
@@ -14,7 +14,6 @@ exports.createReview = async (req: Request, res: Response): Promise<void> => {
   try {
     const review = await reviewService.createReview(
       drugId,
-      drugName,
       userId,
       role,
       content

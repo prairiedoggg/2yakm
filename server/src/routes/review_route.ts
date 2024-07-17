@@ -23,8 +23,6 @@ const router = Router();
  *           schema:
  *             type: object
  *             properties:
- *               drugName:
- *                 type: string
  *               userId:
  *                 type: string
  *               role:
@@ -32,7 +30,6 @@ const router = Router();
  *               content:
  *                 type: string
  *             example:
- *               drugName: "타이레놀"
  *               userId: "fjk49djfh3"
  *               role: false
  *               content: "열은 빨리 내리는데, 요즘 대체약들이 좋은 약들이 많아졌어요."
@@ -60,9 +57,9 @@ const router = Router();
  *                   type: string
  *                   format: date-time
  *               example:
- *                 reviewId: 18
- *                 drugId: 58373
- *                 drugName: "타이레놀"
+ *                 reviewId: 1
+ *                 drugId: 197000037
+ *                 drugName: "아로나민골드정"
  *                 userId: "fjk3f8dkf"
  *                 role: false
  *                 content: "전 먹어봤는데 별로였어요"
@@ -125,9 +122,9 @@ router.post('/:drugId', reviewController.createReview);
  *                   type: string
  *                   format: date-time
  *               example:
- *                 reviewId: 18
- *                 drugId: 58373
- *                 drugName: "타이레놀"
+ *                 reviewId: 1
+ *                 drugId: 197000037
+ *                 drugName: "아로나민골드정"
  *                 userId: "fjk3f8dkf"
  *                 role: false
  *                 content: "생각해보니까 타이레놀이 가장 좋아요!"
