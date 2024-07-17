@@ -5,6 +5,7 @@ const path = require('path');
 import { Response, Request } from 'express';
 type FileFilterCallback = (error: Error | null, acceptFile: boolean) => void;
 
+
 const getUserProfile = async (req: Request, res: Response) => {
   try {
     const userId = req.params.id;
