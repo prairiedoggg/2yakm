@@ -47,8 +47,8 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieParser());
 
-app.use('api/review', reviewRouter);
-app.use('api/auth', authRouter);
+app.use('/api/review', reviewRouter);
+app.use('/api/auth', authRouter);
 app.use('/api/calenders', calendarRouter);
 app.use('/api/alarms', alarmRouter);
 app.use('/api/favorites', favoriteRouter);
@@ -56,5 +56,3 @@ app.use('/api/favorites', favoriteRouter);
 app.listen(port, () => {
   console.log(`Server is running http://localhost:${port}`);
 });
-
-module.exports = app;
