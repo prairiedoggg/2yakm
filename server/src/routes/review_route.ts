@@ -174,27 +174,34 @@ router.delete('/:reviewid', authByToken, reviewController.deleteReview);
  *         content:
  *           application/json:
  *             schema:
- *               type: array
- *               items:
- *                 type: object
- *                 properties:
- *                   reviewid:
- *                     type: integer
- *                   drugid:
- *                     type: integer
- *                   drugname:
- *                     type: string
- *                   email:
- *                     type: string
- *                   username:
- *                     type: string
- *                   role:
- *                     type: boolean
- *                   content:
- *                     type: string
- *                   created_at:
- *                     type: string
- *                     format: date-time
+ *               type: object
+ *               properties:
+ *                 totalCount:
+ *                   type: integer
+ *                   description: Total number of reviews
+ *                   example: 2
+ *                 reviews:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       reviewid:
+ *                         type: integer
+ *                       drugid:
+ *                         type: integer
+ *                       drugname:
+ *                         type: string
+ *                       email:
+ *                         type: string
+ *                       username:
+ *                         type: string
+ *                       role:
+ *                         type: boolean
+ *                       content:
+ *                         type: string
+ *                       created_at:
+ *                         type: string
+ *                         format: date-time
  *       500:
  *         description: Internal Server Error
  */
@@ -215,27 +222,34 @@ router.get('/drugs/:drugid', reviewController.getDrugAllReview);
  *         content:
  *           application/json:
  *             schema:
- *               type: array
- *               items:
- *                 type: object
- *                 properties:
- *                   reviewid:
- *                     type: integer
- *                   drugid:
- *                     type: integer
- *                   drugname:
- *                     type: string
- *                   email:
- *                     type: string
- *                   username:
- *                     type: string
- *                   role:
- *                     type: boolean
- *                   content:
- *                     type: string
- *                   created_at:
- *                     type: string
- *                     format: date-time
+ *               type: object
+ *               properties:
+ *                 totalCount:
+ *                   type: integer
+ *                   description: Total number of reviews
+ *                   example: 2
+ *                 reviews:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       reviewid:
+ *                         type: integer
+ *                       drugid:
+ *                         type: integer
+ *                       drugname:
+ *                         type: string
+ *                       email:
+ *                         type: string
+ *                       username:
+ *                         type: string
+ *                       role:
+ *                         type: boolean
+ *                       content:
+ *                         type: string
+ *                       created_at:
+ *                         type: string
+ *                         format: date-time
  *       401:
  *         description: 토큰이 없습니다
  *       500:

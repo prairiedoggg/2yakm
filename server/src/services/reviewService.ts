@@ -2,6 +2,11 @@ const { pool } = require('../db');
 const { Review } = require('../entity/review');
 const { createError } = require('../utils/error');
 
+interface totalCountAndData {
+  totalCount: number;
+  data: (typeof Review)[];
+}
+
 // 리뷰 생성 서비스
 exports.createReview = async (
   drugid: number,
@@ -105,13 +110,13 @@ exports.deleteReview = async (
 // 해당 약의 모든 리뷰 조회 서비스
 exports.getDrugAllReview = async (
   drugid: number
-): Promise<(typeof Review)[]> => {
+): Promise<totalCountAndData> => {
   try {
     const query = `
       SELECT 
         reviews.reviewid,
         reviews.drugid,
-        drug.drugname,
+        drugs.drugname,
         reviews.email,
         users.username,
         users.role,
@@ -120,7 +125,7 @@ exports.getDrugAllReview = async (
       FROM 
         reviews
       JOIN 
-        drug ON reviews.drugid = drug.drugid
+        drugs ON reviews.drugid = drugs.drugid
       JOIN 
         users ON reviews.email = users.email
       WHERE 
@@ -130,7 +135,10 @@ exports.getDrugAllReview = async (
     const values = [drugid];
     const { rows } = await pool.query(query, values);
 
-    return rows;
+    return {
+      totalCount: rows.length,
+      data: rows
+    };
   } catch (error: any) {
     throw error;
   }
@@ -139,13 +147,13 @@ exports.getDrugAllReview = async (
 // 해당 유저의 모든 리뷰 조회 서비스
 exports.getUserAllReview = async (
   email: string
-): Promise<(typeof Review)[]> => {
+): Promise<totalCountAndData> => {
   try {
     const query = `
       SELECT 
         reviews.reviewid,
         reviews.drugid,
-        drug.drugname,
+        drugs.drugname,
         reviews.email,
         users.username,
         users.role,
@@ -154,7 +162,7 @@ exports.getUserAllReview = async (
       FROM 
         reviews
       JOIN 
-        drug ON reviews.drugid = drug.drugid
+        drugs ON reviews.drugid = drugs.drugid
       JOIN 
         users ON reviews.email = users.email
       WHERE 
@@ -164,7 +172,10 @@ exports.getUserAllReview = async (
     const values = [email];
     const { rows } = await pool.query(query, values);
 
-    return rows;
+    return {
+      totalCount: rows.length,
+      data: rows
+    };
   } catch (error: any) {
     throw error;
   }
