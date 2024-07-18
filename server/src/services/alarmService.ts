@@ -1,5 +1,7 @@
 import schedule from 'node-schedule';
 import axios from 'axios';
+import nodemailer from 'nodemailer';
+
 const { Alarm } = require('../entity/alarm')
 const { pool } = require('../db');
 
@@ -12,7 +14,7 @@ export const scheduleAlarmService = (alarm: typeof Alarm) => {
     end: alarm.endDate,
     rule: `${minutes} ${hours} */${Math.floor(alarm.interval / 60)} * * *`
   }, async () => {
-    await tempMessage(alarm.message);
+    await sendEmail(alarm.message);
   });
   
   runningJobs.set(alarm.id, job);
@@ -123,5 +125,29 @@ const sendKakaoMessage = async (message: string) => {
     }
   } catch (error) {
     console.error('Error sending Kakao message:', error);
+  }
+};
+
+const sendEmail = async (message: string) => {
+  const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+      user: process.env.EMAIL_USER,
+      pass: process.env.EMAIL_PASS
+    }
+  });
+
+  const mailOptions = {
+    from: process.env.EMAIL_USER,
+    to: process.env.RECIPIENT_EMAIL,
+    subject: '알람 메시지',
+    text: message
+  };
+
+  try {
+    const info = await transporter.sendMail(mailOptions);
+    console.log('이메일 발송 완료:', info.response);
+  } catch (error) {
+    console.error('이메일 발송 실패:', error);
   }
 };
