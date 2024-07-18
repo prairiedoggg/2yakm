@@ -1,4 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
+import { CustomRequest } from '../types/express';
 const calendarService = require('../services/calender_service');
 const { uploadToS3 } = require('../config/imgUploads');
 
@@ -57,6 +58,16 @@ exports.updateCalendar = [
   }
 ];
 
-exports.deleteCalendar = async (req: Request, res: Response, next: NextFunction) => {
-  // ... existing code ...
+exports.deleteCalendar = async (req: CustomRequest, res: Response, next: NextFunction) => {
+  try {
+    const { id } = req.params;
+    const success: boolean = await calendarService.deleteCalendar(id);
+    if (success) {
+      res.status(200).json({ message: 'Calendar deleted successfully' });
+    } else {
+      res.status(404).json({ message: 'Calendar not found' });
+    }
+  } catch (error) {
+    next(error);
+  }
 };
