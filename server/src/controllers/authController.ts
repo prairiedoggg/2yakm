@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-const { loginService, signupService, refreshTokenService, kakaoLoginService } = require('../services/authService');
+const { loginService, signupService, refreshTokenService, kakaoLoginService, kakaoSignupService } = require('../services/authService');
 const { createError } = require('../utils/error');
 
 // 로그인
@@ -45,11 +45,25 @@ exports.refreshTokenController = async (req: Request, res: Response, next: NextF
 exports.kakaoLoginController = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { code } = req.query;
+    console.log({code});
     const result = await kakaoLoginService(code);
     res.cookie('jwt', result.token, { httpOnly: true });
     res.cookie('refreshToken', result.refreshToken, { httpOnly: true });
     res.status(200).json({ message: '카카오 로그인 성공', token: result.token });
   } catch (error) {
     next(error)
+  }
+};
+
+// 카카오 회원가입
+exports.kakaoSignupController = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { accessToken } = req.body;
+    const result = await kakaoSignupService(accessToken);
+    res.cookie('jwt', result.token, { httpOnly: true });
+    res.cookie('refreshToken', result.refreshToken, { httpOnly: true });
+    res.status(201).json({ message: '카카오 회원가입 성공', token: result.token });
+  } catch (error) {
+    next(error);
   }
 };

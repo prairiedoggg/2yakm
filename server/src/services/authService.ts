@@ -130,7 +130,7 @@ exports.kakaoLoginService = async (code: string): Promise<{ token: string; refre
         Authorization: `Bearer ${access_token}`,
       },
     });
-
+    console.log(tokenResponse.data)
     const { id, kakao_account, properties } = userInfoResponse.data;
     const email = kakao_account.email || null;
     const username = properties.nickname || kakao_account.profile.nickname || null;
@@ -174,5 +174,53 @@ exports.kakaoLoginService = async (code: string): Promise<{ token: string; refre
     }
   } catch (error) {
     throw createError('KakaoAuthError', '카카오 인증 실패', 500);
+  }
+};
+
+// 카카오 회원가입
+exports.kakaoSignupService = async (accessToken: string): Promise<{ token: string; refreshToken: string }> => {
+  const userInfoResponse = await axios.get('https://kapi.kakao.com/v2/user/me', {
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+    },
+  });
+
+  const { id, kakao_account, properties } = userInfoResponse.data;
+  const email = kakao_account.email || null;
+  const username = properties.nickname || kakao_account.profile.nickname || null;
+
+  if (!email && !username) {
+    throw createError('KakaoAuthError', '카카오에서 사용자 정보가 충분하지 않습니다.', 400);
+  }
+
+  const userEmail = email || `${id}@kakao.com`;
+  const defaultPassword = 'kakao_signup_password';
+
+  const client = await pool.connect();
+  try {
+    const checkUserQuery = 'SELECT * FROM users WHERE kakaoid = $1';
+    const checkUserValues = [id];
+    const existingUserResult = await client.query(checkUserQuery, checkUserValues);
+
+    let user;
+    if (existingUserResult.rows.length > 0) {
+      throw createError('UserExists', '이미 가입된 사용자입니다.', 409);
+    } else {
+      const insertUserQuery = `
+        INSERT INTO users (email, username, password, role, kakaoid) VALUES ($1, $2, $3, $4, $5)
+        RETURNING *
+      `;
+      const insertUserValues = [userEmail, username, defaultPassword, false, id];
+      const newUserResult = await client.query(insertUserQuery, insertUserValues);
+      user = newUserResult.rows[0];
+    }
+
+    const payload = { id: user.id, email: user.email };
+    const token = jwt.sign(payload, process.env.SECRET_KEY, { expiresIn: '1h' });
+    const refreshToken = jwt.sign({ id: user.id }, process.env.REFRESH_TOKEN_SECRET_KEY, { expiresIn: '7d' });
+
+    return { token, refreshToken };
+  } finally {
+    client.release();
   }
 };

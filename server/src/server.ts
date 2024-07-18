@@ -6,6 +6,7 @@ const bodyParser = require('body-parser');
 const cors = require('cors');
 const helmet = require('helmet');
 const cookieParser = require('cookie-parser');
+const path = require('path');
 
 const reviewRouter = require('./routes/review_route');
 const authRouter = require('./routes/auth_route');
@@ -18,7 +19,7 @@ dotenv.config();
 
 const app = express();
 const port = process.env.PORT || 3000;
-
+app.use(express.static(path.join(__dirname, 'public')));
 // CORS
 app.use(
   cors({

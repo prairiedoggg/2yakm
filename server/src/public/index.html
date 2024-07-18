@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kakao Auth</title>
+</head>
+<body>
+    <h1>Kakao Authentication</h1>
+    <button id="kakao-login-btn">Login with Kakao</button>
+    <button id="kakao-signup-btn">Signup with Kakao</button>
+    <script>
+        document.getElementById('kakao-login-btn').addEventListener('click', function() {
+            const clientId = '0093203be92b5ab83b1311d18fb45486';
+            const redirectUri = 'http://localhost:3000/auth/kakao/callback';
+            window.location.href = `https://kauth.kakao.com/oauth/authorize?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=code`;
+        });
+
+        document.getElementById('kakao-signup-btn').addEventListener('click', function() {
+            const clientId = '0093203be92b5ab83b1311d18fb45486';
+            const redirectUri = 'http://localhost:3000/auth/kakao/callback';
+            window.location.href = `https://kauth.kakao.com/oauth/authorize?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=code`;
+        });
+    </script>
+</body>
+</html>
