@@ -16,8 +16,8 @@ exports.getAllCalendars = async (req: CustomRequest, res: Response, next: NextFu
 
 exports.getCalendarById = async (req: CustomRequest, res: Response, next: NextFunction) => {
   try {
-    const { id } = req.params;
-    const calendar: Calendar | null = await calendarService.getCalendarById(id);
+    const userId = req.user?.id;
+    const calendar: Calendar | null = await calendarService.getCalendarById(userId);
     if (calendar) {
       res.status(200).json(calendar);
     } else {
@@ -33,6 +33,7 @@ exports.createCalendar = [
   async (req: CustomRequest, res: Response, next: NextFunction) => {
     try {
       const userId = req.user?.id;
+      console.log(userId);
       const calImgUrl = req.file ? (req.file as any).location : null;
       const calendarData: Partial<Calendar> = {
         ...req.body,
@@ -56,6 +57,7 @@ exports.updateCalendar = [
   uploadToS3.single('calImg'),
   async (req: CustomRequest, res: Response, next: NextFunction) => {
     try {
+      const userId = req.user?.id;
       const { id } = req.params;
       const calImgUrl = req.file ? (req.file as any).location : null;
       const calendarData: Partial<Calendar> = {
@@ -81,6 +83,7 @@ exports.updateCalendar = [
 
 exports.deleteCalendar = async (req: CustomRequest, res: Response, next: NextFunction) => {
   try {
+    const userId = req.user?.id;
     const { id } = req.params;
     const success: boolean = await calendarService.deleteCalendar(id);
     if (success) {
