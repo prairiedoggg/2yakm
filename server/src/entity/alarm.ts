@@ -3,6 +3,7 @@ export interface Alarm {
     userId: string;
     startDate: Date;
     endDate: Date;
+    time: string;
     interval: number;
     message:string;
     alarmContent: string;

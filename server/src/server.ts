@@ -25,10 +25,12 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 app.use('/review', reviewRouter);
 app.use('/api', authRoutes);
+app.use(authByToken);
 
 app.listen(port, () => {
   console.log(`Server is running http://localhost:${port}`);
 });
+
 
 app.use('/api/calenders', authByToken, calenderRoute);
 app.use('/api/alarms', authByToken, alarmRoute);
