@@ -4,9 +4,10 @@ const specs = require('./swagger');
 const bodyParser = require('body-parser');
 const cors = require('cors');
 const helmet = require('helmet');
-const path = require('path');
-
-const mypage_route = require('./routes/mypage_route');
+const cookieParser = require('cookie-parser');
+const mypageRouter = require('./routes/mypage_route');
+const authRouter = require('./routes/auth_route');
+const uploadRoutes = require('./routes/uploadRoutes');
 const app = express();
 
 const port = process.env.PORT || 3000;
@@ -21,14 +22,16 @@ app.use(
 
 // Helmet
 app.use(helmet());
-
+app.use(express.json());
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
+app.use(cookieParser());
 
-app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
+app.use('/auth', authRouter);
+app.use('/mypage', mypageRouter);
+app.use('/api/upload', uploadRoutes);
 
-app.use('/mypage', mypage_route);
 
 app.listen(port, () => {
   console.log(`Server is running http://localhost:${port}`);
