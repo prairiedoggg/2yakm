@@ -17,11 +17,11 @@ class MypageService {
     try {                  
       const query = `
         UPDATE users 
-        SET username = $1, email = $2
+        SET username = $1, password = $2
         WHERE userid = $3
-        RETURNING *`;
+        RETURNING email, username`;
     
-      const values = [updateData.username, updateData.email, userId];
+      const values = [updateData.username, updateData.password, userId];
       const result = await client.query(query, values);
       return result.rows[0];
   }
