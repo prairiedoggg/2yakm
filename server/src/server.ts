@@ -15,6 +15,8 @@ const authRouter = require('./routes/auth_route');
 // const uploadRouter = require('./routes/uploadRoutes');
 const calenderRoutes = require('./routes/calenderRoutes');
 const uploadRoutes = require('./routes/uploadRoutes');
+// const alarmRoutes = require('./routes/alarm_route');
+const favoriteRoutes = require('./routes/favorite_route');
 
 dotenv.config();
 
@@ -54,8 +56,11 @@ app.use('api/auth', authRouter);
 // app.use('/api/upload', uploadRouter);
 app.use('/api/calenders', calenderRoutes);
 app.use('/api/upload', uploadRoutes);
-
+// app.use('/api/alarms', alarmRoutes);
+app.use('/api/favorites', favoriteRoutes);
 
 app.listen(port, () => {
   console.log(`Server is running http://localhost:${port}`);
 });
+
+module.exports = app;

@@ -1,134 +1,182 @@
 const { pool } = require('../db');
 const { Review } = require('../entity/review');
+const { createError } = require('../utils/error');
 
-// drug table에서 drugId를 이용해서 drugName을 받아오는 서비스
-const getDrugNameByDrugId = async (drugId: number): Promise<string | null> => {
-  try {
-    const query = `
-      SELECT drugName
-      FROM drug
-      WHERE drugId = $1
-    `;
-    const values = [drugId];
-    const { rows } = await pool.query(query, values);
-
-    return rows.length ? rows[0].drugname : null;
-  } catch (err: any) {
-    console.log(err);
-    throw new err();
-  }
-};
+interface totalCountAndData {
+  totalCount: number;
+  data: (typeof Review)[];
+}
 
 // 리뷰 생성 서비스
 exports.createReview = async (
-  drugId: number,
-  userId: string,
-  role: boolean,
+  drugid: number,
+  email: string,
   content: string
 ): Promise<typeof Review | null> => {
   // 매개변수화된 쿼리 (SQL 인젝션 공격을 방지할 수 있음)
   try {
-    const drugName = await getDrugNameByDrugId(drugId);
-
-    if (!drugName) {
-      throw new Error('해당 약을 찾을 수 없습니다.');
-    }
-
     const query = `
-    INSERT INTO reviews (drugId, drugName, userId, role, content)
-    VALUES ($1, $2, $3, $4, $5)
+    INSERT INTO reviews (drugid, email, content)
+    VALUES ($1, $2, $3)
     RETURNING *
     `;
-    const values = [drugId, drugName, userId, role, content];
+    const values = [drugid, email, content];
     const { rows } = await pool.query(query, values);
 
     return rows.length ? rows[0] : null;
-  } catch (err: any) {
-    console.log(err);
-    throw new err();
+  } catch (error: any) {
+    throw error;
   }
 };
 
 // 리뷰 수정 서비스
 exports.updateReview = async (
-  reviewId: number,
-  userId: string,
+  reviewid: number,
+  email: string,
   content: string
 ): Promise<typeof Review | null> => {
   try {
+    const validationQuery = `
+    SELECT email FROM reviews
+    WHERE reviewid = $1
+    `;
+    const validationValues = [reviewid];
+    const validationResult = await pool.query(
+      validationQuery,
+      validationValues
+    );
+
+    if (validationResult.rows.length === 0) {
+      throw createError('NotFound', '수정할 리뷰를 찾을 수 없습니다.', 404);
+    }
+
+    if (email !== validationResult.rows[0].email) {
+      throw createError('unAuthorized', '수정 권한이 없습니다.', 401);
+    }
+
     const query = `
         UPDATE reviews
         SET content = $1
-        WHERE reviewId = $2
+        WHERE reviewid = $2
         RETURNING *
         `;
-    const values = [content, reviewId];
+    const values = [content, reviewid];
     const { rows } = await pool.query(query, values);
 
     return rows.length ? rows[0] : null;
-  } catch (err: any) {
-    console.log(err);
-    throw new err();
+  } catch (error: any) {
+    throw error;
   }
 };
 
 // 리뷰 삭제 서비스
 exports.deleteReview = async (
-  reviewId: number,
-  userId: string
+  reviewid: number,
+  email: string
 ): Promise<typeof Review | null> => {
   try {
+    const validationQuery = `
+    SELECT email FROM reviews
+    WHERE reviewid = $1
+    `;
+    const validationValues = [reviewid];
+    const validationResult = await pool.query(
+      validationQuery,
+      validationValues
+    );
+
+    if (validationResult.rows.length === 0) {
+      throw createError('NotFound', '삭제할 리뷰를 찾을 수 없습니다.', 404);
+    }
+
+    if (email !== validationResult.rows[0].email) {
+      throw createError('unAuthorized', '수정 권한이 없습니다.', 401);
+    }
+
     const query = `
         DELETE FROM reviews
-        WHERE reviewId = $1
+        WHERE reviewid = $1
         RETURNING *
         `;
-    const values = [reviewId];
+    const values = [reviewid];
     const { rows } = await pool.query(query, values);
 
     return rows.length ? rows[0] : null;
-  } catch (err: any) {
-    console.log(err);
-    throw new err();
+  } catch (error: any) {
+    throw error;
   }
 };
 
 // 해당 약의 모든 리뷰 조회 서비스
 exports.getDrugAllReview = async (
-  drugId: number
-): Promise<(typeof Review)[]> => {
+  drugid: number
+): Promise<totalCountAndData> => {
   try {
     const query = `
-        SELECT * FROM reviews
-        WHERE drugId = $1
+      SELECT 
+        reviews.reviewid,
+        reviews.drugid,
+        drugs.drugname,
+        reviews.email,
+        users.username,
+        users.role,
+        reviews.content,
+        reviews.created_at
+      FROM 
+        reviews
+      JOIN 
+        drugs ON reviews.drugid = drugs.drugid
+      JOIN 
+        users ON reviews.email = users.email
+      WHERE 
+        reviews.drugid = $1;
         `;
 
-    const values = [drugId];
+    const values = [drugid];
     const { rows } = await pool.query(query, values);
 
-    return rows;
-  } catch (err: any) {
-    console.log(err);
-    throw new err();
+    return {
+      totalCount: rows.length,
+      data: rows
+    };
+  } catch (error: any) {
+    throw error;
   }
 };
 
 // 해당 유저의 모든 리뷰 조회 서비스
 exports.getUserAllReview = async (
-  userId: string
-): Promise<(typeof Review)[]> => {
+  email: string
+): Promise<totalCountAndData> => {
   try {
     const query = `
-        SELECT * FROM reviews
-        WHERE userId = $1
+      SELECT 
+        reviews.reviewid,
+        reviews.drugid,
+        drugs.drugname,
+        reviews.email,
+        users.username,
+        users.role,
+        reviews.content,
+        reviews.created_at
+      FROM 
+        reviews
+      JOIN 
+        drugs ON reviews.drugid = drugs.drugid
+      JOIN 
+        users ON reviews.email = users.email
+      WHERE 
+        reviews.email = $1;
         `;
 
-    const values = [userId];
+    const values = [email];
     const { rows } = await pool.query(query, values);
 
-    return rows;
-  } catch (err: any) {
-    console.log(err);
-    throw new err();
+    return {
+      totalCount: rows.length,
+      data: rows
+    };
+  } catch (error: any) {
+    throw error;
   }
 };

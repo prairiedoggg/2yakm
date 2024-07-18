@@ -1,9 +1,7 @@
 export interface Review {
-  reviewId?: number;
-  drugId: number;
-  drugName: string;
-  userId: number;
-  role: string;
+  reviewid?: number;
+  drugid: number;
+  email: string;
   content: string;
   created_at?: Date;
 }

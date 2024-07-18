@@ -33,4 +33,4 @@ pool.connect((err: any) => {
   }
 });
 
-module.exports = {pool};
+module.exports = { pool };
