@@ -1,11 +1,11 @@
-const { getUserProfile, updateUserProfile, updateProfilePicture} = require('../controllers/mypageController');
+const { getUserProfile, updateUserProfile, updateProfilePictureMemory, updateProfilePictureS3} = require('../controllers/mypageController');
 const { uploadToMemory, uploadToS3 } = require('../config/imgUploads');
 const express = require('express');
 const router = express.Router();
 
 router.get('/:id', getUserProfile);
 router.put('/:id', updateUserProfile);
-router.post('/:id/profile-picture', uploadToMemory.single('profilePicture'), updateProfilePicture);
-router.post('/:id/profile-picture', uploadToS3.single('profilePicture'), updateProfilePicture);
+router.put('/:id/profile-picture/memory', uploadToMemory.single('profilePicture'), updateProfilePictureMemory);
+router.put('/:id/profile-picture/s3', uploadToS3.single('profilePicture'), updateProfilePictureS3);
 
 module.exports = router;

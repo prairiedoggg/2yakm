@@ -30,9 +30,9 @@ class MypageService {
   }
 };
 
-  async updateProfilePicture(userId: string, profilePicture: string): Promise<string> {
+  async updateProfilePicture(userId: string, profilePicture: string): Promise<string> {    
     const result = await pool.query(
-      'UPDATE users SET profilePicture = $1 WHERE userid = $2 RETURNING profilePicture',
+      'UPDATE users SET profileimg = $1 WHERE userid = $2 RETURNING profileimg',
       [profilePicture, userId]
     );
 

@@ -31,27 +31,39 @@ const updateUserProfile = async (req: Request, res: Response) => {
   }
 };
 
-const updateProfilePicture = async (req: Request, res: Response) => {
+const updateProfilePictureMemory = async (req: Request , res: Response) => {
   try {
-    const userId = req.params.id;
-    const profilePicture = req.file?.filename;
-    if (!profilePicture) {
-      res.status(400).json({ error: 'Profile picture is required' });
-      return;
+    if (!req.file) {
+      return res.status(400).json({ message: 'No file uploaded' });
     }
-    const updatedUser = await mypageService.updateProfilePicture(userId, profilePicture);
-    res.status(200).json(updatedUser);
+    const updatedProfilePicture = await mypageService.updateProfilePicture(req.params.id, req.file.buffer.toString('base64'));
+    res.status(200).json({ profilePicture: updatedProfilePicture });
   } catch (error) {
-    if (error instanceof Error) {
-      res.status(500).json({ error: error.message });
-    } else {
-      res.status(500).json({ error: 'An unknown error occurred' });
-    }
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+    res.status(400).json({ message: errorMessage });
   }
 };
 
-module.exports =  {
+const updateProfilePictureS3 = async (req: Request, res: Response) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ message: 'No file uploaded' });
+    }
+    
+    // Assuming you have a method in MypageService to handle S3 upload and return URL
+    const s3Url = await mypageService.uploadFileToS3(req.file);
+    const updatedProfilePicture = await mypageService.updateProfilePicture(req.params.id, s3Url);
+    
+    res.status(200).json({ profilePicture: updatedProfilePicture });
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+    res.status(400).json({ message: errorMessage });
+  }
+};
+
+module.exports = {
   getUserProfile,
   updateUserProfile,
-  updateProfilePicture
+  updateProfilePictureMemory,
+  updateProfilePictureS3,
 };
