@@ -14,7 +14,7 @@ export const scheduleAlarmService = (alarm: typeof Alarm) => {
     end: alarm.endDate,
     rule: `${minutes} ${hours} */${Math.floor(alarm.interval / 60)} * * *`
   }, async () => {
-    await sendEmail(alarm.message);
+    await sendEmail(alarm.message, alarm.userId);
   });
   
   runningJobs.set(alarm.id, job);
@@ -128,7 +128,7 @@ const sendKakaoMessage = async (message: string) => {
   }
 };
 
-const sendEmail = async (message: string) => {
+const sendEmail = async (message: string, recipientEmail: string) => {
   const transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {
@@ -139,7 +139,7 @@ const sendEmail = async (message: string) => {
 
   const mailOptions = {
     from: process.env.EMAIL_USER,
-    to: process.env.RECIPIENT_EMAIL,
+    to: recipientEmail,
     subject: '알람 메시지',
     text: message
   };

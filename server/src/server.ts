@@ -8,8 +8,8 @@ const reviewRouter = require('./routes/review_route');
 const authRoutes = require('./routes/auth_routes');
 
 const cookieParser = require('cookie-parser');
-const calenderRoute = require('./routes/calendar_route');
-const alarmRoute = require('./routes/alarm_route');
+const calendarRouter = require('./routes/calendar_route');
+const alarmRouter = require('./routes/alarm_route');
 
 dotenv.config();
 
@@ -32,7 +32,7 @@ app.listen(port, () => {
 });
 
 
-app.use('/api/calenders', authByToken, calenderRoute);
-app.use('/api/alarms', authByToken, alarmRoute);
+app.use('/api/calenders', authByToken, calendarRouter);
+app.use('/api/alarms', authByToken, alarmRouter);
 
 module.exports = app;
