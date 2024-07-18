@@ -17,7 +17,7 @@ exports.createReview = async (
   const { drugid } = req.params;
   const { content } = req.body;
 
-  const { email: userid, role } = req.user;
+  const { email } = req.user;
 
   if (!content) {
     res.status(400).send('리뷰 내용을 입력해 주세요.');
@@ -25,12 +25,7 @@ exports.createReview = async (
   }
 
   try {
-    const review = await reviewService.createReview(
-      drugid,
-      userid,
-      role,
-      content
-    );
+    const review = await reviewService.createReview(drugid, email, content);
 
     if (!review) res.status(400).send('리뷰 생성을 실패했습니다.');
 
@@ -49,7 +44,7 @@ exports.updateReview = async (
   const { reviewid } = req.params;
   const { content } = req.body;
 
-  const { email: userid } = req.user;
+  const { email } = req.user;
 
   if (!content) {
     res.status(400).send('수정할 리뷰 내용을 입력해 주세요.');
@@ -57,9 +52,7 @@ exports.updateReview = async (
   }
 
   try {
-    const review = await reviewService.updateReview(reviewid, userid, content);
-
-    if (!review) res.status(404).send('수정할 리뷰를 찾을 수 없습니다.');
+    const review = await reviewService.updateReview(reviewid, email, content);
 
     res.status(200).send(review);
   } catch (error: any) {
@@ -75,12 +68,10 @@ exports.deleteReview = async (
 ): Promise<void> => {
   const { reviewid } = req.params;
 
-  const { email: userid } = req.user;
+  const { email } = req.user;
 
   try {
-    const review = await reviewService.deleteReview(reviewid, userid);
-
-    if (!review) res.status(404).send('삭제할 리뷰를 찾을 수 없습니다.');
+    const review = await reviewService.deleteReview(reviewid, email);
 
     res.status(200).send('리뷰 삭제 성공');
   } catch (error: any) {
@@ -110,10 +101,10 @@ exports.getUserAllReview = async (
   res: Response,
   next: NextFunction
 ): Promise<void> => {
-  const { email: userid } = req.user;
+  const { email } = req.user;
 
   try {
-    const review = await reviewService.getUserAllReview(userid);
+    const review = await reviewService.getUserAllReview(email);
     res.status(200).send(review);
   } catch (error: any) {
     next(error);

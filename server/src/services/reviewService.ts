@@ -2,40 +2,20 @@ const { pool } = require('../db');
 const { Review } = require('../entity/review');
 const { createError } = require('../utils/error');
 
-// drug table에서 drugid를 이용해서 drugname을 받아오는 서비스
-const getDrugnameByDrugid = async (drugid: number): Promise<string | null> => {
-  try {
-    const query = `
-      SELECT drugname
-      FROM drug
-      WHERE drugid = $1
-    `;
-    const values = [drugid];
-    const { rows } = await pool.query(query, values);
-
-    return rows.length ? rows[0].drugname : null;
-  } catch (error: any) {
-    throw error;
-  }
-};
-
 // 리뷰 생성 서비스
 exports.createReview = async (
   drugid: number,
-  userid: string,
-  role: boolean,
+  email: string,
   content: string
 ): Promise<typeof Review | null> => {
   // 매개변수화된 쿼리 (SQL 인젝션 공격을 방지할 수 있음)
   try {
-    const drugname = await getDrugnameByDrugid(drugid);
-
     const query = `
-    INSERT INTO reviews (drugid, drugname, userid, role, content)
-    VALUES ($1, $2, $3, $4, $5)
+    INSERT INTO reviews (drugid, email, content)
+    VALUES ($1, $2, $3)
     RETURNING *
     `;
-    const values = [drugid, drugname, userid, role, content];
+    const values = [drugid, email, content];
     const { rows } = await pool.query(query, values);
 
     return rows.length ? rows[0] : null;
@@ -47,12 +27,12 @@ exports.createReview = async (
 // 리뷰 수정 서비스
 exports.updateReview = async (
   reviewid: number,
-  userid: string,
+  email: string,
   content: string
 ): Promise<typeof Review | null> => {
   try {
     const validationQuery = `
-    SELECT userid FROM reviews
+    SELECT email FROM reviews
     WHERE reviewid = $1
     `;
     const validationValues = [reviewid];
@@ -61,7 +41,11 @@ exports.updateReview = async (
       validationValues
     );
 
-    if (userid !== validationResult.rows[0].userid) {
+    if (validationResult.rows.length === 0) {
+      throw createError('NotFound', '수정할 리뷰를 찾을 수 없습니다.', 404);
+    }
+
+    if (email !== validationResult.rows[0].email) {
       throw createError('unAuthorized', '수정 권한이 없습니다.', 401);
     }
 
@@ -83,11 +67,11 @@ exports.updateReview = async (
 // 리뷰 삭제 서비스
 exports.deleteReview = async (
   reviewid: number,
-  userid: string
+  email: string
 ): Promise<typeof Review | null> => {
   try {
     const validationQuery = `
-    SELECT userid FROM reviews
+    SELECT email FROM reviews
     WHERE reviewid = $1
     `;
     const validationValues = [reviewid];
@@ -96,7 +80,11 @@ exports.deleteReview = async (
       validationValues
     );
 
-    if (userid !== validationResult.rows[0].userid) {
+    if (validationResult.rows.length === 0) {
+      throw createError('NotFound', '삭제할 리뷰를 찾을 수 없습니다.', 404);
+    }
+
+    if (email !== validationResult.rows[0].email) {
       throw createError('unAuthorized', '수정 권한이 없습니다.', 401);
     }
 
@@ -120,8 +108,23 @@ exports.getDrugAllReview = async (
 ): Promise<(typeof Review)[]> => {
   try {
     const query = `
-        SELECT * FROM reviews
-        WHERE drugid = $1
+      SELECT 
+        reviews.reviewid,
+        reviews.drugid,
+        drug.drugname,
+        reviews.email,
+        users.username,
+        users.role,
+        reviews.content,
+        reviews.created_at
+      FROM 
+        reviews
+      JOIN 
+        drug ON reviews.drugid = drug.drugid
+      JOIN 
+        users ON reviews.email = users.email
+      WHERE 
+        reviews.drugid = $1;
         `;
 
     const values = [drugid];
@@ -135,15 +138,30 @@ exports.getDrugAllReview = async (
 
 // 해당 유저의 모든 리뷰 조회 서비스
 exports.getUserAllReview = async (
-  userid: string
+  email: string
 ): Promise<(typeof Review)[]> => {
   try {
     const query = `
-        SELECT * FROM reviews
-        WHERE userid = $1
+      SELECT 
+        reviews.reviewid,
+        reviews.drugid,
+        drug.drugname,
+        reviews.email,
+        users.username,
+        users.role,
+        reviews.content,
+        reviews.created_at
+      FROM 
+        reviews
+      JOIN 
+        drug ON reviews.drugid = drug.drugid
+      JOIN 
+        users ON reviews.email = users.email
+      WHERE 
+        reviews.email = $1;
         `;
 
-    const values = [userid];
+    const values = [email];
     const { rows } = await pool.query(query, values);
 
     return rows;

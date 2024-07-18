@@ -42,12 +42,8 @@ const router = Router();
  *                   type: integer
  *                 drugid:
  *                   type: integer
- *                 drugname:
+ *                 email:
  *                   type: string
- *                 userid:
- *                   type: string
- *                 role:
- *                   type: boolean
  *                 content:
  *                   type: string
  *                 created_at:
@@ -56,9 +52,7 @@ const router = Router();
  *               example:
  *                 reviewid: 1
  *                 drugid: 197000037
- *                 drugname: "아로나민골드정"
- *                 userid: "test@test.com"
- *                 role: false
+ *                 email: "test@test.com"
  *                 content: "전 이거 먹고 힘을 내요! 완전 추천합니다!"
  *                 created_at: "2024-07-16T20:37:08.325Z"
  *       400:
@@ -108,12 +102,8 @@ router.post('/:drugid', authByToken, reviewController.createReview);
  *                   type: integer
  *                 drugid:
  *                   type: integer
- *                 drugname:
- *                   type: string
  *                 userid:
  *                   type: string
- *                 role:
- *                   type: boolean
  *                 content:
  *                   type: string
  *                 created_at:
@@ -122,9 +112,7 @@ router.post('/:drugid', authByToken, reviewController.createReview);
  *               example:
  *                 reviewid: 1
  *                 drugid: 197000037
- *                 drugname: "아로나민골드정"
- *                 userid: "test@test.com"
- *                 role: false
+ *                 email: "test@test.com"
  *                 content: "생각해보니까 타이레놀이 가장 좋아요!"
  *                 created_at: "2024-07-16T20:37:08.325Z"
  *       400:
@@ -194,7 +182,11 @@ router.delete('/:reviewid', authByToken, reviewController.deleteReview);
  *                     type: integer
  *                   drugid:
  *                     type: integer
- *                   userid:
+ *                   drugname:
+ *                     type: string
+ *                   email:
+ *                     type: string
+ *                   username:
  *                     type: string
  *                   role:
  *                     type: boolean
@@ -231,7 +223,11 @@ router.get('/drugs/:drugid', reviewController.getDrugAllReview);
  *                     type: integer
  *                   drugid:
  *                     type: integer
- *                   userid:
+ *                   drugname:
+ *                     type: string
+ *                   email:
+ *                     type: string
+ *                   username:
  *                     type: string
  *                   role:
  *                     type: boolean
