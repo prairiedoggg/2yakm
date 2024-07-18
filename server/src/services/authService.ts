@@ -260,7 +260,6 @@ exports.kakaoAuthService = async (code: string): Promise<{ token: string; refres
         Authorization: `Bearer ${access_token}`,
       },
     });
-    console.log(tokenResponse.data)
     const { id, kakao_account, properties } = userInfoResponse.data;
     const email = kakao_account.email || null;
     const username = properties.nickname || kakao_account.profile.nickname || null;

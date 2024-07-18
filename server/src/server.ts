@@ -11,12 +11,9 @@ const fs = require('fs');
 
 const reviewRouter = require('./routes/review_route');
 const authRouter = require('./routes/auth_route');
-// const calenderRouter = require('./routes/calendar_routes');
-// const uploadRouter = require('./routes/uploadRoutes');
-const calenderRoutes = require('./routes/calenderRoutes');
-const uploadRoutes = require('./routes/uploadRoutes');
-// const alarmRoutes = require('./routes/alarm_route');
-const favoriteRoutes = require('./routes/favorite_route');
+const calendarRouter = require('./routes/calendar_route');
+const alarmRouter = require('./routes/alarm_route');
+const favoriteRouter = require('./routes/favorite_route');
 
 dotenv.config();
 
@@ -52,12 +49,9 @@ app.use(cookieParser());
 
 app.use('api/review', reviewRouter);
 app.use('api/auth', authRouter);
-// app.use('/api/calenders', calenderRouter);
-// app.use('/api/upload', uploadRouter);
-app.use('/api/calenders', calenderRoutes);
-app.use('/api/upload', uploadRoutes);
-// app.use('/api/alarms', alarmRoutes);
-app.use('/api/favorites', favoriteRoutes);
+app.use('/api/calenders', calendarRouter);
+app.use('/api/alarms', alarmRouter);
+app.use('/api/favorites', favoriteRouter);
 
 app.listen(port, () => {
   console.log(`Server is running http://localhost:${port}`);
