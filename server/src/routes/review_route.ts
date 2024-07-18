@@ -1,21 +1,24 @@
 const Router = require('express');
 const reviewController = require('../controllers/reviewController');
+const authByToken = require('../middlewares/authByToken');
 
 const router = Router();
 
 /**
  * @swagger
- * /reviews/{drugId}:
+ * /reviews/{drugid}:
  *   post:
  *     summary: 리뷰 생성 API
  *     tags: [Reviews]
  *     parameters:
  *       - in: path
- *         name: drugId
+ *         name: drugid
  *         schema:
  *           type: integer
  *         required: true
- *         description: 리뷰가 생성될 Drug ID 값을 입력해 주세요.
+ *         description: 리뷰가 생성될 drug id 값을 입력해 주세요.
+ *     security:
+ *       - BearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
@@ -23,16 +26,10 @@ const router = Router();
  *           schema:
  *             type: object
  *             properties:
- *               userId:
- *                 type: string
- *               role:
- *                 type: boolean
  *               content:
  *                 type: string
  *             example:
- *               userId: "fjk49djfh3"
- *               role: false
- *               content: "열은 빨리 내리는데, 요즘 대체약들이 좋은 약들이 많아졌어요."
+ *               content: "전 이거 먹고 힘을 내요! 완전 추천합니다!"
  *     responses:
  *       201:
  *         description: 리뷰 생성 완료
@@ -41,13 +38,13 @@ const router = Router();
  *             schema:
  *               type: object
  *               properties:
- *                 reviewId:
+ *                 reviewid:
  *                   type: integer
- *                 drugId:
+ *                 drugid:
  *                   type: integer
- *                 drugName:
+ *                 drugname:
  *                   type: string
- *                 userId:
+ *                 userid:
  *                   type: string
  *                 role:
  *                   type: boolean
@@ -57,33 +54,37 @@ const router = Router();
  *                   type: string
  *                   format: date-time
  *               example:
- *                 reviewId: 1
- *                 drugId: 197000037
- *                 drugName: "아로나민골드정"
- *                 userId: "fjk3f8dkf"
+ *                 reviewid: 1
+ *                 drugid: 197000037
+ *                 drugname: "아로나민골드정"
+ *                 userid: "test@test.com"
  *                 role: false
- *                 content: "전 먹어봤는데 별로였어요"
+ *                 content: "전 이거 먹고 힘을 내요! 완전 추천합니다!"
  *                 created_at: "2024-07-16T20:37:08.325Z"
  *       400:
- *         description: 입력되지 않은 항목이 있음
+ *         description: 리뷰 내용을 입력해 주세요. / 리뷰 생성을 실패했습니다.
+ *       401:
+ *         description: 토큰이 없습니다
  *       500:
- *         description: 리뷰 생성 실패
+ *         description: Internal Server Error
  */
-router.post('/:drugId', reviewController.createReview);
+router.post('/:drugid', authByToken, reviewController.createReview);
 
 /**
  * @swagger
- * /reviews/{reviewId}:
+ * /reviews/{reviewid}:
  *   put:
  *     summary: 리뷰 수정 API
  *     tags: [Reviews]
  *     parameters:
  *       - in: path
- *         name: reviewId
+ *         name: reviewid
  *         schema:
  *           type: integer
  *         required: true
- *         description: 수정할 Review ID 값을 입력해 주세요.
+ *         description: 수정할 review id 값을 입력해 주세요.
+ *     security:
+ *       - BearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
@@ -93,11 +94,8 @@ router.post('/:drugId', reviewController.createReview);
  *             properties:
  *               content:
  *                 type: string
- *               userId:
- *                 type: string
  *             example:
  *               content: "생각해보니까 타이레놀이 가장 좋아요!"
- *               userId: "fjk49djfh3"
  *     responses:
  *       200:
  *         description: 리뷰 수정 완료
@@ -106,13 +104,13 @@ router.post('/:drugId', reviewController.createReview);
  *             schema:
  *               type: object
  *               properties:
- *                 reviewId:
+ *                 reviewid:
  *                   type: integer
- *                 drugId:
+ *                 drugid:
  *                   type: integer
- *                 drugName:
+ *                 drugname:
  *                   type: string
- *                 userId:
+ *                 userid:
  *                   type: string
  *                 role:
  *                   type: boolean
@@ -122,71 +120,66 @@ router.post('/:drugId', reviewController.createReview);
  *                   type: string
  *                   format: date-time
  *               example:
- *                 reviewId: 1
- *                 drugId: 197000037
- *                 drugName: "아로나민골드정"
- *                 userId: "fjk3f8dkf"
+ *                 reviewid: 1
+ *                 drugid: 197000037
+ *                 drugname: "아로나민골드정"
+ *                 userid: "test@test.com"
  *                 role: false
  *                 content: "생각해보니까 타이레놀이 가장 좋아요!"
  *                 created_at: "2024-07-16T20:37:08.325Z"
  *       400:
- *         description: 입력되지 않은 항목이 있음
+ *         description: 수정할 리뷰 내용을 입력해 주세요.
+ *       401:
+ *         description: 토큰이 없습니다 / 수정 권한이 없습니다.
  *       404:
- *         description: 수정할 리뷰를 찾을 수 없음
+ *         description: 수정할 리뷰를 찾을 수 없습니다.
  *       500:
- *         description: 리뷰 수정 실패
+ *         description: Internal Server Error
  */
 // 사용자 리뷰 수정
-router.put('/:reviewId', reviewController.updateReview);
+router.put('/:reviewid', authByToken, reviewController.updateReview);
 
 /**
  * @swagger
- * /reviews/{reviewId}:
+ * /reviews/{reviewid}:
  *   delete:
  *     summary: 리뷰 삭제 API
  *     tags: [Reviews]
  *     parameters:
  *       - in: path
- *         name: reviewId
+ *         name: reviewid
  *         schema:
  *           type: integer
  *         required: true
- *         description: 삭제할 Review ID 값을 입력해 주세요.
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               userId:
- *                 type: string
- *             example:
- *               userId: "fjk49djfh3"
+ *         description: 삭제할 review id 값을 입력해 주세요.
+ *     security:
+ *       - BearerAuth: []
  *     responses:
  *       200:
  *         description: 리뷰 삭제 성공
+ *       401:
+ *         description: 토큰이 없습니다 / 수정 권한이 없습니다.
  *       404:
- *         description: 삭제할 리뷰를 찾을 수 없음
+ *         description: 삭제할 리뷰를 찾을 수 없습니다.
  *       500:
- *         description: 리뷰 삭제 실패
+ *         description: Internal Server Error
  */
 // 사용자 리뷰 삭제
-router.delete('/:reviewId', reviewController.deleteReview);
+router.delete('/:reviewid', authByToken, reviewController.deleteReview);
 
 /**
  * @swagger
- * /reviews/drugs/{drugId}:
+ * /reviews/drugs/{drugid}:
  *   get:
  *     summary: 해당 약의 모든 리뷰 조회 API
  *     tags: [Reviews]
  *     parameters:
  *       - in: path
- *         name: drugId
+ *         name: drugid
  *         schema:
  *           type: integer
  *         required: true
- *         description: 리뷰를 조회할 Drug ID 값을 입력해 주세요.
+ *         description: 리뷰를 조회할 drug id 값을 입력해 주세요.
  *     responses:
  *       200:
  *         description: 해당 약의 모든 리뷰가 표시됩니다.
@@ -197,11 +190,11 @@ router.delete('/:reviewId', reviewController.deleteReview);
  *               items:
  *                 type: object
  *                 properties:
- *                   reviewId:
+ *                   reviewid:
  *                     type: integer
- *                   drugId:
+ *                   drugid:
  *                     type: integer
- *                   userId:
+ *                   userid:
  *                     type: string
  *                   role:
  *                     type: boolean
@@ -210,28 +203,20 @@ router.delete('/:reviewId', reviewController.deleteReview);
  *                   created_at:
  *                     type: string
  *                     format: date-time
- *                   updated_at:
- *                     type: string
- *                     format: date-time
  *       500:
- *         description: Some server error
+ *         description: Internal Server Error
  */
 // 해당 약의 모든 리뷰 조회
-router.get('/drugs/:drugId', reviewController.getDrugAllReview);
+router.get('/drugs/:drugid', reviewController.getDrugAllReview);
 
 /**
  * @swagger
- * /reviews/users/{userId}:
+ * /reviews/users/:
  *   get:
  *     summary: 해당 유저의 모든 리뷰 조회 API
  *     tags: [Reviews]
- *     parameters:
- *       - in: path
- *         name: userId
- *         schema:
- *           type: string
- *         required: false
- *         description: 조회할 유저의 ID를 입력해 주세요.
+ *     security:
+ *       - BearerAuth: []
  *     responses:
  *       200:
  *         description: 해당 유저의 모든 리뷰가 표시됩니다.
@@ -242,11 +227,11 @@ router.get('/drugs/:drugId', reviewController.getDrugAllReview);
  *               items:
  *                 type: object
  *                 properties:
- *                   reviewId:
+ *                   reviewid:
  *                     type: integer
- *                   drugId:
+ *                   drugid:
  *                     type: integer
- *                   userId:
+ *                   userid:
  *                     type: string
  *                   role:
  *                     type: boolean
@@ -255,13 +240,12 @@ router.get('/drugs/:drugId', reviewController.getDrugAllReview);
  *                   created_at:
  *                     type: string
  *                     format: date-time
- *                   updated_at:
- *                     type: string
- *                     format: date-time
+ *       401:
+ *         description: 토큰이 없습니다
  *       500:
- *         description: Some server error
+ *         description: Internal Server Error
  */
 // 해당 유저의 모든 리뷰 조회
-router.get('/users/:userId', reviewController.getUserAllReview);
+router.get('/users/', authByToken, reviewController.getUserAllReview);
 
 module.exports = router;

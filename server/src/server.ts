@@ -35,13 +35,12 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieParser());
 
-app.use('/review', reviewRouter);
+app.use('/api/review', reviewRouter);
 app.use('/auth', authRouter);
 // app.use('/api/calenders', calenderRouter);
 // app.use('/api/upload', uploadRouter);
 app.use('/api/calenders', calenderRoutes);
 app.use('/api/upload', uploadRoutes);
-
 
 app.listen(port, () => {
   console.log(`Server is running http://localhost:${port}`);

@@ -1,20 +1,33 @@
-import { Response, Request } from 'express';
+import { Response, Request, NextFunction } from 'express';
 const reviewService = require('../services/reviewService');
 
-// 리뷰 생성 컨트롤러
-exports.createReview = async (req: Request, res: Response): Promise<void> => {
-  const { drugId } = req.params;
-  const { userId, role, content } = req.body;
+interface CustomRequest extends Request {
+  user: {
+    email: string;
+    role: string;
+  };
+}
 
-  if (!userId || role === undefined || !content) {
-    res.status(400).send('입력되지 않은 항목이 있습니다.');
+// 리뷰 생성 컨트롤러
+exports.createReview = async (
+  req: CustomRequest,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  const { drugid } = req.params;
+  const { content } = req.body;
+
+  const { email: userid, role } = req.user;
+
+  if (!content) {
+    res.status(400).send('리뷰 내용을 입력해 주세요.');
     return;
   }
 
   try {
     const review = await reviewService.createReview(
-      drugId,
-      userId,
+      drugid,
+      userid,
       role,
       content
     );
@@ -22,79 +35,87 @@ exports.createReview = async (req: Request, res: Response): Promise<void> => {
     if (!review) res.status(400).send('리뷰 생성을 실패했습니다.');
 
     res.status(201).send(review);
-  } catch (err: any) {
-    console.log(err);
-    res.status(500).send(err);
+  } catch (error: any) {
+    next(error);
   }
 };
 
 // 리뷰 수정 컨트롤러
-exports.updateReview = async (req: Request, res: Response): Promise<void> => {
-  const { reviewId } = req.params;
-  const { content, userId } = req.body;
+exports.updateReview = async (
+  req: CustomRequest,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  const { reviewid } = req.params;
+  const { content } = req.body;
 
-  if (!userId || !content) {
-    res.status(400).send('입력되지 않은 항목이 있습니다.');
+  const { email: userid } = req.user;
+
+  if (!content) {
+    res.status(400).send('수정할 리뷰 내용을 입력해 주세요.');
     return;
   }
 
   try {
-    const review = await reviewService.updateReview(reviewId, userId, content);
+    const review = await reviewService.updateReview(reviewid, userid, content);
 
     if (!review) res.status(404).send('수정할 리뷰를 찾을 수 없습니다.');
 
     res.status(200).send(review);
-  } catch (err: any) {
-    console.log(err);
-    res.status(500).send(err);
+  } catch (error: any) {
+    next(error);
   }
 };
 
 // 리뷰 삭제 컨트롤러
-exports.deleteReview = async (req: Request, res: Response): Promise<void> => {
-  const { reviewId } = req.params;
-  const { userId } = req.body;
+exports.deleteReview = async (
+  req: CustomRequest,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  const { reviewid } = req.params;
+
+  const { email: userid } = req.user;
 
   try {
-    const review = await reviewService.deleteReview(reviewId, userId);
+    const review = await reviewService.deleteReview(reviewid, userid);
 
     if (!review) res.status(404).send('삭제할 리뷰를 찾을 수 없습니다.');
 
     res.status(200).send('리뷰 삭제 성공');
-  } catch (err: any) {
-    console.log(err);
-    res.status(500).send(err);
+  } catch (error: any) {
+    next(error);
   }
 };
 
 // 해당 약의 모든 리뷰 조회 컨트롤러
 exports.getDrugAllReview = async (
   req: Request,
-  res: Response
+  res: Response,
+  next: NextFunction
 ): Promise<void> => {
-  const { drugId } = req.params;
+  const { drugid } = req.params;
 
   try {
-    const review = await reviewService.getDrugAllReview(drugId);
+    const review = await reviewService.getDrugAllReview(drugid);
     res.status(200).send(review);
-  } catch (err: any) {
-    console.log(err);
-    res.status(500).send(err);
+  } catch (error: any) {
+    next(error);
   }
 };
 
 // 해당 유저의 모든 리뷰 조회 컨트롤러
 exports.getUserAllReview = async (
-  req: Request,
-  res: Response
+  req: CustomRequest,
+  res: Response,
+  next: NextFunction
 ): Promise<void> => {
-  const { userId } = req.params;
+  const { email: userid } = req.user;
 
   try {
-    const review = await reviewService.getUserAllReview(userId);
+    const review = await reviewService.getUserAllReview(userid);
     res.status(200).send(review);
-  } catch (err: any) {
-    console.log(err);
-    res.status(500).send(err);
+  } catch (error: any) {
+    next(error);
   }
 };
