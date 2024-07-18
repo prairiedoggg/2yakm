@@ -7,6 +7,7 @@ const cors = require('cors');
 const helmet = require('helmet');
 const cookieParser = require('cookie-parser');
 const path = require('path');
+const fs = require('fs');
 
 const reviewRouter = require('./routes/review_route');
 const authRouter = require('./routes/auth_route');
@@ -28,6 +29,17 @@ app.use(
   })
 );
 
+app.get('/', (req: any, res: any) => {
+  const filePath = path.join(__dirname, 'public', 'index.html');
+  fs.readFile(filePath, 'utf8', (err: any, data: any) => {
+      if (err) {
+          return res.status(500).send('Error reading index.html');
+      }
+      const renderedHtml = data.replace(/YOUR_REST_API_KEY/g, process.env.KAKAO_CLIENT_ID || '');
+      res.send(renderedHtml);
+  });
+});
+
 // Helmet
 app.use(helmet());
 app.use(express.json());
@@ -36,8 +48,8 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieParser());
 
-app.use('/review', reviewRouter);
-app.use('/auth', authRouter);
+app.use('api/review', reviewRouter);
+app.use('api/auth', authRouter);
 // app.use('/api/calenders', calenderRouter);
 // app.use('/api/upload', uploadRouter);
 app.use('/api/calenders', calenderRoutes);
