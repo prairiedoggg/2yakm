@@ -6,7 +6,7 @@ const router = Router();
 
 /**
  * @swagger
- * /reviews/{drugid}:
+ * /api/reviews/{drugid}:
  *   post:
  *     summary: 리뷰 생성 API
  *     tags: [Reviews]
@@ -72,7 +72,7 @@ router.post('/:drugid', authByToken, reviewController.createReview);
 
 /**
  * @swagger
- * /reviews/{reviewid}:
+ * /api/reviews/{reviewid}:
  *   put:
  *     summary: 리뷰 수정 API
  *     tags: [Reviews]
@@ -141,7 +141,7 @@ router.put('/:reviewid', authByToken, reviewController.updateReview);
 
 /**
  * @swagger
- * /reviews/{reviewid}:
+ * /api/reviews/{reviewid}:
  *   delete:
  *     summary: 리뷰 삭제 API
  *     tags: [Reviews]
@@ -169,7 +169,7 @@ router.delete('/:reviewid', authByToken, reviewController.deleteReview);
 
 /**
  * @swagger
- * /reviews/drugs/{drugid}:
+ * /api/reviews/drugs/{drugid}:
  *   get:
  *     summary: 해당 약의 모든 리뷰 조회 API
  *     tags: [Reviews]
@@ -211,7 +211,7 @@ router.get('/drugs/:drugid', reviewController.getDrugAllReview);
 
 /**
  * @swagger
- * /reviews/users/:
+ * /api/reviews/users/:
  *   get:
  *     summary: 해당 유저의 모든 리뷰 조회 API
  *     tags: [Reviews]
