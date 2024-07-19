@@ -10,8 +10,7 @@ router.put('/:id', updateUsername);
 router.put('/:id/profile-picture/memory', uploadToMemory.single('profilePicture'), updateProfilePictureMemory);
 router.put('/:id/profile-picture/s3', uploadToS3.single('profilePicture'), updateProfilePictureS3);
 
-/**
- * @swagger
+/*
  * uploadToMemory.single 또는 uploadToS3.single을 이용할 때는 req.body의 key값을 'profilePicture'로 하고, value를 이미지 파일로 하면 됩니다.
 */
 

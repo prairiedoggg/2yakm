@@ -21,10 +21,10 @@ class MydrugService {
 
     try {                  
         const query = `
-        INSERT INTO mydrug (mydrugid, userid, drugname, expiredat)
-        VALUES ($1, $2, $3, $4) RETURNING drugname, expiredat`;
+        INSERT INTO mydrug (mydrugid, userid, drugname, expiredat, created_at)
+        VALUES ($1, $2, $3, $4, $5) RETURNING drugname, expiredat`;
       
-        const values = [mydrugId, userId, updateData.drugname, updateData.expiredat];
+        const values = [mydrugId, userId, updateData.drugname, updateData.expiredat, updateData.created_at];
         const result = await client.query(query, values);
         // Assuming you want to return a string
         return `Drug added: ${result.rows[0].drugname}, Expires at: ${result.rows[0].expiredat}`;
@@ -45,9 +45,9 @@ class MydrugService {
     
     async updateDrug(mydrugId: string, updateData: any): Promise<string> {    
       const result = await pool.query(
-        `UPDATE mydrug SET drugname = $1, expiredat = $2 WHERE mydrugid = $3 
+        `UPDATE mydrug SET drugname = $1, expiredat = $2, created_at = $3 WHERE mydrugid = $4 
         RETURNING mydrugid, drugname, expiredat`,
-        [updateData.drugname, updateData.expiredat, mydrugId]
+        [updateData.drugname, updateData.expiredat, updateData.created_at, mydrugId]
       );
     
       if (result.rows.length === 0) {

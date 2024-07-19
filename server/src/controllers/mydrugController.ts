@@ -3,8 +3,7 @@ const { MydrugService } = require('../services/mydrugService');
 const mydrugService = new MydrugService();
 
 
-  /**
- * @swagger
+  /*
  * addMydrug와 getMyDrugs(C,R)의 경우에는 req.params.userid 사용  
  * updateMyDrug, deleteMyDrug(U,D)의 경우에는 req.params.mydrugid 사용
 */
@@ -24,9 +23,8 @@ const addMyDrug = async (req: Request, res: Response) => {
     }
   };
   
-  /**
-   * @swagger
-   * addMyDrug에서 updateData에 들어가는 req.body는 json형식으로 {"drugname":"nameofdrug", "expiredat":"2024-07-19"} 와 같이 써주세요. 
+  /*
+   * addMyDrug에서 updateData에 들어가는 req.body는 json형식으로 {"drugname":"nameofdrug", "expiredat":"2025-07-19", "created_at":"2024-07-19"} 와 같이 써주세요. 
   */
   
   
@@ -45,9 +43,8 @@ const addMyDrug = async (req: Request, res: Response) => {
     }
   };
   
-  /**
-   * @swagger
-   * updateMyDrug에서 updateData에 들어가는 req.body는 json형식으로 {"drugname":"nameofdrug", "expiredat":"2024-07-19"} 와 같이 써주세요. 
+  /*
+   * updateMyDrug에서 updateData에 들어가는 req.body는 json형식으로 {"drugname":"nameofdrug", "expiredat":"2025-07-19", "created_at":"2024-07-19"} 와 같이 써주세요.
   */
   
   const getMyDrugs = async (req: Request, res: Response) => {
