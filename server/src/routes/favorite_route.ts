@@ -6,7 +6,36 @@ const router = Router();
 
 /**
  * @swagger
- * /api/favorites:
+ * /api/favorites/{drugid}:
+ *   post:
+ *     summary: 좋아요 추가, 취소 API
+ *     description: API를 요청 할 때 좋아요가 없으면 좋아요가 추가되고, 좋아요가 있으면 좋아요가 취소됩니다.
+ *     tags: [Favorites]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: drugid
+ *         schema:
+ *           type: integer
+ *         required: true
+ *         description: 좋아요가 추가, 취소될 drug id 값을 입력해 주세요.
+ *     responses:
+ *       200:
+ *         description: 좋아요를 취소했습니다.
+ *       201:
+ *         description: 좋아요를 추가했습니다.
+ *       401:
+ *         description: 토큰이 없습니다
+ *       500:
+ *         description: Internal Server Error
+ */
+// 좋아요 추가, 취소
+router.post('/:drugid', authByToken, favoriteController.addCancelFavoriteDrug);
+
+/**
+ * @swagger
+ * /api/favorites/user:
  *   get:
  *     summary: 유저의 즐겨 찾는 약 조회 API
  *     tags: [Favorites]
@@ -83,36 +112,7 @@ const router = Router();
  *         description: Internal Server Error
  */
 // 즐겨 찾는 약 검색
-router.get('/', authByToken, favoriteController.searchFavoriteDrug);
-
-/**
- * @swagger
- * /api/favorites/{drugid}:
- *   post:
- *     summary: 좋아요 추가, 취소 API
- *     description: API를 요청 할 때 좋아요가 없으면 좋아요가 추가되고, 좋아요가 있으면 좋아요가 취소됩니다.
- *     tags: [Favorites]
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - in: path
- *         name: drugid
- *         schema:
- *           type: integer
- *         required: true
- *         description: 좋아요가 추가, 취소될 drug id 값을 입력해 주세요.
- *     responses:
- *       200:
- *         description: 좋아요를 취소했습니다.
- *       201:
- *         description: 좋아요를 추가했습니다.
- *       401:
- *         description: 토큰이 없습니다
- *       500:
- *         description: Internal Server Error
- */
-// 좋아요 추가, 취소
-router.post('/:drugid', authByToken, favoriteController.addCancelFavoriteDrug);
+router.get('/user', authByToken, favoriteController.searchFavoriteDrug);
 
 /**
  * @swagger
