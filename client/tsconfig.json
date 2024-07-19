@@ -1,4 +1,5 @@
 {
+  "include": ["custom.d.ts"],
   "files": [],
   "references": [
     {
@@ -9,6 +10,7 @@
     }
   ],
   "compilerOptions": {
+    "types": ["vite-plugin-svgr/client"],
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
     "module": "ESNext",
