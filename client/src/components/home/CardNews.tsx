@@ -7,7 +7,8 @@ History
 Date        Author   Status    Description
 2024.07.16  임지영   Created
 2024.07.17  임지영   Modified    카드뉴스 width 높임
-2024.07.18  임지영   Modified     tsx
+2024.07.18  임지영   Modified    tsx
+2024.07.18  임지영   Modified    style 변경
 */
 
 import { useNavigate } from 'react-router-dom';
@@ -18,16 +19,17 @@ const Container = styled.div`
 `;
 
 const Title = styled.div`
-  font-size: 1.6rem;
-  font-weight: 800;
+  font-size: 1.5rem;
+  font-weight: 700;
 `;
 
 const News = styled.img.attrs({
   src: `/img/news.png`,
   alt: 'News Icon'
 })`
-  width: 6vw;
+  width: 5.5vw;
   height: auto;
+  margin-top: 2%;
   margin-right: 2%;
 `;
 
