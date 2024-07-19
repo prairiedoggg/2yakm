@@ -51,9 +51,9 @@ exports.loginService = async (email: string, password: string): Promise<{ token:
       throw createError('InvalidCredentials', '비밀번호가 틀렸습니다.', 401);
     }
 
-    const payload = { id: user.id, email: user.email, role: user.role };
-    const token = jwt.sign(payload, process.env.SECRET_KEY, { expiresIn: '1h' });
-    const refreshToken = jwt.sign({ id: user.id }, process.env.REFRESH_TOKEN_SECRET_KEY, { expiresIn: '7d' });
+    const payload = { id: user.userid, email: user.email};
+    const token = jwt.sign(payload, process.env.SECRET_KEY, { expiresIn: '30m' });
+    const refreshToken = jwt.sign({ id: user.userid }, process.env.REFRESH_TOKEN_SECRET_KEY, { expiresIn: '7d' });
 
     return { token, refreshToken };
   } catch (error) {
@@ -237,7 +237,7 @@ exports.refreshTokenService = async (refreshToken: string): Promise<string> => {
 
 // 카카오 인증 (로그인 및 회원가입)
 exports.kakaoAuthService = async (code: string): Promise<{ token: string; refreshToken: string }> => {
-  const redirectUri = 'http://localhost:3000/auth/kakao/callback';
+  const redirectUri = 'http://localhost:3000/api/auth/kakao/callback';
   const kakaoTokenUrl = `https://kauth.kakao.com/oauth/token`;
 
   try {
@@ -289,8 +289,8 @@ exports.kakaoAuthService = async (code: string): Promise<{ token: string; refres
         user = newUserResult.rows[0];
       }
 
-      const payload = { id: user.id, email: user.email };
-      const token = jwt.sign(payload, process.env.SECRET_KEY, { expiresIn: '1h' });
+      const payload = { id: user.userid, email: user.email };
+      const token = jwt.sign(payload, process.env.SECRET_KEY, { expiresIn: '30m' });
       const refreshToken = jwt.sign({ id: user.id }, process.env.REFRESH_TOKEN_SECRET_KEY, { expiresIn: '7d' });
 
       return { token, refreshToken };
@@ -300,6 +300,71 @@ exports.kakaoAuthService = async (code: string): Promise<{ token: string; refres
   } catch (error) {
     console.error('Kakao authentication error:', error);
     throw createError('KakaoAuthError', '카카오 인증 실패', 500);
+  }
+};
+
+// 구글 로그인
+exports.googleAuthService = async (code: string): Promise<{ token: string; refreshToken: string }> => {
+  const tokenUrl = 'https://oauth2.googleapis.com/token';
+  const userInfoUrl = 'https://www.googleapis.com/oauth2/v2/userinfo';
+
+  try {
+    const tokenResponse = await axios.post(tokenUrl, null, {
+      params: {
+        code,
+        client_id: process.env.GOOGLE_CLIENT_ID,
+        client_secret: process.env.GOOGLE_CLIENT_SECRET,
+        redirect_uri: 'http://localhost:3000/api/auth/google/callback',
+        grant_type: 'authorization_code',
+      },
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+    });
+
+    const { access_token } = tokenResponse.data;
+    console.log({access_token});
+    const userInfoResponse = await axios.get(userInfoUrl, {
+      headers: {
+        Authorization: `Bearer ${access_token}`,
+      },
+    });
+
+    const { id, email, name } = userInfoResponse.data;
+
+    if (!email) {
+      throw createError('GoogleAuthError', '구글에서 사용자 정보가 충분하지 않습니다.', 400);
+    }
+
+    const client = await pool.connect();
+    try {
+      const checkUserQuery = 'SELECT * FROM users WHERE googleid = $1';
+      const checkUserValues = [id];
+      const existingUserResult = await client.query(checkUserQuery, checkUserValues);
+
+      let user;
+      if (existingUserResult.rows.length > 0) {
+        user = existingUserResult.rows[0];
+      } else {
+        const insertUserQuery = `
+          INSERT INTO users (email, username, password, role, googleid) VALUES ($1, $2, $3, $4, $5)
+          RETURNING *
+        `;
+        const insertUserValues = [email, name, 'google_auth_password', false, id];
+        const newUserResult = await client.query(insertUserQuery, insertUserValues);
+        user = newUserResult.rows[0];
+      }
+
+      const payload = { id: user.userid, email: user.email };
+      const token = jwt.sign(payload, process.env.SECRET_KEY, { expiresIn: '30m' });
+      const refreshToken = jwt.sign({ id: user.userid }, process.env.REFRESH_TOKEN_SECRET_KEY, { expiresIn: '7d' });
+
+      return { token, refreshToken };
+    } finally {
+      client.release();
+    }
+  } catch (error) {
+    throw createError('GoogleAuthError', '구글 인증 실패', 500);
   }
 };
 
@@ -351,7 +416,7 @@ exports.requestPasswordService = async (email: string): Promise<void> => {
       throw createError('User Not Found', '사용자를 찾을 수 없습니다', 404);
     }
 
-    const token = jwt.sign({ id: user.userid, email: user.email }, process.env.SECRET_KEY, { expiresIn: '20m'});
+    const token = jwt.sign({ id: user.userid, email: user.email }, process.env.SECRET_KEY, { expiresIn: '3m'});
     const mailOptions = {
       from: process.env.EMAIL_USER,
       to: email,

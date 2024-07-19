@@ -1,5 +1,5 @@
 const express = require('express');
-const { loginController, signupController, refreshTokenController, kakaoAuthController, logoutController, changePasswordController, requestPasswordController, resetPasswordController } = require('../controllers/authController');
+const { loginController, signupController, refreshTokenController, kakaoAuthController, logoutController, changePasswordController, requestPasswordController, resetPasswordController, googleAuthController } = require('../controllers/authController');
 const router = express.Router();
 
 /**
@@ -107,6 +107,35 @@ router.post('/signup', signupController);
  *         description: 서버 오류
  */
 router.get('/kakao/callback', kakaoAuthController);
+
+/**
+ * @swagger
+ * /api/auth/google/callback:
+ *   get:
+ *     summary: 구글 로그인 콜백
+ *     tags: [Auth]
+ *     parameters:
+ *       - name: code
+ *         in: query
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: 로그인 성공
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                 token:
+ *                   type: string
+ *       500:
+ *         description: 서버 오류
+ */
+router.get('/google/callback', googleAuthController);
 
 /**
  * @swagger
