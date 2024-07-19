@@ -176,10 +176,6 @@ router.delete('/:reviewid', authByToken, reviewController.deleteReview);
  *             schema:
  *               type: object
  *               properties:
- *                 totalCount:
- *                   type: integer
- *                   description: Total number of reviews
- *                   example: 2
  *                 reviews:
  *                   type: array
  *                   items:

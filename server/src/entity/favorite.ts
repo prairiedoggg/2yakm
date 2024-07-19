@@ -1,6 +1,6 @@
 export interface Favorite {
   favoriteid?: number;
   drugid: number;
-  email: string;
+  userid: string;
   created_at?: Date;
 }

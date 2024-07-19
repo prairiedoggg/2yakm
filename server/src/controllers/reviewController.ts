@@ -3,8 +3,7 @@ const reviewService = require('../services/reviewService');
 
 interface CustomRequest extends Request {
   user: {
-    userid: string;
-    role: string;
+    id: string;
   };
 }
 
@@ -17,7 +16,7 @@ exports.createReview = async (
   const { drugid } = req.params;
   const { content } = req.body;
 
-  const { userid } = req.user;
+  const userid = req.user.id;
 
   if (!content) {
     res.status(400).send('리뷰 내용을 입력해 주세요.');
@@ -44,7 +43,7 @@ exports.updateReview = async (
   const { reviewid } = req.params;
   const { content } = req.body;
 
-  const { userid } = req.user;
+  const userid = req.user.id;
 
   if (!content) {
     res.status(400).send('수정할 리뷰 내용을 입력해 주세요.');
@@ -68,7 +67,7 @@ exports.deleteReview = async (
 ): Promise<void> => {
   const { reviewid } = req.params;
 
-  const { userid } = req.user;
+  const userid = req.user.id;
 
   try {
     const review = await reviewService.deleteReview(reviewid, userid);
@@ -101,7 +100,7 @@ exports.getUserAllReview = async (
   res: Response,
   next: NextFunction
 ): Promise<void> => {
-  const { userid } = req.user;
+  const userid = req.user.id;
   const limit = parseInt(req.query.limit as string, 10) || 10;
   const offset = parseInt(req.query.offset as string, 10) || 0;
   const sortedBy = (req.query.sortedBy as string) || 'created_at';

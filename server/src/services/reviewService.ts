@@ -111,7 +111,7 @@ exports.deleteReview = async (
 // 해당 약의 모든 리뷰 조회 서비스
 exports.getDrugAllReview = async (
   drugid: number
-): Promise<totalCountAndData> => {
+): Promise<(typeof Review)[]> => {
   try {
     const query = `
       SELECT 
@@ -136,11 +136,7 @@ exports.getDrugAllReview = async (
     const values = [drugid];
     const { rows } = await pool.query(query, values);
 
-    return {
-      totalCount: rows.length,
-      totalPages: 1,
-      data: rows
-    };
+    return rows;
   } catch (error: any) {
     throw error;
   }

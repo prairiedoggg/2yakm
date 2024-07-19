@@ -3,8 +3,7 @@ const favoriteService = require('../services/favoriteService');
 
 interface CustomRequest extends Request {
   user: {
-    userid: string;
-    role: string;
+    id: string;
   };
 }
 
@@ -14,7 +13,7 @@ exports.searchFavoriteDrug = async (
   res: Response,
   next: NextFunction
 ): Promise<void> => {
-  const { userid } = req.user;
+  const userid = req.user.id;
   const limit = parseInt(req.query.limit as string, 10) || 10;
   const offset = parseInt(req.query.offset as string, 10) || 0;
   const sortedBy = (req.query.sortedBy as string) || 'created_at';
@@ -41,7 +40,7 @@ exports.addCancelFavoriteDrug = async (
   next: NextFunction
 ): Promise<void> => {
   const { drugid } = req.params;
-  const { userid } = req.user;
+  const userid = req.user.id;
 
   try {
     const favorite = await favoriteService.addCancelFavoriteDrug(
@@ -67,7 +66,7 @@ exports.userFavoriteStatus = async (
   next: NextFunction
 ): Promise<void> => {
   const { drugid } = req.params;
-  const { userid } = req.user;
+  const userid = req.user.id;
 
   try {
     const favorite = await favoriteService.userFavoriteStatus(drugid, userid);
