@@ -8,6 +8,7 @@ const cookieParser = require('cookie-parser');
 const mypageRouter = require('./routes/mypage_route');
 const authRouter = require('./routes/auth_route');
 const uploadRoutes = require('./routes/uploadRoutes');
+const mydrugRouter = require('./routes/mydrug_route');
 const app = express();
 
 const port = process.env.PORT || 3000;
@@ -31,7 +32,7 @@ app.use(cookieParser());
 app.use('/auth', authRouter);
 app.use('/mypage', mypageRouter);
 app.use('/api/upload', uploadRoutes);
-
+app.use('/mydrugs', mydrugRouter);
 
 app.listen(port, () => {
   console.log(`Server is running http://localhost:${port}`);

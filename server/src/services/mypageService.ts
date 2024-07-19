@@ -42,6 +42,7 @@ class MypageService {
     }
     return result.rows[0].profileimg;
   }
+  
 }
 
 module.exports = { MypageService };

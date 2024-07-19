@@ -30,6 +30,12 @@ const updateUsername = async (req: Request, res: Response) => {
     }
   }
 };
+
+/**
+ * @swagger
+ * updateUsername에서 updateData에 들어가는 req.body는 json형식으로 {"username":"newusername"} 과 같이 써주세요. 
+*/
+
  
 
 const updateProfilePictureMemory = async (req: Request , res: Response) => {
@@ -62,9 +68,10 @@ const updateProfilePictureS3 = async (req: Request, res: Response) => {
   }
 };
 
+
 module.exports = {
   getUserProfile,
   updateUsername,
   updateProfilePictureMemory,
-  updateProfilePictureS3,
+  updateProfilePictureS3, 
 };
