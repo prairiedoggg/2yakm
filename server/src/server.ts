@@ -14,10 +14,13 @@ const authRouter = require('./routes/auth_route');
 const calendarRouter = require('./routes/calendar_route');
 const alarmRouter = require('./routes/alarm_route');
 const favoriteRouter = require('./routes/favorite_route');
+const mypageRouter = require('./routes/mypage_route');
+const mydrugRouter = require('./routes/mydrug_route');
 
 dotenv.config();
 
 const app = express();
+
 const port = process.env.PORT || 3000;
 app.use(express.static(path.join(__dirname, 'public')));
 // CORS
@@ -55,6 +58,8 @@ app.use('/api/auth', authRouter);
 app.use('/api/calenders', calendarRouter);
 app.use('/api/alarms', alarmRouter);
 app.use('/api/favorites', favoriteRouter);
+app.use('/mypage', mypageRouter);
+app.use('/mydrugs', mydrugRouter);
 
 app.listen(port, () => {
   console.log(`Server is running http://localhost:${port}`);
