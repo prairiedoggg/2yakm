@@ -14,7 +14,7 @@ import styled from 'styled-components';
 const FooterContainer = styled.footer`
   background-color: #f8f8f8;
   padding: 20px;
-  padding-bottom: 120px;
+  padding-bottom: 110px;
 
   & p {
     color: #242323;

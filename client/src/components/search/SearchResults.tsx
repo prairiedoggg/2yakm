@@ -8,9 +8,11 @@
  * 2024.07.16  민선옥    Created
  * 2024.07.17  민선옥    PillMore추가
  * 2024.07.19  민선옥    tsx
+ * 2024.07.19  민선옥    tagpage 연결
  */
 
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import PillExp from './PillExp';
 import Review from './Review';
@@ -30,8 +32,10 @@ const PillHeader = styled.div`
 
 const PillTitle = styled.div`
   & p {
-    margin-top: 10px;
-    font-size: 14px;
+    padding-top: 5px;
+    padding-bottom: 10px;
+    font-size: 12px;
+    font-weight: 300;
   }
   & span {
     color: #696969;
@@ -40,7 +44,7 @@ const PillTitle = styled.div`
   }
 `;
 
-const Chips = styled.div`
+const Tag = styled.div`
   display: flex;
   width: 100%;
   height: 30px;
@@ -55,6 +59,7 @@ const Chips = styled.div`
     line-height: 25px;
     border-radius: 5px;
     background-color: var(--main-color);
+    cursor: pointer;
   }
 `;
 
@@ -91,6 +96,11 @@ const Contants = styled.div``;
 
 const SearchResults: React.FC = () => {
   const [activeTab, setActiveTab] = useState<number>(0);
+  const navigate = useNavigate();
+
+  const handleTagClick = (tag: string) => {
+    navigate(`/search/tag/${tag}`);
+  };
 
   return (
     <SearchResultsContainer>
@@ -101,13 +111,12 @@ const SearchResults: React.FC = () => {
             <h3>타이레놀정500밀리그람 (아세트아미노펜)</h3>
             <span>Tylenol Tablet 500mg</span>
             <p>한국존슨앤드존슨판매(유)</p>
-            <span>Johnson & Johnson Consumer Health Korea</span>
           </PillTitle>
-          <Chips>
-            <p>두통</p>
-            <p>신경통</p>
-            <p>근육통</p>
-          </Chips>
+          <Tag>
+            <p onClick={() => handleTagClick('두통')}>두통</p>
+            <p onClick={() => handleTagClick('신경통')}>신경통</p>
+            <p onClick={() => handleTagClick('근육통')}>근육통</p>
+          </Tag>
         </section>
       </PillHeader>
       <Exp>※ 태그들을 클릭해 관련 증상들을 모아보세요.</Exp>
