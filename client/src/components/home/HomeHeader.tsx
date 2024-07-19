@@ -23,7 +23,7 @@ const MainHeaderContainer = styled.div`
 `;
 
 const Logo = styled.img.attrs({
-  src: `/img/logo.png`,
+  src: `/img/logo.svg`,
   alt: 'Logo'
 })`
   width: 300px;
@@ -40,7 +40,7 @@ const MainHeader: React.FC = () => {
     <MainHeaderContainer>
       <Logo />
       <SearchContainer>
-        {/* <SearchBox placeholder='이미지 또는 이름 검색' /> */}
+        {/* <SearchBox/> */}
       </SearchContainer>
     </MainHeaderContainer>
   );

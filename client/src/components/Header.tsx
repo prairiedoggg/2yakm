@@ -13,8 +13,9 @@ import React from 'react';
 import styled from 'styled-components';
 
 const HeaderContainer = styled.header`
-  background-color: #f8f8f8;
+  background-color: #ffffff;
   padding: 15px;
+  padding-bottom: 8px;
 `;
 
 const Logo = styled.img`
@@ -24,7 +25,7 @@ const Logo = styled.img`
 const Header: React.FC = () => {
   return (
     <HeaderContainer>
-      <Logo src={`/img/logo.png`} alt='Logo' />
+      <Logo src={`/img/logo_not_chicken.svg`} alt='Logo' />
     </HeaderContainer>
   );
 };

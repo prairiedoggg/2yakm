@@ -13,6 +13,7 @@ Date        Author   Status    Description
 import styled from 'styled-components';
 import MainHeader from './HomeHeader';
 import CardNews from './CardNews';
+import Footer from '../Footer';
 import Nav from '../Nav';
 
 const MainContainer = styled.div`
@@ -25,6 +26,7 @@ const Home: React.FC = () => {
       <MainHeader />
       <CardNews />
       <Nav />
+      <Footer/>
     </MainContainer>
   );
 };

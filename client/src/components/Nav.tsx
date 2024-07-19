@@ -26,6 +26,7 @@ const NavContainer = styled.nav`
     align-items: center;
     margin: auto;
     padding: 0;
+    height: 100%;
     & li {
       display: flex;
       flex-direction: column;
@@ -36,10 +37,10 @@ const NavContainer = styled.nav`
       &:hover {
         cursor: pointer;
         & img {
-          fill: #ffe823;
+          filter: var(--main-color);
         }
         & p {
-          color: #ffe823;
+          color: var(--main-color);
         }
       }
     }

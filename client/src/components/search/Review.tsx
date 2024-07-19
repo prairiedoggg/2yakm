@@ -17,7 +17,8 @@ const ReviewContainer = styled.div`
 `;
 
 const WriteReview = styled.button`
-  border:1px solid ;`
+  border: 1px solid var(--secondary-color);
+`;
 
 const ReviewList = styled.ul``;  
 
