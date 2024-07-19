@@ -22,6 +22,16 @@ const TagTitle = styled.div`
   background-color: var(--main-color);
 `;
 
+const ListContainer = styled.div``;
+
+const PillList = styled.ul``;
+
+const PillItem = styled.li``;
+
+const PillImg = styled.img``;
+
+const PillText = styled.div``;
+
 const TagPage: React.FC = () => {
   const { tag } = useParams<{ tag: string }>();
 
@@ -29,6 +39,18 @@ const TagPage: React.FC = () => {
     <>
       <Header />
       <TagTitle>{tag}</TagTitle>
+      <ListContainer>
+        <p>즐겨찾기 개수로 정렬되었습니다.</p>
+        <PillList>
+          <PillItem>
+            <PillImg></PillImg>
+            <PillText>
+              <h3>타이레놀</h3>
+              
+            </PillText>
+          </PillItem>
+        </PillList>
+      </ListContainer>
       <Nav />
     </>
   );
