@@ -30,7 +30,6 @@ const addMyDrug = async (req: Request, res: Response) => {
   */
   
   
-  
   const updateMyDrug = async (req: Request, res: Response) => {
     try {
       const mydrugId = req.params.mydrugid;
@@ -54,8 +53,11 @@ const addMyDrug = async (req: Request, res: Response) => {
   const getMyDrugs = async (req: Request, res: Response) => {
     try {
       const userId = req.params.userid;
-      const updateData = req.body;
-      const updatedUser = await mydrugService.getDrugs(userId, updateData);
+      const limit = parseInt(req.query.limit as string, 10) || 10;
+      const offset = parseInt(req.query.offset as string, 10) || 0;
+      const sortedBy = (req.query.sortedBy as string) || 'created_at';
+      const order = (req.query.order as string)?.toUpperCase() || 'DESC';
+      const updatedUser = await mydrugService.getDrugs(userId, limit, offset, sortedBy, order);
       res.status(200).json(updatedUser);
     } catch (error) {
       if (error instanceof Error) {
@@ -81,8 +83,6 @@ const addMyDrug = async (req: Request, res: Response) => {
     }}
   
   
-
-
   module.exports = {
     addMyDrug,
     updateMyDrug,

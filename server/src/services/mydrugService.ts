@@ -1,5 +1,11 @@
 const { pool } = require('../db');
 
+interface PaginatedResult<T> {
+  totalCount: number;
+  totalPages: number;
+  data: T[];
+}
+
 class MydrugService {
 
   async addDrug(userId: string, updateData: any): Promise<string> {    
@@ -50,32 +56,44 @@ class MydrugService {
       return result.rows[0];
     }
 
-    async getDrugs(userId: string, offset: number, limit: number): Promise<any[]> {
-      const client = await pool.connect();
-  
+    async getDrugs(userId: string, limit: number, offset: number, sortedBy: string, order: string): Promise<PaginatedResult<{ mydrugid: string; drugname: string; expiredat: string }>> {
+            
       try {
+        // 전체 리뷰 개수 조회
+        const countQuery = `
+        SELECT COUNT(*) AS total
+        FROM mydrug
+        WHERE userId = $1
+    `;
+        const countValues = [userId];
+        const countResults = await pool.query(countQuery, countValues);
+        const totalCount = parseInt(countResults.rows[0].total, 10);
+        const totalPages = Math.ceil(totalCount / limit);
+    
         const query = `
-          SELECT mydrugid, drugname, expiredat FROM mydrug
-          WHERE userid = $1
-          ORDER BY drugname ASC
-          OFFSET $2 LIMIT $3`;
-  
-        const values = [userId, offset, limit];
-        const result = await client.query(query, values);
-  
-        return result.rows;
-      } catch (err) {
-        if (err instanceof Error) {
-          console.error('Error executing query', err.stack);
-          throw new Error('Failed to get drugs: ' + err.message);
-        } else {
-          console.error('Unknown error', err);
-          throw new Error('Failed to get drugs due to an unknown error');
-        }
-      } finally {
-        client.release();
+          SELECT 
+            mydrugid,drugname,expiredat, created_at
+          FROM 
+            mydrug
+          WHERE 
+            userid = $1
+          ORDER BY ${sortedBy} ${order}
+          LIMIT $2 OFFSET $3
+            `;
+    
+        const values = [userId, limit, offset];
+        const { rows } = await pool.query(query, values);
+    
+        return {
+          totalCount,
+          totalPages,
+          data: rows
+        };
+      } catch (error: any) {
+        throw error;
       }
     }
+
 
   async deleteDrug(mydrugId: string, updateData: any): Promise<string> {
     const client = await pool.connect();
