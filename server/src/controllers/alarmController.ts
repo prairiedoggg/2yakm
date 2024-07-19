@@ -14,8 +14,8 @@ export const createAndScheduleAlarm = async (req: CustomRequest, res: Response) 
       return res.status(400).json({ message: '유효하지 않은 날짜입니다.' });
     }
     
-    if (!Array.isArray(times) || times.length === 0 || !times.every(time => /^\d{2}:\d{2}$/.test(time))) {
-      return res.status(400).json({ message: '유효하지 않은 시간 형식입니다. HH:MM 형식의 배열이어야 합니다.' });
+    if (!Array.isArray(times) || times.length === 0 || !times.every(time => /^\d{2}:\d{2}$/.test(time.time))) {
+      return res.status(400).json({ message: '유효하지 않은 시간 형식입니다. {time: "HH:MM", status: boolean} 형식의 배열이어야 합니다.' });
     }
     
     const alarm = await createAlarm({
@@ -24,7 +24,6 @@ export const createAndScheduleAlarm = async (req: CustomRequest, res: Response) 
       date: alarmDate,
       times,
       message,
-      alarmStatus: true,
     });
 
     res.status(201).json(alarm);
@@ -34,21 +33,9 @@ export const createAndScheduleAlarm = async (req: CustomRequest, res: Response) 
   }
 };
 
-export const getUserAlarmsController = async (req: CustomRequest, res: Response) => {
-  const userId = req.user?.email;
-
-  try {
-    const alarms = await getAlarmsByUserId(userId);
-    res.status(200).json(alarms);
-  } catch (error) {
-    console.error('사용자 알람 조회 오류', error);
-    res.status(500).json({ message: '사용자 알람 조회 오류 발생' });
-  }
-};
-
 export const updateAlarmController = async (req: CustomRequest, res: Response) => {
   const { id } = req.params;
-  const { name, date, times, message, alarmStatus } = req.body;
+  const { name, date, times, message } = req.body;
   const userId = req.user?.email;
 
   if (!userId) {
@@ -61,11 +48,11 @@ export const updateAlarmController = async (req: CustomRequest, res: Response) =
       return res.status(400).json({ message: '유효하지 않은 날짜입니다.' });
     }
 
-    if (times && (!Array.isArray(times) || times.length === 0 || !times.every(time => /^\d{2}:\d{2}$/.test(time)))) {
-      return res.status(400).json({ message: '유효하지 않은 시간 형식입니다. HH:MM 형식의 배열이어야 합니다.' });
+    if (times && (!Array.isArray(times) || times.length === 0 || !times.every(time => /^\d{2}:\d{2}$/.test(time.time)))) {
+      return res.status(400).json({ message: '유효하지 않은 시간 형식입니다. {time: "HH:MM", status: boolean} 형식의 배열이어야 합니다.' });
     }
 
-    const updatedAlarm = await updateAlarm(id, { name, date: alarmDate, times, message, alarmStatus, userId });
+    const updatedAlarm = await updateAlarm(id, { name, date: alarmDate, times, message, userId });
     if (updatedAlarm) {
       res.status(200).json(updatedAlarm);
     } else {
@@ -89,5 +76,17 @@ export const deleteAlarmController = async (req: CustomRequest, res: Response) =
   } catch (error) {
     console.error('알람 삭제 오류', error);
     res.status(500).json({ message: '알람 삭제 오류 발생' });
+  }
+};
+
+export const getUserAlarmsController = async (req: CustomRequest, res: Response) => {
+  const userId = req.user?.email;
+
+  try {
+    const alarms = await getAlarmsByUserId(userId);
+    res.status(200).json(alarms);
+  } catch (error) {
+    console.error('사용자 알람 조회 오류', error);
+    res.status(500).json({ message: '사용자 알람 조회 오류 발생' });
   }
 };
