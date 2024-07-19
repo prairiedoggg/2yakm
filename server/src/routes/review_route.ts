@@ -216,6 +216,27 @@ router.get('/drugs/:drugid', reviewController.getDrugAllReview);
  *     tags: [Reviews]
  *     security:
  *       - BearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *         description: 글을 몇 개씩 보여줄지 정합니다. (기본값 10)
+ *       - in: query
+ *         name: offset
+ *         schema:
+ *           type: integer
+ *         description: 몇 번째 글 부터 보여줄지 정합니다. (0이면 1~10, 10이면 11~20)
+ *       - in: query
+ *         name: sortedBy
+ *         schema:
+ *           type: string
+ *         description: 정렬할 필드명을 입력해 주세요. (created_at, drugname,... 기본값은 created_at)
+ *       - in: query
+ *         name: order
+ *         schema:
+ *           type: string
+ *         description: 정렬 순서입니다. (ASC, DESC, 대소문자 구분 안함, 기본값은 DESC)
  *     responses:
  *       200:
  *         description: 해당 유저의 모든 리뷰가 표시됩니다.
@@ -226,9 +247,13 @@ router.get('/drugs/:drugid', reviewController.getDrugAllReview);
  *               properties:
  *                 totalCount:
  *                   type: integer
- *                   description: Total number of reviews
+ *                   description: 해당 유저의 전체 리뷰 수
  *                   example: 2
- *                 reviews:
+ *                 totalPages:
+ *                   type: integer
+ *                   description: 전체 페이지 수
+ *                   example: 1
+ *                 data:
  *                   type: array
  *                   items:
  *                     type: object
@@ -239,12 +264,6 @@ router.get('/drugs/:drugid', reviewController.getDrugAllReview);
  *                         type: integer
  *                       drugname:
  *                         type: string
- *                       email:
- *                         type: string
- *                       username:
- *                         type: string
- *                       role:
- *                         type: boolean
  *                       content:
  *                         type: string
  *                       created_at:

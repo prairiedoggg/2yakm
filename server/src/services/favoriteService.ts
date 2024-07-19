@@ -1,35 +1,58 @@
+import { CustomRequest } from '../types/express';
+
 const { pool } = require('../db');
 const { Favorite } = require('../entity/favorite');
 const { createError } = require('../utils/error');
 
 interface totalCountAndData {
   totalCount: number;
+  totalPages: number;
   data: (typeof Favorite)[];
 }
 
 // 즐겨 찾는 약 검색 서비스
 exports.searchFavoriteDrug = async (
-  email: string
+  email: string,
+  limit: number,
+  offset: number,
+  sortedBy: string,
+  order: string
 ): Promise<totalCountAndData | null> => {
   try {
+    // 전체 리뷰 개수 조회
+    const countQuery = `
+    SELECT COUNT(*) AS total
+    FROM favorites
+    WHERE email = $1
+`;
+    const countValues = [email];
+    const countResults = await pool.query(countQuery, countValues);
+    const totalCount = parseInt(countResults.rows[0].total, 10);
+    const totalPages = Math.ceil(totalCount / limit);
+
     const query = `
     SELECT 
+      favorites.favoriteid,
       favorites.email,
       favorites.drugid,
       drugs.drugname,
-      drugs.efficacy
+      drugs.efficacy,
+      favorites.created_at
     FROM
       favorites
     JOIN
       drugs ON favorites.drugid = drugs.drugid
     WHERE favorites.email = $1
+    ORDER BY ${sortedBy} ${order}
+    LIMIT $2 OFFSET $3;
     `;
 
-    const values = [email];
+    const values = [email, limit, offset];
     const { rows } = await pool.query(query, values);
 
     return {
-      totalCount: rows.length,
+      totalCount,
+      totalPages,
       data: rows
     };
   } catch (error: any) {
@@ -75,6 +98,27 @@ exports.addCancelFavoriteDrug = async (
     return {
       message: 'added',
       data: addResult.rows[0]
+    };
+  } catch (error: any) {
+    throw error;
+  }
+};
+
+// 좋아요를 눌렀는지 확인하는 서비스
+exports.userFavoriteStatus = async (
+  drugid: number,
+  email: string
+): Promise<{ status: boolean }> => {
+  try {
+    const query = `
+    SELECT * FROM favorites
+    WHERE drugid = $1 AND email = $2
+    `;
+    const values = [drugid, email];
+    const { rows } = await pool.query(query, values);
+
+    return {
+      status: rows.length > 0
     };
   } catch (error: any) {
     throw error;
