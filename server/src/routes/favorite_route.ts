@@ -116,7 +116,7 @@ router.post('/:drugid', authByToken, favoriteController.addCancelFavoriteDrug);
 
 /**
  * @swagger
- * /api/favorites/status/user/{drugid}:
+ * /api/favorites/user/{drugid}:
  *   get:
  *     summary: 접속한 유저가 좋아요를 눌렀는지 확인하는 API
  *     tags: [Favorites]
@@ -147,10 +147,37 @@ router.post('/:drugid', authByToken, favoriteController.addCancelFavoriteDrug);
  *         description: Internal Server Error
  */
 // 좋아요를 눌렀는지 확인
-router.get(
-  '/status/user/:drugid',
-  authByToken,
-  favoriteController.userFavoriteStatus
-);
+router.get('/user/:drugid', authByToken, favoriteController.userFavoriteStatus);
+
+/**
+ * @swagger
+ * /api/favorites/count/{drugid}:
+ *   get:
+ *     summary: 해당 약의 좋아요 수 조회 API
+ *     tags: [Favorites]
+ *     parameters:
+ *       - in: path
+ *         name: drugid
+ *         schema:
+ *           type: integer
+ *         required: true
+ *         description: 좋아요 수를 조회할 drug id 값을 입력해 주세요.
+ *     responses:
+ *       200:
+ *         description: 해당 약의 좋아요 수가 표시됩니다.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 count:
+ *                   type: integer
+ *                   description: 좋아요 수
+ *                   example: 123
+ *       500:
+ *         description: Internal Server Error
+ */
+// 해당 약의 좋아요 수를 확인
+router.get('/count/:drugid', favoriteController.getDrugFavoriteCount);
 
 module.exports = router;

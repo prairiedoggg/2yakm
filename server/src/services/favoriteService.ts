@@ -124,3 +124,24 @@ exports.userFavoriteStatus = async (
     throw error;
   }
 };
+
+// 해당 약의 좋아요 수를 확인하는 서비스
+exports.getDrugFavoriteCount = async (
+  drugid: number
+): Promise<{ count: number }> => {
+  try {
+    const query = `
+  SELECT COUNT(*) AS count
+  FROM favorites
+  WHERE drugid = $1 
+  `;
+    const values = [drugid];
+    const { rows } = await pool.query(query, values);
+
+    return {
+      count: parseInt(rows[0].count, 10)
+    };
+  } catch (error: any) {
+    throw error;
+  }
+};

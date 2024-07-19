@@ -76,3 +76,20 @@ exports.userFavoriteStatus = async (
     next(error);
   }
 };
+
+// 해당 약의 좋아요 수를 확인하는 서비스
+exports.getDrugFavoriteCount = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  const { drugid } = req.params;
+
+  try {
+    const favorite = await favoriteService.getDrugFavoriteCount(drugid);
+
+    res.status(200).send(favorite);
+  } catch (error: any) {
+    next(error);
+  }
+};

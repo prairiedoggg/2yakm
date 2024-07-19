@@ -108,7 +108,7 @@ exports.deleteReview = async (
   }
 };
 
-// 해당 약의 모든 리뷰 조회 서비스
+// 해당 약의 모든 리뷰 조회 서비스 (미완성 - cursor-based pagination 추가 예정)
 exports.getDrugAllReview = async (
   drugid: number
 ): Promise<(typeof Review)[]> => {
