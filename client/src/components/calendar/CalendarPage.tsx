@@ -11,11 +11,13 @@ Date        Author   Status    Description
 
 import styled from 'styled-components';
 import Header from '../Header';
-// import CalendarDetail from './CalendarDetail';
+import CalendarDetail from './CalendarDetail';
 import CalendarSection from './CalendarSection';
+import Nav from '../Nav';
 
 const CalendarContainer = styled.div`
   width: 100vw;
+  position: relative;
 `;
 
 const CalendarPage: React.FC = () => {
@@ -23,7 +25,8 @@ const CalendarPage: React.FC = () => {
     <CalendarContainer>
       <Header />
       <CalendarSection />
-      {/* <CalendarDetail /> */}
+      <CalendarDetail />
+      <Nav />
     </CalendarContainer>
   );
 };

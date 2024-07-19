@@ -17,13 +17,15 @@ import '../../styles/calendar.css';
 import styled from 'styled-components';
 
 const CalendarContainer = styled.div`
+  position: relative;
+  z-index: 1;
   display: flex;
   justify-content: center;
   align-items: center;
 `;
 
 const Pill = styled.img.attrs({
-  src: '/img/calendarPill.png',
+  src: '/img/pharm.png',
   alt: 'pill icon'
 })`
   width: 15px;
