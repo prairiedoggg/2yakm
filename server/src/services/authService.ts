@@ -99,7 +99,7 @@ exports.signupService = async (email: string, username: string, password: string
 };
 
 // 토큰 갱신
-exports.refreshTokenService = async (refreshToken: string): Promise<string> => {
+exports.refreshTokenService = async (refreshToken: string): Promise<{ token: string; refreshToken: string }> => {
   if (!refreshToken) {
     throw createError('NoRefreshToken', '토큰이 없습니다.', 401);
   }
@@ -111,8 +111,10 @@ exports.refreshTokenService = async (refreshToken: string): Promise<string> => {
     throw createError('InvalidRefreshToken', '유효하지 않은 토큰입니다.', 403);
   }
 
-  const newToken = jwt.sign({ id: (payload as any).id, email: (payload as any).email }, process.env.JWT_SECRET, { expiresIn: '1h' });
-  return newToken;
+  const newToken = jwt.sign({ id: (payload as any).id, email: (payload as any).email }, process.env.SECRET_KEY, { expiresIn: '30m' });
+  const newRefreshToken = jwt.sign({ id: (payload as any).id }, process.env.REFRESH_TOKEN_SECRET_KEY, { expiresIn: '7d' });
+
+  return { token: newToken, refreshToken: newRefreshToken };
 };
 
 // // 카카오 로그인
@@ -298,7 +300,6 @@ exports.kakaoAuthService = async (code: string): Promise<{ token: string; refres
       client.release();
     }
   } catch (error) {
-    console.error('Kakao authentication error:', error);
     throw createError('KakaoAuthError', '카카오 인증 실패', 500);
   }
 };

@@ -32,10 +32,9 @@ exports.signupController = async (req: Request, res: Response, next: NextFunctio
 // 토큰 갱신
 exports.refreshTokenController = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const refreshToken = req.cookies.refreshToken;
-    const newToken = await refreshTokenService(refreshToken);
-    res.cookie('jwt', newToken, { httpOnly: true });
-    res.status(200).json({ message: '토큰 갱신 성공', token: newToken });
+    const { refreshToken } = req.body;
+    const { token, refreshToken: newRefreshToken } = await refreshTokenService(refreshToken);
+    res.status(200).json({ token, refreshToken: newRefreshToken });
   } catch (error) {
     next(error);
   }
