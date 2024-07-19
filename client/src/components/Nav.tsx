@@ -10,6 +10,7 @@ Date        Author   Status    Description
 2024.07.18  임지영   Modified    tsx
 */
 
+import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 
 const NavContainer = styled.nav`
@@ -31,20 +32,41 @@ const NavContainer = styled.nav`
       justify-content: space-between;
       align-items: center;
       list-style: none;
-      & img {
-        width: 35px;
+
+      &:hover {
+        cursor: pointer;
+        & img {
+          fill: #ffe823;
+        }
+        & p {
+          color: #ffe823;
+        }
       }
-      & p {
-        margin: 0;
-        color: #c6c6c6;
-        font-size: 12px;
-        font-weight: bold;
-      }
+    }
+    & img {
+      width: 35px;
+    }
+    & p {
+      margin: 0;
+      color: #c6c6c6;
+      font-size: 12px;
+      font-weight: bold;
     }
   }
 `;
 
 const Nav: React.FC = () => {
+  const navigate = useNavigate();
+
+  const handleNav = (nav: string) => () => {
+    switch (nav) {
+      case 'calendar':
+        return navigate('/calendar');
+      case 'home':
+        return navigate('/');
+    }
+  };
+
   return (
     <NavContainer>
       <ul>
@@ -52,11 +74,11 @@ const Nav: React.FC = () => {
           <img src={`/img/nav/talk.png`} alt='talk' style={{ width: '40px' }} />
           <p>상담</p>
         </li>
-        <li style={{ marginRight: '15px' }}>
+        <li style={{ marginRight: '15px' }} onClick={handleNav('calendar')}>
           <img src={`/img/nav/calender.png`} alt='calender' />
           <p>캘린더</p>
         </li>
-        <li>
+        <li onClick={handleNav('home')}>
           <img
             src={`/img/nav/home.png`}
             alt='Home'
