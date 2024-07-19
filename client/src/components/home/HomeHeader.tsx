@@ -10,8 +10,9 @@ Date        Author   Status    Description
 2024.07.18  임지영   Modified    tsx
 */
 
+import { useState } from 'react';
 import styled from 'styled-components';
-// import SearchBox from '../search/SearchBox';
+import SearchBox from '../search/SearchBox';
 
 const MainHeaderContainer = styled.div`
   width: 100vw;
@@ -36,11 +37,13 @@ const SearchContainer = styled.div`
 `;
 
 const MainHeader: React.FC = () => {
+  const [searchQuery, setSearchQuery] = useState<String>('');
+
   return (
     <MainHeaderContainer>
       <Logo />
       <SearchContainer>
-        {/* <SearchBox/> */}
+        <SearchBox setSearchQuery={setSearchQuery} />
       </SearchContainer>
     </MainHeaderContainer>
   );
