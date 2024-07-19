@@ -42,7 +42,7 @@ const router = Router();
  *                   type: integer
  *                 drugid:
  *                   type: integer
- *                 email:
+ *                 userid:
  *                   type: string
  *                 content:
  *                   type: string
@@ -52,7 +52,7 @@ const router = Router();
  *               example:
  *                 reviewid: 1
  *                 drugid: 197000037
- *                 email: "test@test.com"
+ *                 userid: "0190caa1-0c81-7fa2-9e4d-ed3c8ec93d7a"
  *                 content: "전 이거 먹고 힘을 내요! 완전 추천합니다!"
  *                 created_at: "2024-07-16T20:37:08.325Z"
  *       400:
@@ -112,7 +112,7 @@ router.post('/:drugid', authByToken, reviewController.createReview);
  *               example:
  *                 reviewid: 1
  *                 drugid: 197000037
- *                 email: "test@test.com"
+ *                 userid: "0190caa1-0c81-7fa2-9e4d-ed3c8ec93d7a"
  *                 content: "생각해보니까 타이레놀이 가장 좋아요!"
  *                 created_at: "2024-07-16T20:37:08.325Z"
  *       400:
@@ -176,10 +176,6 @@ router.delete('/:reviewid', authByToken, reviewController.deleteReview);
  *             schema:
  *               type: object
  *               properties:
- *                 totalCount:
- *                   type: integer
- *                   description: Total number of reviews
- *                   example: 2
  *                 reviews:
  *                   type: array
  *                   items:
@@ -191,7 +187,7 @@ router.delete('/:reviewid', authByToken, reviewController.deleteReview);
  *                         type: integer
  *                       drugname:
  *                         type: string
- *                       email:
+ *                       userid:
  *                         type: string
  *                       username:
  *                         type: string
@@ -216,6 +212,27 @@ router.get('/drugs/:drugid', reviewController.getDrugAllReview);
  *     tags: [Reviews]
  *     security:
  *       - BearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *         description: 글을 몇 개씩 보여줄지 정합니다. (기본값 10)
+ *       - in: query
+ *         name: offset
+ *         schema:
+ *           type: integer
+ *         description: 몇 번째 글 부터 보여줄지 정합니다. (0이면 1~10, 10이면 11~20)
+ *       - in: query
+ *         name: sortedBy
+ *         schema:
+ *           type: string
+ *         description: 정렬할 필드명을 입력해 주세요. (created_at, drugname,... 기본값은 created_at)
+ *       - in: query
+ *         name: order
+ *         schema:
+ *           type: string
+ *         description: 정렬 순서입니다. (ASC, DESC, 대소문자 구분 안함, 기본값은 DESC)
  *     responses:
  *       200:
  *         description: 해당 유저의 모든 리뷰가 표시됩니다.
@@ -226,9 +243,13 @@ router.get('/drugs/:drugid', reviewController.getDrugAllReview);
  *               properties:
  *                 totalCount:
  *                   type: integer
- *                   description: Total number of reviews
+ *                   description: 해당 유저의 전체 리뷰 수
  *                   example: 2
- *                 reviews:
+ *                 totalPages:
+ *                   type: integer
+ *                   description: 전체 페이지 수
+ *                   example: 1
+ *                 data:
  *                   type: array
  *                   items:
  *                     type: object
@@ -239,12 +260,6 @@ router.get('/drugs/:drugid', reviewController.getDrugAllReview);
  *                         type: integer
  *                       drugname:
  *                         type: string
- *                       email:
- *                         type: string
- *                       username:
- *                         type: string
- *                       role:
- *                         type: boolean
  *                       content:
  *                         type: string
  *                       created_at:
