@@ -102,9 +102,19 @@ exports.getUserAllReview = async (
   next: NextFunction
 ): Promise<void> => {
   const { email } = req.user;
+  const limit = parseInt(req.query.limit as string, 10) || 10;
+  const offset = parseInt(req.query.offset as string, 10) || 0;
+  const sortedBy = (req.query.sortedBy as string) || 'created_at';
+  const order = (req.query.order as string)?.toUpperCase() || 'DESC';
 
   try {
-    const review = await reviewService.getUserAllReview(email);
+    const review = await reviewService.getUserAllReview(
+      email,
+      limit,
+      offset,
+      sortedBy,
+      order
+    );
     res.status(200).send(review);
   } catch (error: any) {
     next(error);

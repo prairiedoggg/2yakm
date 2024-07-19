@@ -4,6 +4,7 @@ const { createError } = require('../utils/error');
 
 interface totalCountAndData {
   totalCount: number;
+  totalPages: number;
   data: (typeof Review)[];
 }
 
@@ -137,6 +138,7 @@ exports.getDrugAllReview = async (
 
     return {
       totalCount: rows.length,
+      totalPages: 1,
       data: rows
     };
   } catch (error: any) {
@@ -146,17 +148,29 @@ exports.getDrugAllReview = async (
 
 // 해당 유저의 모든 리뷰 조회 서비스
 exports.getUserAllReview = async (
-  email: string
+  email: string,
+  limit: number,
+  offset: number,
+  sortedBy: string,
+  order: string
 ): Promise<totalCountAndData> => {
   try {
+    // 전체 리뷰 개수 조회
+    const countQuery = `
+    SELECT COUNT(*) AS total
+    FROM reviews
+    WHERE email = $1
+`;
+    const countValues = [email];
+    const countResults = await pool.query(countQuery, countValues);
+    const totalCount = parseInt(countResults.rows[0].total, 10);
+    const totalPages = Math.ceil(totalCount / limit);
+
     const query = `
       SELECT 
         reviews.reviewid,
         reviews.drugid,
         drugs.drugname,
-        reviews.email,
-        users.username,
-        users.role,
         reviews.content,
         reviews.created_at
       FROM 
@@ -166,14 +180,17 @@ exports.getUserAllReview = async (
       JOIN 
         users ON reviews.email = users.email
       WHERE 
-        reviews.email = $1;
+        reviews.email = $1
+      ORDER BY ${sortedBy} ${order}
+      LIMIT $2 OFFSET $3;
         `;
 
-    const values = [email];
+    const values = [email, limit, offset];
     const { rows } = await pool.query(query, values);
 
     return {
-      totalCount: rows.length,
+      totalCount,
+      totalPages,
       data: rows
     };
   } catch (error: any) {

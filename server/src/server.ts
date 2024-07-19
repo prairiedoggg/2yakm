@@ -31,11 +31,14 @@ app.use(
 app.get('/', (req: any, res: any) => {
   const filePath = path.join(__dirname, 'public', 'index.html');
   fs.readFile(filePath, 'utf8', (err: any, data: any) => {
-      if (err) {
-          return res.status(500).send('Error reading index.html');
-      }
-      const renderedHtml = data.replace(/YOUR_REST_API_KEY/g, process.env.KAKAO_CLIENT_ID || '');
-      res.send(renderedHtml);
+    if (err) {
+      return res.status(500).send('Error reading index.html');
+    }
+    const renderedHtml = data.replace(
+      /YOUR_REST_API_KEY/g,
+      process.env.KAKAO_CLIENT_ID || ''
+    );
+    res.send(renderedHtml);
   });
 });
 
@@ -47,7 +50,7 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieParser());
 
-app.use('/api/review', reviewRouter);
+app.use('/api/reviews', reviewRouter);
 app.use('/api/auth', authRouter);
 app.use('/api/calenders', calendarRouter);
 app.use('/api/alarms', alarmRouter);
