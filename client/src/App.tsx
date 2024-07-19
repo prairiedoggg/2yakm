@@ -17,6 +17,7 @@ import Home from './components/home/Home';
 import Search from './components/search/Search';
 import News from './components/cardNews/News';
 import Calendar from './components/calendar/CalendarPage';
+import MyPage from './components/myPage/MyPage';
 
 const App: React.FC = () => {
   return (
@@ -27,6 +28,7 @@ const App: React.FC = () => {
         <Route path='/news1' element={<News num={1} />} />
         <Route path='/news2' element={<News num={2} />} />
         <Route path='/news3' element={<News num={3} />} />
+        <Route path='/myPage' element={<MyPage />} />
         <Route path='/calendar' element={<Calendar />} />
       </Routes>
     </Router>
