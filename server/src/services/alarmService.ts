@@ -8,34 +8,29 @@ const { pool } = require('../db');
 const runningJobs = new Map<string, schedule.Job>();
 
 export const scheduleAlarmService = (alarm: typeof Alarm) => {
-  const [hours, minutes] = alarm.time.split(':');
-  const job = schedule.scheduleJob({
-    start: alarm.startDate,
-    end: alarm.endDate,
-    rule: `${minutes} ${hours} */${Math.floor(alarm.interval / 60)} * * *`
-  }, async () => {
-    await sendEmail(alarm.message, alarm.userId);
+  alarm.times.forEach((time: { split: (arg0: string) => [any, any]; }) => {
+    const [hours, minutes] = time.split(':');
+    const job = schedule.scheduleJob(`${minutes} ${hours} * * *`, async () => {
+      await sendEmail(alarm.message, alarm.userId);
+    });
+    
+    runningJobs.set(`${alarm.id}_${time}`, job);
   });
   
-  runningJobs.set(alarm.id, job);
-  console.log(`알람 예약 완료: ${alarm.startDate}부터 ${alarm.endDate}까지 매일 ${alarm.time}에 "${alarm.message}" 알림`);
-
-  return job;
+  console.log(`알람 예약 완료: ${alarm.date}에 ${alarm.times.join(', ')}에 "${alarm.message}" 알림`);
 };
 
-//create
 export const createAlarm = async (alarm: Omit<typeof Alarm, 'id'>): Promise<typeof Alarm> => {
-  const { userId, startDate, endDate, time, interval, message } = alarm;
+  const { userId, name, date, times, message } = alarm;
   
-  const startDateString = startDate.toISOString();
-  const endDateString = endDate.toISOString();
+  const dateString = date.toISOString();
   
   const query = `
-    INSERT INTO alarms (userId, start_date, end_date, time, interval, message)
-    VALUES ($1, $2, $3, $4, $5, $6)
+    INSERT INTO alarms (userId, name, date, times, message, alarm_status)
+    VALUES ($1, $2, $3, $4::time[], $5, $6)
     RETURNING *
-  `;
-  const values = [userId, startDateString, endDateString, time, interval, message];
+`;
+  const values = [userId, name, dateString, times, message, true];
   const result = await pool.query(query, values);
   const newAlarm = result.rows[0];
 
@@ -52,40 +47,43 @@ export const getAlarmsByUserId = async (userId: string): Promise<typeof Alarm[]>
 
 // Update
 export const updateAlarm = async (id: string, alarm: Partial<typeof Alarm>): Promise<typeof Alarm | null> => {
-  const { userId, startDate, endDate, time, interval, message, alarmStatus } = alarm;
+  const { userId, name, date, times, message, alarmStatus } = alarm;
   const text = `
     UPDATE alarms
     SET userId = COALESCE($1, userId),
-        start_date = COALESCE($2, start_date),
-        end_date = COALESCE($3, end_date),
-        time = COALESCE($4, time),
-        interval = COALESCE($5, interval),
-        message = COALESCE($6, message),
-        alarm_status = COALESCE($7, alarm_status),
+        name = COALESCE($2, name),
+        date = COALESCE($3, date),
+        times = COALESCE($4::time[], times),
+        message = COALESCE($5, message),
+        alarm_status = COALESCE($6, alarm_status),
         updated_at = CURRENT_TIMESTAMP
-    WHERE id = $8
+    WHERE id = $7
     RETURNING *
-  `;
-  const values = [userId, startDate, endDate, time, interval, message, alarmStatus, id];
+`;
+  const values = [userId, name, date, JSON.stringify(times), message, alarmStatus, id];
   const result = await pool.query(text, values);
   const updatedAlarm = result.rows[0];
 
   if (updatedAlarm) {
     // 기존 스케줄 취소
-    const oldJob = runningJobs.get(id);
-    if (oldJob) {
-      oldJob.cancel();
-    }
+    updatedAlarm.times.forEach((time: any) => {
+      const jobKey = `${id}_${time}`;
+      const oldJob = runningJobs.get(jobKey);
+      if (oldJob) {
+        oldJob.cancel();
+        runningJobs.delete(jobKey);
+      }
+    });
 
     // 새로운 스케줄 설정
     if (updatedAlarm.alarmStatus) {
       scheduleAlarmService(updatedAlarm);
-      runningJobs.delete(id);
     }
   }
 
   return updatedAlarm;
 };
+
 
 // Delete
 export const deleteAlarm = async (id: string): Promise<boolean> => {

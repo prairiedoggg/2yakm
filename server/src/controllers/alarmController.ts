@@ -3,32 +3,26 @@ import { createAlarm, getAlarmsByUserId, updateAlarm, deleteAlarm, scheduleAlarm
 import { CustomRequest } from '../types/express.d';
 
 export const createAndScheduleAlarm = async (req: CustomRequest, res: Response) => {
-  const { startDate, duration, interval, message, time } = req.body;
+  const { name, date, times, message } = req.body;
   const userId = req.user?.email;
   if (!userId) {
     return res.status(401).json({ message: '인증되지 않은 사용자입니다.' });
   }
   try {
-    const start = new Date(startDate);
-    if (isNaN(start.getTime())) {
-      return res.status(400).json({ message: '유효하지 않은 시작 날짜입니다.' });
+    const alarmDate = new Date(date);
+    if (isNaN(alarmDate.getTime())) {
+      return res.status(400).json({ message: '유효하지 않은 날짜입니다.' });
     }
     
-    const end = new Date(start.getTime() + duration * 24 * 60 * 60 * 1000);
-    if (isNaN(end.getTime())) {
-      return res.status(400).json({ message: '유효하지 않은 종료 날짜입니다.' });
-    }
-    
-    if (!time || !/^\d{2}:\d{2}$/.test(time)) {
-      return res.status(400).json({ message: '유효하지 않은 시간 형식입니다. HH:MM 형식이어야 합니다.' });
+    if (!Array.isArray(times) || times.length === 0 || !times.every(time => /^\d{2}:\d{2}$/.test(time))) {
+      return res.status(400).json({ message: '유효하지 않은 시간 형식입니다. HH:MM 형식의 배열이어야 합니다.' });
     }
     
     const alarm = await createAlarm({
       userId,
-      startDate: start,
-      endDate: end,
-      interval,
-      time,
+      name,
+      date: alarmDate,
+      times,
       message,
       alarmStatus: true,
     });
@@ -51,9 +45,10 @@ export const getUserAlarmsController = async (req: CustomRequest, res: Response)
     res.status(500).json({ message: '사용자 알람 조회 오류 발생' });
   }
 };
+
 export const updateAlarmController = async (req: CustomRequest, res: Response) => {
   const { id } = req.params;
-  const updateData = req.body;
+  const { name, date, times, message, alarmStatus } = req.body;
   const userId = req.user?.email;
 
   if (!userId) {
@@ -61,7 +56,16 @@ export const updateAlarmController = async (req: CustomRequest, res: Response) =
   }
 
   try {
-    const updatedAlarm = await updateAlarm(id, { ...updateData, userId });
+    const alarmDate = date ? new Date(date) : undefined;
+    if (alarmDate && isNaN(alarmDate.getTime())) {
+      return res.status(400).json({ message: '유효하지 않은 날짜입니다.' });
+    }
+
+    if (times && (!Array.isArray(times) || times.length === 0 || !times.every(time => /^\d{2}:\d{2}$/.test(time)))) {
+      return res.status(400).json({ message: '유효하지 않은 시간 형식입니다. HH:MM 형식의 배열이어야 합니다.' });
+    }
+
+    const updatedAlarm = await updateAlarm(id, { name, date: alarmDate, times, message, alarmStatus, userId });
     if (updatedAlarm) {
       res.status(200).json(updatedAlarm);
     } else {

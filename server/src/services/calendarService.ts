@@ -19,8 +19,9 @@ exports.createCalendar = async (calendar: Partial<typeof Calendar>): Promise<typ
   try {
     const text = `
       INSERT INTO calendar 
-      (userid, date, calimg, condition, weight, temperature, bloodsugar) 
-      VALUES ($1, $2, $3, $4, $5, $6, $7) 
+      (userid, date, calimg, condition, weight, temperature, 
+      bloodsugarBefore, bloodsugarAfter, medications) 
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) 
       RETURNING *
     `;
     const values = [
@@ -30,7 +31,9 @@ exports.createCalendar = async (calendar: Partial<typeof Calendar>): Promise<typ
       calendar.condition,
       calendar.weight,
       calendar.temperature,
-      calendar.bloodsugar
+      calendar.bloodsugarBefore,
+      calendar.bloodsugarAfter,
+      JSON.stringify(calendar.medications)
     ];
     const result = await pool.query(text, values);
     return result.rows[0];
@@ -44,8 +47,10 @@ exports.updateCalendar = async (id: string, calendar: Partial<typeof Calendar>):
   try {
     const text = `
       UPDATE calendar 
-      SET calimg = $1, condition = $2, weight = $3, temperature = $4, bloodsugar = $5, date = $6
-      WHERE id = $7 
+      SET calimg = $1, condition = $2, weight = $3, temperature = $4, 
+          bloodsugarBefore = $5, bloodsugarAfter = $6,
+          medications = $7, date = $8
+      WHERE id = $9 
       RETURNING *
     `;
     const values = [
@@ -53,7 +58,9 @@ exports.updateCalendar = async (id: string, calendar: Partial<typeof Calendar>):
       calendar.condition,
       calendar.weight,
       calendar.temperature,
-      calendar.bloodsugar,
+      calendar.bloodsugarBefore,
+      calendar.bloodsugarAfter,
+      JSON.stringify(calendar.medications),
       calendar.date,
       id
     ];
@@ -68,6 +75,7 @@ exports.updateCalendar = async (id: string, calendar: Partial<typeof Calendar>):
     throw error;
   }
 };
+
 
 exports.deleteCalendar = async (id: string): Promise<boolean> => {
   const text = 'DELETE FROM calendar WHERE id = $1';

@@ -1,11 +1,9 @@
 export interface Alarm {
     id: string;
     userId: string;
-    startDate: Date;
-    endDate: Date;
-    time: string;
-    interval: number;
-    message:string;
-    alarmContent: string;
+    name: string;
+    date: Date;
+    times: string[];
+    message: string;
     alarmStatus: boolean;
 }
