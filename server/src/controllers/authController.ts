@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-const { loginService, signupService, refreshTokenService, kakaoAuthService, changePasswordService, requestPasswordService, resetPasswordService } = require('../services/authService');
+const { loginService, signupService, refreshTokenService, kakaoAuthService, changePasswordService, requestPasswordService, resetPasswordService, googleAuthService } = require('../services/authService');
 const { createError } = require('../utils/error');
 
 // 로그인
@@ -50,6 +50,19 @@ exports.kakaoAuthController = async (req: Request, res: Response, next: NextFunc
     res.cookie('jwt', result.token, { httpOnly: true });
     res.cookie('refreshToken', result.refreshToken, { httpOnly: true });
     res.status(200).json({ message: '카카오 인증 성공', token: result.token });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// 구글 로그인
+exports.googleAuthController = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { code } = req.query;
+    const result = await googleAuthService(code as string);
+    res.cookie('jwt', result.token, { httpOnly: true });
+    res.cookie('refreshToken', result.refreshToken, { httpOnly: true });
+    res.status(200).json({ message: '구글 인증 성공', token: result.token });
   } catch (error) {
     next(error);
   }

@@ -13,13 +13,13 @@
     <script>
         document.getElementById('kakao-login-btn').addEventListener('click', function() {
             const clientId = 'b5e9f3a93cb3987c5cd97b55b775821d';
-            const redirectUri = 'http://localhost:3000/auth/kakao/callback';
+            const redirectUri = 'http://localhost:3000/api/auth/kakao/callback';
             window.location.href = `https://kauth.kakao.com/oauth/authorize?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=code`;
         });
 
         document.getElementById('kakao-signup-btn').addEventListener('click', function() {
             const clientId = 'b5e9f3a93cb3987c5cd97b55b775821d';
-            const redirectUri = 'http://localhost:3000/auth/kakao/callback';
+            const redirectUri = 'http://localhost:3000/api/auth/kakao/callback';
             window.location.href = `https://kauth.kakao.com/oauth/authorize?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=code`;
         });
 
