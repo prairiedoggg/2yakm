@@ -16,11 +16,11 @@ const getUserProfile = async (req: Request, res: Response) => {
   }
 };
 
-const updateUserProfile = async (req: Request, res: Response) => {
+const updateUsername = async (req: Request, res: Response) => {
   try {
     const userId = req.params.id;
     const updateData = req.body;
-    const updatedUser = await mypageService.updateUserProfile(userId, updateData);
+    const updatedUser = await mypageService.updateUsername(userId, updateData);
     res.status(200).json(updatedUser);
   } catch (error) {
     if (error instanceof Error) {
@@ -30,6 +30,7 @@ const updateUserProfile = async (req: Request, res: Response) => {
     }
   }
 };
+ 
 
 const updateProfilePictureMemory = async (req: Request , res: Response) => {
   try {
@@ -63,7 +64,7 @@ const updateProfilePictureS3 = async (req: Request, res: Response) => {
 
 module.exports = {
   getUserProfile,
-  updateUserProfile,
+  updateUsername,
   updateProfilePictureMemory,
   updateProfilePictureS3,
 };

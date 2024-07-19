@@ -1,27 +1,28 @@
 const { pool } = require('../db');
 
 class MypageService {
-  async getUserProfile(userId: string): Promise<{ email: string; username: string }> {
-    const result = await pool.query('SELECT email, username FROM users WHERE userid = $1', [userId]);
+  
+  async getUserProfile(userId: string): Promise<{ email: string; username: string, profileimg: any }> {
+    const result = await pool.query('SELECT email, username, profileimg FROM users WHERE userid = $1', [userId]);
     if (result.rows.length === 0) {
       throw new Error('User not found');
     }
-    const { email, username } = result.rows[0];
-    return { email, username };
+    const { email, username, profileimg } = result.rows[0];
+    return { email, username, profileimg };
   }
 
-  updateUserProfile = async (userId: string, updateData: any) => {
+  updateUsername = async (userId: string, updateData: any) => {
     
     const client = await pool.connect();
 
     try {                  
       const query = `
         UPDATE users 
-        SET username = $1, password = $2
-        WHERE userid = $3
+        SET username = $1 
+        WHERE userid = $2
         RETURNING email, username`;
     
-      const values = [updateData.username, updateData.password, userId];
+      const values = [updateData.username, userId];
       const result = await client.query(query, values);
       return result.rows[0];
   }
