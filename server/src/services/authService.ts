@@ -13,8 +13,8 @@ const transporter = nodemailer.createTransport({
   service: 'Gmail',
   auth: {
     user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
-  },
+    pass: process.env.EMAIL_PASS
+  }
 });
 
 // User 인터페이스
@@ -33,7 +33,10 @@ interface UserResponse {
 }
 
 // 로그인
-exports.loginService = async (email: string, password: string): Promise<{ token: string; refreshToken: string }> => {
+exports.loginService = async (
+  email: string,
+  password: string
+): Promise<{ token: string; refreshToken: string }> => {
   const client = await pool.connect();
   try {
     const query = 'SELECT * FROM users WHERE email = $1';
@@ -51,9 +54,15 @@ exports.loginService = async (email: string, password: string): Promise<{ token:
       throw createError('InvalidCredentials', '비밀번호가 틀렸습니다.', 401);
     }
 
-    const payload = { id: user.userid, email: user.email};
-    const token = jwt.sign(payload, process.env.SECRET_KEY, { expiresIn: '30m' });
-    const refreshToken = jwt.sign({ id: user.userid }, process.env.REFRESH_TOKEN_SECRET_KEY, { expiresIn: '7d' });
+    const payload = { id: user.userid, email: user.email };
+    const token = jwt.sign(payload, process.env.SECRET_KEY, {
+      expiresIn: '30m'
+    });
+    const refreshToken = jwt.sign(
+      { id: user.userid },
+      process.env.REFRESH_TOKEN_SECRET_KEY,
+      { expiresIn: '7d' }
+    );
 
     return { token, refreshToken };
   } catch (error) {
@@ -64,19 +73,35 @@ exports.loginService = async (email: string, password: string): Promise<{ token:
 };
 
 // 회원가입
-exports.signupService = async (email: string, username: string, password: string, confirmPassword: string): Promise<UserResponse> => {
+exports.signupService = async (
+  email: string,
+  username: string,
+  password: string,
+  confirmPassword: string
+): Promise<UserResponse> => {
   const client = await pool.connect();
   try {
     const checkUserQuery = 'SELECT * FROM users WHERE email = $1';
     const checkUserValues = [email];
-    const existingUserResult = await client.query(checkUserQuery, checkUserValues);
+    const existingUserResult = await client.query(
+      checkUserQuery,
+      checkUserValues
+    );
 
     if (existingUserResult.rows.length > 0) {
-      throw createError('UserExists', '해당 이메일로 이미 사용자가 존재합니다.', 409);
+      throw createError(
+        'UserExists',
+        '해당 이메일로 이미 사용자가 존재합니다.',
+        409
+      );
     }
 
     if (password !== confirmPassword) {
-      throw createError('PasswordMismatch', '비밀번호가 일치하지 않습니다.', 400);
+      throw createError(
+        'PasswordMismatch',
+        '비밀번호가 일치하지 않습니다.',
+        400
+      );
     }
 
     const saltRounds = 10;
@@ -99,7 +124,9 @@ exports.signupService = async (email: string, username: string, password: string
 };
 
 // 토큰 갱신
-exports.refreshTokenService = async (refreshToken: string): Promise<{ token: string; refreshToken: string }> => {
+exports.refreshTokenService = async (
+  refreshToken: string
+): Promise<{ token: string; refreshToken: string }> => {
   if (!refreshToken) {
     throw createError('NoRefreshToken', '토큰이 없습니다.', 401);
   }
@@ -111,8 +138,16 @@ exports.refreshTokenService = async (refreshToken: string): Promise<{ token: str
     throw createError('InvalidRefreshToken', '유효하지 않은 토큰입니다.', 403);
   }
 
-  const newToken = jwt.sign({ id: (payload as any).id, email: (payload as any).email }, process.env.SECRET_KEY, { expiresIn: '30m' });
-  const newRefreshToken = jwt.sign({ id: (payload as any).id }, process.env.REFRESH_TOKEN_SECRET_KEY, { expiresIn: '7d' });
+  const newToken = jwt.sign(
+    { id: (payload as any).id, email: (payload as any).email },
+    process.env.SECRET_KEY,
+    { expiresIn: '30m' }
+  );
+  const newRefreshToken = jwt.sign(
+    { id: (payload as any).id },
+    process.env.REFRESH_TOKEN_SECRET_KEY,
+    { expiresIn: '7d' }
+  );
 
   return { token: newToken, refreshToken: newRefreshToken };
 };
@@ -238,7 +273,9 @@ exports.refreshTokenService = async (refreshToken: string): Promise<{ token: str
 // };
 
 // 카카오 인증 (로그인 및 회원가입)
-exports.kakaoAuthService = async (code: string): Promise<{ token: string; refreshToken: string }> => {
+exports.kakaoAuthService = async (
+  code: string
+): Promise<{ token: string; refreshToken: string }> => {
   const redirectUri = 'http://localhost:3000/api/auth/kakao/callback';
   const kakaoTokenUrl = `https://kauth.kakao.com/oauth/token`;
 
@@ -248,27 +285,35 @@ exports.kakaoAuthService = async (code: string): Promise<{ token: string; refres
         grant_type: 'authorization_code',
         client_id: process.env.KAKAO_CLIENT_ID,
         redirect_uri: redirectUri,
-        code,
+        code
       },
       headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-      },
+        'Content-Type': 'application/x-www-form-urlencoded'
+      }
     });
 
     const { access_token } = tokenResponse.data;
 
-    const userInfoResponse = await axios.get('https://kapi.kakao.com/v2/user/me', {
-      headers: {
-        Authorization: `Bearer ${access_token}`,
-      },
-    });
+    const userInfoResponse = await axios.get(
+      'https://kapi.kakao.com/v2/user/me',
+      {
+        headers: {
+          Authorization: `Bearer ${access_token}`
+        }
+      }
+    );
     const { id, kakao_account, properties } = userInfoResponse.data;
     const email = kakao_account.email || null;
-    const username = properties.nickname || kakao_account.profile.nickname || null;
+    const username =
+      properties.nickname || kakao_account.profile.nickname || null;
 
     // 이메일없는 경우
     if (!email) {
-      throw createError('KakaoAuthError', '카카오에서 사용자 정보가 충분하지 않습니다.', 400);
+      throw createError(
+        'KakaoAuthError',
+        '카카오에서 사용자 정보가 충분하지 않습니다.',
+        400
+      );
     }
 
     // 사용자 정보 DB에 저장 및 JWT 발급
@@ -276,7 +321,10 @@ exports.kakaoAuthService = async (code: string): Promise<{ token: string; refres
     try {
       const checkUserQuery = 'SELECT * FROM users WHERE kakaoid = $1';
       const checkUserValues = [id];
-      const existingUserResult = await client.query(checkUserQuery, checkUserValues);
+      const existingUserResult = await client.query(
+        checkUserQuery,
+        checkUserValues
+      );
 
       let user;
       if (existingUserResult.rows.length > 0) {
@@ -286,14 +334,29 @@ exports.kakaoAuthService = async (code: string): Promise<{ token: string; refres
           INSERT INTO users (email, username, password, role, kakaoid) VALUES ($1, $2, $3, $4, $5)
           RETURNING *
         `;
-        const insertUserValues = [email, username, 'kakao_auth_password', false, id];
-        const newUserResult = await client.query(insertUserQuery, insertUserValues);
+        const insertUserValues = [
+          email,
+          username,
+          'kakao_auth_password',
+          false,
+          id
+        ];
+        const newUserResult = await client.query(
+          insertUserQuery,
+          insertUserValues
+        );
         user = newUserResult.rows[0];
       }
 
       const payload = { id: user.userid, email: user.email };
-      const token = jwt.sign(payload, process.env.SECRET_KEY, { expiresIn: '30m' });
-      const refreshToken = jwt.sign({ id: user.id }, process.env.REFRESH_TOKEN_SECRET_KEY, { expiresIn: '7d' });
+      const token = jwt.sign(payload, process.env.SECRET_KEY, {
+        expiresIn: '30m'
+      });
+      const refreshToken = jwt.sign(
+        { id: user.id },
+        process.env.REFRESH_TOKEN_SECRET_KEY,
+        { expiresIn: '7d' }
+      );
 
       return { token, refreshToken };
     } finally {
@@ -305,7 +368,9 @@ exports.kakaoAuthService = async (code: string): Promise<{ token: string; refres
 };
 
 // 구글 로그인
-exports.googleAuthService = async (code: string): Promise<{ token: string; refreshToken: string }> => {
+exports.googleAuthService = async (
+  code: string
+): Promise<{ token: string; refreshToken: string }> => {
   const tokenUrl = 'https://oauth2.googleapis.com/token';
   const userInfoUrl = 'https://www.googleapis.com/oauth2/v2/userinfo';
 
@@ -316,32 +381,39 @@ exports.googleAuthService = async (code: string): Promise<{ token: string; refre
         client_id: process.env.GOOGLE_CLIENT_ID,
         client_secret: process.env.GOOGLE_CLIENT_SECRET,
         redirect_uri: 'http://localhost:3000/api/auth/google/callback',
-        grant_type: 'authorization_code',
+        grant_type: 'authorization_code'
       },
       headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-      },
+        'Content-Type': 'application/x-www-form-urlencoded'
+      }
     });
 
     const { access_token } = tokenResponse.data;
-    console.log({access_token});
+    console.log({ access_token });
     const userInfoResponse = await axios.get(userInfoUrl, {
       headers: {
-        Authorization: `Bearer ${access_token}`,
-      },
+        Authorization: `Bearer ${access_token}`
+      }
     });
 
     const { id, email, name } = userInfoResponse.data;
 
     if (!email) {
-      throw createError('GoogleAuthError', '구글에서 사용자 정보가 충분하지 않습니다.', 400);
+      throw createError(
+        'GoogleAuthError',
+        '구글에서 사용자 정보가 충분하지 않습니다.',
+        400
+      );
     }
 
     const client = await pool.connect();
     try {
       const checkUserQuery = 'SELECT * FROM users WHERE googleid = $1';
       const checkUserValues = [id];
-      const existingUserResult = await client.query(checkUserQuery, checkUserValues);
+      const existingUserResult = await client.query(
+        checkUserQuery,
+        checkUserValues
+      );
 
       let user;
       if (existingUserResult.rows.length > 0) {
@@ -351,14 +423,29 @@ exports.googleAuthService = async (code: string): Promise<{ token: string; refre
           INSERT INTO users (email, username, password, role, googleid) VALUES ($1, $2, $3, $4, $5)
           RETURNING *
         `;
-        const insertUserValues = [email, name, 'google_auth_password', false, id];
-        const newUserResult = await client.query(insertUserQuery, insertUserValues);
+        const insertUserValues = [
+          email,
+          name,
+          'google_auth_password',
+          false,
+          id
+        ];
+        const newUserResult = await client.query(
+          insertUserQuery,
+          insertUserValues
+        );
         user = newUserResult.rows[0];
       }
 
       const payload = { id: user.userid, email: user.email };
-      const token = jwt.sign(payload, process.env.SECRET_KEY, { expiresIn: '30m' });
-      const refreshToken = jwt.sign({ id: user.userid }, process.env.REFRESH_TOKEN_SECRET_KEY, { expiresIn: '7d' });
+      const token = jwt.sign(payload, process.env.SECRET_KEY, {
+        expiresIn: '30m'
+      });
+      const refreshToken = jwt.sign(
+        { id: user.userid },
+        process.env.REFRESH_TOKEN_SECRET_KEY,
+        { expiresIn: '7d' }
+      );
 
       return { token, refreshToken };
     } finally {
@@ -370,7 +457,11 @@ exports.googleAuthService = async (code: string): Promise<{ token: string; refre
 };
 
 // 비번 변경
-exports.changePasswordService = async (email: string, oldPassword: string, newPassword: string): Promise<void> => {
+exports.changePasswordService = async (
+  email: string,
+  oldPassword: string,
+  newPassword: string
+): Promise<void> => {
   const client = await pool.connect();
   try {
     const query = 'SELECT * FROM users WHERE email = $1';
@@ -382,13 +473,21 @@ exports.changePasswordService = async (email: string, oldPassword: string, newPa
       throw createError('UserNotFound', '사용자를 찾을 수 없습니다.', 404);
     }
     if (user.kakaoid) {
-      throw createError('SocialUserError', '소셜 로그인 사용자는 비밀번호를 변경할 수 없습니다.', 400);
+      throw createError(
+        'SocialUserError',
+        '소셜 로그인 사용자는 비밀번호를 변경할 수 없습니다.',
+        400
+      );
     }
 
     const isMatch = await bcrypt.compare(oldPassword, user.password);
 
     if (!isMatch) {
-      throw createError('InvalidCredentials', '기존 비밀번호가 틀렸습니다.', 401);
+      throw createError(
+        'InvalidCredentials',
+        '기존 비밀번호가 틀렸습니다.',
+        401
+      );
     }
 
     const hashedNewPassword = await bcrypt.hash(newPassword, 10);
@@ -403,7 +502,6 @@ exports.changePasswordService = async (email: string, oldPassword: string, newPa
   }
 };
 
-
 // 비번 재설정 요청
 exports.requestPasswordService = async (email: string): Promise<void> => {
   const client = await pool.connect();
@@ -417,12 +515,16 @@ exports.requestPasswordService = async (email: string): Promise<void> => {
       throw createError('User Not Found', '사용자를 찾을 수 없습니다', 404);
     }
 
-    const token = jwt.sign({ id: user.userid, email: user.email }, process.env.SECRET_KEY, { expiresIn: '3m'});
+    const token = jwt.sign(
+      { id: user.userid, email: user.email },
+      process.env.SECRET_KEY,
+      { expiresIn: '3m' }
+    );
     const mailOptions = {
       from: process.env.EMAIL_USER,
       to: email,
       subject: '비밀번호 재설정',
-      text: `비밀번호를 재설정하려면 링크를 클릭하세요 (유효시간: 3분): http://localhost:3000/reset-password?token=${token}`,
+      text: `비밀번호를 재설정하려면 링크를 클릭하세요 (유효시간: 3분): http://localhost:3000/reset-password?token=${token}`
     };
     await transporter.sendMail(mailOptions);
   } catch (error) {
@@ -430,10 +532,13 @@ exports.requestPasswordService = async (email: string): Promise<void> => {
   } finally {
     client.release();
   }
-}
+};
 
 // 비번 재설정
-exports.resetPasswordService = async (token: string, newPassword: string): Promise<void> => {
+exports.resetPasswordService = async (
+  token: string,
+  newPassword: string
+): Promise<void> => {
   try {
     const decoded: any = jwt.verify(token, process.env.SECRET_KEY);
     const client = await pool.connect();

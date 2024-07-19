@@ -1,5 +1,15 @@
 const express = require('express');
-const { loginController, signupController, refreshTokenController, kakaoAuthController, logoutController, changePasswordController, requestPasswordController, resetPasswordController, googleAuthController } = require('../controllers/authController');
+const {
+  loginController,
+  signupController,
+  refreshTokenController,
+  kakaoAuthController,
+  logoutController,
+  changePasswordController,
+  requestPasswordController,
+  resetPasswordController,
+  googleAuthController
+} = require('../controllers/authController');
 const router = express.Router();
 
 /**
