@@ -12,7 +12,7 @@ interface totalCountAndData {
 
 // 즐겨 찾는 약 검색 서비스
 exports.searchFavoriteDrug = async (
-  email: string,
+  userid: string,
   limit: number,
   offset: number,
   sortedBy: string,
@@ -23,9 +23,9 @@ exports.searchFavoriteDrug = async (
     const countQuery = `
     SELECT COUNT(*) AS total
     FROM favorites
-    WHERE email = $1
+    WHERE userid = $1
 `;
-    const countValues = [email];
+    const countValues = [userid];
     const countResults = await pool.query(countQuery, countValues);
     const totalCount = parseInt(countResults.rows[0].total, 10);
     const totalPages = Math.ceil(totalCount / limit);
@@ -33,7 +33,7 @@ exports.searchFavoriteDrug = async (
     const query = `
     SELECT 
       favorites.favoriteid,
-      favorites.email,
+      favorites.userid,
       favorites.drugid,
       drugs.drugname,
       drugs.efficacy,
@@ -42,12 +42,12 @@ exports.searchFavoriteDrug = async (
       favorites
     JOIN
       drugs ON favorites.drugid = drugs.drugid
-    WHERE favorites.email = $1
+    WHERE favorites.userid = $1
     ORDER BY ${sortedBy} ${order}
     LIMIT $2 OFFSET $3;
     `;
 
-    const values = [email, limit, offset];
+    const values = [userid, limit, offset];
     const { rows } = await pool.query(query, values);
 
     return {
@@ -63,24 +63,24 @@ exports.searchFavoriteDrug = async (
 // 약 좋아요 추가, 취소 서비스
 exports.addCancelFavoriteDrug = async (
   drugid: number,
-  email: string
+  userid: string
 ): Promise<typeof Favorite | null> => {
   try {
     // DB에 좋아요 정보가 있는지 먼저 확인함
     const foundQuery = `
         SELECT * FROM favorites
-        WHERE drugid = $1 AND email = $2
+        WHERE drugid = $1 AND userid = $2
         `;
-    const foundValues = [drugid, email];
+    const foundValues = [drugid, userid];
     const foundResult = await pool.query(foundQuery, foundValues);
 
     // 좋아요 정보가 있으면 DB에서 삭제
     if (foundResult.rows.length !== 0) {
       const deleteQuery = `
             DELETE FROM favorites
-            WHERE drugid = $1 AND email = $2
+            WHERE drugid = $1 AND userid = $2
             `;
-      const deleteValues = [drugid, email];
+      const deleteValues = [drugid, userid];
       const deleteResult = await pool.query(deleteQuery, deleteValues);
       return {
         message: 'deleted',
@@ -90,10 +90,10 @@ exports.addCancelFavoriteDrug = async (
 
     // 좋아요 정보를 DB에 추가
     const addQuery = `
-    INSERT INTO favorites (drugid, email)
+    INSERT INTO favorites (drugid, userid)
     VALUES ($1, $2)
     `;
-    const addValues = [drugid, email];
+    const addValues = [drugid, userid];
     const addResult = await pool.query(addQuery, addValues);
     return {
       message: 'added',
@@ -107,14 +107,14 @@ exports.addCancelFavoriteDrug = async (
 // 좋아요를 눌렀는지 확인하는 서비스
 exports.userFavoriteStatus = async (
   drugid: number,
-  email: string
+  userid: string
 ): Promise<{ status: boolean }> => {
   try {
     const query = `
     SELECT * FROM favorites
-    WHERE drugid = $1 AND email = $2
+    WHERE drugid = $1 AND userid = $2
     `;
-    const values = [drugid, email];
+    const values = [drugid, userid];
     const { rows } = await pool.query(query, values);
 
     return {

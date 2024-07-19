@@ -3,7 +3,7 @@ const favoriteService = require('../services/favoriteService');
 
 interface CustomRequest extends Request {
   user: {
-    email: string;
+    userid: string;
     role: string;
   };
 }
@@ -14,7 +14,7 @@ exports.searchFavoriteDrug = async (
   res: Response,
   next: NextFunction
 ): Promise<void> => {
-  const { email } = req.user;
+  const { userid } = req.user;
   const limit = parseInt(req.query.limit as string, 10) || 10;
   const offset = parseInt(req.query.offset as string, 10) || 0;
   const sortedBy = (req.query.sortedBy as string) || 'created_at';
@@ -22,7 +22,7 @@ exports.searchFavoriteDrug = async (
 
   try {
     const favorite = await favoriteService.searchFavoriteDrug(
-      email,
+      userid,
       limit,
       offset,
       sortedBy,
@@ -41,10 +41,13 @@ exports.addCancelFavoriteDrug = async (
   next: NextFunction
 ): Promise<void> => {
   const { drugid } = req.params;
-  const { email } = req.user;
+  const { userid } = req.user;
 
   try {
-    const favorite = await favoriteService.addCancelFavoriteDrug(drugid, email);
+    const favorite = await favoriteService.addCancelFavoriteDrug(
+      drugid,
+      userid
+    );
 
     if (favorite.message === 'deleted') {
       res.status(200).send('좋아요를 취소했습니다.');
@@ -64,10 +67,10 @@ exports.userFavoriteStatus = async (
   next: NextFunction
 ): Promise<void> => {
   const { drugid } = req.params;
-  const { email } = req.user;
+  const { userid } = req.user;
 
   try {
-    const favorite = await favoriteService.userFavoriteStatus(drugid, email);
+    const favorite = await favoriteService.userFavoriteStatus(drugid, userid);
 
     res.status(200).send(favorite);
   } catch (error: any) {

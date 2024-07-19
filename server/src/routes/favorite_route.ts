@@ -58,13 +58,13 @@ const router = Router();
  *                         type: integer
  *                         description: favorite id
  *                         example: 5
- *                       email:
+ *                       userid:
  *                         type: string
- *                         description: User's email
- *                         example: test@test.com
+ *                         description: user id
+ *                         example: 0190caa1-0c81-7fa2-9e4d-ed3c8ec93d7a
  *                       drugid:
  *                         type: integer
- *                         description: Drug ID
+ *                         description: drug id
  *                         example: 199800355
  *                       drugname:
  *                         type: string

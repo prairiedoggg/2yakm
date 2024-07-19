@@ -11,17 +11,17 @@ interface totalCountAndData {
 // 리뷰 생성 서비스
 exports.createReview = async (
   drugid: number,
-  email: string,
+  userid: string,
   content: string
 ): Promise<typeof Review | null> => {
   // 매개변수화된 쿼리 (SQL 인젝션 공격을 방지할 수 있음)
   try {
     const query = `
-    INSERT INTO reviews (drugid, email, content)
+    INSERT INTO reviews (drugid, userid, content)
     VALUES ($1, $2, $3)
     RETURNING *
     `;
-    const values = [drugid, email, content];
+    const values = [drugid, userid, content];
     const { rows } = await pool.query(query, values);
 
     return rows.length ? rows[0] : null;
@@ -33,12 +33,12 @@ exports.createReview = async (
 // 리뷰 수정 서비스
 exports.updateReview = async (
   reviewid: number,
-  email: string,
+  userid: string,
   content: string
 ): Promise<typeof Review | null> => {
   try {
     const validationQuery = `
-    SELECT email FROM reviews
+    SELECT userid FROM reviews
     WHERE reviewid = $1
     `;
     const validationValues = [reviewid];
@@ -51,7 +51,7 @@ exports.updateReview = async (
       throw createError('NotFound', '수정할 리뷰를 찾을 수 없습니다.', 404);
     }
 
-    if (email !== validationResult.rows[0].email) {
+    if (userid !== validationResult.rows[0].userid) {
       throw createError('unAuthorized', '수정 권한이 없습니다.', 401);
     }
 
@@ -73,11 +73,11 @@ exports.updateReview = async (
 // 리뷰 삭제 서비스
 exports.deleteReview = async (
   reviewid: number,
-  email: string
+  userid: string
 ): Promise<typeof Review | null> => {
   try {
     const validationQuery = `
-    SELECT email FROM reviews
+    SELECT userid FROM reviews
     WHERE reviewid = $1
     `;
     const validationValues = [reviewid];
@@ -90,7 +90,7 @@ exports.deleteReview = async (
       throw createError('NotFound', '삭제할 리뷰를 찾을 수 없습니다.', 404);
     }
 
-    if (email !== validationResult.rows[0].email) {
+    if (userid !== validationResult.rows[0].userid) {
       throw createError('unAuthorized', '수정 권한이 없습니다.', 401);
     }
 
@@ -118,7 +118,7 @@ exports.getDrugAllReview = async (
         reviews.reviewid,
         reviews.drugid,
         drugs.drugname,
-        reviews.email,
+        reviews.userid,
         users.username,
         users.role,
         reviews.content,
@@ -128,7 +128,7 @@ exports.getDrugAllReview = async (
       JOIN 
         drugs ON reviews.drugid = drugs.drugid
       JOIN 
-        users ON reviews.email = users.email
+        users ON reviews.userid = users.userid
       WHERE 
         reviews.drugid = $1;
         `;
@@ -148,7 +148,7 @@ exports.getDrugAllReview = async (
 
 // 해당 유저의 모든 리뷰 조회 서비스
 exports.getUserAllReview = async (
-  email: string,
+  userid: string,
   limit: number,
   offset: number,
   sortedBy: string,
@@ -159,9 +159,9 @@ exports.getUserAllReview = async (
     const countQuery = `
     SELECT COUNT(*) AS total
     FROM reviews
-    WHERE email = $1
+    WHERE userid = $1
 `;
-    const countValues = [email];
+    const countValues = [userid];
     const countResults = await pool.query(countQuery, countValues);
     const totalCount = parseInt(countResults.rows[0].total, 10);
     const totalPages = Math.ceil(totalCount / limit);
@@ -178,14 +178,14 @@ exports.getUserAllReview = async (
       JOIN 
         drugs ON reviews.drugid = drugs.drugid
       JOIN 
-        users ON reviews.email = users.email
+        users ON reviews.userid = users.userid
       WHERE 
-        reviews.email = $1
+        reviews.userid = $1
       ORDER BY ${sortedBy} ${order}
       LIMIT $2 OFFSET $3;
         `;
 
-    const values = [email, limit, offset];
+    const values = [userid, limit, offset];
     const { rows } = await pool.query(query, values);
 
     return {

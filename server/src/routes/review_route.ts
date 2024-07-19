@@ -42,7 +42,7 @@ const router = Router();
  *                   type: integer
  *                 drugid:
  *                   type: integer
- *                 email:
+ *                 userid:
  *                   type: string
  *                 content:
  *                   type: string
@@ -52,7 +52,7 @@ const router = Router();
  *               example:
  *                 reviewid: 1
  *                 drugid: 197000037
- *                 email: "test@test.com"
+ *                 userid: "0190caa1-0c81-7fa2-9e4d-ed3c8ec93d7a"
  *                 content: "전 이거 먹고 힘을 내요! 완전 추천합니다!"
  *                 created_at: "2024-07-16T20:37:08.325Z"
  *       400:
@@ -112,7 +112,7 @@ router.post('/:drugid', authByToken, reviewController.createReview);
  *               example:
  *                 reviewid: 1
  *                 drugid: 197000037
- *                 email: "test@test.com"
+ *                 userid: "0190caa1-0c81-7fa2-9e4d-ed3c8ec93d7a"
  *                 content: "생각해보니까 타이레놀이 가장 좋아요!"
  *                 created_at: "2024-07-16T20:37:08.325Z"
  *       400:
@@ -191,7 +191,7 @@ router.delete('/:reviewid', authByToken, reviewController.deleteReview);
  *                         type: integer
  *                       drugname:
  *                         type: string
- *                       email:
+ *                       userid:
  *                         type: string
  *                       username:
  *                         type: string
