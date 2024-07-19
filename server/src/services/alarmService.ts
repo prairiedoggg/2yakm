@@ -100,34 +100,7 @@ export const deleteAlarm = async (id: string): Promise<boolean> => {
   return result.rowCount > 0;
 };
 
-//카카오 연동 전 임시
-const tempMessage = async (message : string) =>{
-  console.log('메시지', message)
-}
-
-const sendKakaoMessage = async (message: string) => {
-  const KAKAO_API_URL = 'https://kapi.kakao.com/v1/api/talk/friends/message/default/send';
-  const KAKAO_API_KEY = process.env.KAKAO_API_KEY;
-
-  try {
-    const response = await axios.post(KAKAO_API_URL, {
-      message,
-    }, {
-      headers: {
-        Authorization: `Bearer ${KAKAO_API_KEY}`,
-      },
-    });
-
-    if (response.status === 200) {
-      console.log('메시지 발송완료:', message);
-    } else {
-      console.error('메시지 발송실패:', response.data);
-    }
-  } catch (error) {
-    console.error('Error sending Kakao message:', error);
-  }
-};
-
+//메일 발송
 const sendEmail = async (message: string, recipientEmail: string) => {
   const transporter = nodemailer.createTransport({
     service: 'gmail',
