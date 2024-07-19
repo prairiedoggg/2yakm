@@ -12,7 +12,7 @@ Date        Author   Status    Description
 
 import { useState } from 'react';
 import styled from 'styled-components';
-import SearchBox from '../search/SearchBox';
+import SearchBox from '../SearchBox';
 
 const MainHeaderContainer = styled.div`
   width: 100vw;

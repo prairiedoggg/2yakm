@@ -19,6 +19,7 @@ import News from './components/cardNews/News';
 import Search from './components/search/Search';
 import TagPage from './components/search/TagPage';
 import Calendar from './components/calendar/CalendarPage';
+import Alarm from './components/alarm/Alarm';
 import MyPage from './components/myPage/MyPage';
 
 const App: React.FC = () => {
@@ -31,8 +32,9 @@ const App: React.FC = () => {
         <Route path='/news3' element={<News num={3} />} />
         <Route path='/search' element={<Search />} />
         <Route path='/search/tag/:tag' element={<TagPage />} />
-        <Route path='/myPage' element={<MyPage />} />
         <Route path='/calendar' element={<Calendar />} />
+        <Route path='/alarm' element={<Alarm />} />
+        <Route path='/myPage' element={<MyPage />} />
       </Routes>
     </Router>
   );

@@ -14,6 +14,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
+import Tag from '../Tag'
 import PillExp from './PillExp';
 import Review from './Review';
 
@@ -44,24 +45,6 @@ const PillTitle = styled.div`
   }
 `;
 
-const Tag = styled.div`
-  display: flex;
-  width: 100%;
-  height: 30px;
-
-  & p {
-    width: 48px;
-    height: 25px;
-    margin-right: 10px;
-    font-size: 12px;
-    font-weight: 500;
-    text-align: center;
-    line-height: 25px;
-    border-radius: 5px;
-    background-color: var(--main-color);
-    cursor: pointer;
-  }
-`;
 
 const Exp = styled.p`
   margin: 15px 20px;
@@ -101,6 +84,11 @@ const SearchResults: React.FC = () => {
   const handleTagClick = (tag: string) => {
     navigate(`/search/tag/${tag}`);
   };
+
+    // useEffect(() => {
+    //   // 검색 결과 처리 로직 추가 생성 예정
+    //   console.log('Searching for:', searchQuery);
+    // }, [searchQuery]);
 
   return (
     <SearchResultsContainer>

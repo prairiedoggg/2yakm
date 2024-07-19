@@ -65,6 +65,8 @@ const Nav: React.FC = () => {
         return navigate('/calendar');
       case 'home':
         return navigate('/');
+      case 'alarm':
+        return navigate('/alarm');
     }
   };
 
@@ -86,7 +88,7 @@ const Nav: React.FC = () => {
             style={{ position: 'absolute', top: '-20px', width: '50px' }}
           />
         </li>
-        <li style={{ marginLeft: '15px' }}>
+        <li style={{ marginLeft: '15px' }} onClick={handleNav('alarm')}>
           <img src={`/img/nav/bell.svg`} alt='bell' style={{ width: '30px' }} />
           <p>알람설정</p>
         </li>
