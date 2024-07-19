@@ -10,12 +10,12 @@ Date        Author   Status    Description
 
 import { create } from 'zustand';
 
-// interface Store {
-//   rendering: boolean;
-//   setRendering: () => void;
-// }
+interface Store {
+  value: Date;
+  onChange: (date: Date) => void;
+}
 
-// export const useRenderingStore = create<Store>((set) => ({
-//   rendering: true,
-//   setRendering: () => set((state) => ({ rendering: !state.rendering }))
-// }));
+export const useDateStore = create<Store>((set) => ({
+  value: new Date(),
+  onChange: (date: Date) => set({ value: date })
+}));
