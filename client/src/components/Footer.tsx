@@ -8,7 +8,6 @@
  * 2024.07.19  민선옥    Created
  */
 
-import React from 'react';
 import styled from 'styled-components';
 
 const FooterContainer = styled.footer`
@@ -24,7 +23,7 @@ const FooterContainer = styled.footer`
   }
 `;
 
-const Footer: React.FC = () => {
+const Footer = () => {
   return (
     <FooterContainer>
       <p>

@@ -12,9 +12,8 @@
  */
 
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import styled from 'styled-components';
-import Tag from '../Tag'
 import PillExp from './PillExp';
 import Review from './Review';
 
@@ -45,6 +44,26 @@ const PillTitle = styled.div`
   }
 `;
 
+const TagContainer = styled.div`
+  display: flex;
+  width: 100%;
+  height: 30px;
+`;
+
+const Tag = styled(Link)`
+  width: 48px;
+  height: 25px;
+  margin-right: 10px;
+  font-size: 12px;
+  font-weight: 500;
+  text-align: center;
+  line-height: 25px;
+  border-radius: 5px;
+  background-color: var(--main-color);
+  cursor: pointer;
+  text-decoration: none;
+  color: black;
+`;
 
 const Exp = styled.p`
   margin: 15px 20px;
@@ -78,17 +97,7 @@ const Menu = styled.div`
 const Contants = styled.div``;
 
 const SearchResults: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<number>(0);
-  const navigate = useNavigate();
-
-  const handleTagClick = (tag: string) => {
-    navigate(`/search/tag/${tag}`);
-  };
-
-    // useEffect(() => {
-    //   // 검색 결과 처리 로직 추가 생성 예정
-    //   console.log('Searching for:', searchQuery);
-    // }, [searchQuery]);
+  const [isEffectivenessTab, setIsEffectivenessTab] = useState<boolean>(true);
 
   return (
     <SearchResultsContainer>
@@ -100,33 +109,30 @@ const SearchResults: React.FC = () => {
             <span>Tylenol Tablet 500mg</span>
             <p>한국존슨앤드존슨판매(유)</p>
           </PillTitle>
-          <Tag>
-            <p onClick={() => handleTagClick('두통')}>두통</p>
-            <p onClick={() => handleTagClick('신경통')}>신경통</p>
-            <p onClick={() => handleTagClick('근육통')}>근육통</p>
-          </Tag>
+          <TagContainer>
+            <Tag to='/search/tag/두통'>두통</Tag>
+            <Tag to='/search/tag/신경통'>신경통</Tag>
+            <Tag to='/search/tag/근육통'>근육통</Tag>
+          </TagContainer>
         </section>
       </PillHeader>
       <Exp>※ 태그들을 클릭해 관련 증상들을 모아보세요.</Exp>
       <PillMore>
         <Menu>
           <p
-            className={activeTab === 0 ? 'active' : ''}
-            onClick={() => setActiveTab(0)}
+            className={isEffectivenessTab ? 'active' : ''}
+            onClick={() => setIsEffectivenessTab(true)}
           >
             효능•용법
           </p>
           <p
-            className={activeTab === 1 ? 'active' : ''}
-            onClick={() => setActiveTab(1)}
+            className={!isEffectivenessTab ? 'active' : ''}
+            onClick={() => setIsEffectivenessTab(false)}
           >
             리뷰
           </p>
         </Menu>
-        <Contants>
-          {activeTab === 0 && <PillExp />}
-          {activeTab === 1 && <Review />}
-        </Contants>
+        <Contants>{isEffectivenessTab ? <PillExp /> : <Review />}</Contants>
       </PillMore>
     </SearchResultsContainer>
   );

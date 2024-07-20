@@ -11,7 +11,6 @@
 import { useParams } from 'react-router-dom';
 import styled from 'styled-components'; 
 import Header from '../Header';
-import Tag from '../Tag';
 import Nav from '../Nav';
 
 const TagTitle = styled.div`
@@ -41,10 +40,7 @@ const PillItem = styled.li`
   margin-top: 20px;
 `;
 
-const PillImg = styled.img.attrs({
-  src: `/img/pill.png`,
-  alt: 'user'
-})`
+const PillImg = styled.img`
   width: 120px;
 `;
 
@@ -75,6 +71,25 @@ const FavoritesCount = styled.div`
   }
 `;
 
+const TagContainer = styled.div`
+  display: flex;
+  width: 100%;
+  height: 30px;
+`;
+
+const Tag = styled.p`
+  width: 48px;
+  height: 25px;
+  margin-right: 10px;
+  font-size: 12px;
+  font-weight: 500;
+  text-align: center;
+  line-height: 25px;
+  border-radius: 5px;
+  background-color: var(--main-color);
+  cursor: pointer;
+`;
+
 const TagPage: React.FC = () => {
   const { tag } = useParams<{ tag: string }>();
 
@@ -86,7 +101,7 @@ const TagPage: React.FC = () => {
         <p>즐겨찾기 개수로 정렬되었습니다.</p>
         <PillList>
           <PillItem>
-            <PillImg></PillImg>
+            <PillImg src={`/img/pill.png`} alt='유저'></PillImg>
             <PillText>
               <PillTitle>
                 <h3>타이레놀정500밀리그람 (아세트아미노펜)</h3>
@@ -96,11 +111,11 @@ const TagPage: React.FC = () => {
                 <p>즐겨찾기 1024</p>
                 <p>리뷰 512</p>
               </FavoritesCount>
-              <Tag>
-                <p>두통</p>
-                <p>신경통</p>
-                <p>근육통</p>
-              </Tag>
+              <TagContainer>
+                <Tag>두통</Tag>
+                <Tag>신경통</Tag>
+                <Tag>근육통</Tag>
+              </TagContainer>
             </PillText>
           </PillItem>
         </PillList>
