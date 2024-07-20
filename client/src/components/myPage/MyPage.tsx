@@ -20,6 +20,9 @@ import { useState } from 'react';
 enum pageState {
   Main,
   EditInfo,
+  EditName,
+  EditPassword,
+  EditPharmacist,
   MyMedications,
   FavoriteMedications,
   ManageReviews,
@@ -31,33 +34,20 @@ const MyPage = () => {
   const renderContent = () => {
     switch (currentState) {
       case pageState.EditInfo:
-        return (
-          <div>
-            {renderPageTitle("정보수정")}
-            <EditMyInformation />
-          </div>
-        );
-      case pageState.MyMedications:
-        return (
-          <div>
-            {renderPageTitle("나의 약")}
-            {/* <MyMedications /> */}
-          </div>
-        );
+      case pageState.EditName:
+      case pageState.EditPassword:
+      case pageState.EditPharmacist:
+      case pageState.MyMedications:  
       case pageState.FavoriteMedications:
+      case pageState.ManageReviews:  
         return (
           <div>
-            {renderPageTitle("즐겨찾는 약")}
-             {/* <FavoriteMedications /> */}
+            {renderPageTitle(currentState)}
+            {renderStatePage(currentState)}
           </div>
         );
-      case pageState.ManageReviews:
-        return (
-          <div>
-            {renderPageTitle("리뷰관리")}
-            {/* <ManageReviews /> */}
-          </div>
-        );
+
+
       default:
         return (
           <StyledContent>
@@ -71,12 +61,66 @@ const MyPage = () => {
     }
   };
 
-  const renderPageTitle = (title : string) =>{
+  const renderStatePage = (state:pageState) =>{
+    switch(state){
+      case pageState.EditInfo:
+        return (
+        <EditMyInformation onEditNameClick={()=>setCurrentState(pageState.EditName)}
+                           onEditPasswordClick={()=>setCurrentState(pageState.EditPassword)}
+                           onEditPharmacistClick={()=>setCurrentState(pageState.EditPharmacist)} />);
+                           
+      case pageState.EditName:
+        return (<div></div>);
+      case pageState.EditPassword:
+        return (<div></div>);
+      case pageState.EditPharmacist:
+        return (<div></div>);
+      case pageState.MyMedications:
+        return (<div></div>);
+      case pageState.FavoriteMedications:
+        return (<div></div>);
+      case pageState.ManageReviews:
+        return (<div></div>);
+    }  
+  }
+
+  const getStateTitle = (state:pageState) =>{
+    switch(state){
+      case pageState.EditInfo:
+        return "정보 수정";
+      case pageState.EditName:
+        return "이름 변경";
+      case pageState.EditPassword:
+        return "비밀번호 변경";
+      case pageState.EditPharmacist:
+        return "약사 인증";
+      case pageState.MyMedications:
+        return "나의 약";
+      case pageState.FavoriteMedications:
+        return "즐겨찾는 약";
+      case pageState.ManageReviews:
+        return "리뷰 관리";
+    }
+  }
+
+  const getStateBackPage = (state:pageState) =>{
+    switch(state){
+      case pageState.EditName:
+      case pageState.EditPassword:
+      case pageState.EditPharmacist:
+        return pageState.EditInfo;  
+
+      default:
+        return pageState.Main
+    }
+  }  
+
+  const renderPageTitle = (state : pageState) =>{
     return (
       <PageTitle>
         <div className="title">
           <Icon icon="ep:arrow-left-bold" width='1.2em' height='1.2em' style={{ color: '#FFBB25' }} 
-          onClick={() =>setCurrentState(pageState.Main)} /> <div>{title}</div> 
+          onClick={() =>setCurrentState(getStateBackPage(state))} /> <div>{getStateTitle(state)}</div> 
         </div>
         <hr />
       </PageTitle>
