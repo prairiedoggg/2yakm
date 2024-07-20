@@ -69,15 +69,11 @@ const CalendarSection: React.FC = () => {
           onChange={onChange}
           value={value}
           calendarType='gregory'
-          // prev2Label={null}
-          // next2Label={null}
-          // 일 없이 날짜 숫자만
           formatDay={(locale, date) => dayjs(date).format('D')}
           // 날짜 칸에 보여지는 컨텐츠 (우리는 알약)
           // tileContent={addContent}
           // 앞뒤 달의 이어지는 날짜 보여주기 여부
           showNeighboringMonth={true}
-          // 토요일, 일요일 색상 변경
           tileClassName={getDayClassName}
         />
       </CalendarContainer>
