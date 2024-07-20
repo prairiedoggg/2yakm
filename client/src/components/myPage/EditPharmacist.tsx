@@ -11,10 +11,13 @@ Date        Author   Status    Description
 import styled from 'styled-components';
 import { Icon } from '@iconify-icon/react';
 import {  useEffect, useState } from 'react';
+import BottomPictureSheet from './BottomPictureSheet';
+
 
 
 const EditPharmacist = ({onEdit}:{onEdit:()=>void}) => {
   const [image, setImage] = useState('');
+  const [bottomSheet, setBottomSheet] = useState(false);
   const [isButtonEnabled, setIsButtonEnabled] = useState<boolean>(false);
 
 
@@ -29,13 +32,14 @@ const EditPharmacist = ({onEdit}:{onEdit:()=>void}) => {
       <StyledContent>
         <div className='title'>약사 인증을 위해 사업자 등록증을 등록해주세요</div>
           <div className='informations'>
-            <div className='information-item'>
+            <div className='information-item' onClick={()=>setBottomSheet(true)}>
             <div className='info-key'>사업자 등록증 찾기</div>
-            <div className='info-value' onClick={()=>{}}> <Icon icon="ep:arrow-right-bold" width='1.1em' height='1.1em' /> </div>
+            <div className='info-value' > <Icon icon="ep:arrow-right-bold" width='1.1em' height='1.1em' /> </div>
             </div>            
           </div>
         <button className='submitButton' disabled={!isButtonEnabled} onClick={onEdit}>등록 완료</button>
       </StyledContent>
+    <BottomPictureSheet title={'사업자 등록증 등록'} isVisible={bottomSheet} onClose={()=>{setBottomSheet(false)}} />  
     </MyPageContainer>
   );
 };

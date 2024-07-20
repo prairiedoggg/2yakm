@@ -9,7 +9,9 @@ Date        Author   Status    Description
 */
 
 import styled from 'styled-components';
+import BottomPictureSheet from './BottomPictureSheet';
 import { Icon } from '@iconify-icon/react';
+import { useState } from 'react';
 
 type Info = {
   info:string,
@@ -19,6 +21,7 @@ type Info = {
 const EditMyInformation = 
   ({onEditNameClick, onEditPasswordClick, onEditPharmacistClick} :{
     onEditNameClick : ()=> void, onEditPasswordClick : ()=> void, onEditPharmacistClick : ()=> void}) => {
+    const [bottomSheet, setBottomSheet] = useState(false);
 
   const infos1:Info[] = [
     {info:'이메일', onClick:undefined}, 
@@ -65,7 +68,7 @@ const EditMyInformation =
       <StyledContent>
         <div className='thumbnail'>
           <img className='thumbnailImage' src={`img/user.svg`} alt='프로필 이미지' />
-          <div className='edit-thumb'><Icon icon="solar:camera-bold" width='1.2em' height='1.2em' /></div>
+          <div className='edit-thumb' onClick={()=> setBottomSheet(true)}><Icon icon="solar:camera-bold" width='1.2em' height='1.2em' /></div>
         </div>
         <div className='informations'>
           {generateItems(infos1)}
@@ -77,6 +80,8 @@ const EditMyInformation =
 
         <div className='bottom-menu'>로그아웃 | 회원탈퇴</div>
       </StyledContent>
+    
+    <BottomPictureSheet title={'사진 등록'} isVisible={bottomSheet} onClose={()=>{setBottomSheet(false)}} />
     </MyPageContainer>
   );
 };
@@ -93,6 +98,7 @@ const StyledContent = styled.div`
   flex-direction: column;
   align-items: center;
   gap:50px;
+  padding-top:20px;
  
   .thumbnail{
         position: relative;

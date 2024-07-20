@@ -97,7 +97,7 @@ const MyPage = () => {
 
       case pageState.FavoriteMedications:
         return (<div></div>);
-        
+
       case pageState.ManageReviews:
         return (<div></div>);
     }  
