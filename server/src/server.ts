@@ -1,6 +1,7 @@
 const express = require('express');
 const swaggerUi = require('swagger-ui-express');
 const specs = require('./swagger');
+
 const dotenv = require('dotenv');
 const bodyParser = require('body-parser');
 const cors = require('cors');
@@ -66,7 +67,7 @@ app.listen(port, () => {
 });
 
 
-app.use('/api/calenders', authByToken, calendarRouter);
+app.use('/api/calendars', authByToken, calendarRouter);
 app.use('/api/alarms', authByToken, alarmRouter);
 app.use(cookieParser());
 

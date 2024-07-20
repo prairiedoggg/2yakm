@@ -4,6 +4,43 @@ const router = Router();
 
 /**
  * @swagger
+ * components:
+ *   schemas:
+ *     Calendar:
+ *       type: object
+ *       properties:
+ *         id:
+ *           type: string
+ *         userId:
+ *           type: string
+ *         date:
+ *           type: string
+ *           format: date-time
+ *         calImg:
+ *           type: string
+ *         condition:
+ *           type: string
+ *         weight:
+ *           type: number
+ *         temperature:
+ *           type: number
+ *         bloodsugarBefore:
+ *           type: number
+ *         bloodsugarAfter:
+ *           type: number
+ *         medications:
+ *           type: array
+ *           items:
+ *             type: object
+ *             properties:
+ *               time:
+ *                 type: string
+ *               taken:
+ *                 type: boolean
+ */
+
+/**
+ * @swagger
  * /api/calendars:
  *   get:
  *     summary: 사용자 일정 전체보기
@@ -16,29 +53,11 @@ const router = Router();
  *             schema:
  *               type: array
  *               items:
- *                 type: object
- *                 properties:
- *                   id:
- *                     type: string
- *                   userId:
- *                     type: string
- *                   date:
- *                     type: string
- *                     format: date-time
- *                   calImg:
- *                     type: string
- *                   condition:
- *                     type: string
- *                   weight:
- *                     type: number
- *                   temperature:
- *                     type: number
- *                   bloodsugar:
- *                     type: number
+ *                 $ref: '#/components/schemas/Calendar'
  *       500:
  *         description: 서버 오류
  */
-router.get('/', calendarController.getAllCalendars); // 사용자 일정 전체보기
+router.get('/', calendarController.getAllCalendars);
 
 /**
  * @swagger
@@ -58,31 +77,13 @@ router.get('/', calendarController.getAllCalendars); // 사용자 일정 전체�
  *         content:
  *           application/json:
  *             schema:
- *               type: object
- *               properties:
- *                 id:
- *                   type: string
- *                 userId:
- *                   type: string
- *                 date:
- *                   type: string
- *                   format: date-time
- *                 calImg:
- *                   type: string
- *                 condition:
- *                   type: string
- *                 weight:
- *                   type: number
- *                 temperature:
- *                   type: number
- *                 bloodsugar:
- *                   type: number
+ *               $ref: '#/components/schemas/Calendar'
  *       404:
  *         description: 일정을 찾을 수 없음
  *       500:
  *         description: 서버 오류
  */
-router.get('/:id', calendarController.getCalendarById); // 일정 상세보기
+router.get('/:id', calendarController.getCalendarById);
 
 /**
  * @swagger
@@ -100,17 +101,18 @@ router.get('/:id', calendarController.getCalendarById); // 일정 상세보기
  *               date:
  *                 type: string
  *                 format: date-time
- *               alarm:
- *                 type: string
- *                 format: date-time
  *               condition:
  *                 type: string
  *               weight:
  *                 type: number
  *               temperature:
  *                 type: number
- *               bloodsugar:
+ *               bloodsugarBefore:
  *                 type: number
+ *               bloodsugarAfter:
+ *                 type: number
+ *               medications:
+ *                 type: string
  *               calImg:
  *                 type: string
  *                 format: binary
@@ -120,31 +122,13 @@ router.get('/:id', calendarController.getCalendarById); // 일정 상세보기
  *         content:
  *           application/json:
  *             schema:
- *               type: object
- *               properties:
- *                 id:
- *                   type: string
- *                 userId:
- *                   type: string
- *                 date:
- *                   type: string
- *                   format: date-time
- *                 calImg:
- *                   type: string
- *                 condition:
- *                   type: string
- *                 weight:
- *                   type: number
- *                 temperature:
- *                   type: number
- *                 bloodsugar:
- *                   type: number
+ *               $ref: '#/components/schemas/Calendar'
  *       400:
  *         description: 잘못된 요청
  *       500:
  *         description: 서버 오류
  */
-router.post('/', calendarController.createCalendar); // 일정 작성
+router.post('/', calendarController.createCalendar);
 
 /**
  * @swagger
@@ -174,8 +158,12 @@ router.post('/', calendarController.createCalendar); // 일정 작성
  *                 type: number
  *               temperature:
  *                 type: number
- *               bloodsugar:
+ *               bloodsugarBefore:
  *                 type: number
+ *               bloodsugarAfter:
+ *                 type: number
+ *               medications:
+ *                 type: string
  *               calImg:
  *                 type: string
  *                 format: binary
@@ -185,31 +173,13 @@ router.post('/', calendarController.createCalendar); // 일정 작성
  *         content:
  *           application/json:
  *             schema:
- *               type: object
- *               properties:
- *                 id:
- *                   type: string
- *                 userId:
- *                   type: string
- *                 date:
- *                   type: string
- *                   format: date-time
- *                 calImg:
- *                   type: string
- *                 condition:
- *                   type: string
- *                 weight:
- *                   type: number
- *                 temperature:
- *                   type: number
- *                 bloodsugar:
- *                   type: number
+ *               $ref: '#/components/schemas/Calendar'
  *       404:
  *         description: 일정을 찾을 수 없음
  *       500:
  *         description: 서버 오류
  */
-router.put('/:id', calendarController.updateCalendar); // 일정 ID로 업데이트
+router.put('/:id', calendarController.updateCalendar);
 
 /**
  * @swagger
@@ -238,6 +208,6 @@ router.put('/:id', calendarController.updateCalendar); // 일정 ID로 업데이
  *       500:
  *         description: 서버 오류
  */
-router.delete('/:id', calendarController.deleteCalendar); // 일정 ID로 삭제
+router.delete('/:id', calendarController.deleteCalendar);
 
 module.exports = router;

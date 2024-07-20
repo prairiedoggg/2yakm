@@ -17,7 +17,7 @@ const router = express.Router();
 
 /**
  * @swagger
- * /auth/login:
+ * /api/auth/login:
  *   post:
  *     summary: 사용자 로그인
  *     tags: [Auth]
@@ -51,7 +51,7 @@ router.post('/login', loginController);
 
 /**
  * @swagger
- * /auth/signup:
+ * /api/auth/signup:
  *   post:
  *     summary: 사용자 회원가입
  *     tags: [Auth]
@@ -153,7 +153,7 @@ router.get('/kakao/callback', kakaoAuthController);
 
 /**
  * @swagger
- * /auth/google/callback:
+ * /api/auth/google/callback:
  *   get:
  *     summary: 구글 로그인 콜백
  *     tags: [Auth]
@@ -182,7 +182,7 @@ router.get('/google/callback', googleAuthController);
 
 /**
  * @swagger
- * /auth/logout:
+ * /api/auth/logout:
  *   post:
  *     summary: 로그아웃
  *     tags: [Auth]
@@ -233,7 +233,7 @@ router.post('/change-password', changePasswordController);
 
 /**
  * @swagger
- * /auth/request-password:
+ * /api/auth/request-password:
  *   post:
  *     summary: 비밀번호 재설정 요청
  *     tags: [Auth]
@@ -261,7 +261,7 @@ router.post('/request-password', requestPasswordController);
 
 /**
  * @swagger
- * /auth/reset-password:
+ * /api/auth/reset-password:
  *   post:
  *     summary: 비밀번호 재설정
  *     tags: [Auth]
@@ -291,7 +291,7 @@ router.post('/reset-password', resetPasswordController);
 
 /**
  * @swagger
- * /auth/link/kakao:
+ * /api/auth/link/kakao:
  *   post:
  *     summary: 카카오 계정 연동
  *     tags: [Auth]
@@ -323,7 +323,7 @@ router.post('/link/kakao', linkKakaoAccountController);
 
 /**
  * @swagger
- * /auth/link/google:
+ * /api/auth/link/google:
  *   post:
  *     summary: 구글 계정 연동
  *     tags: [Auth]
@@ -355,7 +355,7 @@ router.post('/link/google', linkGoogleAccountController);
 
 /**
  * @swagger
- * /auth/verify-email:
+ * /api/auth/verify-email:
  *   get:
  *     summary: 이메일 인증
  *     tags: [Auth]
