@@ -12,7 +12,9 @@ import styled from 'styled-components';
 import Header from '../Header';
 import MyInformation from './MyInformation';
 import EditMyInformation from './EditMyInformation';
+import EditName from './EditName';
 
+import Toast from '../Toast';
 import Nav from '../Nav';
 import { Icon } from '@iconify-icon/react';
 import { useState } from 'react';
@@ -47,11 +49,11 @@ const MyPage = () => {
           </div>
         );
 
-
       default:
         return (
           <StyledContent>
-            <MyInformation onEditInfo= {()=>setCurrentState(pageState.EditInfo)} />
+            <MyInformation onEditInfo= {()=>{
+              setCurrentState(pageState.EditInfo);}} />
             <div className='entries'>
               <hr/>
               {renderMenuItems()}
@@ -68,9 +70,10 @@ const MyPage = () => {
         <EditMyInformation onEditNameClick={()=>setCurrentState(pageState.EditName)}
                            onEditPasswordClick={()=>setCurrentState(pageState.EditPassword)}
                            onEditPharmacistClick={()=>setCurrentState(pageState.EditPharmacist)} />);
-                           
+
       case pageState.EditName:
-        return (<div></div>);
+        return (<EditName onEdit={()=> {
+          setCurrentState(pageState.EditInfo);}} />);
       case pageState.EditPassword:
         return (<div></div>);
       case pageState.EditPharmacist:
@@ -148,6 +151,8 @@ const MyPage = () => {
     <MyPageContainer>
       <Header />
       {renderContent()}
+      {/* <Toast str="이름 변경이 완료되었어요" /> */}
+
       <Nav />
     </MyPageContainer>
   );
@@ -160,7 +165,6 @@ const PageTitle = styled.div`
   justify-content: center;
   align-items: center;
   width:100%;
-  height:70px;
   gap:5px;
 
   .title{
@@ -186,6 +190,7 @@ const StyledContent = styled.div`
   align-content: center;
   justify-content: center;
   gap: 10px;
+
 
   hr{
     width:90%;
