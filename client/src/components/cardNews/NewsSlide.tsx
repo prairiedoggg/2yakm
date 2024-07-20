@@ -23,7 +23,7 @@ interface NewsNumber {
   num: number;
 }
 
-const NewsSlide: React.FC<NewsNumber> = ({ num }) => {
+const NewsSlide = ({ num }: NewsNumber) => {
   const [images, setImages] = useState<string[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
 

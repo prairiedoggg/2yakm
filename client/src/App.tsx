@@ -21,6 +21,7 @@ import TagPage from './components/search/TagPage';
 import Calendar from './components/calendar/CalendarPage';
 import Alarm from './components/alarm/Alarm';
 import MyPage from './components/myPage/MyPage';
+import 'dayjs/locale/ko';
 
 const App: React.FC = () => {
   return (
