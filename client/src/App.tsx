@@ -11,16 +11,19 @@ Date        Author   Status    Description
 2024.07.17  임지영   Modified    + Calendar 
 2024.07.18  임지영   Modified    tsx
 2024.07.20  민선옥   Modified    + TagPage
+2024.07.21  민선옥   Modified    동적 라우팅으로 변경
 */
 
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
-import Home from './components/home/Home';
-import News from './components/cardNews/News';
-import Search from './components/search/Search';
-import TagPage from './components/search/TagPage';
-import Calendar from './components/calendar/CalendarPage';
-import Alarm from './components/alarm/Alarm';
-import MyPage from './components/myPage/MyPage';
+import loadable from '@loadable/component';
+
+const Home = loadable(() => import('./components/home/Home'));
+// const News = loadable(() => import('./components/cardNews/News'));
+const Search = loadable(() => import('./components/search/Search'));
+const TagPage = loadable(() => import('./components/search/TagPage'));
+const Calendar = loadable(() => import('./components/calendar/CalendarPage'));
+const Alarm = loadable(() => import('./components/alarm/Alarm'));
+const MyPage = loadable(() => import('./components/myPage/MyPage'));
 import 'dayjs/locale/ko';
 
 const App: React.FC = () => {
@@ -28,9 +31,7 @@ const App: React.FC = () => {
     <Router>
       <Routes>
         <Route path='/' element={<Home />} />
-        <Route path='/news1' element={<News num={1} />} />
-        <Route path='/news2' element={<News num={2} />} />
-        <Route path='/news3' element={<News num={3} />} />
+        {/* <Route path='/news/:num' element={<News />} /> */}
         <Route path='/search' element={<Search />} />
         <Route path='/search/tag/:tag' element={<TagPage />} />
         <Route path='/calendar' element={<Calendar />} />

@@ -18,10 +18,7 @@ const AlarmContainer = styled.div`
   margin-top: 20px;
 `
 
-const AddAlarm = styled.img.attrs({
-  src: `/img/plus.svg`,
-  alt: `알람추가`
-})`
+const AddAlarm = styled.img`
 `;
 
 const Alarm: React.FC = () => {
@@ -29,7 +26,7 @@ const Alarm: React.FC = () => {
     <>
       <Header></Header>
       <AlarmContainer>
-        <AddAlarm></AddAlarm>
+        <AddAlarm src={`/img/plus.svg`} alt='알람추가' />
       </AlarmContainer>
 
       <Nav></Nav>

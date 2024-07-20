@@ -76,26 +76,26 @@ const Nav: React.FC = () => {
     <NavContainer>
       <ul>
         <li>
-          <img src={`/img/nav/talk.png`} alt='talk' style={{ width: '40px' }} />
+          <img src={`/img/nav/talk.png`} alt='상담' style={{ width: '40px' }} />
           <p>상담</p>
         </li>
         <li style={{ marginRight: '15px' }} onClick={handleNav('calendar')}>
-          <img src={`/img/nav/calender.png`} alt='calender' />
+          <img src={`/img/nav/calender.png`} alt='캘린더' />
           <p>캘린더</p>
         </li>
         <li onClick={handleNav('home')}>
           <img
             src={`/img/nav/home.png`}
-            alt='Home'
+            alt='홈'
             style={{ position: 'absolute', top: '-20px', width: '50px' }}
           />
         </li>
         <li style={{ marginLeft: '15px' }} onClick={handleNav('alarm')}>
-          <img src={`/img/nav/bell.svg`} alt='bell' style={{ width: '30px' }} />
+          <img src={`/img/nav/bell.svg`} alt='알람' style={{ width: '30px' }} />
           <p>알람설정</p>
         </li>
         <li onClick={handleNav('myPage')}>
-          <img src={`/img/nav/user.png`} alt='user' style={{ width: '30px' }} />
+          <img src={`/img/nav/user.png`} alt='유저' style={{ width: '30px' }} />
           <p>마이페이지</p>
         </li>
       </ul>

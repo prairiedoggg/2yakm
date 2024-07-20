@@ -58,10 +58,7 @@ const User = styled.div`
   }
 `;
 
-const Profile = styled.img.attrs({
-  src: `/img/user.svg`,
-  alt: 'user'
-})``;
+const Profile = styled.img``;
 
 const Review: React.FC = () => {
   return (
@@ -74,7 +71,7 @@ const Review: React.FC = () => {
           }}
         >
           <User>
-            <Profile />
+            <Profile src={`/img/user.svg`} alt='유저' />
             <span>약사약사</span>
           </User>
           <p>종합 감기약으로 타이레놀이 좋습니다.</p>

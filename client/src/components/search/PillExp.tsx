@@ -69,7 +69,7 @@ const PillExp: React.FC = () => {
             <ListTitle>
               <img
                 src={`/img/pillexp/pill.svg`}
-                alt='ingredient'
+                alt='약'
               />
               <span
                 style={{
@@ -85,7 +85,7 @@ const PillExp: React.FC = () => {
             <ListTitle>
               <img
                 src={`/img/pillexp/star.svg`}
-                alt='star'
+                alt='별모양'
               />
               <span
                 style={{
@@ -101,7 +101,7 @@ const PillExp: React.FC = () => {
             <ListTitle>
               <img
                 src={`/img/pillexp/pregnant.svg`}
-                alt='pregnant'
+                alt='임산부'
               />
               <span>임산부도 안전하게 복용 가능해요.</span>
             </ListTitle>

@@ -10,7 +10,7 @@
  */
 
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import styled from 'styled-components';
 
 const HeaderContainer = styled.header`
@@ -25,17 +25,14 @@ const Logo = styled.img`
 `;
 
 const Header: React.FC = () => {
-  const navigate = useNavigate();
-
-  const handleLogoClick = () => { 
-    navigate('/')
-  }
-
   return (
     <HeaderContainer>
-      <Logo src={`/img/logo_not_chicken.svg`} alt='Logo' onClick={ handleLogoClick} />
+      <Link to='/'>
+        <Logo src='/img/logo_not_chicken.svg' alt='이약뭐약' />
+      </Link>
     </HeaderContainer>
   );
 };
 
 export default Header;
+
