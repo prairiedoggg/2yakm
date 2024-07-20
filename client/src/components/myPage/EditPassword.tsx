@@ -13,33 +13,49 @@ import { Icon } from '@iconify-icon/react';
 import { ChangeEvent, useEffect, useState } from 'react';
 
 
-const EditName = ({onEdit}:{onEdit:()=>void}) => {
-  const [name, setName] = useState('');
+
+const ConfirmPassword = ({onEdit}:{onEdit:()=>void}) => {
+  const [password, setPassword] = useState('');
+  const [password2, setPassword2] = useState('');
   const [isButtonEnabled, setIsButtonEnabled] = useState<boolean>(false);
+  const [isButtonEnabled2, setIsButtonEnabled2] = useState<boolean>(false);
 
   const handleChange = (e:ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
-    setName(value);
+    setPassword(value);
     setIsButtonEnabled(value.trim().length > 0);
   };
 
+  const handleChange2 = (e:ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setPassword2(value);
+    setIsButtonEnabled2(value.trim().length > 0);
+  };
+
   useEffect(() => {
-    setIsButtonEnabled(name.trim().length > 0);
+    setIsButtonEnabled(password.trim().length > 0);
+    setIsButtonEnabled2(password2.trim().length > 0);
     return () => {
     };
-  }, [name]);  
+  }, [password, password2]);  
 
   return (
     <MyPageContainer>
       <StyledContent>
-        <div className='title'>새로운 이름을 입력해주세요</div>
+        <div className='title'>새로운 비밀번호를 입력해주세요</div>
         <div className="input-container">
-          <input type="text" placeholder="홍길동" value={name} onChange={handleChange} />
+          <input type="password" value={password} onChange={handleChange} placeholder='새로운 비밀번호' />
           <Icon className='clearButton' icon="pajamas:clear" width="1rem" height="1rem" 
                 style={{color: "gray", display:isButtonEnabled? '' : 'none'}}
-                onClick={()=>setName('')} />
+                onClick={()=>setPassword('')} />
         </div>
-        <button className='submitButton' disabled={!isButtonEnabled} onClick={onEdit}>변경 완료</button>
+        <div className="input-container">
+          <input type="password" value={password2} onChange={handleChange2} placeholder='비밀번호 확인' />
+          <Icon className='clearButton' icon="pajamas:clear" width="1rem" height="1rem" 
+                style={{color: "gray", display:isButtonEnabled2? '' : 'none'}}
+                onClick={()=>setPassword2('')} />
+        </div>
+        <button className='submitButton' disabled={!isButtonEnabled || password !== password2} onClick={onEdit}>변경 완료</button>
       </StyledContent>
     </MyPageContainer>
   );
@@ -104,4 +120,4 @@ const StyledContent = styled.div`
   }  
 `;
 
-export default EditName;
+export default ConfirmPassword;

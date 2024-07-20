@@ -13,6 +13,8 @@ import Header from '../Header';
 import MyInformation from './MyInformation';
 import EditMyInformation from './EditMyInformation';
 import EditName from './EditName';
+import ConfirmPassword from './ConfirmPassword';
+import EditPassword from './EditPassword';
 
 import Toast from '../Toast';
 import Nav from '../Nav';
@@ -23,6 +25,7 @@ enum pageState {
   Main,
   EditInfo,
   EditName,
+  ConfirmPassword,
   EditPassword,
   EditPharmacist,
   MyMedications,
@@ -37,6 +40,7 @@ const MyPage = () => {
     switch (currentState) {
       case pageState.EditInfo:
       case pageState.EditName:
+      case pageState.ConfirmPassword:
       case pageState.EditPassword:
       case pageState.EditPharmacist:
       case pageState.MyMedications:  
@@ -68,14 +72,18 @@ const MyPage = () => {
       case pageState.EditInfo:
         return (
         <EditMyInformation onEditNameClick={()=>setCurrentState(pageState.EditName)}
-                           onEditPasswordClick={()=>setCurrentState(pageState.EditPassword)}
+                           onEditPasswordClick={()=>setCurrentState(pageState.ConfirmPassword)}
                            onEditPharmacistClick={()=>setCurrentState(pageState.EditPharmacist)} />);
 
       case pageState.EditName:
         return (<EditName onEdit={()=> {
           setCurrentState(pageState.EditInfo);}} />);
+      case pageState.ConfirmPassword:
+        return (<ConfirmPassword onEdit={()=> {
+          setCurrentState(pageState.EditPassword);}} />);
       case pageState.EditPassword:
-        return (<div></div>);
+        return (<EditPassword onEdit={()=> {
+          setCurrentState(pageState.EditInfo);}} />);          
       case pageState.EditPharmacist:
         return (<div></div>);
       case pageState.MyMedications:
@@ -94,6 +102,7 @@ const MyPage = () => {
       case pageState.EditName:
         return "이름 변경";
       case pageState.EditPassword:
+      case pageState.ConfirmPassword:
         return "비밀번호 변경";
       case pageState.EditPharmacist:
         return "약사 인증";
@@ -109,6 +118,7 @@ const MyPage = () => {
   const getStateBackPage = (state:pageState) =>{
     switch(state){
       case pageState.EditName:
+      case pageState.ConfirmPassword:
       case pageState.EditPassword:
       case pageState.EditPharmacist:
         return pageState.EditInfo;  
