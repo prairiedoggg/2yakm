@@ -20,4 +20,4 @@ const options = {
 
 const specs = swaggerJsdoc(options);
 
-export default specs;
+module.exports = specs;

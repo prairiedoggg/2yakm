@@ -8,6 +8,11 @@ interface totalCountAndData {
   data: (typeof Review)[];
 }
 
+interface cursorBasedPaginationResult {
+  reviews: (typeof Review)[];
+  nextCursor: number | null;
+}
+
 // 리뷰 생성 서비스
 exports.createReview = async (
   drugid: number,
@@ -108,12 +113,18 @@ exports.deleteReview = async (
   }
 };
 
-// 해당 약의 모든 리뷰 조회 서비스 (미완성 - cursor-based pagination 추가 예정)
+// 해당 약의 모든 리뷰 조회 서비스
 exports.getDrugAllReview = async (
-  drugid: number
-): Promise<(typeof Review)[]> => {
+  drugid: number,
+  initialLimit: number,
+  cursorLimit: number,
+  cursor?: {
+    created_at: string;
+    reviewid: number;
+  }
+): Promise<cursorBasedPaginationResult> => {
   try {
-    const query = `
+    let query = `
       SELECT 
         reviews.reviewid,
         reviews.drugid,
@@ -130,13 +141,42 @@ exports.getDrugAllReview = async (
       JOIN 
         users ON reviews.userid = users.userid
       WHERE 
-        reviews.drugid = $1;
+        reviews.drugid = $1
         `;
 
-    const values = [drugid];
+    const values: any[] = [drugid];
+
+    // 첫 번째 자료를 불러올 때는 initialLimit 값 사용, 그 이후 스크롤을 했을 때는 cursorLimit 값을 이용해서 자료를 가져옴
+    if (cursor) {
+      query += ` AND (reviews.reviewid < $2)`;
+      values.push(cursor);
+      query += `
+        ORDER BY reviews.reviewid DESC
+        LIMIT $3
+      `;
+      values.push(cursorLimit);
+    } else {
+      query += `
+        ORDER BY reviews.reviewid DESC
+        LIMIT $2
+      `;
+      values.push(initialLimit);
+    }
+
     const { rows } = await pool.query(query, values);
 
-    return rows;
+    let nextCursor = null;
+
+    // 배열 index는 0으로 시작하기 때문에, lastReview를 가져오려면 자료의 길이에서 -1을 해주어야함, 예)길이가 10이면 마지막 자료는 rows[9]
+    if (rows.length === (cursor ? cursorLimit : initialLimit)) {
+      const lastReview = rows[rows.length - 1];
+      nextCursor = lastReview.reviewid;
+    }
+
+    return {
+      reviews: rows,
+      nextCursor
+    };
   } catch (error: any) {
     throw error;
   }

@@ -1,4 +1,4 @@
-# 🐤 4팀 chicken pharm backend, AI team page
+# 🐤 4팀 chicken pharm Back-end, AI README
 
 ## 🐯 멤버 소개
 
@@ -16,15 +16,13 @@
 
 ## 🔧 개발 중
 
-- OAuth
-
-- 캘린더 CRUD, 알림 서비스
-
-- 마이페이지 CRUD
+- 알림 서비스
 
 - 약 CRUD
 
 ## ✏️ 개발 완료
+
+- OAuth, 캘린더 CRUD, 마이페이지 CRUD (2024-07-20)
 
 - 페이지네이션, userid 생성 방식 uuid-v7 으로 변경 (2024-07-19)
 
