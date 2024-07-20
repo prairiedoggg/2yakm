@@ -11,7 +11,7 @@ Date        Author   Status    Description
 import styled from 'styled-components';
 import { Icon } from '@iconify-icon/react';
 
-function MyInformation(){
+const MyInformation = ({onEditInfo: onEditClick} : {onEditInfo:()=>void}) => {
 
     return(
     <InformationLayout>
@@ -21,7 +21,7 @@ function MyInformation(){
 
         <div className='profile'>
             <div className='info'>
-                <div className='nameArea' onClick={()=> window.location.href = '/EditMyInformation'}>홍길동 <Icon icon="ic:baseline-edit" style={{color: "#d1d1d1"}} /></div>
+                <div className='nameArea' onClick={()=> onEditClick()}>홍길동 <Icon icon="ic:baseline-edit" style={{color: "#d1d1d1"}} /></div>
                 <div>gildong@naver.com</div>
             </div>
         </div>
