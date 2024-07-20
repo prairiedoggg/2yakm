@@ -67,6 +67,8 @@ const Nav: React.FC = () => {
         return navigate('/');
       case 'alarm':
         return navigate('/alarm');
+      case 'myPage':
+        return navigate('/myPage');  
     }
   };
 
@@ -92,7 +94,7 @@ const Nav: React.FC = () => {
           <img src={`/img/nav/bell.svg`} alt='bell' style={{ width: '30px' }} />
           <p>알람설정</p>
         </li>
-        <li>
+        <li onClick={handleNav('myPage')}>
           <img src={`/img/nav/user.png`} alt='user' style={{ width: '30px' }} />
           <p>마이페이지</p>
         </li>
