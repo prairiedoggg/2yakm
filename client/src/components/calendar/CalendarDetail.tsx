@@ -20,7 +20,6 @@ const CalandarDatailContainer = styled.div`
   padding: 5px 25px;
   padding-bottom: 80px;
 `;
-
 const ImgContainer = styled.div`
   text-align: center;
 `;
@@ -28,7 +27,7 @@ const Arrow = styled.img.attrs({
   src: `/img/calendarArrow.png`,
   alt: 'Arrow Icon'
 })`
-  width: 5.5vw;
+  width: 20px;
   height: auto;
   cursor: pointer;
 `;
@@ -59,6 +58,9 @@ const ContentContainer = styled.div`
 const days: string[] = ['일', '월', '화', '수', '목', '금', '토'];
 
 const CalendarDetail: React.FC = () => {
+  // // 사용자 캘린더 데이터 받아오기
+  // const {data, isloading, error} = useQuery('calendar', () => fetch(url))
+
   const { value } = useDateStore();
 
   moment.locale('ko');
@@ -74,10 +76,17 @@ const CalendarDetail: React.FC = () => {
         <Edit />
       </DateContainer>
       <ContentContainer>
-        <DetailTextBox title='약 복용 여부' />
-        <DetailTextBox title='혈당' />
-        <DetailTextBox title='체온' />
-        <DetailTextBox title='체중' />
+        <DetailTextBox
+          title='약 복용 여부'
+          pillName={['타이레놀']}
+          time={'11시'}
+          isPillTaken={true}
+        />
+        {/* 혈당 null 값은 0으로 바꾸기*/}
+        <DetailTextBox title='혈당' bloodSugar={[100, 200]} />
+        <DetailTextBox title='체온' temp={36.5} />
+        <DetailTextBox title='체중' weight={10} />
+        <DetailTextBox title='사진 기록' photo={true} />
       </ContentContainer>
     </CalandarDatailContainer>
   );
