@@ -68,12 +68,7 @@ interface ColorText {
 }
 
 // 색상 변화
-const ColorText: React.FC<ColorText> = ({
-  color,
-  temp,
-  fasted,
-  afterMeals
-}) => {
+const ColorText = ({ color, temp, fasted, afterMeals }: ColorText) => {
   return (
     <TextContainer>
       {fasted !== undefined && (
@@ -105,7 +100,7 @@ interface DetailTextBox {
   photo?: boolean;
 }
 
-const DetailTextBox: React.FC<DetailTextBox> = ({
+const DetailTextBox = ({
   title,
   pillName,
   time,
@@ -114,11 +109,17 @@ const DetailTextBox: React.FC<DetailTextBox> = ({
   temp,
   weight,
   photo
-}) => {
+}: DetailTextBox) => {
   // 약 복용 여부
-  // const handleIsTakenPill = () => (
+  const handleIsTakenPill = () => {
+    return (
+      <label>
+        <input type='checkbox' checked={isPillTaken} />
+        11시{' '}
+      </label>
+    );
+  };
 
-  // )
   // 혈당에 따른 글자색 변화
   const handleBloodSugar = (isAfter: boolean) => {
     if (bloodSugar !== undefined) {
@@ -177,11 +178,7 @@ const DetailTextBox: React.FC<DetailTextBox> = ({
           <UnitContainer>
             <PillCheck>
               <div>{pillName}</div>
-              <div>
-                <div className='relative grid select-none items-center whitespace-nowrap rounded-lg border border-gray-900 py-1.5 px-3 font-sans text-xs font-bold uppercase text-gray-700'>
-                  <span className=''>chip outlined</span>
-                </div>
-              </div>
+              {handleIsTakenPill()}
             </PillCheck>
           </UnitContainer>
         );

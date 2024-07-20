@@ -7,10 +7,11 @@ History
 Date        Author   Status    Description
 2024.07.17  임지영   Created
 2024.07.18  임지영   Modified     tsx
+2024.07.21  임지영   Modified    코치님 코드 리뷰 수정 (dayjs, 주석)
 */
 
 import Calendar from 'react-calendar';
-import moment from 'moment';
+import dayjs from 'dayjs';
 import 'react-calendar/dist/Calendar.css';
 import '../../styles/calendar.css';
 import styled from 'styled-components';
@@ -47,14 +48,17 @@ const CalendarSection: React.FC = () => {
   //   );
   // };
 
-  // 토, 일 색상 변경
-  const tileClassName = ({ date }: { date: Date }) => {
-    if (date.getDay() === 0) {
+  const getDayClassName = ({ date }: { date: Date }) => {
+    const SUNDAY = 0;
+    const SATURDAY = 6;
+
+    if (date.getDay() === SUNDAY) {
       return 'sunday';
     }
-    if (date.getDay() === 6) {
+    if (date.getDay() === SATURDAY) {
       return 'saturday';
     }
+
     return '';
   };
 
@@ -62,20 +66,19 @@ const CalendarSection: React.FC = () => {
     <>
       <CalendarContainer>
         <Calendar
-          // locale='en'
           onChange={onChange}
           value={value}
           calendarType='gregory'
           // prev2Label={null}
           // next2Label={null}
           // 일 없이 날짜 숫자만
-          formatDay={(locale, date) => moment(date).format('D')}
+          formatDay={(locale, date) => dayjs(date).format('D')}
           // 날짜 칸에 보여지는 컨텐츠 (우리는 알약)
           // tileContent={addContent}
           // 앞뒤 달의 이어지는 날짜 보여주기 여부
           showNeighboringMonth={true}
           // 토요일, 일요일 색상 변경
-          tileClassName={tileClassName}
+          tileClassName={getDayClassName}
         />
       </CalendarContainer>
     </>

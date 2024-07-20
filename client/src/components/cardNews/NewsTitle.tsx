@@ -6,6 +6,7 @@ Author : 임지영
 History
 Date        Author   Status    Description
 2024.07.16  임지영   Created
+2024.07.21  임지영   Modified    코치님 코드 리뷰 수정
 */
 
 import styled from 'styled-components';
@@ -32,67 +33,37 @@ const SmallTitle = styled.div`
   font-weight: 500;
 `;
 
-const PillIcon = styled.img.attrs({
-  src: `/img/pillIcon.png`,
-  alt: 'pill img'
-})`
+const SmallImg = styled.img`
   width: 55px;
   height: 55px;
 `;
 
-const QnA = styled.img.attrs({
-  src: `/img/QnA.png`,
-  alt: 'qna img'
-})`
+const BigImg = styled.img`
   width: 75px;
   height: 50px;
 `;
 
-const StopImg = styled.img.attrs({
-  src: `/img/stop.png`,
-  alt: 'stop img'
-})`
-  width: 55px;
-  height: 55px;
-`;
-
-interface NewsNumber {
-  num: number;
+interface NewsTitleProps {
+  bigTitle: string;
+  smallTitle: string;
+  images: string[];
 }
 
-const NewsTitle: React.FC<NewsNumber> = ({ num }) => {
-  const bigTitle: string =
-    num === 1
-      ? '음주 후 복용 멈춰!'
-      : num === 2
-      ? '올바른 약 복용법'
-      : '해열제 성분 종류';
-
-  const smallTitle: string =
-    num === 1
-      ? '해열제 종류 성분에 대해서 알아봐요'
-      : num === 2
-      ? '약 복용법에 대해 QnA로 알아봅시다'
-      : '술 마시고 먹으면 절대 안 되는 약 7가지';
-
-  const handleImage = () => {
-    switch (num) {
-      case 1:
-        return <StopImg />;
-      case 2:
-        return <QnA />;
-      case 3:
-        return <PillIcon />;
-    }
-  };
-
+const NewsTitle = ({ bigTitle, smallTitle, images }: NewsTitleProps) => {
+  const [src, alt] = images;
   return (
     <NewsTitleContainer>
       <Title>
         <BigTitle>{bigTitle}</BigTitle>
         <SmallTitle>{smallTitle}</SmallTitle>
       </Title>
-      <Title>{handleImage()}</Title>
+      <Title>
+        {bigTitle === '올바른 약 복용법' ? (
+          <BigImg src={src} alt={alt} />
+        ) : (
+          <SmallImg src={src} alt={alt} />
+        )}
+      </Title>
     </NewsTitleContainer>
   );
 };
