@@ -43,6 +43,7 @@ export const updateAlarmController = async (req: CustomRequest, res: Response) =
   }
 
   try {
+    console.log(req.body);
     const alarmDate = date ? new Date(date) : undefined;
     if (alarmDate && isNaN(alarmDate.getTime())) {
       return res.status(400).json({ message: '유효하지 않은 날짜입니다.' });

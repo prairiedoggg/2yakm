@@ -45,6 +45,16 @@ exports.createCalendar = async (calendar: Partial<typeof Calendar>): Promise<typ
 
 exports.updateCalendar = async (id: string, calendar: Partial<typeof Calendar>): Promise<typeof Calendar | null> => {
   try {
+    // 기존의 medications 데이터를 가져옴
+    const existingCalendar = await exports.getCalendarById(id);
+    if (!existingCalendar) {
+      throw new Error("Calendar not found");
+    }
+
+    const existingMedications = existingCalendar.medications || [];
+    const newMedications = calendar.medications || [];
+    const updatedMedications = [...existingMedications, ...newMedications];
+
     const text = `
       UPDATE calendar 
       SET calimg = $1, condition = $2, weight = $3, temperature = $4, 
@@ -60,7 +70,7 @@ exports.updateCalendar = async (id: string, calendar: Partial<typeof Calendar>):
       calendar.temperature,
       calendar.bloodsugarBefore,
       calendar.bloodsugarAfter,
-      JSON.stringify(calendar.medications),
+      JSON.stringify(updatedMedications),
       calendar.date,
       id
     ];
@@ -75,7 +85,6 @@ exports.updateCalendar = async (id: string, calendar: Partial<typeof Calendar>):
     throw error;
   }
 };
-
 
 exports.deleteCalendar = async (id: string): Promise<boolean> => {
   const text = 'DELETE FROM calendar WHERE id = $1';

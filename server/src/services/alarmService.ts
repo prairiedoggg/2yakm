@@ -3,7 +3,7 @@ import axios from 'axios';
 import nodemailer from 'nodemailer';
 import { AlarmTime } from '../entity/alarm';
 
-const { Alarm } = require('../entity/alarm')
+const { Alarm } = require('../entity/alarm');
 const { pool } = require('../db');
 
 const runningJobs = new Map<string, schedule.Job>();
@@ -34,17 +34,28 @@ export const updateAlarm = async (id: string, alarm: Partial<typeof Alarm>): Pro
     SET userId = COALESCE($1, userId),
         name = COALESCE($2, name),
         date = COALESCE($3, date),
-        times = COALESCE($4, times),
+        times = COALESCE($4, times::jsonb),
         message = COALESCE($5, message),
         updated_at = CURRENT_TIMESTAMP
     WHERE id = $6
     RETURNING *
   `;
-  const values = [userId, name, date, JSON.stringify(times), message, id];
+  const values = [
+    userId,
+    name,
+    date,
+    JSON.stringify(times),
+    message,
+    id
+  ];
+  console.log('밸류',values)
   const result = await pool.query(text, values);
   const updatedAlarm = result.rows[0];
 
   if (updatedAlarm) {
+    // JSON 문자열을 배열로 변환
+    updatedAlarm.times = typeof updatedAlarm.times === 'string' ? JSON.parse(updatedAlarm.times) : updatedAlarm.times;
+
     // 기존 스케줄 취소
     cancelExistingAlarms(id);
 
@@ -85,8 +96,6 @@ export const getAlarmsByUserId = async (userId: string): Promise<typeof Alarm[]>
   const result = await pool.query(text, [userId]);
   return result.rows;
 };
-
-
 
 // Delete
 export const deleteAlarm = async (id: string): Promise<boolean> => {
