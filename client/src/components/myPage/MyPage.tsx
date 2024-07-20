@@ -15,6 +15,7 @@ import EditMyInformation from './EditMyInformation';
 import EditName from './EditName';
 import ConfirmPassword from './ConfirmPassword';
 import EditPassword from './EditPassword';
+import EditPharmacist from './EditPharmacist';
 
 import Toast from '../Toast';
 import Nav from '../Nav';
@@ -78,18 +79,25 @@ const MyPage = () => {
       case pageState.EditName:
         return (<EditName onEdit={()=> {
           setCurrentState(pageState.EditInfo);}} />);
+
       case pageState.ConfirmPassword:
         return (<ConfirmPassword onEdit={()=> {
           setCurrentState(pageState.EditPassword);}} />);
+
       case pageState.EditPassword:
         return (<EditPassword onEdit={()=> {
-          setCurrentState(pageState.EditInfo);}} />);          
+          setCurrentState(pageState.EditInfo);}} />);   
+
       case pageState.EditPharmacist:
-        return (<div></div>);
+        return (<EditPharmacist onEdit={()=> {
+          setCurrentState(pageState.EditInfo);}} />); 
+
       case pageState.MyMedications:
         return (<div></div>);
+
       case pageState.FavoriteMedications:
         return (<div></div>);
+        
       case pageState.ManageReviews:
         return (<div></div>);
     }  
