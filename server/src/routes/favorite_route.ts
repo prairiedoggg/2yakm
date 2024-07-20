@@ -37,7 +37,7 @@ router.post('/:drugid', authByToken, favoriteController.addCancelFavoriteDrug);
  * @swagger
  * /api/favorites/user:
  *   get:
- *     summary: 유저의 즐겨 찾는 약 조회 API
+ *     summary: 유저의 즐겨 찾는 약 조회 API (offset-based pagination)
  *     tags: [Favorites]
  *     security:
  *       - bearerAuth: []

@@ -85,10 +85,18 @@ exports.getDrugAllReview = async (
   next: NextFunction
 ): Promise<void> => {
   const { drugid } = req.params;
+  const initialLimit = parseInt(req.query.initialLimit as string, 10) || 10; // 처음 불러올 자료 개수
+  const cursorLimit = parseInt(req.query.cursorLimit as string, 10) || 10; // cursor 적용 했을 때 가져올 자료 개수
+  const cursor = parseInt(req.query.cursor as string) || undefined;
 
   try {
-    const review = await reviewService.getDrugAllReview(drugid);
-    res.status(200).send(review);
+    const { reviews, nextCursor } = await reviewService.getDrugAllReview(
+      drugid,
+      initialLimit,
+      cursorLimit,
+      cursor
+    );
+    res.status(200).send({ reviews, nextCursor });
   } catch (error: any) {
     next(error);
   }

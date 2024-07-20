@@ -159,7 +159,7 @@ router.delete('/:reviewid', authByToken, reviewController.deleteReview);
  * @swagger
  * /api/reviews/drugs/{drugid}:
  *   get:
- *     summary: 해당 약의 모든 리뷰 조회 API
+ *     summary: 해당 약의 모든 리뷰 조회 API (cursor-based pagination)
  *     tags: [Reviews]
  *     parameters:
  *       - in: path
@@ -168,6 +168,25 @@ router.delete('/:reviewid', authByToken, reviewController.deleteReview);
  *           type: integer
  *         required: true
  *         description: 리뷰를 조회할 drug id 값을 입력해 주세요.
+ *       - in: query
+ *         name: initialLimit
+ *         schema:
+ *           type: integer
+ *         required: false
+ *         description: 첫 번째 요청 시 가져올 리뷰의 개수를 지정합니다. (입력 안하면 기본값 10)</br>(예, /api/reviews/drugs/199800355?initialLimit=10)
+ *       - in: query
+ *         name: cursorLimit
+ *         schema:
+ *           type: integer
+ *         required: false
+ *         description: 이후 스크롤할 때 가져올 리뷰의 개수를 지정합니다. (입력 안하면 기본값 10)</br>(예, /api/reviews/drugs/199800355?cursorLimit=5&cursor=93)</br>(처음에 10개, 그 이후 스크롤 될 때마다 5개씩 가져옴)
+ *       - in: query
+ *         name: cursor
+ *         schema:
+ *           type: string
+ *           format: json
+ *         required: false
+ *         description: 다음 페이지를 가져오기 위한 커서 값</br>(이전 페이지의 마지막 리뷰의 reviewid 값, nextCursor의 값 입력하면 됨)</br>(예, nextCursor=93이면 다음 스크롤은 92부터 cursorLimit만큼 가져옴)</br>(마지막 페이지의 nextCursor은 null 값입니다.)
  *     responses:
  *       200:
  *         description: 해당 약의 모든 리뷰가 표시됩니다.
@@ -198,6 +217,9 @@ router.delete('/:reviewid', authByToken, reviewController.deleteReview);
  *                       created_at:
  *                         type: string
  *                         format: date-time
+ *                 nextCursor:
+ *                   type: integer
+ *                   description: 다음 페이지를 가져오기 위한 커서 값 (마지막으로 반환된 리뷰의 reviewid)
  *       500:
  *         description: Internal Server Error
  */
@@ -208,7 +230,7 @@ router.get('/drugs/:drugid', reviewController.getDrugAllReview);
  * @swagger
  * /api/reviews/users/:
  *   get:
- *     summary: 해당 유저의 모든 리뷰 조회 API
+ *     summary: 해당 유저의 모든 리뷰 조회 API (offset-based pagination)
  *     tags: [Reviews]
  *     security:
  *       - BearerAuth: []
