@@ -7,7 +7,7 @@ History
 Date        Author   Status    Description
 2024.07.16  민선옥   Created
 2024.07.17  민선옥   Modified   알람설정 추가
-2024.07.18  임지영   Modified    tsx
+2024.07.18  임지영   Modified   tsx
 */
 
 import { useNavigate } from 'react-router-dom';
@@ -26,6 +26,7 @@ const NavContainer = styled.nav`
     align-items: center;
     margin: auto;
     padding: 0;
+    height: 100%;
     & li {
       display: flex;
       flex-direction: column;
@@ -36,10 +37,10 @@ const NavContainer = styled.nav`
       &:hover {
         cursor: pointer;
         & img {
-          fill: #ffe823;
+          filter: var(--main-color);
         }
         & p {
-          color: #ffe823;
+          color: var(--main-color);
         }
       }
     }
@@ -64,6 +65,8 @@ const Nav: React.FC = () => {
         return navigate('/calendar');
       case 'home':
         return navigate('/');
+      case 'alarm':
+        return navigate('/alarm');
     }
   };
 
@@ -85,7 +88,7 @@ const Nav: React.FC = () => {
             style={{ position: 'absolute', top: '-20px', width: '50px' }}
           />
         </li>
-        <li style={{ marginLeft: '15px' }}>
+        <li style={{ marginLeft: '15px' }} onClick={handleNav('alarm')}>
           <img src={`/img/nav/bell.svg`} alt='bell' style={{ width: '30px' }} />
           <p>알람설정</p>
         </li>

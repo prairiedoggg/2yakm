@@ -13,13 +13,25 @@ import React from 'react';
 import styled from 'styled-components';
 
 const ReviewContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
   padding: 20px 30px 100px;
 `;
 
 const WriteReview = styled.button`
-  border:1px solid ;`
+  margin-left: auto;
+  width: 135px;
+  height: 35px;
+  background-color: #ffffff;
+  border: 1px solid var(--secondary-color);
+  border-radius: 10px;
+`;
 
-const ReviewList = styled.ul``;  
+const ReviewList = styled.ul`
+  width: 100%;
+`;
 
 const ReviewItem = styled.li`
   margin: 20px 0;

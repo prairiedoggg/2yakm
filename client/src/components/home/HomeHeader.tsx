@@ -10,8 +10,9 @@ Date        Author   Status    Description
 2024.07.18  임지영   Modified    tsx
 */
 
+import { useState } from 'react';
 import styled from 'styled-components';
-// import SearchBox from '../search/SearchBox';
+import SearchBox from '../SearchBox';
 
 const MainHeaderContainer = styled.div`
   width: 100vw;
@@ -23,7 +24,7 @@ const MainHeaderContainer = styled.div`
 `;
 
 const Logo = styled.img.attrs({
-  src: `/img/logo.png`,
+  src: `/img/logo.svg`,
   alt: 'Logo'
 })`
   width: 300px;
@@ -36,11 +37,13 @@ const SearchContainer = styled.div`
 `;
 
 const MainHeader: React.FC = () => {
+  const [searchQuery, setSearchQuery] = useState<String>('');
+
   return (
     <MainHeaderContainer>
       <Logo />
       <SearchContainer>
-        {/* <SearchBox placeholder='이미지 또는 이름 검색' /> */}
+        <SearchBox setSearchQuery={setSearchQuery} />
       </SearchContainer>
     </MainHeaderContainer>
   );

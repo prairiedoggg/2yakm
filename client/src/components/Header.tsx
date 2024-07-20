@@ -10,21 +10,30 @@
  */
 
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 
 const HeaderContainer = styled.header`
-  background-color: #f8f8f8;
+  background-color: #ffffff;
   padding: 15px;
+  padding-bottom: 8px;
 `;
 
 const Logo = styled.img`
   height: 40px;
+  cursor: pointer;
 `;
 
 const Header: React.FC = () => {
+  const navigate = useNavigate();
+
+  const handleLogoClick = () => { 
+    navigate('/')
+  }
+
   return (
     <HeaderContainer>
-      <Logo src={`/img/logo.png`} alt='Logo' />
+      <Logo src={`/img/logo_not_chicken.svg`} alt='Logo' onClick={ handleLogoClick} />
     </HeaderContainer>
   );
 };

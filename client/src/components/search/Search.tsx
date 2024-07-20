@@ -10,7 +10,7 @@ Date        Author   Status    Description
 */
 
 import React, { useState } from 'react';
-import SearchBox from './SearchBox';
+import SearchBox from '../SearchBox';
 import SearchHistory from './SearchHistory';
 import SearchResults from './SearchResults';
 import Nav from '../Nav';
@@ -33,6 +33,7 @@ const Search: React.FC = () => {
         <SearchBox setSearchQuery={setSearchQuery} />
       </BackgroundHeader>
       {searchQuery ? <SearchResults /> : <SearchHistory />}
+      {/* searchQuery={searchQuery} : api 연결후 searchresults에 추가*/}
       <Nav />
     </>
   );

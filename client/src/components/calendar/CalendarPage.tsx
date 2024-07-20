@@ -17,6 +17,21 @@ import Nav from '../Nav';
 
 const CalendarContainer = styled.div`
   width: 100vw;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+`;
+
+const MainContent = styled.div`
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+`;
+
+const DetailContainer = styled.div`
+  flex: 1;
+  overflow-y: auto;
   position: relative;
 `;
 
@@ -24,8 +39,12 @@ const CalendarPage: React.FC = () => {
   return (
     <CalendarContainer>
       <Header />
-      <CalendarSection />
-      <CalendarDetail />
+      <MainContent>
+        <CalendarSection />
+        <DetailContainer>
+          <CalendarDetail />
+        </DetailContainer>
+      </MainContent>
       <Nav />
     </CalendarContainer>
   );

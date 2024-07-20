@@ -8,10 +8,12 @@
  * 2024.07.16  민선옥    Created
  * 2024.07.16  임지영    Modified    placeholder 추가
  * 2024.07.19  민선옥    tsx
+ * 2024.07.20  민선옥    navigate추가
  */
 
-import React, { ChangeEvent } from 'react';
+import React, { ChangeEvent, useState } from 'react';
 import styled from 'styled-components';
+import { useNavigate } from 'react-router-dom';
 
 const SearchContainer = styled.div`
   position: absolute;
@@ -50,8 +52,17 @@ interface SearchBoxProps {
 }
 
 const SearchBox: React.FC<SearchBoxProps> = ({ setSearchQuery }) => {
+  const [query, setQuery] = useState('');
+  const navigate = useNavigate();
+
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
+    setQuery(e.target.value);
     setSearchQuery(e.target.value);
+  };
+
+  const handleSearch = () => {
+    setSearchQuery(query);
+    navigate('/search');
   };
 
   return (
@@ -64,11 +75,9 @@ const SearchBox: React.FC<SearchBoxProps> = ({ setSearchQuery }) => {
       <SearchInput
         placeholder='이미지 또는 이름으로 검색'
         onChange={handleChange}
+        onClick={handleSearch}
       />
-      <SearchIcon
-        src={`/img/camera.png`}
-        alt='camera'
-      />
+      <SearchIcon src={`/img/camera.png`} alt='camera' />
     </SearchContainer>
   );
 };
