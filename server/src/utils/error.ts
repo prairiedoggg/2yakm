@@ -1,4 +1,3 @@
-
 export const commonError = {
   NO_ACCESS_TOKEN: {
     name: "No access token",

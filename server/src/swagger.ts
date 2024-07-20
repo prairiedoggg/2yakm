@@ -1,6 +1,5 @@
-// import swaggerJsdoc from 'swagger-jsdoc';
+//import swaggerJsdoc from 'swagger-jsdoc';
 const swaggerJsdoc = require('swagger-jsdoc');
-
 const options = {
   swaggerDefinition: {
     openapi: '3.0.0',
@@ -11,7 +10,7 @@ const options = {
     },
     servers: [
       {
-        url: 'http://localhost:3000',
+        url: 'http://localhost:3000/',
         description: 'Development server'
       }
     ]
@@ -21,4 +20,4 @@ const options = {
 
 const specs = swaggerJsdoc(options);
 
-module.exports = specs;
+export default specs;

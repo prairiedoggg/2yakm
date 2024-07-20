@@ -1,21 +1,27 @@
 const { Calendar } = require('../entity/calendar');
 const { pool } = require('../db');
 
-exports.getAllCalendars = async (userId: string): Promise<typeof Calendar[]> => {
+exports.getAllCalendars = async (
+  userId: string
+): Promise<(typeof Calendar)[]> => {
   const text = 'SELECT * FROM calendar WHERE userId = $1';
   const values = [userId];
   const result = await pool.query(text, values);
   return result.rows;
 };
 
-exports.getCalendarById = async (id: string): Promise<typeof Calendar | null> => {
+exports.getCalendarById = async (
+  id: string
+): Promise<typeof Calendar | null> => {
   const text = 'SELECT * FROM calendar WHERE id = $1';
   const values = [id];
   const result = await pool.query(text, values);
   return result.rows[0] || null;
 };
 
-exports.createCalendar = async (calendar: Partial<typeof Calendar>): Promise<typeof Calendar> => {
+exports.createCalendar = async (
+  calendar: Partial<typeof Calendar>
+): Promise<typeof Calendar> => {
   try {
     const text = `
       INSERT INTO calendar 
@@ -38,12 +44,15 @@ exports.createCalendar = async (calendar: Partial<typeof Calendar>): Promise<typ
     const result = await pool.query(text, values);
     return result.rows[0];
   } catch (error) {
-    console.error("Error in createCalendar:", error);
+    console.error('Error in createCalendar:', error);
     throw error;
   }
 };
 
-exports.updateCalendar = async (id: string, calendar: Partial<typeof Calendar>): Promise<typeof Calendar | null> => {
+exports.updateCalendar = async (
+  id: string,
+  calendar: Partial<typeof Calendar>
+): Promise<typeof Calendar | null> => {
   try {
     // 기존의 medications 데이터를 가져옴
     const existingCalendar = await exports.getCalendarById(id);
@@ -75,13 +84,13 @@ exports.updateCalendar = async (id: string, calendar: Partial<typeof Calendar>):
       id
     ];
 
-    console.log("Update SQL Query:", text);
-    console.log("Update SQL Values:", values);
+    console.log('Update SQL Query:', text);
+    console.log('Update SQL Values:', values);
 
     const result = await pool.query(text, values);
     return result.rows[0] || null;
   } catch (error) {
-    console.error("Error in updateCalendar:", error);
+    console.error('Error in updateCalendar:', error);
     throw error;
   }
 };

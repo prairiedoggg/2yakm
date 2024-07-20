@@ -33,6 +33,7 @@ exports.createCalendar = [
   async (req: CustomRequest, res: Response, next: NextFunction) => {
     try {
       const userId = req.user?.email;
+      console.log('req.user', req.user);
       const calImgUrl = req.file ? (req.file as any).location : null;
 
       const date = req.body.date ? new Date(req.body.date) : new Date();
