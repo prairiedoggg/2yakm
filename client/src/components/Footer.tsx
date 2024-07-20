@@ -10,18 +10,6 @@
 
 import styled from 'styled-components';
 
-const FooterContainer = styled.footer`
-  background-color: #f8f8f8;
-  padding: 20px;
-  padding-bottom: 110px;
-
-  & p {
-    color: #242323;
-    font-size: 14px;
-    font-style: italic;
-    line-height: 26px;
-  }
-`;
 
 const Footer = () => {
   return (
@@ -35,3 +23,16 @@ const Footer = () => {
 };
 
 export default Footer;
+
+const FooterContainer = styled.footer`
+  background-color: #f8f8f8;
+  padding: 20px;
+  padding-bottom: 110px;
+
+  & p {
+    color: #242323;
+    font-size: 14px;
+    font-style: italic;
+    line-height: 26px;
+  }
+`;

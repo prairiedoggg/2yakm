@@ -1,37 +1,53 @@
 /**
- * File Name : alarm
- * Description : 알람설정
+ * File Name : Alarm
+ * Description : 알람 페이지
  * Author : 민선옥
  *
  * History
  * Date        Author   Status    Description
- * 2024.07.20  민선옥    Created
+ * 2024.07.21  민선옥    Created
  */
 
 import styled from 'styled-components';
+import { useState } from 'react';
 import Header from '../Header';
 import Nav from '../Nav';
+import AlarmPage from './AlarmPage';
+import AlarmSettings from './AlarmSettings';
 
-const AlarmContainer = styled.div`
-  display: flex;
-  justify-content: center;
-  margin-top: 20px;
-`
+enum PageState {
+  Main,
+  AlarmSettings
+}
 
-const AddAlarm = styled.img`
-`;
+const Alarm = () => {
+  const [currentState, setCurrentState] = useState<PageState>(PageState.Main);
 
-const Alarm: React.FC = () => {
+  const renderContent = () => {
+    switch (currentState) {
+      case PageState.AlarmSettings:
+        return <AlarmSettings />;
+      default:
+        return (
+          <AlarmPage
+            onAddAlarm={() => setCurrentState(PageState.AlarmSettings)}
+          />
+        );
+    }
+  };
+
   return (
-    <>
-      <Header></Header>
-      <AlarmContainer>
-        <AddAlarm src={`/img/plus.svg`} alt='알람추가' />
-      </AlarmContainer>
-
-      <Nav></Nav>
-    </>
+    <PageContainer>
+      <Header />
+      {renderContent()}
+      <Nav />
+    </PageContainer>
   );
 };
 
 export default Alarm;
+
+const PageContainer = styled.div`
+  width: 100%;
+  overflow: hidden;
+`;

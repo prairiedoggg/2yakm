@@ -11,11 +11,55 @@
  * 2024.07.19  민선옥    tagpage 연결
  */
 
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import styled from 'styled-components';
 import PillExp from './PillExp';
 import Review from './Review';
+
+const SearchResults = () => {
+  const [isEffectivenessTab, setIsEffectivenessTab] = useState<boolean>(true);
+
+  return (
+    <SearchResultsContainer>
+      <PillHeader>
+        <img src={`/img/pill.png`} alt='pill' />
+        <section>
+          <PillTitle>
+            <h3>타이레놀정500밀리그람 (아세트아미노펜)</h3>
+            <span>Tylenol Tablet 500mg</span>
+            <p>한국존슨앤드존슨판매(유)</p>
+          </PillTitle>
+          <TagContainer>
+            <Tag to='/search/tag/두통'>두통</Tag>
+            <Tag to='/search/tag/신경통'>신경통</Tag>
+            <Tag to='/search/tag/근육통'>근육통</Tag>
+          </TagContainer>
+        </section>
+      </PillHeader>
+      <Exp>※ 태그들을 클릭해 관련 증상들을 모아보세요.</Exp>
+      <PillMore>
+        <Menu>
+          <p
+            className={isEffectivenessTab ? 'active' : ''}
+            onClick={() => setIsEffectivenessTab(true)}
+          >
+            효능•용법
+          </p>
+          <p
+            className={!isEffectivenessTab ? 'active' : ''}
+            onClick={() => setIsEffectivenessTab(false)}
+          >
+            리뷰
+          </p>
+        </Menu>
+        <Contants>{isEffectivenessTab ? <PillExp /> : <Review />}</Contants>
+      </PillMore>
+    </SearchResultsContainer>
+  );
+};
+
+export default SearchResults;
 
 const SearchResultsContainer = styled.div``;
 
@@ -95,47 +139,3 @@ const Menu = styled.div`
 `;
 
 const Contants = styled.div``;
-
-const SearchResults: React.FC = () => {
-  const [isEffectivenessTab, setIsEffectivenessTab] = useState<boolean>(true);
-
-  return (
-    <SearchResultsContainer>
-      <PillHeader>
-        <img src={`/img/pill.png`} alt='pill' />
-        <section>
-          <PillTitle>
-            <h3>타이레놀정500밀리그람 (아세트아미노펜)</h3>
-            <span>Tylenol Tablet 500mg</span>
-            <p>한국존슨앤드존슨판매(유)</p>
-          </PillTitle>
-          <TagContainer>
-            <Tag to='/search/tag/두통'>두통</Tag>
-            <Tag to='/search/tag/신경통'>신경통</Tag>
-            <Tag to='/search/tag/근육통'>근육통</Tag>
-          </TagContainer>
-        </section>
-      </PillHeader>
-      <Exp>※ 태그들을 클릭해 관련 증상들을 모아보세요.</Exp>
-      <PillMore>
-        <Menu>
-          <p
-            className={isEffectivenessTab ? 'active' : ''}
-            onClick={() => setIsEffectivenessTab(true)}
-          >
-            효능•용법
-          </p>
-          <p
-            className={!isEffectivenessTab ? 'active' : ''}
-            onClick={() => setIsEffectivenessTab(false)}
-          >
-            리뷰
-          </p>
-        </Menu>
-        <Contants>{isEffectivenessTab ? <PillExp /> : <Review />}</Contants>
-      </PillMore>
-    </SearchResultsContainer>
-  );
-};
-
-export default SearchResults;

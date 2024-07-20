@@ -9,8 +9,23 @@
  * 2024.07.19  민선옥    tsx
  */
 
-import React from 'react';
 import styled from 'styled-components';
+
+const SearchHistory = () => {
+  return (
+    <HistoryContainer>
+      <HistoryInner>
+        <HistoryTitle>
+          <span>최근 검색어</span>
+          <span>전체삭제</span>
+        </HistoryTitle>
+      </HistoryInner>
+    </HistoryContainer>
+  );
+};
+
+export default SearchHistory;
+
 
 const HistoryContainer = styled.div``;
 
@@ -26,18 +41,3 @@ const HistoryTitle = styled.div`
   font-size: 15px;
   font-weight: 500;
 `;
-
-const SearchHistory: React.FC = () => {
-  return (
-    <HistoryContainer>
-      <HistoryInner>
-        <HistoryTitle>
-          <span>최근 검색어</span>
-          <span>전체삭제</span>
-        </HistoryTitle>
-      </HistoryInner>
-    </HistoryContainer>
-  );
-};
-
-export default SearchHistory;

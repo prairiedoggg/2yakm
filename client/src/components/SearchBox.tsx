@@ -11,9 +11,47 @@
  * 2024.07.20  민선옥    navigate추가
  */
 
-import React, { ChangeEvent, useState } from 'react';
+import { ChangeEvent, useState } from 'react';
 import styled from 'styled-components';
 import { useNavigate } from 'react-router-dom';
+
+interface SearchBoxProps {
+  setSearchQuery: (query: string) => void;
+}
+
+const SearchBox = ({ setSearchQuery }: SearchBoxProps) => {
+  const [query, setQuery] = useState('');
+  const navigate = useNavigate();
+
+  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
+    setQuery(e.target.value);
+    setSearchQuery(e.target.value);
+  };
+
+  const handleSearch = () => {
+    setSearchQuery(query);
+    navigate('/search');
+  };
+
+  return (
+    <SearchContainer>
+      <SearchIcon
+        src={`/img/search_icon.png`}
+        alt='search'
+        style={{ width: '20px' }}
+      />
+      <SearchInput
+        placeholder='이미지 또는 이름으로 검색'
+        onChange={handleChange}
+        onClick={handleSearch}
+      />
+      <SearchIcon src={`/img/camera.png`} alt='camera' />
+    </SearchContainer>
+  );
+};
+
+export default SearchBox;
+
 
 const SearchContainer = styled.div`
   position: absolute;
@@ -46,40 +84,3 @@ const SearchInput = styled.input`
 const SearchIcon = styled.img`
   width: 24px;
 `;
-
-interface SearchBoxProps {
-  setSearchQuery: (query: string) => void;
-}
-
-const SearchBox: React.FC<SearchBoxProps> = ({ setSearchQuery }) => {
-  const [query, setQuery] = useState('');
-  const navigate = useNavigate();
-
-  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
-    setQuery(e.target.value);
-    setSearchQuery(e.target.value);
-  };
-
-  const handleSearch = () => {
-    setSearchQuery(query);
-    navigate('/search');
-  };
-
-  return (
-    <SearchContainer>
-      <SearchIcon
-        src={`/img/search_icon.png`}
-        alt='search'
-        style={{ width: '20px' }}
-      />
-      <SearchInput
-        placeholder='이미지 또는 이름으로 검색'
-        onChange={handleChange}
-        onClick={handleSearch}
-      />
-      <SearchIcon src={`/img/camera.png`} alt='camera' />
-    </SearchContainer>
-  );
-};
-
-export default SearchBox;

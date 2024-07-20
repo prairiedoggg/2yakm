@@ -9,58 +9,10 @@
  * 2024.07.19  민선옥    tsx
  */
 
-import React from 'react';
 import styled from 'styled-components';
 
-const PillExpContainer = styled.div`
-  padding: 20px 30px 100px;
 
-  & p.notice {
-    padding: 10px 15px;
-    font-size: 18px;
-    font-weight: 500;
-    line-height: 30px;
-
-    & span {
-      color: #ff1f1f;
-      font-size: 22px;
-      font-weight: 500;
-    }
-  }
-`;
-
-const PillExpBox = styled.div`
-  border: 1px solid #bfbfbf;
-  margin: auto;
-  padding: 10px 20px;
-  width: 85vw;
-  border-radius: 20px;
-
-  & li {
-    margin: 10px 0;
-  }
-
-  & p {
-    margin: 5px 0;
-  }
-
-  & p.last {
-    color: #ff0000;
-    margin: 2px 0 0 30px;
-    font-size: 13px;
-    line-height: 18px;
-  }
-`;
-
-const ListTitle = styled.div`
-  display: flex;
-  align-items: center;
-  & span {
-    margin-left: 5px;
-  }
-`;
-
-const PillExp: React.FC = () => {
+const PillExp = () => {
   return (
     <PillExpContainer>
       <PillExpBox>
@@ -124,3 +76,53 @@ const PillExp: React.FC = () => {
 };
 
 export default PillExp;
+
+
+
+const PillExpContainer = styled.div`
+  padding: 20px 30px 100px;
+
+  & p.notice {
+    padding: 10px 15px;
+    font-size: 18px;
+    font-weight: 500;
+    line-height: 30px;
+
+    & span {
+      color: #ff1f1f;
+      font-size: 22px;
+      font-weight: 500;
+    }
+  }
+`;
+
+const PillExpBox = styled.div`
+  border: 1px solid #bfbfbf;
+  margin: auto;
+  padding: 10px 20px;
+  width: 85vw;
+  border-radius: 20px;
+
+  & li {
+    margin: 10px 0;
+  }
+
+  & p {
+    margin: 5px 0;
+  }
+
+  & p.last {
+    color: #ff0000;
+    margin: 2px 0 0 30px;
+    font-size: 13px;
+    line-height: 18px;
+  }
+`;
+
+const ListTitle = styled.div`
+  display: flex;
+  align-items: center;
+  & span {
+    margin-left: 5px;
+  }
+`;

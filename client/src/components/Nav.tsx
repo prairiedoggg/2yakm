@@ -13,50 +13,8 @@ Date        Author   Status    Description
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 
-const NavContainer = styled.nav`
-  position: fixed;
-  z-index: 10;
-  bottom: 0;
-  width: 100vw;
-  height: 80px;
-  background-color: #ffffff;
-  & ul {
-    display: flex;
-    justify-content: space-evenly;
-    align-items: center;
-    margin: auto;
-    padding: 0;
-    height: 100%;
-    & li {
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      align-items: center;
-      list-style: none;
 
-      &:hover {
-        cursor: pointer;
-        & img {
-          filter: var(--main-color);
-        }
-        & p {
-          color: var(--main-color);
-        }
-      }
-    }
-    & img {
-      width: 35px;
-    }
-    & p {
-      margin: 0;
-      color: #c6c6c6;
-      font-size: 12px;
-      font-weight: bold;
-    }
-  }
-`;
-
-const Nav: React.FC = () => {
+const Nav = () => {
   const navigate = useNavigate();
 
   const handleNav = (nav: string) => () => {
@@ -104,3 +62,46 @@ const Nav: React.FC = () => {
 };
 
 export default Nav;
+
+const NavContainer = styled.nav`
+  position: fixed;
+  z-index: 10;
+  bottom: 0;
+  width: 100vw;
+  height: 80px;
+  background-color: #ffffff;
+  & ul {
+    display: flex;
+    justify-content: space-evenly;
+    align-items: center;
+    margin: auto;
+    padding: 0;
+    height: 100%;
+    & li {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      align-items: center;
+      list-style: none;
+
+      &:hover {
+        cursor: pointer;
+        & img {
+          filter: var(--main-color);
+        }
+        & p {
+          color: var(--main-color);
+        }
+      }
+    }
+    & img {
+      width: 35px;
+    }
+    & p {
+      margin: 0;
+      color: #c6c6c6;
+      font-size: 12px;
+      font-weight: bold;
+    }
+  }
+`;

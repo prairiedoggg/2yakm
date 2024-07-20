@@ -9,8 +9,53 @@
  * 2024.07.19  민선옥    tsx
  */
 
-import React from 'react';
 import styled from 'styled-components';
+
+
+const Review = () => {
+  return (
+    <ReviewContainer>
+      <WriteReview>리뷰 작성하기</WriteReview>
+      <ReviewList>
+        <ReviewItem
+          style={{
+            backgroundColor: 'rgba(114,191,68, 0.1)'
+          }}
+        >
+          <User>
+            <Profile src={`/img/user.svg`} alt='유저' />
+            <span>약사약사</span>
+          </User>
+          <p>종합 감기약으로 타이레놀이 좋습니다.</p>
+        </ReviewItem>
+        <ReviewItem>
+          <User>
+            <Profile />
+            <span>리뷰리뷰</span>
+          </User>
+          <p>감기 걸렸을 땐 항상 타이레놀 먹어요.</p>
+        </ReviewItem>
+        <ReviewItem>
+          <User>
+            <Profile />
+            <span>리뷰리뷰</span>
+          </User>
+          <p>감기 걸렸을 땐 항상 타이레놀 먹어요.</p>
+        </ReviewItem>
+        <ReviewItem>
+          <User>
+            <Profile />
+            <span>리뷰리뷰</span>
+          </User>
+          <p>감기 걸렸을 땐 항상 타이레놀 먹어요.</p>
+        </ReviewItem>
+      </ReviewList>
+    </ReviewContainer>
+  );
+};
+
+export default Review;
+
 
 const ReviewContainer = styled.div`
   display: flex;
@@ -59,47 +104,3 @@ const User = styled.div`
 `;
 
 const Profile = styled.img``;
-
-const Review: React.FC = () => {
-  return (
-    <ReviewContainer>
-      <WriteReview>리뷰 작성하기</WriteReview>
-      <ReviewList>
-        <ReviewItem
-          style={{
-            backgroundColor: 'rgba(114,191,68, 0.1)'
-          }}
-        >
-          <User>
-            <Profile src={`/img/user.svg`} alt='유저' />
-            <span>약사약사</span>
-          </User>
-          <p>종합 감기약으로 타이레놀이 좋습니다.</p>
-        </ReviewItem>
-        <ReviewItem>
-          <User>
-            <Profile />
-            <span>리뷰리뷰</span>
-          </User>
-          <p>감기 걸렸을 땐 항상 타이레놀 먹어요.</p>
-        </ReviewItem>
-        <ReviewItem>
-          <User>
-            <Profile />
-            <span>리뷰리뷰</span>
-          </User>
-          <p>감기 걸렸을 땐 항상 타이레놀 먹어요.</p>
-        </ReviewItem>
-        <ReviewItem>
-          <User>
-            <Profile />
-            <span>리뷰리뷰</span>
-          </User>
-          <p>감기 걸렸을 땐 항상 타이레놀 먹어요.</p>
-        </ReviewItem>
-      </ReviewList>
-    </ReviewContainer>
-  );
-};
-
-export default Review;
