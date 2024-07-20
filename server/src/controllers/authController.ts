@@ -7,7 +7,9 @@ const {
   changePasswordService,
   requestPasswordService,
   resetPasswordService,
-  googleAuthService
+  googleAuthService,
+  linkSocialAccountService,
+  verifyEmailService
 } = require('../services/authService');
 const { createError } = require('../utils/error');
 
@@ -43,13 +45,8 @@ exports.signupController = async (
         400
       );
     }
-    const newUser = await signupService(
-      email,
-      username,
-      password,
-      confirmPassword
-    );
-    res.status(201).json({ message: '회원가입 성공', user: newUser });
+    await signupService(email, username, password, confirmPassword);
+    res.status(200).json({ message: '회원가입 성공, 이메일 인증을 완료하세요.' });
   } catch (error) {
     next(error);
   }
@@ -82,9 +79,13 @@ exports.kakaoAuthController = async (
     const { code } = req.query;
     console.log({ code });
     const result = await kakaoAuthService(code);
-    res.cookie('jwt', result.token, { httpOnly: true });
-    res.cookie('refreshToken', result.refreshToken, { httpOnly: true });
-    res.status(200).json({ message: '카카오 인증 성공', token: result.token });
+    if (result.message) {
+      res.status(400).json({ message: result.message });
+    } else {
+      res.cookie('jwt', result.token, { httpOnly: true });
+      res.cookie('refreshToken', result.refreshToken, { httpOnly: true });
+      res.status(200).json({ message: '카카오 인증 성공', token: result.token });
+    }
   } catch (error) {
     next(error);
   }
@@ -99,9 +100,14 @@ exports.googleAuthController = async (
   try {
     const { code } = req.query;
     const result = await googleAuthService(code as string);
-    res.cookie('jwt', result.token, { httpOnly: true });
-    res.cookie('refreshToken', result.refreshToken, { httpOnly: true });
-    res.status(200).json({ message: '구글 인증 성공', token: result.token });
+    
+    if (result.message) {
+      res.status(400).json({ message: result.message });
+    } else {
+      res.cookie('jwt', result.token, { httpOnly: true });
+      res.cookie('refreshToken', result.refreshToken, { httpOnly: true });
+      res.status(200).json({ message: '구글 인증 성공', token: result.token });
+    }
   } catch (error) {
     next(error);
   }
@@ -164,6 +170,51 @@ exports.resetPasswordController = async (
     const { token, newPassword } = req.body;
     await resetPasswordService(token, newPassword);
     res.status(200).json({ message: '비밀번호가 재설정되었습니다.' });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// 카카오 연동 컨트롤러
+exports.linkKakaoAccountController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { userId, socialId, email } = req.body;
+    await linkSocialAccountService(userId, socialId, email, 'kakao');
+    res.status(200).json({ message: '카카오 계정 연동 성공' });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// 구글 연동 컨트롤러
+exports.linkGoogleAccountController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { userId, socialId, email } = req.body;
+    await linkSocialAccountService(userId, socialId, email, 'google');
+    res.status(200).json({ message: '구글 계정 연동 성공' });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// 이메일 인증
+exports.verifyEmailController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { token } = req.query;
+    await verifyEmailService(token);
+    res.status(200).json({ message: '이메일 인증 완료, 회원가입 성공! 로그인 해주세요.' });
   } catch (error) {
     next(error);
   }

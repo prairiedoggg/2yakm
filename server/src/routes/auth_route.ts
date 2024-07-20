@@ -8,13 +8,16 @@ const {
   changePasswordController,
   requestPasswordController,
   resetPasswordController,
-  googleAuthController
+  googleAuthController,
+  linkKakaoAccountController,
+  linkGoogleAccountController,
+  verifyEmailController,
 } = require('../controllers/authController');
 const router = express.Router();
 
 /**
  * @swagger
- * /api/auth/login:
+ * /auth/login:
  *   post:
  *     summary: 사용자 로그인
  *     tags: [Auth]
@@ -48,7 +51,7 @@ router.post('/login', loginController);
 
 /**
  * @swagger
- * /api/auth/signup:
+ * /auth/signup:
  *   post:
  *     summary: 사용자 회원가입
  *     tags: [Auth]
@@ -91,7 +94,37 @@ router.post('/signup', signupController);
 
 /**
  * @swagger
- * /api/auth/kakao/callback:
+ * /auth/token:
+ *   post:
+ *     summary: 토큰 갱신
+ *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               refreshToken:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: 토큰 갱신 성공
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 token:
+ *                   type: string
+ *                 refreshToken:
+ *                   type: string
+ */
+router.post('/token', refreshTokenController);
+
+/**
+ * @swagger
+ * /auth/kakao/callback:
  *   get:
  *     summary: 카카오 로그인 콜백
  *     tags: [Auth]
@@ -120,7 +153,7 @@ router.get('/kakao/callback', kakaoAuthController);
 
 /**
  * @swagger
- * /api/auth/google/callback:
+ * /auth/google/callback:
  *   get:
  *     summary: 구글 로그인 콜백
  *     tags: [Auth]
@@ -149,7 +182,7 @@ router.get('/google/callback', googleAuthController);
 
 /**
  * @swagger
- * /api/auth/logout:
+ * /auth/logout:
  *   post:
  *     summary: 로그아웃
  *     tags: [Auth]
@@ -168,28 +201,7 @@ router.post('/logout', logoutController);
 
 /**
  * @swagger
- * /api/auth/token:
- *   post:
- *     summary: 토큰 갱신
- *     tags: [Auth]
- *     responses:
- *       200:
- *         description: 토큰 갱신 성공
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                 token:
- *                   type: string
- */
-router.post('/token', refreshTokenController);
-
-/**
- * @swagger
- * /api/auth/change-password:
+ * /auth/change-password:
  *   post:
  *     summary: 비밀번호 변경
  *     tags: [Auth]
@@ -221,7 +233,7 @@ router.post('/change-password', changePasswordController);
 
 /**
  * @swagger
- * /api/auth/request-password:
+ * /auth/request-password:
  *   post:
  *     summary: 비밀번호 재설정 요청
  *     tags: [Auth]
@@ -249,7 +261,7 @@ router.post('/request-password', requestPasswordController);
 
 /**
  * @swagger
- * /api/auth/reset-password:
+ * /auth/reset-password:
  *   post:
  *     summary: 비밀번호 재설정
  *     tags: [Auth]
@@ -276,5 +288,94 @@ router.post('/request-password', requestPasswordController);
  *                   type: string
  */
 router.post('/reset-password', resetPasswordController);
+
+/**
+ * @swagger
+ * /auth/link/kakao:
+ *   post:
+ *     summary: 카카오 계정 연동
+ *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               userId:
+ *                 type: number
+ *               socialId:
+ *                 type: string
+ *               email:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: 카카오 계정 연동 성공
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ */
+router.post('/link/kakao', linkKakaoAccountController);
+
+/**
+ * @swagger
+ * /auth/link/google:
+ *   post:
+ *     summary: 구글 계정 연동
+ *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               userId:
+ *                 type: number
+ *               socialId:
+ *                 type: string
+ *               email:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: 구글 계정 연동 성공
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ */
+router.post('/link/google', linkGoogleAccountController);
+
+/**
+ * @swagger
+ * /auth/verify-email:
+ *   get:
+ *     summary: 이메일 인증
+ *     tags: [Auth]
+ *     parameters:
+ *       - name: token
+ *         in: query
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: 이메일 인증 완료
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ */
+router.get('/verify-email', verifyEmailController);
 
 module.exports = router;
