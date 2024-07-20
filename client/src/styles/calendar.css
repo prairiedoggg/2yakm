@@ -106,6 +106,7 @@ abbr[title] {
   color: #ffffff;
 }
 .react-calendar__tile--now abbr {
+  color: #ffffff;
   background-color: #ffbb25;
   border: 2px solid #ffbb25;
   border-radius: 50%;
@@ -154,9 +155,13 @@ abbr[title] {
 .react-calendar__tile--active:enabled:focus {
   color: inherit;
 }
-.react-calendar__tile--now.react-calendar__tile--active abbr {
-  border: 1px solid #866138;
+.react-calendar__tile--now:enabled:hover,
+.react-calendar__tile--now:enabled:focus {
   color: #ffffff;
+}
+.react-calendar__tile--now.react-calendar__tile--active abbr {
+  color: #ffffff;
+  border: 1px solid #866138;
 }
 .react-calendar__tile.saturday.react-calendar__tile--active abbr {
   color: #6560ff;
@@ -167,7 +172,13 @@ abbr[title] {
 .react-calendar--selectRange .react-calendar__tile--hover {
   background-color: #f8f8fa;
 }
-
+/* 오늘이 토요일,일요일이어도 글씨 하얀색 유지 */
+.react-calendar__tile.saturday.react-calendar__tile--now abbr {
+  color: #ffffff;
+}
+.react-calendar__tile.sunday.react-calendar__tile--now abbr {
+  color: #ffffff;
+}
 .react-calendar__tile--range {
   background: #f8f8fa;
   color: #ffbb25;

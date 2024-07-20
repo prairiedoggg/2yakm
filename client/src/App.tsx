@@ -24,6 +24,7 @@ const TagPage = loadable(() => import('./components/search/TagPage'));
 const Calendar = loadable(() => import('./components/calendar/CalendarPage'));
 const Alarm = loadable(() => import('./components/alarm/Alarm'));
 const MyPage = loadable(() => import('./components/myPage/MyPage'));
+import 'dayjs/locale/ko';
 
 const App: React.FC = () => {
   return (
