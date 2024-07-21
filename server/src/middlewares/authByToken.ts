@@ -7,7 +7,11 @@ interface CustomRequest extends Request {
   user?: any;
 }
 
-const authByToken = async (req: CustomRequest, res: Response, next: NextFunction) => {
+const authByToken = async (
+  req: CustomRequest,
+  res: Response,
+  next: NextFunction
+) => {
   const token = req.cookies.jwt;
 
   if (!token) {
@@ -35,4 +39,4 @@ const authByToken = async (req: CustomRequest, res: Response, next: NextFunction
   }
 };
 
-module.exports = authByToken;
+export default authByToken;

@@ -1,24 +1,24 @@
-const { pool } = require('../db');
-const { Review } = require('../entity/review');
-const { createError } = require('../utils/error');
+import { pool } from '../db';
+import { Review } from '../entity/review';
+import { createError } from '../utils/error';
 
-interface totalCountAndData {
+interface TotalCountAndData {
   totalCount: number;
   totalPages: number;
-  data: (typeof Review)[];
+  data: Review[];
 }
 
-interface cursorBasedPaginationResult {
-  reviews: (typeof Review)[];
+interface CursorBasedPaginationResult {
+  reviews: Review[];
   nextCursor: number | null;
 }
 
 // 리뷰 생성 서비스
-exports.createReview = async (
+const createReview = async (
   drugid: number,
   userid: string,
   content: string
-): Promise<typeof Review | null> => {
+): Promise<Review | null> => {
   // 매개변수화된 쿼리 (SQL 인젝션 공격을 방지할 수 있음)
   try {
     const query = `
@@ -36,11 +36,11 @@ exports.createReview = async (
 };
 
 // 리뷰 수정 서비스
-exports.updateReview = async (
+const updateReview = async (
   reviewid: number,
   userid: string,
   content: string
-): Promise<typeof Review | null> => {
+): Promise<Review | null> => {
   try {
     const validationQuery = `
     SELECT userid FROM reviews
@@ -76,10 +76,10 @@ exports.updateReview = async (
 };
 
 // 리뷰 삭제 서비스
-exports.deleteReview = async (
+const deleteReview = async (
   reviewid: number,
   userid: string
-): Promise<typeof Review | null> => {
+): Promise<Review | null> => {
   try {
     const validationQuery = `
     SELECT userid FROM reviews
@@ -114,15 +114,12 @@ exports.deleteReview = async (
 };
 
 // 해당 약의 모든 리뷰 조회 서비스
-exports.getDrugAllReview = async (
+const getDrugAllReview = async (
   drugid: number,
   initialLimit: number,
   cursorLimit: number,
-  cursor?: {
-    created_at: string;
-    reviewid: number;
-  }
-): Promise<cursorBasedPaginationResult> => {
+  cursor?: number
+): Promise<CursorBasedPaginationResult> => {
   try {
     let query = `
       SELECT 
@@ -183,13 +180,13 @@ exports.getDrugAllReview = async (
 };
 
 // 해당 유저의 모든 리뷰 조회 서비스
-exports.getUserAllReview = async (
+const getUserAllReview = async (
   userid: string,
   limit: number,
   offset: number,
   sortedBy: string,
   order: string
-): Promise<totalCountAndData> => {
+): Promise<TotalCountAndData> => {
   try {
     // 전체 리뷰 개수 조회
     const countQuery = `
@@ -213,8 +210,6 @@ exports.getUserAllReview = async (
         reviews
       JOIN 
         drugs ON reviews.drugid = drugs.drugid
-      JOIN 
-        users ON reviews.userid = users.userid
       WHERE 
         reviews.userid = $1
       ORDER BY ${sortedBy} ${order}
@@ -232,4 +227,12 @@ exports.getUserAllReview = async (
   } catch (error: any) {
     throw error;
   }
+};
+
+export default {
+  createReview,
+  updateReview,
+  deleteReview,
+  getDrugAllReview,
+  getUserAllReview
 };

@@ -9,11 +9,11 @@ const cookieParser = require('cookie-parser');
 const path = require('path');
 const fs = require('fs');
 
-const reviewRouter = require('./routes/review_route');
+import reviewRouter from './routes/review_route';
 const authRouter = require('./routes/auth_route');
 const calendarRouter = require('./routes/calendar_route');
 const alarmRouter = require('./routes/alarm_route');
-const favoriteRouter = require('./routes/favorite_route');
+import favoriteRouter from './routes/favorite_route';
 const mypageRouter = require('./routes/mypage_route');
 const mydrugRouter = require('./routes/mydrug_route');
 

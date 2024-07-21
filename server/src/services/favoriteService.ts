@@ -1,23 +1,20 @@
-import { CustomRequest } from '../types/express';
+import { pool } from '../db';
+import { Favorite } from '../entity/favorite';
 
-const { pool } = require('../db');
-const { Favorite } = require('../entity/favorite');
-const { createError } = require('../utils/error');
-
-interface totalCountAndData {
+interface TotalCountAndData {
   totalCount: number;
   totalPages: number;
-  data: (typeof Favorite)[];
+  data: Favorite[];
 }
 
 // 즐겨 찾는 약 검색 서비스
-exports.searchFavoriteDrug = async (
+const searchFavoriteDrug = async (
   userid: string,
   limit: number,
   offset: number,
   sortedBy: string,
   order: string
-): Promise<totalCountAndData | null> => {
+): Promise<TotalCountAndData> => {
   try {
     // 전체 리뷰 개수 조회
     const countQuery = `
@@ -61,10 +58,10 @@ exports.searchFavoriteDrug = async (
 };
 
 // 약 좋아요 추가, 취소 서비스
-exports.addCancelFavoriteDrug = async (
+const addCancelFavoriteDrug = async (
   drugid: number,
   userid: string
-): Promise<typeof Favorite | null> => {
+): Promise<{ message: string; data: Favorite | null }> => {
   try {
     // DB에 좋아요 정보가 있는지 먼저 확인함
     const foundQuery = `
@@ -105,10 +102,10 @@ exports.addCancelFavoriteDrug = async (
 };
 
 // 좋아요를 눌렀는지 확인하는 서비스
-exports.userFavoriteStatus = async (
+const userFavoriteStatus = async (
   drugid: number,
   userid: string
-): Promise<{ status: boolean }> => {
+): Promise<boolean> => {
   try {
     const query = `
     SELECT * FROM favorites
@@ -117,18 +114,14 @@ exports.userFavoriteStatus = async (
     const values = [drugid, userid];
     const { rows } = await pool.query(query, values);
 
-    return {
-      status: rows.length > 0
-    };
+    return rows.length > 0;
   } catch (error: any) {
     throw error;
   }
 };
 
 // 해당 약의 좋아요 수를 확인하는 서비스
-exports.getDrugFavoriteCount = async (
-  drugid: number
-): Promise<{ count: number }> => {
+const getDrugFavoriteCount = async (drugid: number): Promise<number> => {
   try {
     const query = `
   SELECT COUNT(*) AS count
@@ -138,10 +131,15 @@ exports.getDrugFavoriteCount = async (
     const values = [drugid];
     const { rows } = await pool.query(query, values);
 
-    return {
-      count: parseInt(rows[0].count, 10)
-    };
+    return parseInt(rows[0].count, 10);
   } catch (error: any) {
     throw error;
   }
+};
+
+export default {
+  searchFavoriteDrug,
+  addCancelFavoriteDrug,
+  userFavoriteStatus,
+  getDrugFavoriteCount
 };

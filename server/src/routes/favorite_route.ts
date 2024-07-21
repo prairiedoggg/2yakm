@@ -1,41 +1,12 @@
-const Router = require('express');
-const favoriteController = require('../controllers/favoriteController');
-const authByToken = require('../middlewares/authByToken');
+import { Router } from 'express';
+import favoriteController from '../controllers/favoriteController';
+import authByToken from '../middlewares/authByToken';
 
 const router = Router();
 
 /**
  * @swagger
- * /api/favorites/{drugid}:
- *   post:
- *     summary: 좋아요 추가, 취소 API
- *     description: API를 요청 할 때 좋아요가 없으면 좋아요가 추가되고, 좋아요가 있으면 좋아요가 취소됩니다.
- *     tags: [Favorites]
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - in: path
- *         name: drugid
- *         schema:
- *           type: integer
- *         required: true
- *         description: 좋아요가 추가, 취소될 drug id 값을 입력해 주세요.
- *     responses:
- *       200:
- *         description: 좋아요를 취소했습니다.
- *       201:
- *         description: 좋아요를 추가했습니다.
- *       401:
- *         description: 토큰이 없습니다
- *       500:
- *         description: Internal Server Error
- */
-// 좋아요 추가, 취소
-router.post('/:drugid', authByToken, favoriteController.addCancelFavoriteDrug);
-
-/**
- * @swagger
- * /api/favorites/user:
+ * /api/favorites/:
  *   get:
  *     summary: 유저의 즐겨 찾는 약 조회 API (offset-based pagination)
  *     tags: [Favorites]
@@ -46,7 +17,7 @@ router.post('/:drugid', authByToken, favoriteController.addCancelFavoriteDrug);
  *         name: limit
  *         schema:
  *           type: integer
- *         description: 글을 몇 개씩 보여줄지 정합니다. (기본값 10)
+ *         description: 글을 몇 개씩 보여줄지 정합니다. (기본값 10)<br/>(예, /api/favorites/?ㅣlimit=5)
  *       - in: query
  *         name: offset
  *         schema:
@@ -112,11 +83,40 @@ router.post('/:drugid', authByToken, favoriteController.addCancelFavoriteDrug);
  *         description: Internal Server Error
  */
 // 즐겨 찾는 약 검색
-router.get('/user', authByToken, favoriteController.searchFavoriteDrug);
+router.get('/', authByToken, favoriteController.searchFavoriteDrug);
 
 /**
  * @swagger
- * /api/favorites/user/{drugid}:
+ * /api/favorites/{drugid}:
+ *   post:
+ *     summary: 좋아요 추가, 취소 API
+ *     description: API를 요청 할 때 좋아요가 없으면 좋아요가 추가되고, 좋아요가 있으면 좋아요가 취소됩니다.
+ *     tags: [Favorites]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: drugid
+ *         schema:
+ *           type: integer
+ *         required: true
+ *         description: 좋아요가 추가, 취소될 drug id 값을 입력해 주세요.
+ *     responses:
+ *       200:
+ *         description: 좋아요를 취소했습니다.
+ *       201:
+ *         description: 좋아요를 추가했습니다.
+ *       401:
+ *         description: 토큰이 없습니다
+ *       500:
+ *         description: Internal Server Error
+ */
+// 좋아요 추가, 취소
+router.post('/:drugid', authByToken, favoriteController.addCancelFavoriteDrug);
+
+/**
+ * @swagger
+ * /api/favorites/{drugid}/status:
  *   get:
  *     summary: 접속한 유저가 좋아요를 눌렀는지 확인하는 API
  *     tags: [Favorites]
@@ -147,11 +147,15 @@ router.get('/user', authByToken, favoriteController.searchFavoriteDrug);
  *         description: Internal Server Error
  */
 // 좋아요를 눌렀는지 확인
-router.get('/user/:drugid', authByToken, favoriteController.userFavoriteStatus);
+router.get(
+  '/:drugid/status',
+  authByToken,
+  favoriteController.userFavoriteStatus
+);
 
 /**
  * @swagger
- * /api/favorites/count/{drugid}:
+ * /api/favorites/{drugid}/count:
  *   get:
  *     summary: 해당 약의 좋아요 수 조회 API
  *     tags: [Favorites]
@@ -178,6 +182,6 @@ router.get('/user/:drugid', authByToken, favoriteController.userFavoriteStatus);
  *         description: Internal Server Error
  */
 // 해당 약의 좋아요 수를 확인
-router.get('/count/:drugid', favoriteController.getDrugFavoriteCount);
+router.get('/:drugid/count', favoriteController.getDrugFavoriteCount);
 
-module.exports = router;
+export default router;

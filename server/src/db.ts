@@ -1,7 +1,7 @@
-const { Pool } = require('pg');
-const fs = require('fs');
-const path = require('path');
-const dotenv = require('dotenv');
+import { Pool } from 'pg';
+import fs from 'fs';
+import path from 'path';
+import dotenv from 'dotenv';
 
 dotenv.config();
 
@@ -33,4 +33,4 @@ pool.connect((err: any) => {
   }
 });
 
-module.exports = { pool };
+export { pool };
