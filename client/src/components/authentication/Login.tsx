@@ -11,7 +11,7 @@ Date        Author   Status    Description
 import styled from 'styled-components';
 import SnsLogin from './SnsLogin';
 import EmailLogin from './EmailLogin';
-
+import BottomEditNameSheet from './BottomEditNameSheet';
 import { useNavigate } from 'react-router-dom';
 import { Icon } from '@iconify-icon/react';
 import { useState } from 'react';
@@ -28,11 +28,11 @@ const Login = () => {
   const renderContent = () => {
     switch (currentState) {
       case pageState.EmailLogin:
-        return <EmailLogin onRegisterClick={ ()=> navigate('/register')}/>;
+        return <EmailLogin onRegisterClick={() => navigate('/register')} />;
       default:
         return (
           <SnsLogin
-            onClose={() => {}}
+            onClose={() => navigate('/', { state: { showBottomSheet: true } })}
             onEmailLoginClick={() => setCurrentState(pageState.EmailLogin)}
             onEmailRegisterClick={() => navigate('/register')}
           />

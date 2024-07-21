@@ -11,20 +11,39 @@ Date        Author   Status    Description
 import styled from 'styled-components';
 import { Icon } from '@iconify-icon/react';
 
-
-const BottomSheet = ({ isVisible, onClose, children } : {isVisible:boolean, onClose:()=>void, children:React.ReactNode}) => {
-
+const BottomSheet = ({
+  isVisible,
+  onClose,
+  hideTopClose,
+  children
+}: {
+  isVisible: boolean;
+  onClose: () => void;
+  hideTopClose?: boolean;
+  children: React.ReactNode;
+}) => {
   return (
     <Overlay isVisible={isVisible} onClick={onClose}>
-        <SheetContainer isVisible={isVisible} onClick={(e) => e.stopPropagation()}>
-          <Icon className='topClose' onClick={onClose} icon="material-symbols:close" width="1.7rem" height="1.7rem"  style={{color: "black"}} />
-          {children}
-        </SheetContainer>
+      <SheetContainer
+        isVisible={isVisible}
+        onClick={(e) => e.stopPropagation()}
+      >
+        {!hideTopClose && (
+          <Icon
+            className='topClose'
+            onClick={onClose}
+            icon='material-symbols:close'
+            width='1.7rem'
+            height='1.7rem'
+            style={{ color: 'black' }}
+          />
+        )}
+
+        {children}
+      </SheetContainer>
     </Overlay>
   );
 };
-
-
 
 const Overlay = styled.div<{ isVisible: boolean }>`
   position: fixed;
@@ -54,19 +73,19 @@ const SheetContainer = styled.div<{ isVisible: boolean }>`
 
   display: flex;
   flex-direction: column;
-  font-size:1.1em;
-  gap:20px;
+  font-size: 1.1em;
+  gap: 20px;
 
-  button{
-    font-size:1em;
-    font-weight:bold;
-    padding:5px;
-    background-color:white;
+  button {
+    font-size: 1em;
+    font-weight: bold;
+    padding: 5px;
+    background-color: white;
     border: 1px solid #ccc;
-    border-radius: 5px; 
+    border-radius: 5px;
   }
 
-  .topClose{
+  .topClose {
     position: absolute;
     top: 10px;
     right: 10px;
@@ -77,6 +96,5 @@ const SheetContainer = styled.div<{ isVisible: boolean }>`
     color: #333;
   }
 `;
-
 
 export default BottomSheet;
