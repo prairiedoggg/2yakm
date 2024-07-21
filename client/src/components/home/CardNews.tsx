@@ -121,7 +121,7 @@ const CardNews: React.FC = () => {
   const navigate = useNavigate();
   // 카드뉴스 열기
   const openCardNews = (num: number) => () => {
-    navigate(`/news${num}`);
+    navigate(`/news/${num}`);
   };
 
   return (

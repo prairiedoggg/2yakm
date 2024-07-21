@@ -12,13 +12,14 @@ Date        Author   Status    Description
 2024.07.18  임지영   Modified    tsx
 2024.07.20  민선옥   Modified    + TagPage
 2024.07.21  민선옥   Modified    동적 라우팅으로 변경
+2024.07.22  임지영   Modified    + ChatBot
 */
 
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import loadable from '@loadable/component';
 
 const Home = loadable(() => import('./components/home/Home'));
-// const News = loadable(() => import('./components/cardNews/News'));
+const News = loadable(() => import('./components/cardNews/News'));
 const Search = loadable(() => import('./components/search/Search'));
 const TagPage = loadable(() => import('./components/search/TagPage'));
 const Calendar = loadable(() => import('./components/calendar/CalendarPage'));
@@ -29,6 +30,7 @@ const Register = loadable(() => import('./components/authentication/Register'));
 const ResetPassword = loadable(
   () => import('./components/authentication/ResetPassword')
 );
+const ChatBot = loadable(() => import('./components/chatBot/ChatBot'));
 import 'dayjs/locale/ko';
 
 const App = () => {
@@ -36,7 +38,7 @@ const App = () => {
     <Router>
       <Routes>
         <Route path='/' element={<Home />} />
-        {/* <Route path='/news/:num' element={<News />} /> */}
+        <Route path='/news/:num' element={<News />} />
         <Route path='/search' element={<Search />} />
         <Route path='/search/tag/:tag' element={<TagPage />} />
         <Route path='/calendar' element={<Calendar />} />
@@ -45,6 +47,7 @@ const App = () => {
         <Route path='/login' element={<Login />} />
         <Route path='/register' element={<Register />} />
         <Route path='/password/reset' element={<ResetPassword />} />
+        <Route path='/chatbot' element={<ChatBot />} />
       </Routes>
     </Router>
   );

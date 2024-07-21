@@ -8,17 +8,19 @@ Date        Author   Status    Description
 2024.07.16  민선옥   Created
 2024.07.17  민선옥   Modified   알람설정 추가
 2024.07.18  임지영   Modified   tsx
+2024.07.22  임지영   Modified    + ChatBot
 */
 
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
-
 
 const Nav = () => {
   const navigate = useNavigate();
 
   const handleNav = (nav: string) => () => {
     switch (nav) {
+      case 'chatbot':
+        return navigate('/chatbot');
       case 'calendar':
         return navigate('/calendar');
       case 'home':
@@ -26,14 +28,14 @@ const Nav = () => {
       case 'alarm':
         return navigate('/alarm');
       case 'myPage':
-        return navigate('/myPage');  
+        return navigate('/myPage');
     }
   };
 
   return (
     <NavContainer>
       <ul>
-        <li>
+        <li onClick={handleNav('chatbot')}>
           <img src={`/img/nav/talk.png`} alt='상담' style={{ width: '40px' }} />
           <p>상담</p>
         </li>

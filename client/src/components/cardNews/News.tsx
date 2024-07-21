@@ -10,6 +10,7 @@ Date        Author   Status    Description
 2024.07.21  임지영   Modified    코치님 코드 리뷰 수정
 */
 
+import { useParams } from 'react-router-dom';
 import styled from 'styled-components';
 import Header from '../Header';
 import NewsTitle from './NewsTitle';
@@ -21,10 +22,6 @@ const NewsContainer = styled.div`
   width: 100%;
   overflow: hidden;
 `;
-
-interface NewsNumber {
-  num: number;
-}
 
 const NEWS = [
   {
@@ -54,13 +51,18 @@ const NEWS = [
   }
 ];
 
-const News = ({ num }: NewsNumber) => {
-  const { bigTitle, smallTitle, description, images } = NEWS[num - 1];
+const News = () => {
+  const { num } = useParams<{ num: string }>();
+
+  const index = parseInt(num || 'undefined', 10) - 1;
+
+  const { bigTitle, smallTitle, description, images } = NEWS[index];
+
   return (
     <NewsContainer>
       <Header />
       <NewsTitle bigTitle={bigTitle} smallTitle={smallTitle} images={images} />
-      <NewsSlide num={num} />
+      <NewsSlide num={index + 1} />
       <NewsDescription description={description} />
       <Nav />
     </NewsContainer>
