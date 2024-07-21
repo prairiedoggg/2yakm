@@ -1,15 +1,17 @@
 /**
-File Name : DetailTextBox
-Description : 캘린더 하단 세부 내용 텍스트 박스
+File Name : EditDetailTextBox
+Description : 캘린더 하단 세부 내용 텍스트 박스 편집
 Author : 임지영
 
 History
 Date        Author   Status    Description
-2024.07.19  임지영   Created
-2024.07.20  임지영   Modified    스타일 조정
+2024.07.21  임지영   Created
+2024.07.22  임지영   Modified   대략 틀 정리
 */
 
+import { useState } from 'react';
 import styled from 'styled-components';
+import EditDetailPhoto from './EditDetailPhoto';
 
 const Container = styled.div<{ isPill?: boolean }>`
   border: 0.5px #d9d9d9 solid;
@@ -27,19 +29,19 @@ const ContentTitle = styled.div`
 const UnitContainer = styled.div`
   display: flex;
 `;
-
+const TextContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+`;
 const Text = styled.div`
   font-size: 15pt;
 `;
-
-const Blood = styled.div`
+const TextInput = styled.input`
+  width: 50px;
   font-size: 15pt;
-  width: 40px;
+  border: #d9d9d9 solid;
+  border-radius: 8px;
   text-align: center;
-`;
-
-const TextContainer = styled.div`
-  display: flex;
 `;
 
 const Unit = styled.div`
@@ -57,6 +59,7 @@ const StyledInput = styled.input`
   border-radius: 0.35rem;
   width: 1.5rem;
   height: 1.5rem;
+  cursor: pointer;
 
   &:checked {
     border-color: transparent;
@@ -103,51 +106,18 @@ const PillTimeContainer = styled.div`
   margin-left: 10px;
 `;
 
-interface ColorTextProps {
-  temp?: number;
-  fasted?: number;
-  afterMeals?: number;
-  color: string;
-}
-
-// 색상 변화
-const ColorText = ({ color, temp, fasted, afterMeals }: ColorTextProps) => {
-  return (
-    <TextContainer>
-      {fasted !== undefined && (
-        <Text style={{ fontSize: '13pt', lineHeight: '25px' }}>
-          공복 혈당:&nbsp;
-        </Text>
-      )}
-      {afterMeals !== undefined && (
-        <Text style={{ fontSize: '13pt', lineHeight: '25px' }}>
-          식후 혈당:&nbsp;
-        </Text>
-      )}
-      <Text style={{ color, fontWeight: '600' }}>
-        {temp !== undefined && <Text>{temp}</Text>}
-        {fasted !== undefined && <Blood>{fasted}</Blood>}
-        {afterMeals !== undefined && <Blood>{afterMeals}</Blood>}
-      </Text>
-      {(fasted !== undefined || afterMeals !== undefined) && (
-        <Unit>&nbsp;mg/dL</Unit>
-      )}
-    </TextContainer>
-  );
-};
-
-interface DetailTextBoxProps {
+interface EditDetailTextBoxProps {
   title: string;
   time?: string[][];
   pillName?: string[];
-  isPillTaken?: boolean[][]; // 배열로 수정
+  isPillTaken?: boolean[][];
   bloodSugar?: number[];
   temp?: number;
   weight?: number;
   photo?: boolean;
 }
 
-const DetailTextBox = ({
+const EditDetailTextBox = ({
   title,
   pillName,
   time,
@@ -156,7 +126,7 @@ const DetailTextBox = ({
   temp,
   weight,
   photo
-}: DetailTextBoxProps) => {
+}: EditDetailTextBoxProps) => {
   // 약 복용 여부
   const handleIsTakenPill = (times: string[], takenStatuses: boolean[]) => {
     return times.map((time, index) => (
@@ -167,41 +137,14 @@ const DetailTextBox = ({
     ));
   };
 
-  // 혈당에 따른 글자색 변화
-  const getBloodSugarColor = (value: number, isFasted: boolean) => {
-    if (isFasted) {
-      return value < 100 ? '#23AF51' : value < 126 ? '#F78500' : '#EE3610';
-    }
-    return value < 140 ? '#23AF51' : value < 200 ? '#F78500' : '#EE3610';
-  };
+  // 입력값
+  const [preWeight, setWeight] = useState<number | undefined>(weight);
+  const [preTemp, setTemp] = useState<number | undefined>(temp);
 
-  const handleBloodSugar = (isAfter: boolean) => {
-    if (!bloodSugar) return null;
-    const [fasted, afterMeals] = bloodSugar;
-    if ((isAfter && afterMeals === 0) || (!isAfter && fasted === 0))
-      return null;
-    const color = isAfter
-      ? getBloodSugarColor(afterMeals, false)
-      : getBloodSugarColor(fasted, true);
-    return (
-      <ColorText color={color} {...(isAfter ? { afterMeals } : { fasted })} />
-    );
-  };
-
-  // 온도에 따른 글씨색 변화
-  const handleTemperature = () => {
-    if (!temp) return <ColorText color='#000000' />;
-    const color =
-      temp >= 39
-        ? '#C20000'
-        : temp >= 38
-        ? '#F69999'
-        : temp >= 37.2
-        ? '#D8C100'
-        : temp >= 35.8
-        ? '#72BF44'
-        : '#000000';
-    return <ColorText temp={temp} color={color} />;
+  const onChangeInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setWeight(value ? parseFloat(value) : undefined);
+    setTemp(value ? parseFloat(value) : undefined);
   };
 
   const handleContent = () => {
@@ -227,28 +170,44 @@ const DetailTextBox = ({
       case '혈당':
         return (
           <UnitContainer>
-            <div>
-              {handleBloodSugar(false)}
-              {handleBloodSugar(true)}
-            </div>
+            <TextContainer>
+              <div style={{ display: 'flex', marginBottom: '10px' }}>
+                <Text style={{ fontSize: '13pt', lineHeight: '25px' }}>
+                  공복 혈당:&nbsp;
+                </Text>
+                <TextInput onChange={onChangeInput}></TextInput>
+                <Unit>&nbsp;mg/dL</Unit>
+              </div>
+              <div style={{ display: 'flex' }}>
+                <Text style={{ fontSize: '13pt', lineHeight: '25px' }}>
+                  식후 혈당:&nbsp;
+                </Text>
+                <TextInput onChange={onChangeInput}></TextInput>
+                <Unit>&nbsp;mg/dL</Unit>
+              </div>
+            </TextContainer>
           </UnitContainer>
         );
       case '체온':
         return (
           <UnitContainer>
-            {handleTemperature()}
+            <TextInput value={preTemp} onChange={onChangeInput}></TextInput>
             <Unit>&nbsp;°C</Unit>
           </UnitContainer>
         );
       case '체중':
         return (
           <UnitContainer>
-            <Text style={{ fontWeight: '600' }}>{weight}</Text>
+            <TextInput value={preWeight} onChange={onChangeInput}></TextInput>
             <Unit>&nbsp;kg</Unit>
           </UnitContainer>
         );
       case '사진 기록':
-        return <UnitContainer></UnitContainer>;
+        return (
+          <UnitContainer>
+            <EditDetailPhoto />
+          </UnitContainer>
+        );
       default:
         return null;
     }
@@ -269,4 +228,4 @@ const DetailTextBox = ({
   ) : null;
 };
 
-export default DetailTextBox;
+export default EditDetailTextBox;
