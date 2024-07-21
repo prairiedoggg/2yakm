@@ -18,7 +18,9 @@ li {
   box-sizing: border-box;
 }
 
+h2,
 h3,
+h4,
 ul,
 p {
   margin: 0;

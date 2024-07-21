@@ -9,36 +9,25 @@
  */
 
 import styled from 'styled-components';
-import { useState } from 'react';
-import Header from '../Header';
 import Nav from '../Nav';
 import AlarmPage from './AlarmPage';
 import AlarmSettings from './AlarmSettings';
-
-enum PageState {
-  Main,
-  AlarmSettings
-}
+import { useAlarmStore } from '../../store/alarm';
 
 const Alarm = () => {
-  const [currentState, setCurrentState] = useState<PageState>(PageState.Main);
+  const { currentPage } = useAlarmStore();
 
   const renderContent = () => {
-    switch (currentState) {
-      case PageState.AlarmSettings:
+    switch (currentPage) {
+      case 'settings':
         return <AlarmSettings />;
       default:
-        return (
-          <AlarmPage
-            onAddAlarm={() => setCurrentState(PageState.AlarmSettings)}
-          />
-        );
+        return <AlarmPage />;
     }
   };
 
   return (
     <PageContainer>
-      <Header />
       {renderContent()}
       <Nav />
     </PageContainer>
@@ -49,5 +38,4 @@ export default Alarm;
 
 const PageContainer = styled.div`
   width: 100%;
-  overflow: hidden;
 `;
