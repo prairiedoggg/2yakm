@@ -17,6 +17,7 @@ import ConfirmPassword from './ConfirmPassword';
 import EditPassword from './EditPassword';
 import EditPharmacist from './EditPharmacist';
 import FavoriteMedications from './FavoriteMedications';
+import ManageReviews from './ManageReviews';
 
 import Toast from '../Toast';
 import Nav from '../Nav';
@@ -100,7 +101,7 @@ const MyPage = () => {
         return (<FavoriteMedications />);   
 
       case pageState.ManageReviews:
-        return (<div></div>);
+        return (<ManageReviews />);   
     }  
   }
 
