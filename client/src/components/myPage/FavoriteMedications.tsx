@@ -14,13 +14,14 @@ import { ChangeEvent, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 
 type MedicationItem = {
-  title:string,
-  registrationDate:string,
-  tags:string[],
-}
+  title: string;
+  registrationDate: string;
+  tags: string[];
+};
 
 const FavoriteMedications = () => {
-  const items: MedicationItem[] = [ // test
+  const items: MedicationItem[] = [
+    // test
     {
       title: '타이레놀',
       registrationDate: '2023.05.14',
@@ -36,12 +37,20 @@ const FavoriteMedications = () => {
       registrationDate: '2023.06.15',
       tags: ['감기', '두통']
     }
-  ];    
+  ];
 
-  const renderItems = (item : MedicationItem) =>{
+  const renderItems = (item: MedicationItem) => {
     return (
       <Item>
-        <div className='title'>{item.title}<Icon icon="ep:arrow-right-bold" width='1.2em' height='1.2em' style={{ color: 'black' }} /></div>
+        <div className='title'>
+          {item.title}
+          <Icon
+            icon='ep:arrow-right-bold'
+            width='1.2em'
+            height='1.2em'
+            style={{ color: 'black' }}
+          />
+        </div>
         <div className='registration'>등록일 {item.registrationDate}</div>
         <TagContainer>
           {item.tags.map((tag, index) => (
@@ -52,64 +61,60 @@ const FavoriteMedications = () => {
         </TagContainer>
       </Item>
     );
-  }
+  };
 
   return (
     <MyPageContainer>
       <StyledContent>
         <div className='totalCount'>총 {items.length}개</div>
-        <div className='items'>
-          {items.map((item) => renderItems(item))}
-        </div>
+        <div className='items'>{items.map((item) => renderItems(item))}</div>
       </StyledContent>
     </MyPageContainer>
   );
 };
 
-
-
 const MyPageContainer = styled.div`
   width: 100%;
-  height:70vh;
+  height: 70vh;
   overflow: hidden;
   justify-content: center;
   align-items: center;
-  padding:0px 20px 0px 20px;
+  padding: 0px 20px 0px 20px;
 `;
 
 const StyledContent = styled.div`
-  width:100%;
-  height:100%;
+  width: 100%;
+  height: 100%;
   display: flex;
   flex-direction: column;
-  gap:20px;
+  gap: 20px;
 
-  .totalCount{    
-    font-weight:500;
+  .totalCount {
+    font-weight: 500;
   }
 
-  .items{
-   display: flex;
+  .items {
+    display: flex;
     flex-direction: column;
-    gap:30px;
-    padding:0px 20px 0px 20px;
+    gap: 30px;
+    padding: 0px 20px 0px 20px;
   }
 `;
 
 const Item = styled.div`
   display: flex;
   flex-direction: column;
-  gap:5px;
+  gap: 5px;
 
-  .title{
+  .title {
     display: flex;
-    font-weight:bold;
-    font-size:1.2em;
+    font-weight: bold;
+    font-size: 1.2em;
   }
 
-  .registration{
-    color:gray;
-    font-size:.8em;
+  .registration {
+    color: gray;
+    font-size: 0.8em;
   }
 `;
 

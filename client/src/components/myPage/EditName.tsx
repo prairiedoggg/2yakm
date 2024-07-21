@@ -12,12 +12,11 @@ import styled from 'styled-components';
 import { Icon } from '@iconify-icon/react';
 import { ChangeEvent, useEffect, useState } from 'react';
 
-
-const EditName = ({onEdit}:{onEdit:()=>void}) => {
+const EditName = ({ onEdit }: { onEdit: () => void }) => {
   const [name, setName] = useState('');
   const [isButtonEnabled, setIsButtonEnabled] = useState<boolean>(false);
 
-  const handleChange = (e:ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setName(value);
     setIsButtonEnabled(value.trim().length > 0);
@@ -25,75 +24,88 @@ const EditName = ({onEdit}:{onEdit:()=>void}) => {
 
   useEffect(() => {
     setIsButtonEnabled(name.trim().length > 0);
-    return () => {
-    };
-  }, [name]);  
+    return () => {};
+  }, [name]);
 
   return (
     <MyPageContainer>
       <StyledContent>
         <div className='title'>새로운 이름을 입력해주세요</div>
-        <div className="input-container">
-          <input type="text" placeholder="홍길동" value={name} onChange={handleChange} />
-          <Icon className='clearButton' icon="pajamas:clear" width="1rem" height="1rem" 
-                style={{color: "gray", display:isButtonEnabled? '' : 'none'}}
-                onClick={()=>setName('')} />
+        <div className='input-container'>
+          <input
+            type='text'
+            placeholder='홍길동'
+            value={name}
+            onChange={handleChange}
+          />
+          <Icon
+            className='clearButton'
+            icon='pajamas:clear'
+            width='1rem'
+            height='1rem'
+            style={{ color: 'gray', display: isButtonEnabled ? '' : 'none' }}
+            onClick={() => setName('')}
+          />
         </div>
-        <button className='submitButton' disabled={!isButtonEnabled} onClick={onEdit}>변경 완료</button>
+        <button
+          className='submitButton'
+          disabled={!isButtonEnabled}
+          onClick={onEdit}
+        >
+          변경 완료
+        </button>
       </StyledContent>
     </MyPageContainer>
   );
 };
 
-
-
 const MyPageContainer = styled.div`
   width: 100%;
-  height:70vh;
+  height: 70vh;
   overflow: hidden;
   justify-content: center;
   align-items: center;
-  padding:0px 20px 0px 20px;
+  padding: 0px 20px 0px 20px;
 `;
 
 const StyledContent = styled.div`
-  width:100%;
-  height:100%;
+  width: 100%;
+  height: 100%;
   display: flex;
   flex-direction: column;
-  gap:20px;
-  padding-top:20px;
+  gap: 20px;
+  padding-top: 20px;
 
-  .title{
-    font-weight:bold;
+  .title {
+    font-weight: bold;
   }
 
-  .submitButton{
-    background-color: #FDE72E;
-    border: none; 
-    padding:12px;
-    font-size:1em;
-    font-weight:bold;
+  .submitButton {
+    background-color: #fde72e;
+    border: none;
+    padding: 12px;
+    font-size: 1em;
+    font-weight: bold;
     margin-top: auto;
   }
 
-  .submitButton:disabled{
-    background-color: #C7C7C7;
+  .submitButton:disabled {
+    background-color: #c7c7c7;
   }
 
   .input-container {
     position: relative;
   }
 
-  input{
+  input {
     width: 100%;
     background-color: #f0f0f0;
-    border: none; 
-    border-radius: 4px; 
-    padding:12px;
+    border: none;
+    border-radius: 4px;
+    padding: 12px;
     padding-right: 30px;
     box-sizing: border-box;
-  }    
+  }
 
   .clearButton {
     position: absolute;
@@ -101,7 +113,7 @@ const StyledContent = styled.div`
     right: 10px;
     transform: translateY(-50%);
     cursor: pointer;
-  }  
+  }
 `;
 
 export default EditName;

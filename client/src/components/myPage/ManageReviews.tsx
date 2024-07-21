@@ -11,50 +11,53 @@ Date        Author   Status    Description
 import styled from 'styled-components';
 
 type MedicationItem = {
-  title:string,
-  titleEn:string,
-  desc:string,
-}
+  title: string;
+  titleEn: string;
+  desc: string;
+};
 
 const ManageReviews = () => {
-  const items: MedicationItem[] = [ // test
+  const items: MedicationItem[] = [
+    // test
     {
       title: '타이레놀',
       titleEn: 'Tylenol Tablet 500mg',
-      desc: '종합 감기약으로 타이레놀 좋습니다.',
+      desc: '종합 감기약으로 타이레놀 좋습니다.'
     },
     {
       title: '타이레놀',
       titleEn: 'Tylenol Tablet 500mg',
-      desc: '종합 감기약으로 타이레놀 좋습니다.',
+      desc: '종합 감기약으로 타이레놀 좋습니다.'
     },
     {
       title: '타이레놀',
       titleEn: 'Tylenol Tablet 500mg',
-      desc: '종합 감기약으로 타이레놀 좋습니다.',
-    },
-  ];    
+      desc: '종합 감기약으로 타이레놀 좋습니다.'
+    }
+  ];
 
-  const renderItems = (item : MedicationItem, showHr : boolean) =>{
+  const renderItems = (item: MedicationItem, showHr: boolean) => {
     return (
       <Item>
         <div className='title'>
           <div className='name_ko'>{item.title}</div>
           <div className='name_en'>{item.titleEn}</div>
-          <div className="delete-button">삭제</div>
+          <div className='delete-button'>삭제</div>
         </div>
         <div className='desc'>{item.desc}</div>
-        {showHr? <hr/> : ''}
-    </Item>
+        {showHr ? <hr /> : ''}
+      </Item>
     );
-  }
+  };
 
   return (
     <MyPageContainer>
       <StyledContent>
         <div className='totalCount'>내가 쓴 총 리뷰 {items.length}개</div>
         <div className='items'>
-          {items.map((item, index) => renderItems(item, index < items.length-1))}
+          {items.map((item, index) =>
+            renderItems(item, index < items.length - 1)
+          )}
         </div>
       </StyledContent>
     </MyPageContainer>
@@ -63,65 +66,65 @@ const ManageReviews = () => {
 
 const MyPageContainer = styled.div`
   width: 100%;
-  height:70vh;
+  height: 70vh;
   overflow: hidden;
   justify-content: center;
   align-items: center;
-  padding:0px 20px 0px 20px;
+  padding: 0px 20px 0px 20px;
 `;
 
 const StyledContent = styled.div`
-  width:100%;
-  height:100%;
+  width: 100%;
+  height: 100%;
   display: flex;
   flex-direction: column;
-  gap:30px;
+  gap: 30px;
 
-  .totalCount{    
-    font-weight:500;
+  .totalCount {
+    font-weight: 500;
   }
 
-  .items{
-   display: flex;
+  .items {
+    display: flex;
     flex-direction: column;
-    gap:10px;
+    gap: 10px;
   }
 `;
 
 const Item = styled.div`
   display: flex;
   flex-direction: column;
-  gap:5px;
+  gap: 5px;
 
-  hr{
-    width:100%;
+  hr {
+    width: 100%;
   }
 
-  .title{
+  .title {
     display: flex;
     gap: 5px;
   }
 
-  .name_ko{
-    font-weight:bold;
-    font-size:1.2em;
+  .name_ko {
+    font-weight: bold;
+    font-size: 1.2em;
   }
 
-  .name_en{
-    color:gray;
-    font-size:.8em;
+  .name_en {
+    color: gray;
+    font-size: 0.8em;
   }
 
   .delete-button {
     position: absolute;
     right: 10px;
-    background-color: #D9D9D9;
+    background-color: #d9d9d9;
     border: none;
-    border-radius: 25px; 
+    border-radius: 25px;
     padding: 3px 8px;
     cursor: pointer;
-    font-size:.9em;
-  }  
+    font-size: 0.9em;
+  }
 `;
 
 export default ManageReviews;

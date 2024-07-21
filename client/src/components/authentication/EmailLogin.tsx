@@ -12,7 +12,7 @@ import styled from 'styled-components';
 import { Icon } from '@iconify-icon/react';
 import { ChangeEvent, useEffect, useState } from 'react';
 
-const EmailLogin = ({onRegisterClick} : {onRegisterClick:()=>void}) => {
+const EmailLogin = ({ onRegisterClick }: { onRegisterClick: () => void }) => {
   const [email, setEmail] = useState('');
   const [isEmailButtonEnabled, setIsEmailButtonEnabled] =
     useState<boolean>(false);

@@ -12,39 +12,64 @@ import styled from 'styled-components';
 import { Icon } from '@iconify-icon/react';
 import BottomSheet from '../BottomSheet';
 
-
-const BottomPictureSheet = ({ title, isVisible, onClose } : {title:string, isVisible:boolean, onClose:()=>void}) => {
-
+const BottomPictureSheet = ({
+  title,
+  isVisible,
+  onClose
+}: {
+  title: string;
+  isVisible: boolean;
+  onClose: () => void;
+}) => {
   return (
     <Sheet>
-      <BottomSheet isVisible = {isVisible} onClose={onClose}>
+      <BottomSheet isVisible={isVisible} onClose={onClose}>
         <div className='title'>{title}</div>
-        <div className='menu'><Icon icon="ph:camera-light" width="1.5rem" height="1.5rem"  style={{color: "black"}} onClick={()=>{}} /> 카메라로 촬영하기</div>
-        <div className='menu'><Icon icon="solar:gallery-bold" width="1.5rem" height="1.5rem"  style={{color: "black"}} onClick={()=>{}} /> 앨범에서 선택하기</div>
-        <button className='bottomClose' onClick={onClose}>닫기</button>
+        <div className='menu'>
+          <Icon
+            icon='ph:camera-light'
+            width='1.5rem'
+            height='1.5rem'
+            style={{ color: 'black' }}
+            onClick={() => {}}
+          />{' '}
+          카메라로 촬영하기
+        </div>
+        <div className='menu'>
+          <Icon
+            icon='solar:gallery-bold'
+            width='1.5rem'
+            height='1.5rem'
+            style={{ color: 'black' }}
+            onClick={() => {}}
+          />{' '}
+          앨범에서 선택하기
+        </div>
+        <button className='bottomClose' onClick={onClose}>
+          닫기
+        </button>
       </BottomSheet>
     </Sheet>
-
   );
 };
 
 const Sheet = styled.div`
-  .menu{
+  .menu {
     display: flex;
-    gap:10px;
+    gap: 10px;
   }
 
-  .title{
-    font-size:1.2em;
-    font-weight:bold;
-    margin-bottom:20px;
+  .title {
+    font-size: 1.2em;
+    font-weight: bold;
+    margin-bottom: 20px;
   }
 
-  .bottomClose{
-    margin-top:20px;
+  .bottomClose {
+    margin-top: 20px;
   }
 
-  .topClose{
+  .topClose {
     position: absolute;
     top: 10px;
     right: 10px;
@@ -55,6 +80,5 @@ const Sheet = styled.div`
     color: #333;
   }
 `;
-
 
 export default BottomPictureSheet;
