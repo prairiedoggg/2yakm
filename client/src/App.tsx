@@ -24,6 +24,11 @@ const TagPage = loadable(() => import('./components/search/TagPage'));
 const Calendar = loadable(() => import('./components/calendar/CalendarPage'));
 const Alarm = loadable(() => import('./components/alarm/Alarm'));
 const MyPage = loadable(() => import('./components/myPage/MyPage'));
+const Login = loadable(() => import('./components/authentication/Login'));
+const Register = loadable(() => import('./components/authentication/Register'));
+const ResetPassword = loadable(
+  () => import('./components/authentication/ResetPassword')
+);
 import 'dayjs/locale/ko';
 
 const App = () => {
@@ -37,6 +42,9 @@ const App = () => {
         <Route path='/calendar' element={<Calendar />} />
         <Route path='/alarm' element={<Alarm />} />
         <Route path='/myPage' element={<MyPage />} />
+        <Route path='/login' element={<Login />} />
+        <Route path='/register' element={<Register />} />
+        <Route path='/password/reset' element={<ResetPassword />} />
       </Routes>
     </Router>
   );

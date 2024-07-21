@@ -16,6 +16,11 @@ import EditName from './EditName';
 import ConfirmPassword from './ConfirmPassword';
 import EditPassword from './EditPassword';
 import EditPharmacist from './EditPharmacist';
+import FavoriteMedications from './FavoriteMedications';
+import ManageReviews from './ManageReviews';
+import MyMedications from './MyMedications';
+
+import Login from '../authentication/Login';
 
 import Toast from '../Toast';
 import Nav from '../Nav';
@@ -31,11 +36,11 @@ enum pageState {
   EditPharmacist,
   MyMedications,
   FavoriteMedications,
-  ManageReviews,
+  ManageReviews
 }
 
 const MyPage = () => {
-  const [currentState, setCurrentState] = useState(pageState.Main); 
+  const [currentState, setCurrentState] = useState(pageState.Main);
 
   const renderContent = () => {
     switch (currentState) {
@@ -44,9 +49,9 @@ const MyPage = () => {
       case pageState.ConfirmPassword:
       case pageState.EditPassword:
       case pageState.EditPharmacist:
-      case pageState.MyMedications:  
+      case pageState.MyMedications:
       case pageState.FavoriteMedications:
-      case pageState.ManageReviews:  
+      case pageState.ManageReviews:
         return (
           <div>
             {renderPageTitle(currentState)}
@@ -57,10 +62,13 @@ const MyPage = () => {
       default:
         return (
           <StyledContent>
-            <MyInformation onEditInfo= {()=>{
-              setCurrentState(pageState.EditInfo);}} />
+            <MyInformation
+              onEditInfo={() => {
+                setCurrentState(pageState.EditInfo);
+              }}
+            />
             <div className='entries'>
-              <hr/>
+              <hr />
               {renderMenuItems()}
             </div>
           </StyledContent>
@@ -68,99 +76,138 @@ const MyPage = () => {
     }
   };
 
-  const renderStatePage = (state:pageState) =>{
-    switch(state){
+  const renderStatePage = (state: pageState) => {
+    switch (state) {
       case pageState.EditInfo:
         return (
-        <EditMyInformation onEditNameClick={()=>setCurrentState(pageState.EditName)}
-                           onEditPasswordClick={()=>setCurrentState(pageState.ConfirmPassword)}
-                           onEditPharmacistClick={()=>setCurrentState(pageState.EditPharmacist)} />);
+          <EditMyInformation
+            onEditNameClick={() => setCurrentState(pageState.EditName)}
+            onEditPasswordClick={() =>
+              setCurrentState(pageState.ConfirmPassword)
+            }
+            onEditPharmacistClick={() =>
+              setCurrentState(pageState.EditPharmacist)
+            }
+          />
+        );
 
       case pageState.EditName:
-        return (<EditName onEdit={()=> {
-          setCurrentState(pageState.EditInfo);}} />);
+        return (
+          <EditName
+            onEdit={() => {
+              setCurrentState(pageState.EditInfo);
+            }}
+          />
+        );
 
       case pageState.ConfirmPassword:
-        return (<ConfirmPassword onEdit={()=> {
-          setCurrentState(pageState.EditPassword);}} />);
+        return (
+          <ConfirmPassword
+            onEdit={() => {
+              setCurrentState(pageState.EditPassword);
+            }}
+          />
+        );
 
       case pageState.EditPassword:
-        return (<EditPassword onEdit={()=> {
-          setCurrentState(pageState.EditInfo);}} />);   
+        return (
+          <EditPassword
+            onEdit={() => {
+              setCurrentState(pageState.EditInfo);
+            }}
+          />
+        );
 
       case pageState.EditPharmacist:
-        return (<EditPharmacist onEdit={()=> {
-          setCurrentState(pageState.EditInfo);}} />); 
+        return (
+          <EditPharmacist
+            onEdit={() => {
+              setCurrentState(pageState.EditInfo);
+            }}
+          />
+        );
 
       case pageState.MyMedications:
-        return (<div></div>);
+        return <MyMedications />;
 
       case pageState.FavoriteMedications:
-        return (<div></div>);
+        return <FavoriteMedications />;
 
       case pageState.ManageReviews:
-        return (<div></div>);
-    }  
-  }
-
-  const getStateTitle = (state:pageState) =>{
-    switch(state){
-      case pageState.EditInfo:
-        return "정보 수정";
-      case pageState.EditName:
-        return "이름 변경";
-      case pageState.EditPassword:
-      case pageState.ConfirmPassword:
-        return "비밀번호 변경";
-      case pageState.EditPharmacist:
-        return "약사 인증";
-      case pageState.MyMedications:
-        return "나의 약";
-      case pageState.FavoriteMedications:
-        return "즐겨찾는 약";
-      case pageState.ManageReviews:
-        return "리뷰 관리";
+        return <ManageReviews />;
     }
-  }
+  };
 
-  const getStateBackPage = (state:pageState) =>{
-    switch(state){
+  const getStateTitle = (state: pageState) => {
+    switch (state) {
+      case pageState.EditInfo:
+        return '정보 수정';
+      case pageState.EditName:
+        return '이름 변경';
+      case pageState.EditPassword:
+      case pageState.ConfirmPassword:
+        return '비밀번호 변경';
+      case pageState.EditPharmacist:
+        return '약사 인증';
+      case pageState.MyMedications:
+        return '나의 약';
+      case pageState.FavoriteMedications:
+        return '즐겨찾는 약';
+      case pageState.ManageReviews:
+        return '리뷰 관리';
+    }
+  };
+
+  const getStateBackPage = (state: pageState) => {
+    switch (state) {
       case pageState.EditName:
       case pageState.ConfirmPassword:
       case pageState.EditPassword:
       case pageState.EditPharmacist:
-        return pageState.EditInfo;  
+        return pageState.EditInfo;
 
       default:
-        return pageState.Main
+        return pageState.Main;
     }
-  }  
+  };
 
-  const renderPageTitle = (state : pageState) =>{
+  const renderPageTitle = (state: pageState) => {
     return (
       <PageTitle>
-        <div className="title">
-          <Icon icon="ep:arrow-left-bold" width='1.2em' height='1.2em' style={{ color: '#FFBB25' }} 
-          onClick={() =>setCurrentState(getStateBackPage(state))} /> <div>{getStateTitle(state)}</div> 
+        <div className='title'>
+          <Icon
+            icon='ep:arrow-left-bold'
+            width='1.2em'
+            height='1.2em'
+            style={{ color: '#FFBB25' }}
+            onClick={() => setCurrentState(getStateBackPage(state))}
+          />{' '}
+          <div>{getStateTitle(state)}</div>
         </div>
         <hr />
       </PageTitle>
     );
-  }
+  };
 
   const menus = [
-    {name : '나의 약', state : pageState.MyMedications}, 
-    {name : '즐겨찾는 약', state : pageState.FavoriteMedications}, 
-    {name : '리뷰관리', state : pageState.ManageReviews}]
+    { name: '나의 약', state: pageState.MyMedications },
+    { name: '즐겨찾는 약', state: pageState.FavoriteMedications },
+    { name: '리뷰관리', state: pageState.ManageReviews }
+  ];
 
   const renderMenuItems = () => {
     return menus.map((menu, index) => (
       <div key={index}>
-        <div className='entry' onClick={() =>setCurrentState(menu.state)}>
+        <div className='entry' onClick={() => setCurrentState(menu.state)}>
           <div>{menu.name}</div>
-          <Icon icon="ep:arrow-right-bold" width='1.3em' height='1.3em' style={{ color: '#FFBB25' }} />
+          <Icon
+            icon='ep:arrow-right-bold'
+            width='1.3em'
+            height='1.3em'
+            style={{ color: '#FFBB25' }}
+          />
         </div>
-        <hr  />
+        <hr />
       </div>
     ));
   };
@@ -170,7 +217,6 @@ const MyPage = () => {
       <Header />
       {renderContent()}
       {/* <Toast str="이름 변경이 완료되었어요" /> */}
-
       <Nav />
     </MyPageContainer>
   );
@@ -182,18 +228,18 @@ const PageTitle = styled.div`
   align-content: center;
   justify-content: center;
   align-items: center;
-  width:100%;
-  gap:5px;
+  width: 100%;
+  gap: 5px;
 
-  .title{
+  .title {
     display: flex;
-    gap : 10px;
-    width:95%;
-    font-size:1.2em;
+    gap: 10px;
+    width: 95%;
+    font-size: 1.2em;
   }
 
-  hr{
-    width:90%;
+  hr {
+    width: 90%;
   }
 `;
 
@@ -209,27 +255,25 @@ const StyledContent = styled.div`
   justify-content: center;
   gap: 10px;
 
-
-  hr{
-    width:90%;
+  hr {
+    width: 90%;
   }
 
-  .entries{
+  .entries {
     display: flex;
     gap: 10px;
     flex-direction: column;
-    font-size:1em;
+    font-size: 1em;
 
-    .entry{
+    .entry {
       display: flex;
       justify-content: space-between;
       align-content: center;
-      width:90%;
-      margin-left:20px;
-      margin-bottom:15px;
-    }    
+      width: 90%;
+      margin-left: 20px;
+      margin-bottom: 15px;
+    }
   }
-
 `;
 
 export default MyPage;
