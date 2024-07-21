@@ -18,6 +18,7 @@ import EditPassword from './EditPassword';
 import EditPharmacist from './EditPharmacist';
 import FavoriteMedications from './FavoriteMedications';
 import ManageReviews from './ManageReviews';
+import MyMedications from './MyMedications';
 
 import Toast from '../Toast';
 import Nav from '../Nav';
@@ -95,7 +96,7 @@ const MyPage = () => {
           setCurrentState(pageState.EditInfo);}} />); 
 
       case pageState.MyMedications:
-        return (<div></div>);
+        return (<MyMedications />);   
 
       case pageState.FavoriteMedications:
         return (<FavoriteMedications />);   

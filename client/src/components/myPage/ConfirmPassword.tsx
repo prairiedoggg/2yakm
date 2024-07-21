@@ -36,6 +36,7 @@ const ConfirmPassword = ({onEdit}:{onEdit:()=>void}) => {
         <div className='title'>안전한 변경을 위해 현재 비밀번호를 입력해 주세요</div>
         <div className="input-container">
           <input type="password" value={password} onChange={handleChange} placeholder='현재 비밀번호' />
+          <div className='find-password'>비밀번호 찾기</div>
           <Icon className='clearButton' icon="pajamas:clear" width="1rem" height="1rem" 
                 style={{color: "gray", display:isButtonEnabled? '' : 'none'}}
                 onClick={()=>setPassword('')} />
@@ -84,6 +85,12 @@ const StyledContent = styled.div`
 
   .input-container {
     position: relative;
+  }
+
+  .find-password{
+    font-size:0.9em;
+    text-decoration: underline;  
+    margin-top:10px;
   }
 
   input{
