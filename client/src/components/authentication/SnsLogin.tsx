@@ -11,7 +11,8 @@ Date        Author   Status    Description
 import styled from 'styled-components';
 import { Icon } from '@iconify-icon/react';
 
-const SnsLogin = ({ onClose, onEmailLoginClick } : { onClose:()=>void, onEmailLoginClick: ()=>void}) => {
+const SnsLogin = ({ onClose, onEmailLoginClick, onEmailRegisterClick } : 
+                  { onClose:()=>void, onEmailLoginClick: ()=>void, onEmailRegisterClick : () =>void}) => {
 
   return (
     <Content>
@@ -24,7 +25,7 @@ const SnsLogin = ({ onClose, onEmailLoginClick } : { onClose:()=>void, onEmailLo
         </div>
         <div className='other'>
           <div onClick={onEmailLoginClick}>이메일로 로그인</div>
-          <div>이메일로 회원가입</div>
+          <div onClick={onEmailRegisterClick}>이메일로 회원가입</div>
         </div> 
       </Content>
   );

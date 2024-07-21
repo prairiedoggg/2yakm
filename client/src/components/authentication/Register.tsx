@@ -1,6 +1,6 @@
 /**
-File Name : Login
-Description : 로그인
+File Name : Register
+Description : 회원가입
 Author : 오선아
 
 History
@@ -9,36 +9,11 @@ Date        Author   Status    Description
 */
 
 import styled from 'styled-components';
-import SnsLogin from './SnsLogin';
-import EmailLogin from './EmailLogin';
-
 import { useNavigate } from 'react-router-dom';
 import { Icon } from '@iconify-icon/react';
-import { useState } from 'react';
 
-enum pageState {
-  SnsLogin,
-  EmailLogin
-}
-
-const Login = () => {
-  const [currentState, setCurrentState] = useState(pageState.SnsLogin);
+const Register = () => {
   const navigate = useNavigate();
-
-  const renderContent = () => {
-    switch (currentState) {
-      case pageState.EmailLogin:
-        return <EmailLogin onRegisterClick={ ()=> navigate('/register')}/>;
-      default:
-        return (
-          <SnsLogin
-            onClose={() => {}}
-            onEmailLoginClick={() => setCurrentState(pageState.EmailLogin)}
-            onEmailRegisterClick={() => navigate('/register')}
-          />
-        );
-    }
-  };
 
   return (
     <Overlay>
@@ -52,7 +27,7 @@ const Login = () => {
         height='1.7rem'
         style={{ color: 'black' }}
       />
-      {renderContent()}
+      회원가입
     </Overlay>
   );
 };
@@ -82,4 +57,4 @@ const Overlay = styled.div`
   }
 `;
 
-export default Login;
+export default Register;
