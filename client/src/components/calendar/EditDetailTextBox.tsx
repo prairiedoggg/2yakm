@@ -7,11 +7,13 @@ History
 Date        Author   Status    Description
 2024.07.21  임지영   Created
 2024.07.22  임지영   Modified   대략 틀 정리
+2024.07.22  임지영   Modified   리팩토링
 */
 
 import { useState } from 'react';
 import styled from 'styled-components';
 import EditDetailPhoto from './EditDetailPhoto';
+import { FiXCircle } from 'react-icons/fi';
 
 const Container = styled.div<{ isPill?: boolean }>`
   border: 0.5px #d9d9d9 solid;
@@ -29,13 +31,16 @@ const ContentTitle = styled.div`
 const UnitContainer = styled.div`
   display: flex;
 `;
+
 const TextContainer = styled.div`
   display: flex;
   flex-direction: column;
 `;
+
 const Text = styled.div`
   font-size: 15pt;
 `;
+
 const TextInput = styled.input`
   width: 50px;
   font-size: 15pt;
@@ -60,22 +65,18 @@ const StyledInput = styled.input`
   width: 1.5rem;
   height: 1.5rem;
   cursor: pointer;
+  background-size: 120% 120%;
+  background-position: 50%;
+  background-repeat: no-repeat;
+  background-image: url("data:image/svg+xml,%3csvg viewBox='0 0 16 16' fill='white' xmlns='http://www.w3.org/2000/svg'%3e%3cpath d='M5.707 7.293a1 1 0 0 0-1.414 1.414l2 2a1 1 0 0 0 1.414 0l4-4a1 1 0 0 0-1.414-1.414L7 8.586 5.707 7.293z'/%3e%3c/svg%3e");
 
   &:checked {
     border-color: transparent;
-    background-image: url("data:image/svg+xml,%3csvg viewBox='0 0 16 16' fill='white' xmlns='http://www.w3.org/2000/svg'%3e%3cpath d='M5.707 7.293a1 1 0 0 0-1.414 1.414l2 2a1 1 0 0 0 1.414 0l4-4a1 1 0 0 0-1.414-1.414L7 8.586 5.707 7.293z'/%3e%3c/svg%3e");
-    background-size: 120% 120%;
-    background-position: 50%;
-    background-repeat: no-repeat;
     background-color: #72bf44;
   }
 
   &:not(:checked) {
     border-color: transparent;
-    background-image: url("data:image/svg+xml,%3csvg viewBox='0 0 16 16' fill='white' xmlns='http://www.w3.org/2000/svg'%3e%3cpath d='M5.707 7.293a1 1 0 0 0-1.414 1.414l2 2a1 1 0 0 0 1.414 0l4-4a1 1 0 0 0-1.414-1.414L7 8.586 5.707 7.293z'/%3e%3c/svg%3e");
-    background-size: 120% 120%;
-    background-position: 50%;
-    background-repeat: no-repeat;
     background-color: #d9d9d9;
   }
 `;
@@ -127,7 +128,6 @@ const EditDetailTextBox = ({
   weight,
   photo
 }: EditDetailTextBoxProps) => {
-  // 약 복용 여부
   const handleIsTakenPill = (times: string[], takenStatuses: boolean[]) => {
     return times.map((time, index) => (
       <StyledLabel key={index}>
@@ -137,15 +137,40 @@ const EditDetailTextBox = ({
     ));
   };
 
-  // 입력값
-  const [preWeight, setWeight] = useState<number | undefined>(weight);
-  const [preTemp, setTemp] = useState<number | undefined>(temp);
-
-  const onChangeInput = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    setWeight(value ? parseFloat(value) : undefined);
-    setTemp(value ? parseFloat(value) : undefined);
+  // 삭제 버튼
+  const [isDeleted, setIsDeleted] = useState<boolean>(false);
+  const [inputValue, setInputValue] = useState<number | undefined>(
+    weight || temp
+  );
+  const handleDelete = () => {
+    setIsDeleted(true);
+    setInputValue(undefined);
   };
+  const onChangeInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setIsDeleted(false);
+    const value = e.target.value;
+    setInputValue(value ? parseFloat(value) : undefined);
+  };
+
+  const renderSimpleInput = (
+    label: string,
+    value: number | undefined,
+    onChange: (e: React.ChangeEvent<HTMLInputElement>) => void,
+    unit: string
+  ) => (
+    <UnitContainer>
+      <TextInput
+        value={isDeleted ? '' : value}
+        onChange={onChange}
+        onFocus={() => setIsDeleted(false)}
+      />
+      <Unit>&nbsp;{unit}</Unit>
+      <FiXCircle
+        style={{ color: '#777777', margin: '5px 5px' }}
+        onClick={handleDelete}
+      />
+    </UnitContainer>
+  );
 
   const handleContent = () => {
     switch (title) {
@@ -169,39 +194,25 @@ const EditDetailTextBox = ({
         );
       case '혈당':
         return (
-          <UnitContainer>
-            <TextContainer>
-              <div style={{ display: 'flex', marginBottom: '10px' }}>
-                <Text style={{ fontSize: '13pt', lineHeight: '25px' }}>
-                  공복 혈당:&nbsp;
-                </Text>
-                <TextInput onChange={onChangeInput}></TextInput>
-                <Unit>&nbsp;mg/dL</Unit>
-              </div>
-              <div style={{ display: 'flex' }}>
-                <Text style={{ fontSize: '13pt', lineHeight: '25px' }}>
-                  식후 혈당:&nbsp;
-                </Text>
-                <TextInput onChange={onChangeInput}></TextInput>
-                <Unit>&nbsp;mg/dL</Unit>
-              </div>
-            </TextContainer>
-          </UnitContainer>
+          <TextContainer>
+            {renderSimpleInput(
+              '공복 혈당',
+              bloodSugar?.[0],
+              onChangeInput,
+              'mg/dL'
+            )}
+            {renderSimpleInput(
+              '식후 혈당',
+              bloodSugar?.[1],
+              onChangeInput,
+              'mg/dL'
+            )}
+          </TextContainer>
         );
       case '체온':
-        return (
-          <UnitContainer>
-            <TextInput value={preTemp} onChange={onChangeInput}></TextInput>
-            <Unit>&nbsp;°C</Unit>
-          </UnitContainer>
-        );
+        return renderSimpleInput('체온', temp, onChangeInput, '°C');
       case '체중':
-        return (
-          <UnitContainer>
-            <TextInput value={preWeight} onChange={onChangeInput}></TextInput>
-            <Unit>&nbsp;kg</Unit>
-          </UnitContainer>
-        );
+        return renderSimpleInput('체중', weight, onChangeInput, 'kg');
       case '사진 기록':
         return (
           <UnitContainer>
@@ -220,11 +231,15 @@ const EditDetailTextBox = ({
     (weight && weight !== 0) ||
     photo;
 
+  const isPill = title === '약 복용 여부';
+
   return isRender ? (
-    <Container isPill={title === '약 복용 여부'}>
-      <ContentTitle>{title}</ContentTitle>
-      {handleContent()}
-    </Container>
+    !isDeleted ? (
+      <Container isPill={isPill}>
+        <ContentTitle>{title}</ContentTitle>
+        {handleContent()}
+      </Container>
+    ) : null
   ) : null;
 };
 

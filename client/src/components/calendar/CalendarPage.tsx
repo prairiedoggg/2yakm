@@ -18,6 +18,21 @@ import CalendarSection from './CalendarSection';
 import Nav from '../Nav';
 import { useDateStore } from '../../store/store';
 
+const CalendarContainer = styled.div`
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+`;
+
+const MainContent = styled.div`
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+`;
+
 const EntireDetail = styled.div<{ expanded: boolean }>`
   position: ${({ expanded }) => (expanded ? 'absolute' : 'relative')};
   bottom: ${({ expanded }) => (expanded ? '80px' : '0')};
@@ -29,6 +44,9 @@ const EntireDetail = styled.div<{ expanded: boolean }>`
   flex-direction: column;
   overflow: hidden;
   transition: height 0.7s ease-out, bottom 0.7s ease-out;
+  border-top-left-radius: ${({ expanded }) => (expanded ? '20px' : '0')};
+  border-top-right-radius: ${({ expanded }) => (expanded ? '20px' : '0')};
+  z-index: 10;
 `;
 
 const CalandarDatailContainer = styled.div`
@@ -62,24 +80,21 @@ const Edit = styled.img`
   cursor: pointer;
 `;
 
-const CalendarContainer = styled.div`
-  width: 100vw;
-  height: 100vh;
-  display: flex;
-  flex-direction: column;
-`;
-
-const MainContent = styled.div`
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-`;
-
 const DetailContainer = styled.div`
   flex: 1;
   overflow-y: auto;
   width: 100%;
+`;
+
+const Modal = styled.div<{ expanded: boolean }>`
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: ${({ expanded }) => (expanded ? '10' : '-1')};
+  opacity: ${({ expanded }) => (expanded ? '1' : '0')};
 `;
 
 const CalendarPage: React.FC = () => {
@@ -102,6 +117,7 @@ const CalendarPage: React.FC = () => {
 
   return (
     <CalendarContainer>
+      <Modal expanded={arrow} onClick={setArrow} />
       <Header />
       <MainContent>
         <CalendarSection />
