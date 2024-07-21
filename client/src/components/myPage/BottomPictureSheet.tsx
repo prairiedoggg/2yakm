@@ -21,7 +21,7 @@ const BottomPictureSheet = ({ title, isVisible, onClose } : {title:string, isVis
         <div className='title'>{title}</div>
         <div className='menu'><Icon icon="ph:camera-light" width="1.5rem" height="1.5rem"  style={{color: "black"}} onClick={()=>{}} /> 카메라로 촬영하기</div>
         <div className='menu'><Icon icon="solar:gallery-bold" width="1.5rem" height="1.5rem"  style={{color: "black"}} onClick={()=>{}} /> 앨범에서 선택하기</div>
-        <button className='bottomClose'>닫기</button>
+        <button className='bottomClose' onClick={onClose}>닫기</button>
       </BottomSheet>
     </Sheet>
 

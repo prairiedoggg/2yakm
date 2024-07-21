@@ -16,7 +16,7 @@ const BottomSheet = ({ isVisible, onClose, children } : {isVisible:boolean, onCl
 
   return (
     <Overlay isVisible={isVisible} onClick={onClose}>
-        <SheetContainer isVisible={isVisible}>
+        <SheetContainer isVisible={isVisible} onClick={(e) => e.stopPropagation()}>
           <Icon className='topClose' onClick={onClose} icon="material-symbols:close" width="1.7rem" height="1.7rem"  style={{color: "black"}} />
           {children}
         </SheetContainer>

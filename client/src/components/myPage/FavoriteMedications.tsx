@@ -83,7 +83,6 @@ const StyledContent = styled.div`
   display: flex;
   flex-direction: column;
   gap:20px;
-  padding-top:20px;
 
   .totalCount{    
     font-weight:500;
