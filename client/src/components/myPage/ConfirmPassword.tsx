@@ -10,22 +10,17 @@ Date        Author   Status    Description
 
 import styled from 'styled-components';
 import { Icon } from '@iconify-icon/react';
-import { ChangeEvent, useEffect, useState } from 'react';
+import { ChangeEvent, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const ConfirmPassword = ({ onEdit }: { onEdit: () => void }) => {
+  const navigate = useNavigate();
   const [password, setPassword] = useState('');
-  const [isButtonEnabled, setIsButtonEnabled] = useState<boolean>(false);
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setPassword(value);
-    setIsButtonEnabled(value.trim().length > 0);
   };
-
-  useEffect(() => {
-    setIsButtonEnabled(password.trim().length > 0);
-    return () => {};
-  }, [name]);
 
   return (
     <MyPageContainer>
@@ -40,19 +35,27 @@ const ConfirmPassword = ({ onEdit }: { onEdit: () => void }) => {
             onChange={handleChange}
             placeholder='현재 비밀번호'
           />
-          <div className='find-password'>비밀번호 찾기</div>
+          <div
+            className='find-password'
+            onClick={() => navigate('/password/reset')}
+          >
+            비밀번호 찾기
+          </div>
           <Icon
             className='clearButton'
             icon='pajamas:clear'
             width='1rem'
             height='1rem'
-            style={{ color: 'gray', display: isButtonEnabled ? '' : 'none' }}
+            style={{
+              color: 'gray',
+              display: password.trim().length > 0 ? '' : 'none'
+            }}
             onClick={() => setPassword('')}
           />
         </div>
         <button
           className='submitButton'
-          disabled={!isButtonEnabled}
+          disabled={!(password.trim().length > 0)}
           onClick={onEdit}
         >
           다음
@@ -120,7 +123,7 @@ const StyledContent = styled.div`
     position: absolute;
     top: 50%;
     right: 10px;
-    transform: translateY(-50%);
+    transform: translateY(-150%);
     cursor: pointer;
   }
 `;

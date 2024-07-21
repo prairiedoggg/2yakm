@@ -10,22 +10,15 @@ Date        Author   Status    Description
 
 import styled from 'styled-components';
 import { Icon } from '@iconify-icon/react';
-import { ChangeEvent, useEffect, useState } from 'react';
+import { ChangeEvent, useState } from 'react';
 
 const EditName = ({ onEdit }: { onEdit: () => void }) => {
   const [name, setName] = useState('');
-  const [isButtonEnabled, setIsButtonEnabled] = useState<boolean>(false);
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setName(value);
-    setIsButtonEnabled(value.trim().length > 0);
   };
-
-  useEffect(() => {
-    setIsButtonEnabled(name.trim().length > 0);
-    return () => {};
-  }, [name]);
 
   return (
     <MyPageContainer>
@@ -43,13 +36,16 @@ const EditName = ({ onEdit }: { onEdit: () => void }) => {
             icon='pajamas:clear'
             width='1rem'
             height='1rem'
-            style={{ color: 'gray', display: isButtonEnabled ? '' : 'none' }}
+            style={{
+              color: 'gray',
+              display: name.trim().length > 0 ? '' : 'none'
+            }}
             onClick={() => setName('')}
           />
         </div>
         <button
           className='submitButton'
-          disabled={!isButtonEnabled}
+          disabled={!(name.trim().length > 0)}
           onClick={onEdit}
         >
           변경 완료

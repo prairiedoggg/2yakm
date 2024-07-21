@@ -10,31 +10,21 @@ Date        Author   Status    Description
 
 import styled from 'styled-components';
 import { Icon } from '@iconify-icon/react';
-import { ChangeEvent, useEffect, useState } from 'react';
+import { ChangeEvent, useState } from 'react';
 
 const ConfirmPassword = ({ onEdit }: { onEdit: () => void }) => {
   const [password, setPassword] = useState('');
   const [password2, setPassword2] = useState('');
-  const [isButtonEnabled, setIsButtonEnabled] = useState<boolean>(false);
-  const [isButtonEnabled2, setIsButtonEnabled2] = useState<boolean>(false);
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setPassword(value);
-    setIsButtonEnabled(value.trim().length > 0);
   };
 
   const handleChange2 = (e: ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setPassword2(value);
-    setIsButtonEnabled2(value.trim().length > 0);
   };
-
-  useEffect(() => {
-    setIsButtonEnabled(password.trim().length > 0);
-    setIsButtonEnabled2(password2.trim().length > 0);
-    return () => {};
-  }, [password, password2]);
 
   return (
     <MyPageContainer>
@@ -52,7 +42,10 @@ const ConfirmPassword = ({ onEdit }: { onEdit: () => void }) => {
             icon='pajamas:clear'
             width='1rem'
             height='1rem'
-            style={{ color: 'gray', display: isButtonEnabled ? '' : 'none' }}
+            style={{
+              color: 'gray',
+              display: password.trim().length > 0 ? '' : 'none'
+            }}
             onClick={() => setPassword('')}
           />
         </div>
@@ -68,13 +61,16 @@ const ConfirmPassword = ({ onEdit }: { onEdit: () => void }) => {
             icon='pajamas:clear'
             width='1rem'
             height='1rem'
-            style={{ color: 'gray', display: isButtonEnabled2 ? '' : 'none' }}
+            style={{
+              color: 'gray',
+              display: password2.trim().length > 0 ? '' : 'none'
+            }}
             onClick={() => setPassword2('')}
           />
         </div>
         <button
           className='submitButton'
-          disabled={!isButtonEnabled || password !== password2}
+          disabled={!(password.trim().length > 0) || password !== password2}
           onClick={onEdit}
         >
           변경 완료

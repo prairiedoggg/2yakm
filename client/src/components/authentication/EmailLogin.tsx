@@ -12,7 +12,13 @@ import styled from 'styled-components';
 import { Icon } from '@iconify-icon/react';
 import { ChangeEvent, useEffect, useState } from 'react';
 
-const EmailLogin = ({ onRegisterClick }: { onRegisterClick: () => void }) => {
+const EmailLogin = ({
+  onRegisterClick,
+  onResetPasswordClick
+}: {
+  onRegisterClick: () => void;
+  onResetPasswordClick: () => void;
+}) => {
   const [email, setEmail] = useState('');
   const [isEmailButtonEnabled, setIsEmailButtonEnabled] =
     useState<boolean>(false);
@@ -99,7 +105,7 @@ const EmailLogin = ({ onRegisterClick }: { onRegisterClick: () => void }) => {
       </div>
 
       <div className='other'>
-        <div>비밀번호 찾기</div>
+        <div onClick={onResetPasswordClick}>비밀번호 찾기</div>
         <div onClick={onRegisterClick}>이메일로 회원가입</div>
       </div>
       <button
