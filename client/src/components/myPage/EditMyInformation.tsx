@@ -50,9 +50,9 @@ const EditMyInformation =
     for (let i = 0; i < infos.length; i++) {
         items.push(
           <div>
-            <div className='information-item' onClick={()=> console.log(infos[i])}>
+            <div className='information-item' onClick={infos[i].onClick}>
               <div className='info-key'>{infos[i].info}</div>
-              <div className='info-value' onClick={infos[i].onClick}><div>{getInfoValue(infos[i].info)}</div> {infos[i].onClick? <Icon icon="ep:arrow-right-bold" width='1.1em' height='1.1em' /> : ''} </div>
+              <div className='info-value' ><div>{getInfoValue(infos[i].info)}</div> {infos[i].onClick? <Icon icon="ep:arrow-right-bold" width='1.1em' height='1.1em' /> : ''} </div>
             </div>
             {i == infos.length - 1? '' : <hr/>}
             
