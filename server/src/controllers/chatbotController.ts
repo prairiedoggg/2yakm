@@ -1,9 +1,10 @@
 const chatbotService = require('../services/chatbotService');
 
-async function chat(req: any, res: any) {
+export const chat = async(req: any, res: any) => {
   try {
     const { message } = req.body;
-    const reply = await chatbotService.processQuery(message);
+    const userId = req.user.id;
+    const reply = await chatbotService.processQuery(userId, message);
     res.json({ reply });
   } catch (error) {
     console.error('GPT API 오류:', error);
@@ -11,6 +12,13 @@ async function chat(req: any, res: any) {
   }
 }
 
-module.exports = {
-  chat
-};
+export const endChat = async(req: any, res: any) => {
+  try {
+    const userId = req.user.id;
+    const message = chatbotService.endConversation(userId);
+    res.json({ message });
+  } catch (error) {
+    console.error('대화 종료 오류:', error);
+    res.status(500).json({ error: '대화 종료 중 오류가 발생했습니다.' });
+  }
+}

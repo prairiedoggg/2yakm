@@ -61,13 +61,13 @@ app.use('/api/auth', authRouter);
 app.use('/api/favorites', favoriteRouter);
 app.use('/mypage', mypageRouter);
 app.use('/mydrugs', mydrugRouter);
-app.use('/api/chatbot', chatbotRouter);
 
 app.listen(port, () => {
   console.log(`Server is running http://localhost:${port}`);
 });
 
 
+app.use('/api/chatbot', authByToken, chatbotRouter);
 app.use('/api/calendars', authByToken, calendarRouter);
 app.use('/api/alarms', authByToken, alarmRouter);
 app.use(cookieParser());
