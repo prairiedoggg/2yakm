@@ -117,7 +117,7 @@ const Item = styled.div`
 
   .delete-button {
     position: absolute;
-    right: 10px;
+    right: 30px;
     background-color: #d9d9d9;
     border: none;
     border-radius: 25px;
