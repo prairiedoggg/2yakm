@@ -25,12 +25,6 @@ const SearchBox = ({ setSearchQuery }: SearchBoxProps) => {
     }
   };
 
-  // 검색창 클릭 시 호출되는 함수
-  const handleInputClick = () => {
-    setSearchQuery('');
-    console.log('im hungry');
-  };
-
   useEffect(() => {
     const handleEnterKey = (e: KeyboardEvent) => {
       if (e.key === 'Enter') {
@@ -59,7 +53,6 @@ const SearchBox = ({ setSearchQuery }: SearchBoxProps) => {
             placeholder='이미지 또는 이름으로 검색'
             value={query}
             onChange={handleChange}
-            onClick={handleInputClick}
           />
           <SearchIcon src={`/img/camera.png`} alt='camera' />
         </SearchContainer>

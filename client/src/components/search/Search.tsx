@@ -10,9 +10,6 @@ const Search = () => {
 
   console.log(searchQuery)
 
-  if (!searchQuery) { 
-    console.log('im full')
-  }
   return (
     <>
       <BackgroundHeader>
