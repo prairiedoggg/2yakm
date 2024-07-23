@@ -1,13 +1,3 @@
-/**
- * File Name : PillExp
- * Description : 약에 대한 설명
- * Author : 민선옥
- *
- * History
- * Date        Author   Status    Description
- * 2024.07.17  민선옥    Created
- * 2024.07.19  민선옥    tsx
- */
 
 import styled from 'styled-components';
 

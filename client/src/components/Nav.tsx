@@ -1,15 +1,4 @@
-/**
-File Name : Nav
-Description : 하단 네브게이션바
-Author : 민선옥
 
-History
-Date        Author   Status    Description
-2024.07.16  민선옥   Created
-2024.07.17  민선옥   Modified   알람설정 추가
-2024.07.18  임지영   Modified   tsx
-2024.07.22  임지영   Modified    + ChatBot
-*/
 import { Link } from 'react-router-dom';
 import styled from 'styled-components';
 

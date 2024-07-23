@@ -1,13 +1,4 @@
-/**
- * File Name : AlarmPage
- * Description : 알람설정
- * Author : 민선옥
- *
- * History
- * Date        Author   Status    Description
- * 2024.07.20  민선옥    Created
- * 2024.07.21  민선옥    알람설정과 연동
- */
+
 
 import { Icon } from '@iconify-icon/react';
 import { useState } from 'react';

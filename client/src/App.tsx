@@ -1,19 +1,3 @@
-/**
-File Name : App
-Description : app.tsx
-Author : 민선옥
-
-History
-Date        Author   Status    Description
-2024.07.16  민선옥   Created
-2024.07.16  임지영   Modified    Home -> Main(메인페이지)   
-2024.07.16  임지영   Modified    + News (카드뉴스)
-2024.07.17  임지영   Modified    + Calendar 
-2024.07.18  임지영   Modified    tsx
-2024.07.20  민선옥   Modified    + TagPage
-2024.07.21  민선옥   Modified    동적 라우팅으로 변경
-2024.07.22  임지영   Modified    + ChatBot
-*/
 
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import loadable from '@loadable/component';

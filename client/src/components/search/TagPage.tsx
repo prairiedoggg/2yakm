@@ -1,12 +1,3 @@
-/**
- * File Name : TagPage
- * Description : 증상과 연관된 약 나열
- * Author : 민선옥
- *
- * History
- * Date        Author   Status    Description
- * 2024.07.19  민선옥    Created
- */
 
 import { useParams } from 'react-router-dom';
 import styled from 'styled-components'; 

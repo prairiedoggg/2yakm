@@ -1,12 +1,3 @@
-/**
- * File Name : Alarm
- * Description : 알람 페이지
- * Author : 민선옥
- *
- * History
- * Date        Author   Status    Description
- * 2024.07.21  민선옥    Created
- */
 
 import styled from 'styled-components';
 import Nav from '../Nav';

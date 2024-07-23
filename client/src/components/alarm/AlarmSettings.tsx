@@ -1,12 +1,3 @@
-/**
- * File Name : AlarmSettings
- * Description : 알람설정
- * Author : 민선옥
- *
- * History
- * Date        Author   Status    Description
- * 2024.07.21  민선옥    Created
- */
 
 import { useState, useEffect } from 'react'; // useEffect 추가
 import styled from 'styled-components';
