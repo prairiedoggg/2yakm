@@ -213,7 +213,7 @@ export const kakaoAuthService = async (
     const tokenResponse = await axios.post(kakaoTokenUrl, null, {
       params: {
         grant_type: 'authorization_code',
-        client_id: process.env.KAKAO_CLIENT_ID,
+        client_id: process.env.VITE_APP_KAKAO_CLIENT_ID,
         redirect_uri: redirectUri,
         code,
       },
@@ -538,34 +538,3 @@ export const linkSocialAccountService = async (userId: number, socialId: string,
     throw createError('DBError', '데이터베이스 오류가 발생했습니다.', 500);
   }
 };
-
-// 이메일 인증
-// export const verifyEmailService = async (token: string): Promise<void> => {
-//   try {
-//     const decoded: any = jwt.verify(token, SECRET_KEY);
-    
-//     const query = 'SELECT * FROM users WHERE email = $1';
-//     const values = [decoded.email];
-//     const result = await pool.query(query, values);
-
-//     if (result.rows.length === 0) {
-//       throw createError('UserNotFound', '사용자를 찾을 수 없습니다', 404);
-//     }
-
-//     const user = result.rows[0];
-//     if (user.isVerified) {
-//       throw createError('AlreadyVerified', '이미 이메일 인증이 완료되었습니다.', 400);
-//     }
-
-//     const updateQuery = 'UPDATE users SET isVerified = true WHERE email = $1';
-//     await pool.query(updateQuery, values);
-//   } catch (error) {
-//     if (error instanceof jwt.TokenExpiredError) {
-//       throw createError('TokenExpired', '토큰이 만료됨', 400);
-//     }
-//     if (error instanceof jwt.JsonWebTokenError) {
-//       throw createError('InvalidToken', '토큰이 유효하지 않음', 400);
-//     }
-//     throw createError('DBError', '데이터베이스 오류가 발생했습니다.', 500);
-//   }
-// };
