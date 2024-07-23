@@ -1,16 +1,3 @@
-/**
-File Name : Home
-Description : 메인페이지
-Author : 임지영
-
-History
-Date        Author   Status    Description
-2024.07.16  임지영   Created
-2024.07.17  임지영   Modified    Nav 추가
-2024.07.18  임지영   Modified     tsx
-2024.07.21  오선아   Modified    sns 회원가입 완료용 바텀시트 추가
-*/
-
 import styled from 'styled-components';
 import MainHeader from './HomeHeader';
 import CardNews from './CardNews';

@@ -1,21 +1,39 @@
-/**
-File Name : OpenCalendarDetail
-Description : 캘린더 하단 세부 내용 보기
-Author : 임지영
-
-History
-Date        Author   Status    Description
-2024.07.21  임지영   Created
-*/
-
 import styled from 'styled-components';
 import DetailTextBox from './DetailTextBox';
-
-const ContentContainer = styled.div``;
+import { useQuery } from '@tanstack/react-query';
+import dayjs from 'dayjs';
 
 const OpenCalendarDetail: React.FC = () => {
-  // // 사용자 캘린더 데이터 받아오기
-  // const {data, isloading, error} = useQuery('calendar', () => fetch(url))
+  // const {
+  //   pillName,
+  //   time,
+  //   isPillTaken,
+  //   bloodSugar,
+  //   temp,
+  //   weight,
+  //   photo,
+  //   setPillName,
+  //   setTime,
+  //   setIsPillTaken,
+  //   setBloodSugar,
+  //   setTemp,
+  //   setWeight,
+  //   setPhoto
+  // } = useCalendar();
+
+  const { isLoading, error, data, isFetching } = useQuery({
+    queryKey: ['calendar'],
+    queryFn: async () => {
+      const response = await fetch('http://localhost:3000/api/calendars');
+      const data = await response.json();
+      return data;
+    }
+  });
+
+  console.log(data);
+  if (isLoading) return <div>로딩중</div>;
+  if (error) return <div>에러</div>;
+
   return (
     <ContentContainer>
       {/* title을 배열로 관리 -> map */}
@@ -33,5 +51,7 @@ const OpenCalendarDetail: React.FC = () => {
     </ContentContainer>
   );
 };
+
+const ContentContainer = styled.div``;
 
 export default OpenCalendarDetail;

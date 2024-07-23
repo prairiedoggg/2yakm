@@ -1,14 +1,3 @@
-/**
-File Name : EditDetailPhoto
-Description : 캘린더 하단 세부 내용 사진 기록
-Author : 임지영
-
-History
-Date        Author   Status    Description
-2024.07.20  임지영   Created
-2024.07.20  임지영   Modified    스타일 조정
-*/
-
 import React, { useEffect, useState, useRef } from 'react';
 
 const EditDetailPhoto: React.FC = () => {
