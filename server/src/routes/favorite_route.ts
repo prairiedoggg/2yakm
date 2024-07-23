@@ -1,6 +1,6 @@
 const Router = require('express');
 const favoriteController = require('../controllers/favoriteController');
-const authByToken = require('../middlewares/authByToken');
+import authByToken from '../middlewares/authByToken';
 
 const router = Router();
 

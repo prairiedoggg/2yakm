@@ -1,6 +1,6 @@
 const Router = require('express');
 const reviewController = require('../controllers/reviewController');
-const authByToken = require('../middlewares/authByToken');
+import authByToken from '../middlewares/authByToken';
 
 const router = Router();
 

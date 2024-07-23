@@ -44,4 +44,4 @@ Desktop.ini
 *.sln
 
 # PostgreSQL Certificates
-certs/*.pem
+certs/
