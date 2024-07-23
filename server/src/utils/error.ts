@@ -1,3 +1,12 @@
+class CustomError extends Error {
+  status: number;
+  constructor(name: string, message: string, status: number) {
+    super(message);
+    this.name = name;
+    this.status = status;
+  }
+}
+
 export const commonError = {
   NO_ACCESS_TOKEN: {
     name: "No access token",
@@ -28,10 +37,8 @@ export const commonError = {
     message: "잘못된 접근입니다.",
   },
   };
-  
+
+
 export function createError(name: string, message: string, status: number) {
-    const error = new Error(message) as any;
-    error.name = name;
-    error.status = status;
-    return error;
+  return new CustomError(name, message, status);
   }
