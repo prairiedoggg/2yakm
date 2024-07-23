@@ -1,5 +1,11 @@
 import { Router } from 'express';
-import reviewController from '../controllers/reviewController';
+import {
+  createReview,
+  updateReview,
+  deleteReview,
+  getDrugAllReview,
+  getUserAllReview
+} from '../controllers/reviewController';
 import authByToken from '../middlewares/authByToken';
 
 const router = Router();
@@ -60,7 +66,7 @@ const router = Router();
  *       500:
  *         description: Internal Server Error
  */
-router.post('/', authByToken, reviewController.createReview);
+router.post('/', authByToken, createReview);
 
 /**
  * @swagger
@@ -123,7 +129,7 @@ router.post('/', authByToken, reviewController.createReview);
  *         description: Internal Server Error
  */
 // 사용자 리뷰 수정
-router.put('/:reviewid', authByToken, reviewController.updateReview);
+router.put('/:reviewid', authByToken, updateReview);
 
 /**
  * @swagger
@@ -151,7 +157,7 @@ router.put('/:reviewid', authByToken, reviewController.updateReview);
  *         description: Internal Server Error
  */
 // 사용자 리뷰 삭제
-router.delete('/:reviewid', authByToken, reviewController.deleteReview);
+router.delete('/:reviewid', authByToken, deleteReview);
 
 /**
  * @swagger
@@ -220,7 +226,7 @@ router.delete('/:reviewid', authByToken, reviewController.deleteReview);
  *         description: Internal Server Error
  */
 // 해당 유저의 모든 리뷰 조회
-router.get('/users/', authByToken, reviewController.getUserAllReview);
+router.get('/users/', authByToken, getUserAllReview);
 
 /**
  * @swagger
@@ -291,6 +297,6 @@ router.get('/users/', authByToken, reviewController.getUserAllReview);
  *         description: Internal Server Error
  */
 // 해당 약의 모든 리뷰 조회
-router.get('/drugs/:drugid', reviewController.getDrugAllReview);
+router.get('/drugs/:drugid', getDrugAllReview);
 
 export default router;

@@ -1,9 +1,15 @@
 import { Response, Request, NextFunction } from 'express';
-import reviewService from '../services/reviewService';
+import {
+  createReviewService,
+  updateReviewService,
+  deleteReviewService,
+  getDrugAllReviewService,
+  getUserAllReviewService
+} from '../services/reviewService';
 import { CustomRequest } from '../types/express';
 
 // 리뷰 생성 컨트롤러
-const createReview = async (
+export const createReview = async (
   req: CustomRequest,
   res: Response,
   next: NextFunction
@@ -19,7 +25,7 @@ const createReview = async (
   }
 
   try {
-    const review = await reviewService.createReview(drugid, userid, content);
+    const review = await createReviewService(drugid, userid, content);
 
     if (!review) res.status(400).send('리뷰 생성을 실패했습니다.');
 
@@ -30,7 +36,7 @@ const createReview = async (
 };
 
 // 리뷰 수정 컨트롤러
-const updateReview = async (
+export const updateReview = async (
   req: CustomRequest,
   res: Response,
   next: NextFunction
@@ -46,7 +52,7 @@ const updateReview = async (
   }
 
   try {
-    const review = await reviewService.updateReview(reviewid, userid, content);
+    const review = await updateReviewService(reviewid, userid, content);
 
     res.status(200).send(review);
   } catch (error: any) {
@@ -55,7 +61,7 @@ const updateReview = async (
 };
 
 // 리뷰 삭제 컨트롤러
-const deleteReview = async (
+export const deleteReview = async (
   req: CustomRequest,
   res: Response,
   next: NextFunction
@@ -65,7 +71,7 @@ const deleteReview = async (
   const userid = req.user.id;
 
   try {
-    const review = await reviewService.deleteReview(reviewid, userid);
+    const review = await deleteReviewService(reviewid, userid);
 
     res.status(200).send('리뷰 삭제 성공');
   } catch (error: any) {
@@ -74,7 +80,7 @@ const deleteReview = async (
 };
 
 // 해당 약의 모든 리뷰 조회 컨트롤러
-const getDrugAllReview = async (
+export const getDrugAllReview = async (
   req: Request,
   res: Response,
   next: NextFunction
@@ -85,7 +91,7 @@ const getDrugAllReview = async (
   const cursor = parseInt(req.query.cursor as string) ?? undefined;
 
   try {
-    const { reviews, nextCursor } = await reviewService.getDrugAllReview(
+    const { reviews, nextCursor } = await getDrugAllReviewService(
       drugid,
       initialLimit,
       cursorLimit,
@@ -98,7 +104,7 @@ const getDrugAllReview = async (
 };
 
 // 해당 유저의 모든 리뷰 조회 컨트롤러
-const getUserAllReview = async (
+export const getUserAllReview = async (
   req: CustomRequest,
   res: Response,
   next: NextFunction
@@ -110,7 +116,7 @@ const getUserAllReview = async (
   const order = (req.query.order as string)?.toUpperCase() ?? 'DESC';
 
   try {
-    const review = await reviewService.getUserAllReview(
+    const review = await getUserAllReviewService(
       userid,
       limit,
       offset,
@@ -121,12 +127,4 @@ const getUserAllReview = async (
   } catch (error: any) {
     next(error);
   }
-};
-
-export default {
-  createReview,
-  updateReview,
-  deleteReview,
-  getDrugAllReview,
-  getUserAllReview
 };

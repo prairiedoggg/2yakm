@@ -1,5 +1,10 @@
 import { Router } from 'express';
-import favoriteController from '../controllers/favoriteController';
+import {
+  searchFavoriteDrug,
+  addCancelFavoriteDrug,
+  userFavoriteStatus,
+  getDrugFavoriteCount
+} from '../controllers/favoriteController';
 import authByToken from '../middlewares/authByToken';
 
 const router = Router();
@@ -83,7 +88,7 @@ const router = Router();
  *         description: Internal Server Error
  */
 // 즐겨 찾는 약 검색
-router.get('/', authByToken, favoriteController.searchFavoriteDrug);
+router.get('/', authByToken, searchFavoriteDrug);
 
 /**
  * @swagger
@@ -112,7 +117,7 @@ router.get('/', authByToken, favoriteController.searchFavoriteDrug);
  *         description: Internal Server Error
  */
 // 좋아요 추가, 취소
-router.post('/:drugid', authByToken, favoriteController.addCancelFavoriteDrug);
+router.post('/:drugid', authByToken, addCancelFavoriteDrug);
 
 /**
  * @swagger
@@ -147,11 +152,7 @@ router.post('/:drugid', authByToken, favoriteController.addCancelFavoriteDrug);
  *         description: Internal Server Error
  */
 // 좋아요를 눌렀는지 확인
-router.get(
-  '/:drugid/status',
-  authByToken,
-  favoriteController.userFavoriteStatus
-);
+router.get('/:drugid/status', authByToken, userFavoriteStatus);
 
 /**
  * @swagger
@@ -182,6 +183,6 @@ router.get(
  *         description: Internal Server Error
  */
 // 해당 약의 좋아요 수를 확인
-router.get('/:drugid/count', favoriteController.getDrugFavoriteCount);
+router.get('/:drugid/count', getDrugFavoriteCount);
 
 export default router;

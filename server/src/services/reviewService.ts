@@ -14,7 +14,7 @@ interface CursorBasedPaginationResult {
 }
 
 // 리뷰 생성 서비스
-const createReview = async (
+export const createReviewService = async (
   drugid: number,
   userid: string,
   content: string
@@ -36,7 +36,7 @@ const createReview = async (
 };
 
 // 리뷰 수정 서비스
-const updateReview = async (
+export const updateReviewService = async (
   reviewid: number,
   userid: string,
   content: string
@@ -76,7 +76,7 @@ const updateReview = async (
 };
 
 // 리뷰 삭제 서비스
-const deleteReview = async (
+export const deleteReviewService = async (
   reviewid: number,
   userid: string
 ): Promise<Review | null> => {
@@ -114,7 +114,7 @@ const deleteReview = async (
 };
 
 // 해당 약의 모든 리뷰 조회 서비스
-const getDrugAllReview = async (
+export const getDrugAllReviewService = async (
   drugid: number,
   initialLimit: number,
   cursorLimit: number,
@@ -180,7 +180,7 @@ const getDrugAllReview = async (
 };
 
 // 해당 유저의 모든 리뷰 조회 서비스
-const getUserAllReview = async (
+export const getUserAllReviewService = async (
   userid: string,
   limit: number,
   offset: number,
@@ -227,12 +227,4 @@ const getUserAllReview = async (
   } catch (error: any) {
     throw error;
   }
-};
-
-export default {
-  createReview,
-  updateReview,
-  deleteReview,
-  getDrugAllReview,
-  getUserAllReview
 };

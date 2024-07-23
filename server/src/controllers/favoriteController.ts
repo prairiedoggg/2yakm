@@ -1,9 +1,14 @@
 import { Response, Request, NextFunction } from 'express';
-import favoriteService from '../services/favoriteService';
+import {
+  searchFavoriteDrugService,
+  addCancelFavoriteDrugService,
+  userFavoriteStatusService,
+  getDrugFavoriteCountService
+} from '../services/favoriteService';
 import { CustomRequest } from '../types/express';
 
 // 즐겨 찾는 약 검색 컨트롤러
-const searchFavoriteDrug = async (
+export const searchFavoriteDrug = async (
   req: CustomRequest,
   res: Response,
   next: NextFunction
@@ -15,7 +20,7 @@ const searchFavoriteDrug = async (
   const order = (req.query.order as string)?.toUpperCase() ?? 'DESC';
 
   try {
-    const favorite = await favoriteService.searchFavoriteDrug(
+    const favorite = await searchFavoriteDrugService(
       userid,
       limit,
       offset,
@@ -29,7 +34,7 @@ const searchFavoriteDrug = async (
 };
 
 // 약 좋아요 추가, 취소 컨트롤러
-const addCancelFavoriteDrug = async (
+export const addCancelFavoriteDrug = async (
   req: CustomRequest,
   res: Response,
   next: NextFunction
@@ -38,10 +43,7 @@ const addCancelFavoriteDrug = async (
   const userid = req.user.id;
 
   try {
-    const favorite = await favoriteService.addCancelFavoriteDrug(
-      drugid,
-      userid
-    );
+    const favorite = await addCancelFavoriteDrugService(drugid, userid);
 
     if (favorite.message === 'deleted') {
       res.status(200).send('좋아요를 취소했습니다.');
@@ -55,7 +57,7 @@ const addCancelFavoriteDrug = async (
 };
 
 // 좋아요를 눌렀는지 확인하는 컨트롤러
-const userFavoriteStatus = async (
+export const userFavoriteStatus = async (
   req: CustomRequest,
   res: Response,
   next: NextFunction
@@ -64,7 +66,7 @@ const userFavoriteStatus = async (
   const userid = req.user.id;
 
   try {
-    const status = await favoriteService.userFavoriteStatus(drugid, userid);
+    const status = await userFavoriteStatusService(drugid, userid);
 
     res.status(200).send({ status });
   } catch (error: any) {
@@ -73,7 +75,7 @@ const userFavoriteStatus = async (
 };
 
 // 해당 약의 좋아요 수를 확인하는 서비스
-const getDrugFavoriteCount = async (
+export const getDrugFavoriteCount = async (
   req: Request,
   res: Response,
   next: NextFunction
@@ -81,17 +83,10 @@ const getDrugFavoriteCount = async (
   const drugid = parseInt(req.params.drugid, 10);
 
   try {
-    const count = await favoriteService.getDrugFavoriteCount(drugid);
+    const count = await getDrugFavoriteCountService(drugid);
 
     res.status(200).send({ count });
   } catch (error: any) {
     next(error);
   }
-};
-
-export default {
-  searchFavoriteDrug,
-  addCancelFavoriteDrug,
-  userFavoriteStatus,
-  getDrugFavoriteCount
 };

@@ -8,7 +8,7 @@ interface TotalCountAndData {
 }
 
 // 즐겨 찾는 약 검색 서비스
-const searchFavoriteDrug = async (
+export const searchFavoriteDrugService = async (
   userid: string,
   limit: number,
   offset: number,
@@ -58,7 +58,7 @@ const searchFavoriteDrug = async (
 };
 
 // 약 좋아요 추가, 취소 서비스
-const addCancelFavoriteDrug = async (
+export const addCancelFavoriteDrugService = async (
   drugid: number,
   userid: string
 ): Promise<{ message: string; data: Favorite | null }> => {
@@ -102,7 +102,7 @@ const addCancelFavoriteDrug = async (
 };
 
 // 좋아요를 눌렀는지 확인하는 서비스
-const userFavoriteStatus = async (
+export const userFavoriteStatusService = async (
   drugid: number,
   userid: string
 ): Promise<boolean> => {
@@ -121,7 +121,9 @@ const userFavoriteStatus = async (
 };
 
 // 해당 약의 좋아요 수를 확인하는 서비스
-const getDrugFavoriteCount = async (drugid: number): Promise<number> => {
+export const getDrugFavoriteCountService = async (
+  drugid: number
+): Promise<number> => {
   try {
     const query = `
   SELECT COUNT(*) AS count
@@ -135,11 +137,4 @@ const getDrugFavoriteCount = async (drugid: number): Promise<number> => {
   } catch (error: any) {
     throw error;
   }
-};
-
-export default {
-  searchFavoriteDrug,
-  addCancelFavoriteDrug,
-  userFavoriteStatus,
-  getDrugFavoriteCount
 };
