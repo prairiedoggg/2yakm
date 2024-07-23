@@ -1,8 +1,6 @@
 import create from 'zustand';
 
 interface Authentication {
-  code?: string;
-  setCode: (code: string) => void;
   token: string;
   setToken: (token: string) => void;
   isAuthenticated: boolean;
@@ -10,8 +8,6 @@ interface Authentication {
 }
 
 export const useAuthentication = create<Authentication>((set) => ({
-  code: '',
-  setCode: (code) => set({ code }),
   token: '',
   setToken: (token) => set({ token }),
   isAuthenticated: false,

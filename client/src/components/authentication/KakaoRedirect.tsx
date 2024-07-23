@@ -5,18 +5,16 @@ import axios from 'axios';
 
 const KakaoRedirect = () => {
   const navigate = useNavigate();
-  const { setCode, setToken, setIsAuthenticated } = useAuthentication();
+  const { setToken, setIsAuthenticated } = useAuthentication();
 
   useEffect(() => {
     const params = new URL(document.location.toString()).searchParams;
-    const newCode = params.get('code');
+    const code = params.get('code');
 
-    if (newCode) {
-      setCode(newCode);
-
+    if (code) {
       axios
         .get('http://localhost:3000/api/auth/kakao/callback', {
-          params: { code: newCode }
+          params: { code: code }
         })
         .then((res) => {
           if (res.data.token) {
@@ -35,7 +33,7 @@ const KakaoRedirect = () => {
       console.error('인증 코드 없음');
       navigate('/login');
     }
-  }, [navigate, setCode, setToken, setIsAuthenticated]);
+  }, [navigate, setToken, setIsAuthenticated]);
 
   return null;
 };
