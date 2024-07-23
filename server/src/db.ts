@@ -1,7 +1,7 @@
-const { Pool } = require('pg');
-const fs = require('fs');
-const path = require('path');
-const dotenv = require('dotenv');
+import { Pool } from 'pg';
+import fs from 'fs';
+import path from 'path';
+import dotenv from 'dotenv';
 
 dotenv.config();
 
@@ -13,15 +13,9 @@ const pool = new Pool({
   port: Number(process.env.DB_PORT),
   ssl: {
     rejectUnauthorized: false,
-    ca: fs
-      .readFileSync(path.join(__dirname, '../certs/server-ca.pem'))
-      .toString(),
-    key: fs
-      .readFileSync(path.join(__dirname, '../certs/client-key.pem'))
-      .toString(),
-    cert: fs
-      .readFileSync(path.join(__dirname, '../certs/client-cert.pem'))
-      .toString()
+    ca: fs.readFileSync(path.join(__dirname, '../certs/server-ca.pem')).toString(),
+    key: fs.readFileSync(path.join(__dirname, '../certs/client-key.pem')).toString(),
+    cert: fs.readFileSync(path.join(__dirname, '../certs/client-cert.pem')).toString()
   }
 });
 
@@ -29,8 +23,8 @@ pool.connect((err: any) => {
   if (err) {
     console.log('PostgreSQL 연결에 실패했습니다.', err);
   } else {
-    console.log('PostgresSQL 연결 성공');
+    console.log('PostgreSQL 연결 성공');
   }
 });
 
-module.exports = { pool };
+export { pool };

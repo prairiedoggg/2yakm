@@ -1,5 +1,5 @@
-const express = require('express');
-const {
+import { Router } from 'express';
+import {
   loginController,
   signupController,
   refreshTokenController,
@@ -12,8 +12,10 @@ const {
   linkKakaoAccountController,
   linkGoogleAccountController,
   verifyEmailController,
-} = require('../controllers/authController');
-const router = express.Router();
+  requestEmailVerificationController
+} from '../controllers/authController';
+
+const router = Router();
 
 /**
  * @swagger
@@ -91,6 +93,34 @@ router.post('/login', loginController);
  *         description: 사용자 이미 존재함
  */
 router.post('/signup', signupController);
+
+/**
+ * @swagger
+ * /auth/request-email-verification:
+ *   post:
+ *     summary: 이메일 인증 요청
+ *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               email:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: 이메일 인증 링크가 전송되었습니다.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ */
+router.post('/request-email-verification', requestEmailVerificationController);
 
 /**
  * @swagger
@@ -366,15 +396,15 @@ router.post('/link/google', linkGoogleAccountController);
  *         schema:
  *           type: string
  *     responses:
- *       200:
- *         description: 이메일 인증 완료
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
+ *        200:
+ *          description: 이메일 인증 완료
+ *          content:
+ *            application/json:
+ *              schema:
+ *                type: object
+ *                properties:
+ *                  message:
+ *                    type: string
  */
 router.get('/verify-email', verifyEmailController);
 
