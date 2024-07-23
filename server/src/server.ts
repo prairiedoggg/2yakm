@@ -1,4 +1,5 @@
 import express from 'express';
+import { Request, Response, NextFunction } from 'express';
 import swaggerUi from 'swagger-ui-express';
 import specs from './swagger';
 import dotenv from 'dotenv';
@@ -9,6 +10,7 @@ import cookieParser from 'cookie-parser';
 import path from 'path';
 import fs from 'fs';
 import { errorHandler } from './middlewares/errorHandler';
+import authByToken from './middlewares/authByToken';
 
 import visionRouter from './routes/vision_route';
 import reviewRouter from './routes/review_route';
@@ -62,6 +64,19 @@ app.use('/api/auth', authRouter);
 app.use('/api/favorites', favoriteRouter);
 app.use('/mypage', mypageRouter);
 app.use('/mydrugs', mydrugRouter);
+app.use('/api/vision', visionRouter);
+app.use('/api/chatbot', authByToken, chatbotRouter);
+app.use('/api/calendars', authByToken, calendarRouter);
+app.use('/api/alarms', authByToken, alarmRouter);
+
+
+// 404 error Handler
+app.use((req: Request, res: Response, next: NextFunction) => {
+  res
+    .status(404)
+    .send('404 Not Found: The page you are looking for does not exist.');
+});
+app.use(errorHandler);
 
 app.listen(port, () => {
   console.log(`Server is running http://localhost:${port}`);
