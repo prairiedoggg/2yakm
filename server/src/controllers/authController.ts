@@ -96,7 +96,7 @@ export const kakaoAuthController = async (req: Request, res: Response, next: Nex
     } else {
       res.cookie('jwt', result.token, { httpOnly: true });
       res.cookie('refreshToken', result.refreshToken, { httpOnly: true });
-      res.status(200).json({ message: '카카오 인증 성공', token: result.token });
+      res.status(200).json({ message: '로그인 성공', token: result.token });
     }
   } catch (error) {
     next(error);
