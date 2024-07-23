@@ -2,6 +2,7 @@ import schedule from 'node-schedule';
 import axios from 'axios';
 import nodemailer from 'nodemailer';
 import { AlarmTime } from '../entity/alarm';
+import { createError } from '../utils/error';
 
 const { Alarm } = require('../entity/alarm');
 const { pool } = require('../db');
@@ -9,50 +10,57 @@ const { pool } = require('../db');
 const runningJobs = new Map<string, schedule.Job>();
 
 export const createAlarm = async (alarm: Omit<typeof Alarm, 'id'>): Promise<typeof Alarm> => {
-  const { userId, name, date, times, message } = alarm;
-  
-  const dateString = date.toISOString();
-  
-  const query = `
-    INSERT INTO alarms (userId, name, date, times, message)
-    VALUES ($1, $2, $3, $4, $5)
-    RETURNING *
-  `;
-  const values = [userId, name, dateString, JSON.stringify(times), message];
-  const result = await pool.query(query, values);
-  const newAlarm = result.rows[0];
+  try {
+    const { userId, name, date, times, message } = alarm;
+    
+    const dateString = date.toISOString();
+    
+    const query = `
+      INSERT INTO alarms (userId, name, date, times, message)
+      VALUES ($1, $2, $3, $4, $5)
+      RETURNING *
+    `;
+    const values = [userId, name, dateString, JSON.stringify(times), message];
+    const result = await pool.query(query, values);
+    const newAlarm = result.rows[0];
 
-  scheduleAlarmService(newAlarm);
+    scheduleAlarmService(newAlarm);
 
-  return newAlarm;
+    return newAlarm;
+  } catch (error) {
+    throw createError('DBError', '알람 생성 중 데이터베이스 오류가 발생했습니다.', 500);
+  }
 };
 
 export const updateAlarm = async (id: string, alarm: Partial<typeof Alarm>): Promise<typeof Alarm | null> => {
-  const { userId, name, date, times, message } = alarm;
-  const text = `
-    UPDATE alarms
-    SET userId = COALESCE($1, userId),
-        name = COALESCE($2, name),
-        date = COALESCE($3, date),
-        times = COALESCE($4, times::jsonb),
-        message = COALESCE($5, message),
-        updated_at = CURRENT_TIMESTAMP
-    WHERE id = $6
-    RETURNING *
-  `;
-  const values = [
-    userId,
-    name,
-    date,
-    JSON.stringify(times),
-    message,
-    id
-  ];
-  console.log('밸류',values)
-  const result = await pool.query(text, values);
-  const updatedAlarm = result.rows[0];
+  try {
+    const { userId, name, date, times, message } = alarm;
+    const text = `
+      UPDATE alarms
+      SET userId = COALESCE($1, userId),
+          name = COALESCE($2, name),
+          date = COALESCE($3, date),
+          times = COALESCE($4, times::jsonb),
+          message = COALESCE($5, message),
+          updated_at = CURRENT_TIMESTAMP
+      WHERE id = $6
+      RETURNING *
+    `;
+    const values = [
+      userId,
+      name,
+      date,
+      JSON.stringify(times),
+      message,
+      id
+    ];
+    const result = await pool.query(text, values);
+    const updatedAlarm = result.rows[0];
 
-  if (updatedAlarm) {
+    if (!updatedAlarm) {
+      throw createError('AlarmNotFound', '해당 알람을 찾을 수 없습니다.', 404);
+    }
+
     // JSON 문자열을 배열로 변환
     updatedAlarm.times = typeof updatedAlarm.times === 'string' ? JSON.parse(updatedAlarm.times) : updatedAlarm.times;
 
@@ -61,9 +69,12 @@ export const updateAlarm = async (id: string, alarm: Partial<typeof Alarm>): Pro
 
     // 새로운 스케줄 설정
     scheduleAlarmService(updatedAlarm);
-  }
 
-  return updatedAlarm;
+    return updatedAlarm;
+  } catch (error) {
+    if (error instanceof Error && error.name === 'AlarmNotFound') throw error;
+    throw createError('DBError', '알람 업데이트 중 데이터베이스 오류가 발생했습니다.', 500);
+  }
 };
 
 const cancelExistingAlarms = (alarmId: string) => {
@@ -92,22 +103,36 @@ export const scheduleAlarmService = (alarm: typeof Alarm) => {
 
 //read  
 export const getAlarmsByUserId = async (userId: string): Promise<typeof Alarm[]> => {
-  const text = 'SELECT * FROM alarms WHERE userId = $1';
-  const result = await pool.query(text, [userId]);
-  return result.rows;
+  try {
+    const text = 'SELECT * FROM alarms WHERE userId = $1';
+    const result = await pool.query(text, [userId]);
+    return result.rows;
+  } catch (error) {
+    throw createError('DBError', '알람 조회 중 데이터베이스 오류가 발생했습니다.', 500);
+  }
 };
 
-// Delete
+//delete
 export const deleteAlarm = async (id: string): Promise<boolean> => {
-  const job = runningJobs.get(id);
-  if (job) {
-    job.cancel();
-    runningJobs.delete(id);
-  }
+  try {
+    const job = runningJobs.get(id);
+    if (job) {
+      job.cancel();
+      runningJobs.delete(id);
+    }
 
-  const query = 'DELETE FROM alarms WHERE id = $1';
-  const result = await pool.query(query, [id]);
-  return result.rowCount > 0;
+    const query = 'DELETE FROM alarms WHERE id = $1';
+    const result = await pool.query(query, [id]);
+    
+    if (result.rowCount === 0) {
+      throw createError('AlarmNotFound', '해당 알람을 찾을 수 없습니다.', 404);
+    }
+    
+    return true;
+  } catch (error: any) {
+    if (error.name === 'AlarmNotFound') throw error;
+    throw createError('DBError', '알람 삭제 중 데이터베이스 오류가 발생했습니다.', 500);
+  }
 };
 
 //메일 발송

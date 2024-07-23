@@ -1,19 +1,20 @@
 import { Response, Request, NextFunction } from 'express';
-const reviewService = require('../services/reviewService');
-
-interface CustomRequest extends Request {
-  user: {
-    id: string;
-  };
-}
+import {
+  createReviewService,
+  updateReviewService,
+  deleteReviewService,
+  getDrugAllReviewService,
+  getUserAllReviewService
+} from '../services/reviewService';
+import { CustomRequest } from '../types/express';
 
 // 리뷰 생성 컨트롤러
-exports.createReview = async (
+export const createReview = async (
   req: CustomRequest,
   res: Response,
   next: NextFunction
 ): Promise<void> => {
-  const { drugid } = req.params;
+  const drugid = parseInt(req.body.drugid, 10);
   const { content } = req.body;
 
   const userid = req.user.id;
@@ -24,7 +25,7 @@ exports.createReview = async (
   }
 
   try {
-    const review = await reviewService.createReview(drugid, userid, content);
+    const review = await createReviewService(drugid, userid, content);
 
     if (!review) res.status(400).send('리뷰 생성을 실패했습니다.');
 
@@ -35,12 +36,12 @@ exports.createReview = async (
 };
 
 // 리뷰 수정 컨트롤러
-exports.updateReview = async (
+export const updateReview = async (
   req: CustomRequest,
   res: Response,
   next: NextFunction
 ): Promise<void> => {
-  const { reviewid } = req.params;
+  const reviewid = parseInt(req.params.reviewid, 10);
   const { content } = req.body;
 
   const userid = req.user.id;
@@ -51,7 +52,7 @@ exports.updateReview = async (
   }
 
   try {
-    const review = await reviewService.updateReview(reviewid, userid, content);
+    const review = await updateReviewService(reviewid, userid, content);
 
     res.status(200).send(review);
   } catch (error: any) {
@@ -60,17 +61,17 @@ exports.updateReview = async (
 };
 
 // 리뷰 삭제 컨트롤러
-exports.deleteReview = async (
+export const deleteReview = async (
   req: CustomRequest,
   res: Response,
   next: NextFunction
 ): Promise<void> => {
-  const { reviewid } = req.params;
+  const reviewid = parseInt(req.params.reviewid, 10);
 
   const userid = req.user.id;
 
   try {
-    const review = await reviewService.deleteReview(reviewid, userid);
+    const review = await deleteReviewService(reviewid, userid);
 
     res.status(200).send('리뷰 삭제 성공');
   } catch (error: any) {
@@ -79,23 +80,31 @@ exports.deleteReview = async (
 };
 
 // 해당 약의 모든 리뷰 조회 컨트롤러
-exports.getDrugAllReview = async (
+export const getDrugAllReview = async (
   req: Request,
   res: Response,
   next: NextFunction
 ): Promise<void> => {
-  const { drugid } = req.params;
+  const drugid = parseInt(req.params.drugid, 10);
+  const initialLimit = parseInt(req.query.initialLimit as string, 10) || 10; // 처음 불러올 자료 개수
+  const cursorLimit = parseInt(req.query.cursorLimit as string, 10) || 10; // cursor 적용 했을 때 가져올 자료 개수
+  const cursor = parseInt(req.query.cursor as string) ?? undefined;
 
   try {
-    const review = await reviewService.getDrugAllReview(drugid);
-    res.status(200).send(review);
+    const { reviews, nextCursor } = await getDrugAllReviewService(
+      drugid,
+      initialLimit,
+      cursorLimit,
+      cursor
+    );
+    res.status(200).send({ reviews, nextCursor });
   } catch (error: any) {
     next(error);
   }
 };
 
 // 해당 유저의 모든 리뷰 조회 컨트롤러
-exports.getUserAllReview = async (
+export const getUserAllReview = async (
   req: CustomRequest,
   res: Response,
   next: NextFunction
@@ -103,11 +112,11 @@ exports.getUserAllReview = async (
   const userid = req.user.id;
   const limit = parseInt(req.query.limit as string, 10) || 10;
   const offset = parseInt(req.query.offset as string, 10) || 0;
-  const sortedBy = (req.query.sortedBy as string) || 'created_at';
-  const order = (req.query.order as string)?.toUpperCase() || 'DESC';
+  const sortedBy = (req.query.sortedBy as string) ?? 'created_at';
+  const order = (req.query.order as string)?.toUpperCase() ?? 'DESC';
 
   try {
-    const review = await reviewService.getUserAllReview(
+    const review = await getUserAllReviewService(
       userid,
       limit,
       offset,

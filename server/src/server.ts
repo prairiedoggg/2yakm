@@ -1,4 +1,5 @@
 const express = require('express');
+import { Request, Response, NextFunction } from 'express';
 const swaggerUi = require('swagger-ui-express');
 const specs = require('./swagger');
 
@@ -10,13 +11,13 @@ const cookieParser = require('cookie-parser');
 const path = require('path');
 const fs = require('fs');
 
-const authByToken = require('./middlewares/authByToken');
+import authByToken from './middlewares/authByToken';
 
-const reviewRouter = require('./routes/review_route');
+import reviewRouter from './routes/review_route';
 const authRouter = require('./routes/auth_route');
 const calendarRouter = require('./routes/calendar_route');
 const alarmRouter = require('./routes/alarm_route');
-const favoriteRouter = require('./routes/favorite_route');
+import favoriteRouter from './routes/favorite_route';
 const mypageRouter = require('./routes/mypage_route');
 const mydrugRouter = require('./routes/mydrug_route');
 const chatbotRouter = require('./routes/chatbot_route');
@@ -25,7 +26,7 @@ dotenv.config();
 
 const app = express();
 
-const port = process.env.PORT || 3000;
+const port = process.env.PORT ?? 3000;
 app.use(express.static(path.join(__dirname, 'public')));
 // CORS
 app.use(
@@ -56,19 +57,29 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieParser());
+
 app.use('/api/reviews', reviewRouter);
 app.use('/api/auth', authRouter);
 app.use('/api/favorites', favoriteRouter);
 app.use('/mypage', mypageRouter);
 app.use('/mydrugs', mydrugRouter);
+app.use('/api/chatbot', authByToken, chatbotRouter);
+app.use('/api/calendars', authByToken, calendarRouter);
+app.use('/api/alarms', authByToken, alarmRouter);
+
+// 404 error Handler
+app.use((req: Request, res: Response, next: NextFunction) => {
+  res
+    .status(404)
+    .send('404 Not Found: The page you are looking for does not exist.');
+});
+
+// Error handler
+app.use((err: any, req: Request, res: Response, next: NextFunction) => {
+  console.error(err.stack);
+  res.status(500).send(err);
+});
 
 app.listen(port, () => {
   console.log(`Server is running http://localhost:${port}`);
 });
-
-
-app.use('/api/chatbot', authByToken, chatbotRouter);
-app.use('/api/calendars', authByToken, calendarRouter);
-app.use('/api/alarms', authByToken, alarmRouter);
-app.use(cookieParser());
-
