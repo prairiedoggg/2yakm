@@ -19,6 +19,7 @@ const alarmRouter = require('./routes/alarm_route');
 import favoriteRouter from './routes/favorite_route';
 const mypageRouter = require('./routes/mypage_route');
 const mydrugRouter = require('./routes/mydrug_route');
+const chatbotRouter = require('./routes/chatbot_route');
 
 dotenv.config();
 
@@ -65,6 +66,7 @@ app.listen(port, () => {
   console.log(`Server is running http://localhost:${port}`);
 });
 
+app.use('/api/chatbot', authByToken, chatbotRouter);
 app.use('/api/calendars', authByToken, calendarRouter);
 app.use('/api/alarms', authByToken, alarmRouter);
 app.use(cookieParser());
