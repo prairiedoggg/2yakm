@@ -12,7 +12,6 @@ import fs from 'fs';
 import { errorHandler } from './middlewares/errorHandler';
 import authByToken from './middlewares/authByToken';
 
-import visionRouter from './routes/vision_route';
 import reviewRouter from './routes/review_route';
 import authRouter from './routes/auth_route';
 const calendarRouter = require('./routes/calendar_route');
@@ -64,7 +63,6 @@ app.use('/api/auth', authRouter);
 app.use('/api/favorites', favoriteRouter);
 app.use('/mypage', mypageRouter);
 app.use('/mydrugs', mydrugRouter);
-app.use('/api/vision', visionRouter);
 app.use('/api/chatbot', authByToken, chatbotRouter);
 app.use('/api/calendars', authByToken, calendarRouter);
 app.use('/api/alarms', authByToken, alarmRouter);
