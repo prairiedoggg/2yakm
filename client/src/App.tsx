@@ -15,6 +15,10 @@ const ResetPassword = loadable(
   () => import('./components/authentication/ResetPassword')
 );
 const ChatBot = loadable(() => import('./components/chatBot/ChatBot'));
+const KakaoRedirect = loadable(
+  () => import('./components/authentication/KakaoRedirect')
+);
+
 import 'dayjs/locale/ko';
 
 const App = () => {
@@ -32,6 +36,7 @@ const App = () => {
         <Route path='/register' element={<Register />} />
         <Route path='/password/reset' element={<ResetPassword />} />
         <Route path='/chatbot' element={<ChatBot />} />
+        <Route path='/kakao/callback' element={<KakaoRedirect />} />
       </Routes>
     </Router>
   );

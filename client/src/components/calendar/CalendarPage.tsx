@@ -5,9 +5,20 @@ import CalendarDetail from './CalendarDetail';
 import CalendarSection from './CalendarSection';
 import Nav from '../Nav';
 import { useDateStore } from '../../store/store';
+import { useAuthentication } from '../../store/authentication';
+import { useNavigate } from 'react-router-dom';
+import { useEffect } from 'react';
 
 const CalendarPage: React.FC = () => {
+  const { isAuthenticated, token } = useAuthentication();
   const { value, arrow, setArrow, edit, setEdit } = useDateStore();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!token) {
+      navigate('/login');
+    }
+  }, [token]);
 
   dayjs.locale('ko');
   const days = dayjs(value).format('D. ddd');
@@ -24,7 +35,7 @@ const CalendarPage: React.FC = () => {
     setEdit();
   };
 
-  return (
+  return isAuthenticated ? (
     <CalendarContainer>
       <Modal expanded={arrow} onClick={setArrow} />
       <Header />
@@ -55,7 +66,7 @@ const CalendarPage: React.FC = () => {
       </MainContent>
       <Nav />
     </CalendarContainer>
-  );
+  ) : null;
 };
 
 const CalendarContainer = styled.div`
@@ -132,9 +143,7 @@ const Modal = styled.div<{ expanded: boolean }>`
   left: 0;
   width: 100vw;
   height: 100vh;
-  background: rgba(0, 0, 0, 0.3);
-  z-index: ${({ expanded }) => (expanded ? '10' : '-1')};
-  opacity: ${({ expanded }) => (expanded ? '1' : '0')};
+  background: rgba(0, 0, 0, 0
 `;
 
 export default CalendarPage;
