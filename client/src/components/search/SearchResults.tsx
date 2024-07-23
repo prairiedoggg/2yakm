@@ -1,23 +1,14 @@
-/**
- * File Name : SearchResults
- * Description : 검색 후 화면, 약에 대한 설명
- * Author : 민선옥
- *
- * History
- * Date        Author   Status    Description
- * 2024.07.16  민선옥    Created
- * 2024.07.17  민선옥    PillMore추가
- * 2024.07.19  민선옥    tsx
- * 2024.07.19  민선옥    tagpage 연결
- */
-
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import styled from 'styled-components';
 import PillExp from './PillExp';
 import Review from './Review';
 
-const SearchResults = () => {
+interface SearchResultsProps {
+  searchQuery: string;
+}
+
+const SearchResults = ({ searchQuery }: SearchResultsProps) => {
   const [isEffectivenessTab, setIsEffectivenessTab] = useState<boolean>(true);
 
   return (
@@ -26,6 +17,7 @@ const SearchResults = () => {
         <img src={`/img/pill.png`} alt='pill' />
         <section>
           <PillTitle>
+            <p>{searchQuery}</p>
             <h3>타이레놀정500밀리그람 (아세트아미노펜)</h3>
             <span>Tylenol Tablet 500mg</span>
             <p>한국존슨앤드존슨판매(유)</p>

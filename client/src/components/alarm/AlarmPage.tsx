@@ -57,8 +57,6 @@ const AlarmPage = () => {
           {alarms.map((alarm, index) => (
             <AlarmItemContainer key={index}>
               <AlarmItem onClick={() => handleEditAlarm(alarm)}>
-                {' '}
-                {/* 수정된 부분 */}
                 <AlarmHeader>
                  
                     <AlarmName>{alarm.name}</AlarmName>

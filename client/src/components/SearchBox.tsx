@@ -1,19 +1,7 @@
-/**
- * File Name : SearchBox
- * Description : 검색 Input 창
- * Author : 민선옥
- *
- * History
- * Date        Author   Status    Description
- * 2024.07.16  민선옥    Created
- * 2024.07.16  임지영    Modified    placeholder 추가
- * 2024.07.19  민선옥    tsx
- * 2024.07.20  민선옥    navigate추가
- */
-
-import { ChangeEvent, useState } from 'react';
+import { ChangeEvent, useState, useEffect } from 'react';
 import styled from 'styled-components';
-import { useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
+import { useSearchHistoryStore } from '../store/search';
 
 interface SearchBoxProps {
   setSearchQuery: (query: string) => void;
@@ -21,37 +9,66 @@ interface SearchBoxProps {
 
 const SearchBox = ({ setSearchQuery }: SearchBoxProps) => {
   const [query, setQuery] = useState('');
-  const navigate = useNavigate();
+  const addHistory = useSearchHistoryStore((state) => state.addHistory);
 
+  // 입력값이 변경될 때 호출되는 함수
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
-    setQuery(e.target.value);
-    setSearchQuery(e.target.value);
+    setQuery(e.target.value); // 로컬 상태에 검색어 저장
+    setSearchQuery(e.target.value); // 상위 컴포넌트에 검색어 전달
   };
 
+  // 검색 버튼 클릭 또는 Enter 키 입력 시 호출되는 함수
   const handleSearch = () => {
-    setSearchQuery(query);
-    navigate('/search');
+    if (query.trim()) {
+      setSearchQuery(query); // 상위 컴포넌트에 검색어 설정
+      addHistory(query); // 검색 히스토리에 검색어 추가
+    }
   };
+
+  // 검색창 클릭 시 호출되는 함수
+  const handleInputClick = () => {
+    setSearchQuery('');
+    console.log('im hungry');
+  };
+
+  useEffect(() => {
+    const handleEnterKey = (e: KeyboardEvent) => {
+      if (e.key === 'Enter') {
+        handleSearch(); // Enter 키 입력 시 검색 실행
+      }
+    };
+
+    window.addEventListener('keydown', handleEnterKey);
+
+    return () => {
+      window.removeEventListener('keydown', handleEnterKey);
+    };
+  }, [query]);
 
   return (
-    <SearchContainer>
-      <SearchIcon
-        src={`/img/search_icon.png`}
-        alt='search'
-        style={{ width: '20px' }}
-      />
-      <SearchInput
-        placeholder='이미지 또는 이름으로 검색'
-        onChange={handleChange}
-        onClick={handleSearch}
-      />
-      <SearchIcon src={`/img/camera.png`} alt='camera' />
-    </SearchContainer>
+    <>
+      <Link to='/search' onClick={handleSearch}>
+        <SearchContainer>
+          <SearchIcon
+            src={`/img/search_icon.png`}
+            alt='search'
+            style={{ width: '20px' }}
+          />
+
+          <SearchInput
+            placeholder='이미지 또는 이름으로 검색'
+            value={query}
+            onChange={handleChange}
+            onClick={handleInputClick}
+          />
+          <SearchIcon src={`/img/camera.png`} alt='camera' />
+        </SearchContainer>
+      </Link>
+    </>
   );
 };
 
 export default SearchBox;
-
 
 const SearchContainer = styled.div`
   position: absolute;
@@ -83,4 +100,5 @@ const SearchInput = styled.input`
 
 const SearchIcon = styled.img`
   width: 24px;
+  cursor: pointer;
 `;

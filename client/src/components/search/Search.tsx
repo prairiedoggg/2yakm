@@ -1,14 +1,3 @@
-/**
-File Name : Search
-Description : 전체 검색화면
-Author : 민선옥
-
-History
-Date        Author   Status    Description
-2024.07.16  민선옥   Created
-2024.07.19  민선옥   tsx로 변경 및 SearchResults 컴포넌트 이름 수정
-*/
-
 import { useState } from 'react';
 import SearchBox from '../SearchBox';
 import SearchHistory from './SearchHistory';
@@ -16,18 +5,24 @@ import SearchResults from './SearchResults';
 import Nav from '../Nav';
 import styled from 'styled-components';
 
-
-
 const Search = () => {
   const [searchQuery, setSearchQuery] = useState<string>('');
 
+  console.log(searchQuery)
+
+  if (!searchQuery) { 
+    console.log('im full')
+  }
   return (
     <>
       <BackgroundHeader>
         <SearchBox setSearchQuery={setSearchQuery} />
       </BackgroundHeader>
-      {searchQuery ? <SearchResults /> : <SearchHistory />}
-      {/* searchQuery={searchQuery} : api 연결후 searchresults에 추가*/}
+      {searchQuery ? (
+        <SearchResults searchQuery={searchQuery} />
+      ) : (
+        <SearchHistory />
+      )}
       <Nav />
     </>
   );
