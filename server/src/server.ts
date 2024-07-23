@@ -10,7 +10,7 @@ const cookieParser = require('cookie-parser');
 const path = require('path');
 const fs = require('fs');
 
-const authByToken = require('./middlewares/authByToken');
+import authByToken from './middlewares/authByToken';
 
 import reviewRouter from './routes/review_route';
 const authRouter = require('./routes/auth_route');
@@ -25,7 +25,7 @@ dotenv.config();
 
 const app = express();
 
-const port = process.env.PORT || 3000;
+const port = process.env.PORT ?? 3000;
 app.use(express.static(path.join(__dirname, 'public')));
 // CORS
 app.use(
