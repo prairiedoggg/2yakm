@@ -1,5 +1,6 @@
-const { Router } = require("express");
-const calendarController = require('../controllers/calendarController');
+import { Router } from 'express';
+import * as calendarController from '../controllers/calendarController';
+
 const router = Router();
 
 /**

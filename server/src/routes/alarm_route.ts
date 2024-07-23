@@ -1,7 +1,7 @@
-const express = require('express');
-const alarmController = require('../controllers/alarmController');
+import { Router } from 'express';
+import * as alarmController from '../controllers/alarmController';
 
-const router = express.Router();
+const router = Router();
 
 /**
  * @swagger
