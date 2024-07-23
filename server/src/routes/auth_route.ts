@@ -12,7 +12,8 @@ import {
   linkKakaoAccountController,
   linkGoogleAccountController,
   verifyEmailController,
-  requestEmailVerificationController
+  requestEmailVerificationController,
+  changeUsernameController
 } from '../controllers/authController';
 
 const router = Router();
@@ -96,7 +97,7 @@ router.post('/signup', signupController);
 
 /**
  * @swagger
- * /auth/request-email-verification:
+ * /api/auth/request-email-verification:
  *   post:
  *     summary: 이메일 인증 요청
  *     tags: [Auth]
@@ -124,7 +125,7 @@ router.post('/request-email-verification', requestEmailVerificationController);
 
 /**
  * @swagger
- * /auth/token:
+ * /api/auth/token:
  *   post:
  *     summary: 토큰 갱신
  *     tags: [Auth]
@@ -152,24 +153,18 @@ router.post('/request-email-verification', requestEmailVerificationController);
  */
 router.post('/token', refreshTokenController);
 
-
 /**
  * @swagger
- * /auth/kakao/callback:
- *   post:
+ * /api/auth/kakao/callback:
+ *   get:
  *     summary: 카카오 로그인 콜백
  *     tags: [Auth]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               code:
- *                 type: string
- *               redirectUri:
- *                 type: string
+ *     parameters:
+ *       - name: code
+ *         in: query
+ *         required: true
+ *         schema:
+ *           type: string
  *     responses:
  *       200:
  *         description: 로그인 성공
@@ -185,7 +180,6 @@ router.post('/token', refreshTokenController);
  *       400:
  *         description: 인증 실패
  */
-
 router.get('/kakao/callback', kakaoAuthController);
 
 /**
@@ -238,7 +232,7 @@ router.post('/logout', logoutController);
 
 /**
  * @swagger
- * /auth/change-password:
+ * /api/auth/change-password:
  *   post:
  *     summary: 비밀번호 변경
  *     tags: [Auth]
@@ -414,5 +408,35 @@ router.post('/link/google', linkGoogleAccountController);
  *                    type: string
  */
 router.get('/verify-email', verifyEmailController);
+
+/**
+ * @swagger
+ * /api/auth/change-username:
+ *   patch:
+ *     summary: 유저네임 변경
+ *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               email:
+ *                 type: string
+ *               newUsername:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: 유저네임 변경 성공
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ */
+router.patch('/change-username', changeUsernameController);
 
 export default router;

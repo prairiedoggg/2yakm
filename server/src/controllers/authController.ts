@@ -10,7 +10,8 @@ import {
   googleAuthService,
   linkSocialAccountService,
   verifyEmailService,
-  requestEmailVerification
+  requestEmailVerification,
+  changeUsernameService
 } from '../services/authService';
 import { createError } from '../utils/error';
 
@@ -186,6 +187,17 @@ export const linkGoogleAccountController = async (req: Request, res: Response, n
     console.log('Google',{ userId, socialId });
     await linkSocialAccountService(userId, socialId, 'google');
     res.status(200).json({ message: '구글 계정 연동 성공' });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// 유저네임 변경
+export const changeUsernameController = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { email, newUsername} = req.body;
+    await changeUsernameService(email, newUsername);
+    res.status(200).json({ message: '유저네임 변경 완료' });
   } catch (error) {
     next(error);
   }

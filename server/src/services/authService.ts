@@ -538,3 +538,14 @@ export const linkSocialAccountService = async (userId: number, socialId: string,
     throw createError('DBError', '데이터베이스 오류가 발생했습니다.', 500);
   }
 };
+
+// 유저네임 변경
+export const changeUsernameService = async (email: string, newUsername: string): Promise<void> => {
+  try {
+    const query = 'UPDATE users SET username = $1 WHERE email = $2';
+    const values = [newUsername, email];
+    await pool.query(query, values);
+  } catch (error) {
+    throw createError('DBError', '데이터베이스 오류가 발생했습니다.', 500);
+  }
+};
