@@ -33,16 +33,16 @@ exports.createCalendar = [
   async (req: CustomRequest, res: Response, next: NextFunction) => {
     try {
       const userId = req.user?.email;
+      console.log('req.user', req.user);
       const calImgUrl = req.file ? (req.file as any).location : null;
 
       const date = req.body.date ? new Date(req.body.date) : new Date();
-      const alarm = req.body.alarm ? new Date(req.body.alarm) : null;
       if (isNaN(date.getTime())) {
         return res.status(400).json({ message: '유효하지 않은 날짜 형식입니다.' });
       }
-      if (alarm && isNaN(alarm.getTime())) {
-        return res.status(400).json({ message: '유효하지 않은 알람 날짜 형식입니다.' });
-      }
+      
+      const medications = JSON.parse(req.body.medications || '[]');
+      
       const calendarData: Partial<Calendar> = {
         userId,
         calImg: calImgUrl,
@@ -50,7 +50,9 @@ exports.createCalendar = [
         condition: req.body.condition,
         weight: req.body.weight ? parseFloat(req.body.weight) : undefined,
         temperature: req.body.temperature ? parseFloat(req.body.temperature) : undefined,
-        bloodsugar: req.body.bloodsugar ? parseFloat(req.body.bloodsugar) : undefined,
+        bloodsugarBefore: req.body.bloodsugarBefore ? parseFloat(req.body.bloodsugarBefore) : undefined,
+        bloodsugarAfter: req.body.bloodsugarAfter ? parseFloat(req.body.bloodsugarAfter) : undefined,
+        medications: medications
       };
 
       console.log("Processed calendarData:", calendarData);
@@ -72,6 +74,9 @@ exports.updateCalendar = [
     try {
       const { id } = req.params;
       const calImgUrl = req.file ? (req.file as any).location : null;
+      
+      const medications = JSON.parse(req.body.medications || '[]');
+      
       const calendarData: Partial<Calendar> = {
         ...req.body,
         calImg: calImgUrl,
@@ -79,7 +84,9 @@ exports.updateCalendar = [
         date: req.body.date ? new Date(req.body.date) : undefined,
         weight: req.body.weight ? parseFloat(req.body.weight) : undefined,
         temperature: req.body.temperature ? parseFloat(req.body.temperature) : undefined,
-        bloodsugar: req.body.bloodsugar ? parseFloat(req.body.bloodsugar) : undefined
+        bloodsugarBefore: req.body.bloodsugarBefore ? parseFloat(req.body.bloodsugarBefore) : undefined,
+        bloodsugarAfter: req.body.bloodsugarAfter ? parseFloat(req.body.bloodsugarAfter) : undefined,
+        medications: medications
       };
       const updatedCalendar: Calendar = await calendarService.updateCalendar(id, calendarData);
       if (updatedCalendar) {
@@ -92,6 +99,7 @@ exports.updateCalendar = [
     }
   }
 ];
+
 
 exports.deleteCalendar = async (req: CustomRequest, res: Response, next: NextFunction) => {
   try {
@@ -107,3 +115,4 @@ exports.deleteCalendar = async (req: CustomRequest, res: Response, next: NextFun
     next(error);
   }
 };
+

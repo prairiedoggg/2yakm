@@ -25,8 +25,9 @@ exports.createCalendar = async (
   try {
     const text = `
       INSERT INTO calendar 
-      (userid, date, calimg, condition, weight, temperature, bloodsugar) 
-      VALUES ($1, $2, $3, $4, $5, $6, $7) 
+      (userid, date, calimg, condition, weight, temperature, 
+      bloodsugarBefore, bloodsugarAfter, medications) 
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) 
       RETURNING *
     `;
     const values = [
@@ -36,7 +37,9 @@ exports.createCalendar = async (
       calendar.condition,
       calendar.weight,
       calendar.temperature,
-      calendar.bloodsugar
+      calendar.bloodsugarBefore,
+      calendar.bloodsugarAfter,
+      JSON.stringify(calendar.medications)
     ];
     const result = await pool.query(text, values);
     return result.rows[0];
@@ -51,10 +54,22 @@ exports.updateCalendar = async (
   calendar: Partial<typeof Calendar>
 ): Promise<typeof Calendar | null> => {
   try {
+    // 기존의 medications 데이터를 가져옴
+    const existingCalendar = await exports.getCalendarById(id);
+    if (!existingCalendar) {
+      throw new Error("Calendar not found");
+    }
+
+    const existingMedications = existingCalendar.medications || [];
+    const newMedications = calendar.medications || [];
+    const updatedMedications = [...existingMedications, ...newMedications];
+
     const text = `
       UPDATE calendar 
-      SET calimg = $1, condition = $2, weight = $3, temperature = $4, bloodsugar = $5, date = $6
-      WHERE id = $7 
+      SET calimg = $1, condition = $2, weight = $3, temperature = $4, 
+          bloodsugarBefore = $5, bloodsugarAfter = $6,
+          medications = $7, date = $8
+      WHERE id = $9 
       RETURNING *
     `;
     const values = [
@@ -62,7 +77,9 @@ exports.updateCalendar = async (
       calendar.condition,
       calendar.weight,
       calendar.temperature,
-      calendar.bloodsugar,
+      calendar.bloodsugarBefore,
+      calendar.bloodsugarAfter,
+      JSON.stringify(updatedMedications),
       calendar.date,
       id
     ];

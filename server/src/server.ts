@@ -1,6 +1,7 @@
 const express = require('express');
 const swaggerUi = require('swagger-ui-express');
 const specs = require('./swagger');
+
 const dotenv = require('dotenv');
 const bodyParser = require('body-parser');
 const cors = require('cors');
@@ -8,6 +9,8 @@ const helmet = require('helmet');
 const cookieParser = require('cookie-parser');
 const path = require('path');
 const fs = require('fs');
+
+const authByToken = require('./middlewares/authByToken');
 
 import reviewRouter from './routes/review_route';
 const authRouter = require('./routes/auth_route');
@@ -52,11 +55,8 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieParser());
-
 app.use('/api/reviews', reviewRouter);
 app.use('/api/auth', authRouter);
-app.use('/api/calenders', calendarRouter);
-app.use('/api/alarms', alarmRouter);
 app.use('/api/favorites', favoriteRouter);
 app.use('/mypage', mypageRouter);
 app.use('/mydrugs', mydrugRouter);
@@ -64,3 +64,7 @@ app.use('/mydrugs', mydrugRouter);
 app.listen(port, () => {
   console.log(`Server is running http://localhost:${port}`);
 });
+
+app.use('/api/calendars', authByToken, calendarRouter);
+app.use('/api/alarms', authByToken, alarmRouter);
+app.use(cookieParser());

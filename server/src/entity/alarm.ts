@@ -1,11 +1,13 @@
+export interface AlarmTime {
+    time: string;
+    status: boolean;
+}
+
 export interface Alarm {
     id: string;
     userId: string;
-    startDate: Date;
-    endDate: Date;
-    time: string;
-    interval: number;
-    message:string;
-    alarmContent: string;
-    alarmStatus: boolean;
+    name: string;
+    date: Date;
+    times: AlarmTime[];
+    message: string;
 }
