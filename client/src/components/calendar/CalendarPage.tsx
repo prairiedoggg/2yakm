@@ -1,15 +1,3 @@
-/**
-File Name : CalendarPage
-Description : 캘린더 페이지
-Author : 임지영
-
-History
-Date        Author   Status    Description
-2024.07.17  임지영   Created
-2024.07.18  임지영   Modified    tsx
-2024.07.22  임지영   Modified   스타일 변경
-*/
-
 import styled from 'styled-components';
 import Header from '../Header';
 import dayjs from 'dayjs';
@@ -17,6 +5,58 @@ import CalendarDetail from './CalendarDetail';
 import CalendarSection from './CalendarSection';
 import Nav from '../Nav';
 import { useDateStore } from '../../store/store';
+
+const CalendarPage: React.FC = () => {
+  const { value, arrow, setArrow, edit, setEdit } = useDateStore();
+
+  dayjs.locale('ko');
+  const days = dayjs(value).format('D. ddd');
+
+  const handleSrc = (img: 'edit' | 'arrow') => {
+    if (img === 'edit') {
+      return edit ? '/img/editing.png' : '/img/calendarEdit.png';
+    } else if (img === 'arrow') {
+      return arrow ? '/img/calendarArrowDown.png' : '/img/calendarArrow.png';
+    }
+  };
+
+  const handleEdit = () => {
+    setEdit();
+  };
+
+  return (
+    <CalendarContainer>
+      <Modal expanded={arrow} onClick={setArrow} />
+      <Header />
+      <MainContent>
+        <CalendarSection />
+        <EntireDetail expanded={arrow}>
+          <CalandarDatailContainer>
+            <ImgContainer>
+              <Arrow
+                src={handleSrc('arrow')}
+                alt='Arrow Icon'
+                onClick={setArrow}
+              />
+            </ImgContainer>
+            <DateContainer>
+              <DateBox>{days}</DateBox>
+              <Edit
+                src={handleSrc('edit')}
+                alt='Edit Button'
+                onClick={handleEdit}
+              />
+            </DateContainer>
+          </CalandarDatailContainer>
+          <DetailContainer>
+            <CalendarDetail />
+          </DetailContainer>
+        </EntireDetail>
+      </MainContent>
+      <Nav />
+    </CalendarContainer>
+  );
+};
 
 const CalendarContainer = styled.div`
   width: 100vw;
@@ -92,61 +132,9 @@ const Modal = styled.div<{ expanded: boolean }>`
   left: 0;
   width: 100vw;
   height: 100vh;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(0, 0, 0, 0.3);
   z-index: ${({ expanded }) => (expanded ? '10' : '-1')};
   opacity: ${({ expanded }) => (expanded ? '1' : '0')};
 `;
-
-const CalendarPage: React.FC = () => {
-  const { value, arrow, setArrow, edit, setEdit } = useDateStore();
-
-  dayjs.locale('ko');
-  const days = dayjs(value).format('D. ddd');
-
-  const handleSrc = (img: 'edit' | 'arrow') => {
-    if (img === 'edit') {
-      return edit ? '/img/editing.png' : '/img/calendarEdit.png';
-    } else if (img === 'arrow') {
-      return arrow ? '/img/calendarArrowDown.png' : '/img/calendarArrow.png';
-    }
-  };
-
-  const handleEdit = () => {
-    setEdit();
-  };
-
-  return (
-    <CalendarContainer>
-      <Modal expanded={arrow} onClick={setArrow} />
-      <Header />
-      <MainContent>
-        <CalendarSection />
-        <EntireDetail expanded={arrow}>
-          <CalandarDatailContainer>
-            <ImgContainer>
-              <Arrow
-                src={handleSrc('arrow')}
-                alt='Arrow Icon'
-                onClick={setArrow}
-              />
-            </ImgContainer>
-            <DateContainer>
-              <DateBox>{days}</DateBox>
-              <Edit
-                src={handleSrc('edit')}
-                alt='Edit Button'
-                onClick={handleEdit}
-              />
-            </DateContainer>
-          </CalandarDatailContainer>
-          <DetailContainer>
-            <CalendarDetail />
-          </DetailContainer>
-        </EntireDetail>
-      </MainContent>
-      <Nav />
-    </CalendarContainer>
-  );
-};
 
 export default CalendarPage;

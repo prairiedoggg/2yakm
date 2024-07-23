@@ -1,13 +1,3 @@
-/**
-File Name : store.ts
-Description : zustand store
-Author : 임지영
-
-History
-Date        Author   Status    Description
-2024.07.18  임지영   Created
-*/
-
 import { create } from 'zustand';
 
 interface Store {
@@ -19,13 +9,22 @@ interface Store {
   setArrow: () => void;
 }
 
-// interface CalendarDetail {
-//   title: string;
-//   bloodSugar?: number[];
-//   temp?: number;
-//   weight?: number;
-//   photo?: boolean;
-// }
+interface Calendar {
+  pillName?: string[];
+  time?: string[][];
+  isPillTaken?: boolean[][];
+  bloodSugar?: number[];
+  temp?: number;
+  weight?: number;
+  photo?: boolean;
+  setPillName: (pillName: string[]) => void;
+  setTime: (time: string[][]) => void;
+  setIsPillTaken: (isPillTaken: boolean[][]) => void;
+  setBloodSugar: (bloodSugar: number[]) => void;
+  setTemp: (temp: number) => void;
+  setWeight: (weight: number) => void;
+  setPhoto: (photo: boolean) => void;
+}
 
 export const useDateStore = create<Store>((set) => ({
   value: new Date(),
@@ -36,4 +35,19 @@ export const useDateStore = create<Store>((set) => ({
   setArrow: () => set((state) => ({ arrow: !state.arrow }))
 }));
 
-// export const useCalendarDetail = create<CalendarDetail>(() => ({}));
+export const useCalendar = create<Calendar>((set) => ({
+  pillName: [],
+  time: [],
+  isPillTaken: [],
+  bloodSugar: [0, 0],
+  temp: 0,
+  weight: 0,
+  photo: false,
+  setPillName: (pillName) => set({ pillName }),
+  setTime: (time) => set({ time }),
+  setIsPillTaken: (isPillTaken) => set({ isPillTaken }),
+  setBloodSugar: (bloodSugar) => set({ bloodSugar }),
+  setTemp: (temp) => set({ temp }),
+  setWeight: (weight) => set({ weight }),
+  setPhoto: (photo) => set({ photo })
+}));

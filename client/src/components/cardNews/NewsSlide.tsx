@@ -1,13 +1,3 @@
-/**
-File Name : NewsSlide
-Description : 카드뉴스 이미지 슬라이드
-Author : 임지영
-
-History
-Date        Author   Status    Description
-2024.07.16  임지영   Created
-*/
-
 import styled from 'styled-components';
 import { useEffect, useState } from 'react';
 import Slider from 'react-slick';

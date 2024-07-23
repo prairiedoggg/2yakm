@@ -1,13 +1,3 @@
-/**
-File Name : ChatBot
-Description : 챗봇
-Author : 임지영
-
-History
-Date        Author   Status    Description
-2024.07.22  임지영   Created
-*/
-
 import styled from 'styled-components';
 import Header from '../Header';
 import ChatBotBox from './ChatBotBox';

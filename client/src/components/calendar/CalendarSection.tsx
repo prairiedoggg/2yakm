@@ -1,35 +1,9 @@
-/**
-File Name : CalendarSection
-Description : 달력 부분
-Author : 임지영
-
-History
-Date        Author   Status    Description
-2024.07.17  임지영   Created
-2024.07.18  임지영   Modified     tsx
-2024.07.21  임지영   Modified    코치님 코드 리뷰 수정 (dayjs, 주석)
-*/
-
 import Calendar from 'react-calendar';
 import dayjs from 'dayjs';
 import 'react-calendar/dist/Calendar.css';
 import '../../styles/calendar.css';
 import styled from 'styled-components';
 import { useDateStore } from '../../store/store';
-
-const CalendarContainer = styled.div`
-  display: flex;
-  justify-content: center;
-  align-items: center;
-`;
-
-// const Pill = styled.img.attrs({
-//   src: '/img/pharm.png',
-//   alt: 'pill icon'
-// })`
-//   width: 15px;
-//   height: auto;
-// `;
 
 const CalendarSection: React.FC = () => {
   const { value, onChange } = useDateStore();
@@ -80,5 +54,19 @@ const CalendarSection: React.FC = () => {
     </>
   );
 };
+
+const CalendarContainer = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+`;
+
+// const Pill = styled.img.attrs({
+//   src: '/img/pharm.png',
+//   alt: 'pill icon'
+// })`
+//   width: 15px;
+//   height: auto;
+// `;
 
 export default CalendarSection;
