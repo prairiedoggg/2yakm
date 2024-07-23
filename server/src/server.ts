@@ -1,4 +1,5 @@
 const express = require('express');
+import { Request, Response, NextFunction } from 'express';
 const swaggerUi = require('swagger-ui-express');
 const specs = require('./swagger');
 
@@ -56,17 +57,29 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieParser());
+
 app.use('/api/reviews', reviewRouter);
 app.use('/api/auth', authRouter);
 app.use('/api/favorites', favoriteRouter);
 app.use('/mypage', mypageRouter);
 app.use('/mydrugs', mydrugRouter);
+app.use('/api/chatbot', authByToken, chatbotRouter);
+app.use('/api/calendars', authByToken, calendarRouter);
+app.use('/api/alarms', authByToken, alarmRouter);
+
+// 404 error Handler
+app.use((req: Request, res: Response, next: NextFunction) => {
+  res
+    .status(404)
+    .send('404 Not Found: The page you are looking for does not exist.');
+});
+
+// Error handler
+app.use((err: any, req: Request, res: Response, next: NextFunction) => {
+  console.error(err.stack);
+  res.status(500).send(err);
+});
 
 app.listen(port, () => {
   console.log(`Server is running http://localhost:${port}`);
 });
-
-app.use('/api/chatbot', authByToken, chatbotRouter);
-app.use('/api/calendars', authByToken, calendarRouter);
-app.use('/api/alarms', authByToken, alarmRouter);
-app.use(cookieParser());
