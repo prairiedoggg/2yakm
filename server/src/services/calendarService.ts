@@ -22,7 +22,7 @@ export const getCalendarById = async (
     const text = 'SELECT * FROM calendar WHERE id = $1';
     const values = [id];
     const result = await pool.query(text, values);
-    return result.rows[0] || null;
+    return result.rows[0] ?? null;
   } catch (error) {
     throw createError('DBError', '캘린더 조회 중 데이터베이스 오류가 발생했습니다.', 500);
   }
@@ -67,7 +67,7 @@ export const updateCalendar = async (
       throw createError('CalendarNotFound', '해당 캘린더를 찾을 수 없습니다.', 404);
     }
 
-    const updatedMedications = calendar.medications || existingCalendar.medications;
+    const updatedMedications = calendar.medications ?? existingCalendar.medications;
 
     const text = `
       UPDATE calendar 

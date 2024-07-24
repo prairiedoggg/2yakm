@@ -211,4 +211,4 @@ router.put('/:id', calendarController.updateCalendar);
  */
 router.delete('/:id', calendarController.deleteCalendar);
 
-module.exports = router;
+export default router;

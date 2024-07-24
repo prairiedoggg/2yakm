@@ -14,12 +14,12 @@ import authByToken from './middlewares/authByToken';
 import visionRouter from './routes/vision_route';
 import reviewRouter from './routes/review_route';
 import authRouter from './routes/auth_route';
-const calendarRouter = require('./routes/calendar_route');
-const alarmRouter = require('./routes/alarm_route');
+import calendarRouter from './routes/calendar_route';
+import alarmRouter from './routes/alarm_route';
+import mypageRouter from './routes/mypage_route';
+import mydrugRouter from './routes/mydrug_route';
+import chatbotRouter from './routes/chatbot_route';
 import favoriteRouter from './routes/favorite_route';
-const mypageRouter = require('./routes/mypage_route');
-const mydrugRouter = require('./routes/mydrug_route');
-const chatbotRouter = require('./routes/chatbot_route');
 
 dotenv.config();
 
@@ -28,7 +28,7 @@ const app = express();
 const port = process.env.PORT ?? 3000;
 // Helmet
 app.use(helmet());
-
+app.use(express.json());
 // CORS
 app.use(
   cors({

@@ -182,4 +182,4 @@ router.delete('/:id', alarmController.deleteAlarmController);
  *           type: string
  */
 
-module.exports = router;
+export default router;

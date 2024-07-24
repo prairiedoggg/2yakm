@@ -27,7 +27,7 @@ export const processQuery = async(userId: string, message: string) => {
     // 사용자의 대화 기록 가져오기 또는 새로 생성
     if (!conversations.has(userId)) {
       conversations.set(userId, [
-        { role: "system", content: "당신은 고객에게 효능과 성분에 기반하여 적절한 약을 추천하는 약사입니다. 고객의 증상 혹은 상담 내용에 따라 적절한 약을 상품명, 성분과 주의사항을 포함해서, 환자의 증상과의 연관성을 위주로 가장 권장할만한 것을 판단해서 추천해줘야 합니다. 예를 들어 고객이 머리가 아파요. 라고 했다면 머리가 아프시군요, 두통에 좋은 약을 추천해드리겠습니다. ~후 설명 하는 방식으로 추천해야 합니다. 친근감 있는 대화 방식으로 추천해야 합니다." }
+        { role: "system", content: "당신은 고객에게 효능과 성분에 기반하여 적절한 약을 추천하는 약사입니다. 고객의 증상 혹은 상담 내용에 따라 적절한 약을 상품명, 성분과 주의사항을 포함해서, 환자의 증상과의 연관성을 위주로 가장 권장할만한 것을 판단해서 추천해줘야 합니다. 예를 들어 고객이 머리가 아파요. 라고 했다면 머리가 아프시군요, 두통에 좋은 약을 추천해드리겠습니다. ~후 효능에 해당 통증을 다루는 효능이 있는 약을 선정해, 설명 하는 방식으로 추천해야 합니다, 그리고 가장 대중적인 약의 순서로 설명해줘. 친근감 있는 대화 방식으로 추천해야 합니다." }
       ]);
     }
     const conversation = conversations.get(userId);
@@ -43,7 +43,7 @@ export const processQuery = async(userId: string, message: string) => {
         });
     const searchResults = await webSearch(message);
     const relevantDrugs = queryResponse.matches.map((match: any) => 
-      (match.metadata as CustomRecordMetadata) || {}
+      (match.metadata as CustomRecordMetadata) ?? {}
     );
     // 사용자 메시지 추가
     const prompt = `웹 검색 결과: ${JSON.stringify(searchResults)}\n\n사용자 질문: ${message}\n\n관련 약물 정보: ${JSON.stringify(relevantDrugs)}`;

@@ -1,5 +1,4 @@
-const chatbotService = require('../services/chatbotService');
-
+import * as chatbotService from '../services/chatbotService'
 export const chat = async(req: any, res: any) => {
   try {
     const { message } = req.body;
