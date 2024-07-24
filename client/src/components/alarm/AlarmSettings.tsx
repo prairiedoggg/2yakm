@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react'; // useEffect 추가
+import { useState, useEffect } from 'react'; 
 import styled from 'styled-components';
 import { Select, Button, Input } from 'antd';
-import { PlusCircleOutlined, MinusCircleOutlined } from '@ant-design/icons';
+import { Icon } from '@iconify-icon/react';
 import { useAlarmStore } from '../../store/alarm';
 
 const { Option } = Select;
@@ -103,7 +103,9 @@ const AlarmSettings = () => {
             {alarmTimes.map((time, index) => (
               <div key={index}>
                 <Button
-                  icon={<MinusCircleOutlined style={{ color: 'red' }} />}
+                  icon={
+                    <Icon icon='mdi:minus-circle' style={{ color: 'red' }} />
+                  } // 변경된 부분
                   onClick={() => handleRemoveTime(index)}
                 />
                 <Input
@@ -117,7 +119,7 @@ const AlarmSettings = () => {
             <Button
               type='dashed'
               onClick={handleAddTime}
-              icon={<PlusCircleOutlined style={{ color: 'green' }} />}
+              icon={<Icon icon='mdi:plus-circle' style={{ color: 'green' }} />} // 변경된 부분
               style={{ marginTop: '10px' }}
             >
               시간 추가
