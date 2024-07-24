@@ -5,7 +5,7 @@ import axios from 'axios';
 
 const KakaoRedirect = () => {
   const navigate = useNavigate();
-  const { setToken, setIsAuthenticated } = useAuthentication();
+  const { checkAuthentication } = useAuthentication();
 
   useEffect(() => {
     console.log(window.location.href);
@@ -18,9 +18,8 @@ const KakaoRedirect = () => {
         })
         .then((res) => {
           if (res.data.token) {
-            setToken(res.data.token);
-            console.log('토큰', res.data.token);
-            setIsAuthenticated(true);
+            localStorage.setItem('token', res.data.token);
+            checkAuthentication();
             navigate('/');
           }
         })
