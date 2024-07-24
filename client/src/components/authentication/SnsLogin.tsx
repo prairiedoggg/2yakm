@@ -10,7 +10,7 @@ Date        Author   Status    Description
 
 import styled from 'styled-components';
 import { Icon } from '@iconify-icon/react';
-import { KAKAO_AUTH_URL } from '../../oAuth';
+import { KAKAO_AUTH_URL, GOOGLE_AUTH_URL } from '../../oAuth';
 
 const SnsLogin = ({
   onClose,
@@ -45,12 +45,14 @@ const SnsLogin = ({
             style={{ color: 'white' }}
           />
         </div>
-        <Icon
-          onClick={onClose}
-          icon='logos:google-icon'
-          width='30px'
-          height='30px'
-        />
+        <a className='google' onClick={onClose} href={GOOGLE_AUTH_URL}>
+          <Icon
+            onClick={onClose}
+            icon='logos:google-icon'
+            width='30px'
+            height='30px'
+          />
+        </a>
       </div>
       <div className='other'>
         <div onClick={onEmailLoginClick}>이메일로 로그인</div>
