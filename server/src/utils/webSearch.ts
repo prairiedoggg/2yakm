@@ -11,6 +11,12 @@ async function webSearch(query: string) {
         key: process.env.GOOGLE_API_KEY,
         cx: process.env.GOOGLE_CSE_ID,
         q: query
+      },
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+        'User-Agent': 'axios/1.7.2',
+        'Accept-Encoding': 'gzip, compress, deflate, br'
       }
     });
 

@@ -3,13 +3,12 @@ import axios from 'axios';
 import nodemailer from 'nodemailer';
 import { AlarmTime } from '../entity/alarm';
 import { createError } from '../utils/error';
-
-const { Alarm } = require('../entity/alarm');
-const { pool } = require('../db');
+import { Alarm } from '../entity/alarm';
+import { pool } from '../db';
 
 const runningJobs = new Map<string, schedule.Job>();
 
-export const createAlarm = async (alarm: Omit<typeof Alarm, 'id'>): Promise<typeof Alarm> => {
+export const createAlarm = async (alarm: Omit<Alarm, 'id'>): Promise<Alarm> => {
   try {
     const { userId, name, date, times, message } = alarm;
     
@@ -32,7 +31,7 @@ export const createAlarm = async (alarm: Omit<typeof Alarm, 'id'>): Promise<type
   }
 };
 
-export const updateAlarm = async (id: string, alarm: Partial<typeof Alarm>): Promise<typeof Alarm | null> => {
+export const updateAlarm = async (id: string, alarm: Partial<Alarm>): Promise<Alarm | null> => {
   try {
     const { userId, name, date, times, message } = alarm;
     const text = `
@@ -86,7 +85,7 @@ const cancelExistingAlarms = (alarmId: string) => {
   }
 };
 
-export const scheduleAlarmService = (alarm: typeof Alarm) => {
+export const scheduleAlarmService = (alarm: Alarm) => {
   alarm.times.forEach((alarmTime: AlarmTime) => {
     if (alarmTime.status) {
       const [hours, minutes] = alarmTime.time.split(':');
@@ -102,7 +101,7 @@ export const scheduleAlarmService = (alarm: typeof Alarm) => {
 };
 
 //read  
-export const getAlarmsByUserId = async (userId: string): Promise<typeof Alarm[]> => {
+export const getAlarmsByUserId = async (userId: string): Promise<Alarm[]> => {
   try {
     const text = 'SELECT * FROM alarms WHERE userId = $1';
     const result = await pool.query(text, [userId]);
