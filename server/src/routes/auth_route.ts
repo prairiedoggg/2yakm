@@ -152,24 +152,18 @@ router.post('/request-email-verification', requestEmailVerificationController);
  */
 router.post('/token', refreshTokenController);
 
-
 /**
  * @swagger
  * /auth/kakao/callback:
- *   post:
+ *   get:
  *     summary: 카카오 로그인 콜백
  *     tags: [Auth]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               code:
- *                 type: string
- *               redirectUri:
- *                 type: string
+ *     parameters:
+ *       - name: code
+ *         in: query
+ *         required: true
+ *         schema:
+ *           type: string
  *     responses:
  *       200:
  *         description: 로그인 성공
@@ -178,14 +172,13 @@ router.post('/token', refreshTokenController);
  *             schema:
  *               type: object
  *               properties:
+ *                 message:
+ *                   type: string
  *                 token:
  *                   type: string
- *                 refreshToken:
- *                   type: string
- *       400:
- *         description: 인증 실패
+ *       500:
+ *         description: 서버 오류
  */
-
 router.get('/kakao/callback', kakaoAuthController);
 
 /**
@@ -368,7 +361,7 @@ router.post('/link/kakao', linkKakaoAccountController);
  *       required: true
  *       content:
  *         application/json:
- *           schema:
+ *           schema:\
  *             type: object
  *             properties:
  *               userId:
