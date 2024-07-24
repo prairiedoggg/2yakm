@@ -9,7 +9,7 @@ import helmet from 'helmet';
 import cookieParser from 'cookie-parser';
 // import path from 'path';
 // import fs from 'fs';
-import { errorHandler } from './middlewares/errorHandler';
+import { errorHandler, notFoundHandler } from './middlewares/errorHandler';
 import authByToken from './middlewares/authByToken';
 
 import reviewRouter from './routes/review_route';
@@ -52,13 +52,7 @@ app.use('/api/chatbot', authByToken, chatbotRouter);
 app.use('/api/calendars', authByToken, calendarRouter);
 app.use('/api/alarms', authByToken, alarmRouter);
 
-
-// 404 error Handler
-app.use((req: Request, res: Response, next: NextFunction) => {
-  res
-    .status(404)
-    .send('404 Not Found: The page you are looking for does not exist.');
-});
+app.use(notFoundHandler);
 app.use(errorHandler);
 
 app.listen(port, () => {
