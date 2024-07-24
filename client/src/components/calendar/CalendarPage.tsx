@@ -5,27 +5,19 @@ import CalendarDetail from './CalendarDetail';
 import CalendarSection from './CalendarSection';
 import Nav from '../Nav';
 import { useDateStore } from '../../store/store';
-import { useAuthentication } from '../../store/authentication';
-import { useNavigate } from 'react-router-dom';
 import { useEffect } from 'react';
 import axios from 'axios';
 
 const CalendarPage: React.FC = () => {
-  const { isAuthenticated } = useAuthentication();
   const { value, arrow, setArrow, edit, setEdit } = useDateStore();
-  const navigate = useNavigate();
 
   useEffect(() => {
-    if (!isAuthenticated) {
-      navigate('/login');
-    }
-
     axios
       .get('http://localhost:3000/api/calendars', {
         withCredentials: true
       })
       .then((res) => console.log(res.data));
-  }, [isAuthenticated]);
+  }, []);
 
   dayjs.locale('ko');
   const days = dayjs(value).format('D. ddd');
@@ -42,7 +34,7 @@ const CalendarPage: React.FC = () => {
     setEdit();
   };
 
-  return isAuthenticated ? (
+  return (
     <CalendarContainer>
       <Modal expanded={arrow} onClick={setArrow} />
       <Header />
@@ -73,7 +65,7 @@ const CalendarPage: React.FC = () => {
       </MainContent>
       <Nav />
     </CalendarContainer>
-  ) : null;
+  );
 };
 
 const CalendarContainer = styled.div`

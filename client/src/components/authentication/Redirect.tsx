@@ -1,11 +1,10 @@
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuthentication } from '../../store/authentication';
 import axios from 'axios';
+import Cookies from 'js-cookie';
 
 const Redirect = ({ sns }: { sns: string }) => {
   const navigate = useNavigate();
-  const { checkAuthentication } = useAuthentication();
 
   useEffect(() => {
     let url = '';
@@ -28,13 +27,13 @@ const Redirect = ({ sns }: { sns: string }) => {
       axios
         .get(url, {
           params: { code: code },
+          // 쿠키도 요청
           withCredentials: true
         })
         .then((res) => {
           if (res.data.token) {
-            document.cookie = `jwt=${res.data.token}; path=/`;
-            localStorage.setItem('token', res.data.token);
-            checkAuthentication();
+            // 쿠키에 토큰 저장
+            Cookies.set('jwt', `${res.data.token}`, { path: '/' });
             navigate('/');
           }
         })
@@ -47,7 +46,7 @@ const Redirect = ({ sns }: { sns: string }) => {
       console.error('인증 코드 없음');
       navigate('/login');
     }
-  }, [sns, checkAuthentication, navigate]);
+  }, [sns, , navigate]);
 
   return null;
 };
