@@ -17,7 +17,7 @@ const Redirect = ({ sns }: { sns: string }) => {
         url = 'http://localhost:3000/api/auth/google/callback';
         break;
       default:
-        console.error('알 수 없는 SNS 제공자');
+        console.error('알 수 없는 SNS');
         return;
     }
 
