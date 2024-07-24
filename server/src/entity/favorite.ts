@@ -1,6 +1,6 @@
 export interface Favorite {
   favoriteId?: number;
-  drugId: number;
+  id: number;
   userId: string;
   createdAt?: Date;
 }

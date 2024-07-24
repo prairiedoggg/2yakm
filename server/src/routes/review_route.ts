@@ -3,7 +3,7 @@ import {
   createReview,
   updateReview,
   deleteReview,
-  getDrugAllReview,
+  getPillsAllReview,
   getUserAllReview
 } from '../controllers/reviewController';
 import authByToken from '../middlewares/authByToken';
@@ -25,14 +25,14 @@ const router = Router();
  *           schema:
  *             type: object
  *             properties:
- *               drugid:
+ *               id:
  *                 type: integer
- *                 description: 리뷰가 생성될 drug id 값을 입력해 주세요.
+ *                 description: 리뷰가 생성될 pill id 값을 입력해 주세요.
  *               content:
  *                 type: string
  *                 description: 리뷰 내용을 입력해 주세요.
  *             example:
- *               drugid: 197000037
+ *               id: 197000037
  *               content: "전 이거 먹고 힘을 내요! 완전 추천합니다!"
  *     responses:
  *       201:
@@ -44,7 +44,7 @@ const router = Router();
  *               properties:
  *                 reviewid:
  *                   type: integer
- *                 drugid:
+ *                 id:
  *                   type: integer
  *                 userid:
  *                   type: string
@@ -55,7 +55,7 @@ const router = Router();
  *                   format: date-time
  *               example:
  *                 reviewid: 1
- *                 drugid: 197000037
+ *                 id: 197000037
  *                 userid: "0190caa1-0c81-7fa2-9e4d-ed3c8ec93d7a"
  *                 content: "전 이거 먹고 힘을 내요! 완전 추천합니다!"
  *                 created_at: "2024-07-16T20:37:08.325Z"
@@ -104,7 +104,7 @@ router.post('/', authByToken, createReview);
  *               properties:
  *                 reviewid:
  *                   type: integer
- *                 drugid:
+ *                 id:
  *                   type: integer
  *                 userid:
  *                   type: string
@@ -115,7 +115,7 @@ router.post('/', authByToken, createReview);
  *                   format: date-time
  *               example:
  *                 reviewid: 1
- *                 drugid: 197000037
+ *                 id: 197000037
  *                 userid: "0190caa1-0c81-7fa2-9e4d-ed3c8ec93d7a"
  *                 content: "생각해보니까 타이레놀이 가장 좋아요!"
  *                 created_at: "2024-07-16T20:37:08.325Z"
@@ -182,7 +182,7 @@ router.delete('/:reviewid', authByToken, deleteReview);
  *         name: sortedBy
  *         schema:
  *           type: string
- *         description: 정렬할 필드명을 입력해 주세요. (created_at, drugname,... 기본값은 created_at)
+ *         description: 정렬할 필드명을 입력해 주세요. (created_at, name,... 기본값은 created_at)
  *       - in: query
  *         name: order
  *         schema:
@@ -211,9 +211,9 @@ router.delete('/:reviewid', authByToken, deleteReview);
  *                     properties:
  *                       reviewid:
  *                         type: integer
- *                       drugid:
+ *                       id:
  *                         type: integer
- *                       drugname:
+ *                       name:
  *                         type: string
  *                       content:
  *                         type: string
@@ -230,29 +230,29 @@ router.get('/users/', authByToken, getUserAllReview);
 
 /**
  * @swagger
- * /api/reviews/drugs/{drugid}:
+ * /api/reviews/pills/{id}:
  *   get:
  *     summary: 해당 약의 모든 리뷰 조회 API (cursor-based pagination)
  *     tags: [Reviews]
  *     parameters:
  *       - in: path
- *         name: drugid
+ *         name: id
  *         schema:
  *           type: integer
  *         required: true
- *         description: 리뷰를 조회할 drug id 값을 입력해 주세요.
+ *         description: 리뷰를 조회할 pill id 값을 입력해 주세요.
  *       - in: query
  *         name: initialLimit
  *         schema:
  *           type: integer
  *         required: false
- *         description: 첫 번째 요청 시 가져올 리뷰의 개수를 지정합니다. (입력 안하면 기본값 10)</br>(예, /api/reviews/drugs/199800355?initialLimit=10)
+ *         description: 첫 번째 요청 시 가져올 리뷰의 개수를 지정합니다. (입력 안하면 기본값 10)</br>(예, /api/reviews/pills/199800355?initialLimit=10)
  *       - in: query
  *         name: cursorLimit
  *         schema:
  *           type: integer
  *         required: false
- *         description: 이후 스크롤할 때 가져올 리뷰의 개수를 지정합니다. (입력 안하면 기본값 10)</br>(예, /api/reviews/drugs/199800355?cursorLimit=5&cursor=93)</br>(처음에 10개, 그 이후 스크롤 될 때마다 5개씩 가져옴)
+ *         description: 이후 스크롤할 때 가져올 리뷰의 개수를 지정합니다. (입력 안하면 기본값 10)</br>(예, /api/reviews/pills/199800355?cursorLimit=5&cursor=93)</br>(처음에 10개, 그 이후 스크롤 될 때마다 5개씩 가져옴)
  *       - in: query
  *         name: cursor
  *         schema:
@@ -275,9 +275,9 @@ router.get('/users/', authByToken, getUserAllReview);
  *                     properties:
  *                       reviewid:
  *                         type: integer
- *                       drugid:
+ *                       id:
  *                         type: integer
- *                       drugname:
+ *                       name:
  *                         type: string
  *                       userid:
  *                         type: string
@@ -297,6 +297,33 @@ router.get('/users/', authByToken, getUserAllReview);
  *         description: Internal Server Error
  */
 // 해당 약의 모든 리뷰 조회
-router.get('/drugs/:drugid', getDrugAllReview);
+router.get('/pills/:id', getPillsAllReview);
+
+/**
+ * @swagger
+ * components:
+ *   schemas:
+ *     Review:
+ *       type: object
+ *       properties:
+ *         reviewId:
+ *           type: integer
+ *           format: int64
+ *           description: review id입니다.
+ *         id:
+ *           type: integer
+ *           format: int64
+ *           description: pill id입니다.
+ *         userId:
+ *           type: string
+ *           description: user id입니다.
+ *         content:
+ *           type: string
+ *           description: 리뷰 내용입니다.
+ *         createdAt:
+ *           type: string
+ *           format: date-time
+ *           description: 리뷰가 생성된 시간이 저장됩니다.
+ */
 
 export default router;

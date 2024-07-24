@@ -3,18 +3,19 @@ import {
   createReviewService,
   updateReviewService,
   deleteReviewService,
-  getDrugAllReviewService,
+  getPillsAllReviewService,
   getUserAllReviewService
 } from '../services/reviewService';
 import { CustomRequest } from '../types/express';
 
 // 리뷰 생성 컨트롤러
 export const createReview = async (
-  req: Request<{ drugid: string }, unknown, unknown, unknown> & CustomRequest,
+  req: Request<unknown, unknown, { id: string; content: string }, unknown> &
+    CustomRequest,
   res: Response,
   next: NextFunction
 ): Promise<void> => {
-  const drugid = parseInt(req.body.drugid, 10);
+  const id = parseInt(req.body.id);
   const { content } = req.body;
 
   const userid = req.user.id;
@@ -25,7 +26,7 @@ export const createReview = async (
   }
 
   try {
-    const review = await createReviewService(drugid, userid, content);
+    const review = await createReviewService(id, userid, content);
 
     if (!review) res.status(400).send('리뷰 생성을 실패했습니다.');
 
@@ -42,7 +43,7 @@ export const updateReview = async (
   res: Response,
   next: NextFunction
 ): Promise<void> => {
-  const reviewid = parseInt(req.params.reviewid, 10);
+  const reviewid = parseInt(req.params.reviewid);
   const { content } = req.body;
 
   const userid = req.user.id;
@@ -68,7 +69,7 @@ export const deleteReview = async (
   res: Response,
   next: NextFunction
 ): Promise<void> => {
-  const reviewid = parseInt(req.params.reviewid, 10);
+  const reviewid = parseInt(req.params.reviewid);
 
   const userid = req.user.id;
 
@@ -82,9 +83,9 @@ export const deleteReview = async (
 };
 
 // 해당 약의 모든 리뷰 조회 컨트롤러
-export const getDrugAllReview = async (
+export const getPillsAllReview = async (
   req: Request<
-    { drugid: string },
+    { id: string },
     unknown,
     unknown,
     {
@@ -96,14 +97,14 @@ export const getDrugAllReview = async (
   res: Response,
   next: NextFunction
 ): Promise<void> => {
-  const drugid = parseInt(req.params.drugid, 10);
+  const id = parseInt(req.params.id);
   const initialLimit = parseInt(req.query.initialLimit ?? '10'); // 처음 불러올 자료 개수
   const cursorLimit = parseInt(req.query.cursorLimit ?? '10'); // cursor 적용 했을 때 가져올 자료 개수
   const cursor = parseInt(req.query.cursor) ?? undefined;
 
   try {
-    const { reviews, nextCursor } = await getDrugAllReviewService(
-      drugid,
+    const { reviews, nextCursor } = await getPillsAllReviewService(
+      id,
       initialLimit,
       cursorLimit,
       cursor
