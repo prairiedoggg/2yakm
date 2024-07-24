@@ -1,16 +1,32 @@
-
-
 import { Icon } from '@iconify-icon/react';
 import { useState } from 'react';
+import { useQuery, useMutation, useQueryClient } from 'react-query';
 import styled from 'styled-components';
 import Header from '../Header';
 import { Alarm, useAlarmStore } from '../../store/alarm';
+import {
+  fetchAlarms,
+  deleteAlarm
+} from '../../api/alarm';
 
 const AlarmPage = () => {
-  const { alarms, setCurrentPage, removeAlarm, setCurrentAlarm } =
-    useAlarmStore(); 
+  const { alarms, setCurrentPage, setCurrentAlarm, setAlarms } =
+    useAlarmStore();
+  const queryClient = useQueryClient();
   const [isToggled, setIsToggled] = useState(Array(alarms.length).fill(true));
-  const [isDeleteMode, setIsDeleteMode] = useState(false); 
+  const [isDeleteMode, setIsDeleteMode] = useState(false);
+
+  // 알람 데이터 가져옴
+  useQuery('alarms', fetchAlarms, {
+    onSuccess: (data) => setAlarms(data)
+  });
+
+  // 알람 삭제
+  const deleteMutation = useMutation(deleteAlarm, {
+    onSuccess: () => {
+      queryClient.invalidateQueries('alarms');
+    }
+  });
 
   // 알람 온오프 토글기능
   const handleToggle = (index: number) => {
@@ -26,7 +42,10 @@ const AlarmPage = () => {
 
   // 특정 알람 삭제
   const handleDelete = (index: number) => {
-    removeAlarm(index); // 알람을 삭제하는 함수
+    const alarmToDelete = alarms[index];
+    if (alarmToDelete && alarmToDelete.id) {
+      deleteMutation.mutate(alarmToDelete.id);
+    }
     const newToggledState = isToggled.filter((_, i) => i !== index);
     setIsToggled(newToggledState);
   };
