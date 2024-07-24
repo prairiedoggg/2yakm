@@ -25,7 +25,8 @@ import Login from '../authentication/Login';
 import Toast from '../Toast';
 import Nav from '../Nav';
 import { Icon } from '@iconify-icon/react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useLocation } from 'react-router-dom';
 
 enum pageState {
   Main,
@@ -40,7 +41,12 @@ enum pageState {
 }
 
 const MyPage = () => {
+  const location = useLocation();
   const [currentState, setCurrentState] = useState(pageState.Main);
+
+  useEffect(() => {
+    setCurrentState(pageState.Main);
+  }, [location.key]);
 
   const renderContent = () => {
     switch (currentState) {
