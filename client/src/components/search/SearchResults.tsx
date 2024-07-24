@@ -9,7 +9,12 @@ interface SearchResultsProps {
 }
 
 const SearchResults = ({ searchQuery }: SearchResultsProps) => {
-  const [isEffectivenessTab, setIsEffectivenessTab] = useState<boolean>(true);
+  const [activeTab, setActiveTab] = useState<string>('effectiveness');
+  
+    const tabs = [
+      { key: 'effectiveness', label: '효능•용법' },
+      { key: 'review', label: '리뷰' }
+    ];
 
   return (
     <SearchResultsContainer>
@@ -32,20 +37,19 @@ const SearchResults = ({ searchQuery }: SearchResultsProps) => {
       <Exp>※ 태그들을 클릭해 관련 증상들을 모아보세요.</Exp>
       <PillMore>
         <Menu>
-          <p
-            className={isEffectivenessTab ? 'active' : ''}
-            onClick={() => setIsEffectivenessTab(true)}
-          >
-            효능•용법
-          </p>
-          <p
-            className={!isEffectivenessTab ? 'active' : ''}
-            onClick={() => setIsEffectivenessTab(false)}
-          >
-            리뷰
-          </p>
+          {tabs.map((tab) => (
+            <button
+              key={tab.key}
+              className={activeTab === tab.key ? 'active' : ''}
+              onClick={() => setActiveTab(tab.key)}
+            >
+              {tab.label}
+            </button>
+          ))}
         </Menu>
-        <Contants>{isEffectivenessTab ? <PillExp /> : <Review />}</Contants>
+        <Contants>
+          {activeTab === 'effectiveness' ? <PillExp /> : <Review />}
+        </Contants>
       </PillMore>
     </SearchResultsContainer>
   );
@@ -116,15 +120,17 @@ const Menu = styled.div`
   display: flex;
   border-bottom: 4px solid var(--main-color);
 
-  & p {
+  & button {
     flex: 1;
     margin: 0;
     padding: 10px;
     text-align: center;
+    border: none;
+    background: none;
     cursor: pointer;
   }
 
-  & p.active {
+  & button.active {
     border-radius: 10px 10px 0 0;
     background-color: var(--main-color);
   }
