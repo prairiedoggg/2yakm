@@ -8,6 +8,7 @@ import { useDateStore } from '../../store/store';
 import { useAuthentication } from '../../store/authentication';
 import { useNavigate } from 'react-router-dom';
 import { useEffect } from 'react';
+import axios from 'axios';
 
 const CalendarPage: React.FC = () => {
   const { isAuthenticated } = useAuthentication();
@@ -18,6 +19,12 @@ const CalendarPage: React.FC = () => {
     if (!isAuthenticated) {
       navigate('/login');
     }
+
+    axios
+      .get('http://localhost:3000/api/calendars', {
+        withCredentials: true
+      })
+      .then((res) => console.log(res.data));
   }, [isAuthenticated]);
 
   dayjs.locale('ko');

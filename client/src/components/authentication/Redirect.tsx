@@ -27,10 +27,12 @@ const Redirect = ({ sns }: { sns: string }) => {
     if (code) {
       axios
         .get(url, {
-          params: { code: code }
+          params: { code: code },
+          withCredentials: true
         })
         .then((res) => {
           if (res.data.token) {
+            document.cookie = `jwt=${res.data.token}; path=/`;
             localStorage.setItem('token', res.data.token);
             checkAuthentication();
             navigate('/');
