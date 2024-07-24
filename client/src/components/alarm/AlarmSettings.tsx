@@ -1,10 +1,10 @@
-import { useState, useEffect } from 'react'; 
+import { useState, useEffect } from 'react';
 import { useMutation, useQueryClient } from 'react-query';
 import styled from 'styled-components';
 import { Select, Button, Input } from 'antd';
 import { Icon } from '@iconify-icon/react';
 import { useAlarmStore, Alarm } from '../../store/alarm';
-import { createAlarm, updateAlarm } from '../../api/alarm'
+import { createAlarm, updateAlarm } from '../../api/alarm';
 
 const { Option } = Select;
 
@@ -20,12 +20,14 @@ const AlarmSettings = () => {
     '오후 1:00',
     '오후 8:00'
   ]);
+  const [duration, setDuration] = useState<number>(3);
 
   useEffect(() => {
     if (currentAlarm) {
       setAlarmName(currentAlarm.name);
       setFrequency(currentAlarm.frequency);
       setAlarmTimes(currentAlarm.times);
+      setDuration(currentAlarm.duration);
     }
   }, [currentAlarm]);
 
@@ -51,6 +53,10 @@ const AlarmSettings = () => {
     newAlarmTimes[index] = value;
     setAlarmTimes(newAlarmTimes);
   };
+// 알람 기간 변경
+    const handleDurationChange = (value: number) => {
+      setDuration(value);
+    };
 
   // 알람 생성
   const createMutation = useMutation(createAlarm, {
@@ -68,23 +74,29 @@ const AlarmSettings = () => {
 
   // 알람 저장후 메인 알람 페이지로 이동
   const handleSave = () => {
-  const alarmData: Alarm = {
-    id: currentAlarm?.id,
-    name: alarmName,
-    frequency,
-    times: alarmTimes,
-    startDate: new Date().toISOString(), 
-    endDate: '', 
-    interval: 0, 
-    message: '', 
-    time: '',
-    alarmStatus: true 
-  };
+    const startDate = new Date().toISOString();
+    const endDate = new Date(
+      Date.now() + duration * 24 * 60 * 60 * 1000
+    ).toISOString();
+
+    const alarmData: Alarm = {
+      id: currentAlarm?.id,
+      name: alarmName,
+      frequency,
+      times: alarmTimes,
+      startDate,
+      endDate,
+      interval: 0,
+      message: '',
+      time: '',
+      alarmStatus: true,
+      duration
+    };
 
     if (currentAlarm) {
-      updateMutation.mutate({ ...currentAlarm, ...alarmData })
-    } else { 
-      createMutation.mutate(alarmData)
+      updateMutation.mutate({ ...currentAlarm, ...alarmData });
+    } else {
+      createMutation.mutate(alarmData);
     }
     setCurrentPage('main');
   };
@@ -102,18 +114,18 @@ const AlarmSettings = () => {
               onChange={(e) => setAlarmName(e.target.value)}
             />
           </AlarmName>
-          <AlarmDate>
+          <AlarmDuration>
             <h4>얼마동안 약을 드셔야 하나요?</h4>
             <Select
               defaultValue='3일'
               style={{ width: 150 }}
-              onChange={handleFrequencyChange}
+              onChange={(value) => handleDurationChange(Number(value))}
             >
               <Option value='3일'>3일</Option>
               <Option value='5일'>5일</Option>
               <Option value='무제한'>내가 알람을 끌때까지</Option>
             </Select>
-          </AlarmDate>
+          </AlarmDuration>
           <AlarmFrequency>
             <h4>하루에 몇 번 드셔야 하나요</h4>
             <Select
@@ -191,6 +203,8 @@ const SettingList = styled.div`
 `;
 
 const AlarmName = styled.section``;
+
+const AlarmDuration = styled.section``;
 
 const AlarmFrequency = styled.section``;
 

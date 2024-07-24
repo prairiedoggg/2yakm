@@ -12,6 +12,7 @@ export interface Alarm {
   name: string;
   frequency: string;
   times: string[];
+  duration: number;
 }
 
 interface AlarmState {
