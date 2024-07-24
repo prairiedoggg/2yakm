@@ -1,51 +1,68 @@
-
+import { useState } from 'react';
 import styled from 'styled-components';
-
+import { useReviewStore } from '../../store/review.ts';
 
 const Review = () => {
+  const { isWritingReview, toggleReviewForm } = useReviewStore();
+   const [reviews, setReviews] = useState([
+     {
+       id: 1,
+       user: '약사약사',
+       content: '종합 감기약으로 타이레놀이 좋습니다.',
+       bgColor: 'rgba(114,191,68, 0.1)'
+     },
+     {
+       id: 2,
+       user: '리뷰리뷰',
+       content: '감기 걸렸을 땐 항상 타이레놀 먹어요.',
+       bgColor: 'white'
+     }
+   ]);
+  const [newReview, setNewReview] = useState('');
+    const handleReviewSubmit = () => {
+      const newReviewItem = {
+        id: reviews.length + 1,
+        user: '홍길동',
+        content: newReview,
+        bgColor: 'white'
+      };
+      setReviews([...reviews, newReviewItem]);
+      setNewReview('');
+      toggleReviewForm();
+    };
+
   return (
     <ReviewContainer>
-      <WriteReview>리뷰 작성하기</WriteReview>
+      <WriteReview onClick={toggleReviewForm}>리뷰 작성하기</WriteReview>
+      {isWritingReview && (
+        <ReviewForm>
+          <textarea
+            placeholder='리뷰를 작성해 주세요. 욕설, 비방, 명예훼손성 표현은 사용하지 말아주세요.'
+            value={newReview}
+            onChange={(e) => setNewReview(e.target.value)}
+          />
+          <SubmitButton onClick={handleReviewSubmit}>완료</SubmitButton>
+        </ReviewForm>
+      )}
       <ReviewList>
-        <ReviewItem
-          style={{
-            backgroundColor: 'rgba(114,191,68, 0.1)'
-          }}
-        >
-          <User>
-            <Profile src={`/img/user.svg`} alt='유저' />
-            <span>약사약사</span>
-          </User>
-          <p>종합 감기약으로 타이레놀이 좋습니다.</p>
-        </ReviewItem>
-        <ReviewItem>
-          <User>
-            <Profile />
-            <span>리뷰리뷰</span>
-          </User>
-          <p>감기 걸렸을 땐 항상 타이레놀 먹어요.</p>
-        </ReviewItem>
-        <ReviewItem>
-          <User>
-            <Profile />
-            <span>리뷰리뷰</span>
-          </User>
-          <p>감기 걸렸을 땐 항상 타이레놀 먹어요.</p>
-        </ReviewItem>
-        <ReviewItem>
-          <User>
-            <Profile />
-            <span>리뷰리뷰</span>
-          </User>
-          <p>감기 걸렸을 땐 항상 타이레놀 먹어요.</p>
-        </ReviewItem>
+        {reviews.map((review) => (
+          <ReviewItem
+            key={review.id}
+            style={{ backgroundColor: review.bgColor }}
+          >
+            <User>
+              <Profile src={`/img/user.svg`} alt='유저' />
+              <span>{review.user}</span>
+            </User>
+            <p>{review.content}</p>
+          </ReviewItem>
+        ))}
       </ReviewList>
     </ReviewContainer>
   );
 };
 
 export default Review;
-
 
 const ReviewContainer = styled.div`
   display: flex;
@@ -62,6 +79,38 @@ const WriteReview = styled.button`
   background-color: #ffffff;
   border: 1px solid var(--secondary-color);
   border-radius: 10px;
+`;
+
+const ReviewForm = styled.div`
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  margin-top: 20px;
+  padding: 15px;
+  background-color: #fff;
+  border-radius: 5px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+
+  & textarea {
+    width: 90%;
+    height: 100px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    padding: 10px;
+    resize: none;
+  }
+`;
+
+const SubmitButton = styled.button`
+  width: 60px;
+  height: 30px;
+  margin-top: 10px;
+  align-self: flex-end;
+  background-color: #ffd700;
+  border: none;
+  border-radius: 5px;
+  color: white;
+  cursor: pointer;
 `;
 
 const ReviewList = styled.ul`
