@@ -1,13 +1,3 @@
-/**
-File Name : MyMedications
-Description : 내 약
-Author : 오선아
-
-History
-Date        Author   Status    Description
-2024.07.21  오선아   Created
-*/
-
 import styled from 'styled-components';
 import { Icon } from '@iconify-icon/react';
 import BottomSheet from '../BottomSheet';
@@ -55,7 +45,6 @@ const MyMedications = () => {
         <div className='title'>
           {item.title}
           <Icon
-            onClick={() => setDeleteItem(!deleteItem)}
             icon='ep:arrow-right-bold'
             width='1.2em'
             height='1.2em'
