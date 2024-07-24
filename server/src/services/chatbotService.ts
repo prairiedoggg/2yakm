@@ -1,6 +1,6 @@
-const OpenAI = require("openai");
 const webSearch = require('../utils/webSearch');
 import { Pinecone } from "@pinecone-database/pinecone";
+import OpenAI from "openai";
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -41,12 +41,12 @@ export const processQuery = async(userId: string, message: string) => {
           topK: 3,
           includeMetadata: true
         });
-    const searchResults = await webSearch(message);
+    // const searchResults = await webSearch(message);
     const relevantDrugs = queryResponse.matches.map((match: any) => 
       (match.metadata as CustomRecordMetadata) ?? {}
     );
     // 사용자 메시지 추가
-    const prompt = `웹 검색 결과: ${JSON.stringify(searchResults)}\n\n사용자 질문: ${message}\n\n관련 약물 정보: ${JSON.stringify(relevantDrugs)}`;
+    const prompt = `사용자 질문: ${message}\n\n관련 약물 정보: ${JSON.stringify(relevantDrugs)}`;
     conversation.push({ role: "user", content: prompt });
 
     // 대화 기록의 길이를 제한 (예: 최근 10개의 메시지만 유지)
@@ -58,11 +58,10 @@ export const processQuery = async(userId: string, message: string) => {
       max_tokens: 1300
     });
 
-    const assistantResponse = response.choices[0].message.content.trim();
-    
+    const assistantResponse = response.choices[0]?.message?.content?.trim() ?? '';
+
     // 어시스턴트 응답 추가
     conversation.push({ role: "assistant", content: assistantResponse });
-
     // 대화 기록 업데이트
     conversations.set(userId, conversation);
     console.log('현재 대화 기록:', conversation);
