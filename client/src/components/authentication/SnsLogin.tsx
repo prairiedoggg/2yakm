@@ -10,6 +10,7 @@ Date        Author   Status    Description
 
 import styled from 'styled-components';
 import { Icon } from '@iconify-icon/react';
+import { KAKAO_AUTH_URL } from '../../oAuth';
 
 const SnsLogin = ({
   onClose,
@@ -24,15 +25,17 @@ const SnsLogin = ({
     <Content>
       <Logo src='/img/logo_not_chicken.svg' alt='이약뭐약' />
       <div className='bubble'>⚡ 3초만에 빠른 회원가입</div>
-      <div className='kakao' onClick={onClose}>
-        <Icon
-          icon='ri:kakao-talk-fill'
-          width='1.5rem'
-          height='1.5rem'
-          style={{ color: '#3A1D1F' }}
-        />
-        카카오톡으로 계속하기
-      </div>
+      <a className='kakao' onClick={onClose} href={KAKAO_AUTH_URL}>
+        <div>
+          <Icon
+            icon='ri:kakao-talk-fill'
+            width='1.5rem'
+            height='1.5rem'
+            style={{ color: '#3A1D1F', marginRight: '10px' }}
+          />
+          카카오톡으로 계속하기
+        </div>
+      </a>
       <div className='other'>
         <div className='naver' onClick={onClose}>
           <Icon
@@ -94,7 +97,7 @@ const Content = styled.div`
     width: 0;
     height: 0;
     border: 8px solid transparent; /* Reduced size */
-    border-top-color: white; /* Same color as speech bubble */
+    border-top-color: white;
   }
 
   .kakao {
@@ -108,6 +111,15 @@ const Content = styled.div`
     display: flex;
     justify-content: center;
     gap: 5px;
+    text-decoration: none;
+    color: #2f3438;
+  }
+
+  .kakao div {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
   }
 
   .other {

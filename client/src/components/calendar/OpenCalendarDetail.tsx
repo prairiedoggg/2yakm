@@ -21,18 +21,18 @@ const OpenCalendarDetail: React.FC = () => {
   //   setPhoto
   // } = useCalendar();
 
-  const { isLoading, error, data, isFetching } = useQuery({
-    queryKey: ['calendar'],
-    queryFn: async () => {
-      const response = await fetch('http://localhost:3000/api/calendars');
-      const data = await response.json();
-      return data;
-    }
-  });
+  // const { isLoading, error, data, isFetching } = useQuery({
+  //   queryKey: ['calendar'],
+  //   queryFn: async () => {
+  //     const response = await fetch('http://localhost:3000/api/calendars');
+  //     const data = await response.json();
+  //     return data;
+  //   }
+  // });
 
-  console.log(data);
-  if (isLoading) return <div>로딩중</div>;
-  if (error) return <div>에러</div>;
+  // console.log(data);
+  // if (isLoading) return <div>로딩중</div>;
+  // if (error) return <div>에러</div>;
 
   return (
     <ContentContainer>
