@@ -1,20 +1,19 @@
-const express = require('express');
-import { Request, Response, NextFunction } from 'express';
-const swaggerUi = require('swagger-ui-express');
-const specs = require('./swagger');
-
-const dotenv = require('dotenv');
-const bodyParser = require('body-parser');
-const cors = require('cors');
-const helmet = require('helmet');
-const cookieParser = require('cookie-parser');
-const path = require('path');
-const fs = require('fs');
-
+import express, { Request, Response, NextFunction } from 'express';
+import swaggerUi from 'swagger-ui-express';
+import specs from './swagger';
+import dotenv from 'dotenv';
+import bodyParser from 'body-parser';
+import cors from 'cors';
+import helmet from 'helmet';
+import cookieParser from 'cookie-parser';
+import path from 'path';
+import fs from 'fs';
+import { errorHandler } from './middlewares/errorHandler';
 import authByToken from './middlewares/authByToken';
 
+import visionRouter from './routes/vision_route';
 import reviewRouter from './routes/review_route';
-const authRouter = require('./routes/auth_route');
+import authRouter from './routes/auth_route';
 const calendarRouter = require('./routes/calendar_route');
 const alarmRouter = require('./routes/alarm_route');
 import favoriteRouter from './routes/favorite_route';
@@ -27,7 +26,9 @@ dotenv.config();
 const app = express();
 
 const port = process.env.PORT ?? 3000;
-app.use(express.static(path.join(__dirname, 'public')));
+// Helmet
+app.use(helmet());
+
 // CORS
 app.use(
   cors({
@@ -36,6 +37,7 @@ app.use(
   })
 );
 
+app.use(express.static(path.join(__dirname, 'public')));
 app.get('/', (req: any, res: any) => {
   const filePath = path.join(__dirname, 'public', 'index.html');
   fs.readFile(filePath, 'utf8', (err: any, data: any) => {
@@ -50,8 +52,6 @@ app.get('/', (req: any, res: any) => {
   });
 });
 
-// Helmet
-app.use(helmet());
 app.use(express.json());
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
 app.use(bodyParser.json());

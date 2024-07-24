@@ -13,11 +13,11 @@ interface CustomRecordMetadata {
 }
 
 //파인콘 연결
-// const pinecone = new Pinecone({
-//   apiKey: process.env.PINECONE_API_KEY as string,
-// });
+const pinecone = new Pinecone({
+  apiKey: process.env.PINECONE_API_KEY as string,
+});
 
-// const index = pinecone.Index("eyakmoyak");
+const index = pinecone.Index("eyakmoyak");
 
 // 대화 기록을 저장할 객체
 const conversations = new Map();
@@ -36,17 +36,17 @@ export const processQuery = async(userId: string, message: string) => {
         const queryEmbedding = await getEmbedding(message);
 
         // Pinecone에서 관련 약물 정보 검색
-        // const queryResponse = await index.query({
-        //   vector: queryEmbedding,
-        //   topK: 3,
-        //   includeMetadata: true
-        // });
+        const queryResponse = await index.query({
+          vector: queryEmbedding,
+          topK: 3,
+          includeMetadata: true
+        });
     const searchResults = await webSearch(message);
-    // const relevantDrugs = queryResponse.matches.map((match: any) => 
-    //   (match.metadata as CustomRecordMetadata) || {}
-    // );
+    const relevantDrugs = queryResponse.matches.map((match: any) => 
+      (match.metadata as CustomRecordMetadata) || {}
+    );
     // 사용자 메시지 추가
-    const prompt = `웹 검색 결과: ${JSON.stringify(searchResults)}\n\n사용자 질문: ${message}`;
+    const prompt = `웹 검색 결과: ${JSON.stringify(searchResults)}\n\n사용자 질문: ${message}\n\n관련 약물 정보: ${JSON.stringify(relevantDrugs)}`;
     conversation.push({ role: "user", content: prompt });
 
     // 대화 기록의 길이를 제한 (예: 최근 10개의 메시지만 유지)
