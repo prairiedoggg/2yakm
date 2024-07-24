@@ -8,8 +8,8 @@ const KakaoRedirect = () => {
   const { setToken, setIsAuthenticated } = useAuthentication();
 
   useEffect(() => {
-    const params = new URL(document.location.toString()).searchParams;
-    const code = params.get('code');
+    console.log(window.location.href);
+    const code = new URL(window.location.href).searchParams.get('code');
 
     if (code) {
       axios
@@ -19,21 +19,21 @@ const KakaoRedirect = () => {
         .then((res) => {
           if (res.data.token) {
             setToken(res.data.token);
-            console.log(res.data.token);
+            console.log('토큰', res.data.token);
             setIsAuthenticated(true);
             navigate('/');
           }
         })
         .catch((error) => {
           console.error('로그인 실패:', error);
-          window.alert('로그인에 실패하였습니다');
+          window.alert('로그인에 실패했습니다');
           navigate('/login');
         });
     } else {
       console.error('인증 코드 없음');
       navigate('/login');
     }
-  }, [navigate, setToken, setIsAuthenticated]);
+  }, []);
 
   return null;
 };
