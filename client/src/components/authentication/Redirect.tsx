@@ -33,7 +33,7 @@ const Redirect = ({ sns }: { sns: string }) => {
         .then((res) => {
           if (res.data.token) {
             // 쿠키에 토큰 저장
-            Cookies.set('jwt', `${res.data.token}`, { path: '/' });
+            Cookies.set('token', `${res.data.token}`, { path: '/' });
             navigate('/');
           }
         })
