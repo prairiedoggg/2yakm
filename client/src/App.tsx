@@ -1,5 +1,7 @@
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import loadable from '@loadable/component';
+import { useEffect } from 'react';
+import { useAuthentication } from './store/authentication';
 
 const Home = loadable(() => import('./components/home/Home'));
 const News = loadable(() => import('./components/cardNews/News'));
@@ -19,6 +21,12 @@ const Redirect = loadable(() => import('./components/authentication/Redirect'));
 import 'dayjs/locale/ko';
 
 const App = () => {
+  const { checkAuthentication } = useAuthentication();
+
+  useEffect(() => {
+    checkAuthentication();
+  }, [checkAuthentication]);
+
   return (
     <Router>
       <Routes>
