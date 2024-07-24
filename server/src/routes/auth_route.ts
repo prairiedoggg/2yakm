@@ -13,7 +13,8 @@ import {
   linkGoogleAccountController,
   verifyEmailController,
   requestEmailVerificationController,
-  changeUsernameController
+  changeUsernameController,
+  deleteAccountController
 } from '../controllers/authController';
 
 const router = Router();
@@ -233,7 +234,7 @@ router.post('/logout', logoutController);
 /**
  * @swagger
  * /api/auth/change-password:
- *   post:
+ *   patch:
  *     summary: 비밀번호 변경
  *     tags: [Auth]
  *     requestBody:
@@ -260,7 +261,7 @@ router.post('/logout', logoutController);
  *                 message:
  *                   type: string
  */
-router.post('/change-password', changePasswordController);
+router.patch('/change-password', changePasswordController);
 
 /**
  * @swagger
@@ -438,5 +439,33 @@ router.get('/verify-email', verifyEmailController);
  *                   type: string
  */
 router.patch('/change-username', changeUsernameController);
+
+/**
+ * @swagger
+ * /api/auth/delete-account:
+ *   delete:
+ *     summary: 회원탈퇴
+ *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               userId:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: 회원탈퇴 성공
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ */
+router.delete('/delete-account', deleteAccountController);
 
 export default router;

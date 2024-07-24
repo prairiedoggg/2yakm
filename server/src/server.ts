@@ -7,8 +7,8 @@ import bodyParser from 'body-parser';
 import cors from 'cors';
 import helmet from 'helmet';
 import cookieParser from 'cookie-parser';
-import path from 'path';
-import fs from 'fs';
+// import path from 'path';
+// import fs from 'fs';
 import { errorHandler } from './middlewares/errorHandler';
 import authByToken from './middlewares/authByToken';
 
@@ -36,21 +36,6 @@ app.use(
     credentials: true
   })
 );
-
-app.use(express.static(path.join(__dirname, 'public')));
-app.get('/', (req: any, res: any) => {
-  const filePath = path.join(__dirname, 'public', 'index.html');
-  fs.readFile(filePath, 'utf8', (err: any, data: any) => {
-    if (err) {
-      return res.status(500).send('Error reading index.html');
-    }
-    const renderedHtml = data.replace(
-      /YOUR_REST_API_KEY/g,
-      process.env.KAKAO_CLIENT_ID || ''
-    );
-    res.send(renderedHtml);
-  });
-});
 
 app.use(express.json());
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
