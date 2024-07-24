@@ -10,15 +10,15 @@ import { useNavigate } from 'react-router-dom';
 import { useEffect } from 'react';
 
 const CalendarPage: React.FC = () => {
-  const { isAuthenticated, token } = useAuthentication();
+  const { isAuthenticated } = useAuthentication();
   const { value, arrow, setArrow, edit, setEdit } = useDateStore();
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (!token) {
+    if (!isAuthenticated) {
       navigate('/login');
     }
-  }, [token]);
+  }, [isAuthenticated]);
 
   dayjs.locale('ko');
   const days = dayjs(value).format('D. ddd');
