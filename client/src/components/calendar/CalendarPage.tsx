@@ -143,7 +143,9 @@ const Modal = styled.div<{ expanded: boolean }>`
   left: 0;
   width: 100vw;
   height: 100vh;
-  background: rgba(0, 0, 0, 0
+  background: rgba(0, 0, 0, 0.3);
+  z-index: ${({ expanded }) => (expanded ? '10' : '-1')};
+  opacity: ${({ expanded }) => (expanded ? '1' : '0')};
 `;
 
 export default CalendarPage;
