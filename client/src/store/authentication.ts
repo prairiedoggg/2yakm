@@ -1,15 +1,16 @@
-import create from 'zustand';
+import { create } from 'zustand';
 
 interface Authentication {
-  token: string;
-  setToken: (token: string) => void;
   isAuthenticated: boolean;
+  checkAuthentication: () => void;
   setIsAuthenticated: (isAuthenticated: boolean) => void;
 }
 
 export const useAuthentication = create<Authentication>((set) => ({
-  token: '',
-  setToken: (token) => set({ token }),
   isAuthenticated: false,
+  checkAuthentication: () => {
+    const token = localStorage.getItem('token');
+    set({ isAuthenticated: !!token });
+  },
   setIsAuthenticated: (isAuthenticated) => set({ isAuthenticated })
 }));

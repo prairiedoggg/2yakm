@@ -246,6 +246,12 @@ const PageTitle = styled.div`
 const MyPageContainer = styled.div`
   width: 100%;
   overflow: hidden;
+
+  hr {
+    background: #d8d8d8;
+    height: 1px;
+    border: 0;
+  }
 `;
 
 const StyledContent = styled.div`

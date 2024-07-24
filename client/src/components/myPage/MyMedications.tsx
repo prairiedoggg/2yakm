@@ -1,17 +1,7 @@
-/**
-File Name : MyMedications
-Description : 내 약
-Author : 오선아
-
-History
-Date        Author   Status    Description
-2024.07.21  오선아   Created
-*/
-
 import styled from 'styled-components';
 import { Icon } from '@iconify-icon/react';
 import BottomSheet from '../BottomSheet';
-import { ChangeEvent, useEffect, useState } from 'react';
+import { ChangeEvent, useState } from 'react';
 
 type MedicationItem = {
   title: string;
@@ -93,16 +83,9 @@ const MyMedications = () => {
               <div className='input-container'>
                 <input
                   type='text'
-                  placeholder='직접 입력 또는 사진으로 등록'
+                  placeholder='약 이름'
                   value={name}
                   onChange={handleNameChange}
-                />
-                <Icon
-                  className='clearButton'
-                  icon='ph:camera-light'
-                  width='1.3rem'
-                  height='1.3rem'
-                  style={{ color: 'black' }}
                 />
               </div>
             </div>
@@ -123,13 +106,6 @@ const MyMedications = () => {
                   placeholder='직접 입력 또는 사진으로 등록'
                   value={date}
                   onChange={handleDateChange}
-                />
-                <Icon
-                  className='clearButton'
-                  icon='ph:camera-light'
-                  width='1.3rem'
-                  height='1.3rem'
-                  style={{ color: 'black' }}
                 />
               </div>
             </div>
@@ -184,7 +160,6 @@ const Sheet = styled.div`
     border: none;
     border-radius: 4px;
     padding: 12px;
-    padding-right: 30px;
     box-sizing: border-box;
   }
   .bottomClose {

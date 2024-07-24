@@ -1,6 +1,7 @@
-
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import loadable from '@loadable/component';
+import { useEffect } from 'react';
+import { useAuthentication } from './store/authentication';
 
 const Home = loadable(() => import('./components/home/Home'));
 const News = loadable(() => import('./components/cardNews/News'));
@@ -15,13 +16,17 @@ const ResetPassword = loadable(
   () => import('./components/authentication/ResetPassword')
 );
 const ChatBot = loadable(() => import('./components/chatBot/ChatBot'));
-const KakaoRedirect = loadable(
-  () => import('./components/authentication/KakaoRedirect')
-);
+const Redirect = loadable(() => import('./components/authentication/Redirect'));
 
 import 'dayjs/locale/ko';
 
 const App = () => {
+  const { checkAuthentication } = useAuthentication();
+
+  useEffect(() => {
+    checkAuthentication();
+  }, [checkAuthentication]);
+
   return (
     <Router>
       <Routes>
@@ -36,7 +41,8 @@ const App = () => {
         <Route path='/register' element={<Register />} />
         <Route path='/password/reset' element={<ResetPassword />} />
         <Route path='/chatbot' element={<ChatBot />} />
-        <Route path='/kakao/callback' element={<KakaoRedirect />} />
+        <Route path='/kakao/callback' element={<Redirect sns='kakao' />} />
+        <Route path='/google/callback' element={<Redirect sns='google' />} />
       </Routes>
     </Router>
   );
