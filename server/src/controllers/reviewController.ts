@@ -10,7 +10,7 @@ import { CustomRequest } from '../types/express';
 
 // 리뷰 생성 컨트롤러
 export const createReview = async (
-  req: CustomRequest,
+  req: Request<{ drugid: string }, unknown, unknown, unknown> & CustomRequest,
   res: Response,
   next: NextFunction
 ): Promise<void> => {
@@ -37,7 +37,8 @@ export const createReview = async (
 
 // 리뷰 수정 컨트롤러
 export const updateReview = async (
-  req: CustomRequest,
+  req: Request<{ reviewid: string }, unknown, { content: string }, unknown> &
+    CustomRequest,
   res: Response,
   next: NextFunction
 ): Promise<void> => {
@@ -62,7 +63,8 @@ export const updateReview = async (
 
 // 리뷰 삭제 컨트롤러
 export const deleteReview = async (
-  req: CustomRequest,
+  req: Request<{ reviewid: string }, unknown, unknown, { userid: string }> &
+    CustomRequest,
   res: Response,
   next: NextFunction
 ): Promise<void> => {
@@ -81,14 +83,23 @@ export const deleteReview = async (
 
 // 해당 약의 모든 리뷰 조회 컨트롤러
 export const getDrugAllReview = async (
-  req: Request,
+  req: Request<
+    { drugid: string },
+    unknown,
+    unknown,
+    {
+      initialLimit?: string;
+      cursorLimit?: string;
+      cursor: string;
+    }
+  >,
   res: Response,
   next: NextFunction
 ): Promise<void> => {
   const drugid = parseInt(req.params.drugid, 10);
-  const initialLimit = parseInt(req.query.initialLimit as string, 10) || 10; // 처음 불러올 자료 개수
-  const cursorLimit = parseInt(req.query.cursorLimit as string, 10) || 10; // cursor 적용 했을 때 가져올 자료 개수
-  const cursor = parseInt(req.query.cursor as string) ?? undefined;
+  const initialLimit = parseInt(req.query.initialLimit ?? '10'); // 처음 불러올 자료 개수
+  const cursorLimit = parseInt(req.query.cursorLimit ?? '10'); // cursor 적용 했을 때 가져올 자료 개수
+  const cursor = parseInt(req.query.cursor) ?? undefined;
 
   try {
     const { reviews, nextCursor } = await getDrugAllReviewService(
@@ -105,15 +116,26 @@ export const getDrugAllReview = async (
 
 // 해당 유저의 모든 리뷰 조회 컨트롤러
 export const getUserAllReview = async (
-  req: CustomRequest,
+  req: Request<
+    unknown,
+    unknown,
+    unknown,
+    {
+      limit?: string;
+      offset?: string;
+      sortedBy?: string;
+      order?: string;
+    }
+  > &
+    CustomRequest,
   res: Response,
   next: NextFunction
 ): Promise<void> => {
   const userid = req.user.id;
-  const limit = parseInt(req.query.limit as string, 10) || 10;
-  const offset = parseInt(req.query.offset as string, 10) || 0;
-  const sortedBy = (req.query.sortedBy as string) ?? 'created_at';
-  const order = (req.query.order as string)?.toUpperCase() ?? 'DESC';
+  const limit = parseInt(req.query.limit ?? '10');
+  const offset = parseInt(req.query.offset ?? '0');
+  const sortedBy = req.query.sortedBy ?? 'created_at';
+  const order = req.query.order?.toUpperCase() ?? 'DESC';
 
   try {
     const review = await getUserAllReviewService(
