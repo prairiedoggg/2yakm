@@ -26,7 +26,8 @@ import Toast from '../Toast';
 import Nav from '../Nav';
 import { Icon } from '@iconify-icon/react';
 import { useEffect, useState } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { useAuthentication } from '../../store/authentication';
 
 enum pageState {
   Main,
@@ -41,12 +42,15 @@ enum pageState {
 }
 
 const MyPage = () => {
+  const { isAuthenticated } = useAuthentication();
   const location = useLocation();
   const [currentState, setCurrentState] = useState(pageState.Main);
+  const navigate = useNavigate();
 
   useEffect(() => {
     setCurrentState(pageState.Main);
-  }, [location.key]);
+    if (!isAuthenticated) navigate('/login');
+  }, [location.key, isAuthenticated]);
 
   const renderContent = () => {
     switch (currentState) {

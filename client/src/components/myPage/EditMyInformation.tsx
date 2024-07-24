@@ -13,10 +13,10 @@ import BottomPictureSheet from './BottomPictureSheet';
 import { Icon } from '@iconify-icon/react';
 import { useState } from 'react';
 
-type Info = {
+interface Info {
   info: string;
   onClick?: () => void;
-};
+}
 
 const EditMyInformation = ({
   onEditNameClick,
