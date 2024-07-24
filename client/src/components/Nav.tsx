@@ -1,63 +1,49 @@
-/**
-File Name : Nav
-Description : 하단 네브게이션바
-Author : 민선옥
 
-History
-Date        Author   Status    Description
-2024.07.16  민선옥   Created
-2024.07.17  민선옥   Modified   알람설정 추가
-2024.07.18  임지영   Modified   tsx
-2024.07.22  임지영   Modified    + ChatBot
-*/
-
-import { useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import styled from 'styled-components';
 
+interface NavItem {
+  name: string;
+  label: string;
+  icon: string;
+  style?: React.CSSProperties;
+}
+
+const navItems: NavItem[] = [
+  { name: 'chatbot', label: '상담', icon: '/img/nav/talk.png' },
+  {
+    name: 'calendar',
+    label: '캘린더',
+    icon: '/img/nav/calender.png',
+    style: { marginRight: '15px' }
+  },
+  {
+    name: '',
+    label: '홈',
+    icon: '/img/nav/home.png',
+    style: { position: 'absolute', top: '-20px', width: '50px' }
+  },
+  {
+    name: 'alarm',
+    label: '알람설정',
+    icon: '/img/nav/bell.svg',
+    style: { marginLeft: '10px' }
+  },
+  { name: 'myPage', label: '마이페이지', icon: '/img/nav/user.png' }
+];
+
 const Nav = () => {
-  const navigate = useNavigate();
-
-  const handleNav = (nav: string) => () => {
-    switch (nav) {
-      case 'chatbot':
-        return navigate('/chatbot');
-      case 'calendar':
-        return navigate('/calendar');
-      case 'home':
-        return navigate('/');
-      case 'alarm':
-        return navigate('/alarm');
-      case 'myPage':
-        return navigate('/myPage');
-    }
-  };
-
   return (
     <NavContainer>
       <ul>
-        <li onClick={handleNav('chatbot')}>
-          <img src={`/img/nav/talk.png`} alt='상담' style={{ width: '40px' }} />
-          <p>상담</p>
-        </li>
-        <li style={{ marginRight: '15px' }} onClick={handleNav('calendar')}>
-          <img src={`/img/nav/calender.png`} alt='캘린더' />
-          <p>캘린더</p>
-        </li>
-        <li onClick={handleNav('home')}>
-          <img
-            src={`/img/nav/home.png`}
-            alt='홈'
-            style={{ position: 'absolute', top: '-20px', width: '50px' }}
-          />
-        </li>
-        <li style={{ marginLeft: '15px' }} onClick={handleNav('alarm')}>
-          <img src={`/img/nav/bell.svg`} alt='알람' style={{ width: '30px' }} />
-          <p>알람설정</p>
-        </li>
-        <li onClick={handleNav('myPage')}>
-          <img src={`/img/nav/user.png`} alt='유저' style={{ width: '30px' }} />
-          <p>마이페이지</p>
-        </li>
+        {navItems.map((item) => (
+          <li key={item.name} style={item.style}>
+            <StyledLink to={`/${item.name}`}>
+              <img src={item.icon} alt={item.label} />
+              <p>{item.label}</p>
+            </StyledLink>
+          </li>
+        ))}
       </ul>
     </NavContainer>
   );
@@ -106,4 +92,11 @@ const NavContainer = styled.nav`
       font-weight: bold;
     }
   }
+`;
+
+const StyledLink = styled(Link)`
+  text-decoration: none; 
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 `;

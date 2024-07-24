@@ -1,15 +1,3 @@
-/**
-File Name : News
-Description : 카드뉴스 
-Author : 임지영
-
-History
-Date        Author   Status    Description
-2024.07.16  임지영   Created
-2024.07.17  임지영   Modified    Nav 추가
-2024.07.21  임지영   Modified    코치님 코드 리뷰 수정
-*/
-
 import { useParams } from 'react-router-dom';
 import styled from 'styled-components';
 import Header from '../Header';
@@ -17,11 +5,6 @@ import NewsTitle from './NewsTitle';
 import NewsSlide from './NewsSlide';
 import NewsDescription from './NewsDescription';
 import Nav from '../Nav';
-
-const NewsContainer = styled.div`
-  width: 100%;
-  overflow: hidden;
-`;
 
 const NEWS = [
   {
@@ -68,5 +51,10 @@ const News = () => {
     </NewsContainer>
   );
 };
+
+const NewsContainer = styled.div`
+  width: 100%;
+  overflow: hidden;
+`;
 
 export default News;

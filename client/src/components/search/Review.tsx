@@ -1,13 +1,3 @@
-/**
- * File Name : Review
- * Description : 리뷰
- * Author : 민선옥
- *
- * History
- * Date        Author   Status    Description
- * 2024.07.17  민선옥    Created
- * 2024.07.19  민선옥    tsx
- */
 
 import styled from 'styled-components';
 

@@ -1,13 +1,3 @@
-/**
- * File Name : AlarmSettings
- * Description : 알람설정
- * Author : 민선옥
- *
- * History
- * Date        Author   Status    Description
- * 2024.07.21  민선옥    Created
- */
-
 import { useState, useEffect } from 'react'; // useEffect 추가
 import styled from 'styled-components';
 import { Select, Button, Input } from 'antd';
@@ -20,8 +10,8 @@ const AlarmSettings = () => {
   const addAlarm = useAlarmStore((state) => state.addAlarm);
   const updateAlarm = useAlarmStore((state) => state.updateAlarm);
   const setCurrentPage = useAlarmStore((state) => state.setCurrentPage);
-  const currentAlarm = useAlarmStore((state) => state.currentAlarm); 
-    const alarms = useAlarmStore((state) => state.alarms); 
+  const currentAlarm = useAlarmStore((state) => state.currentAlarm);
+  const alarms = useAlarmStore((state) => state.alarms);
 
   const [alarmName, setAlarmName] = useState<string>('');
   const [frequency, setFrequency] = useState<string>('하루 3번');
@@ -66,12 +56,12 @@ const AlarmSettings = () => {
   // 알람 저장후 메인 알람 페이지로 이동
   const handleSave = () => {
     if (currentAlarm) {
-       const alarmIndex = alarms.findIndex(
-         (alarm) =>
-           alarm.name === currentAlarm.name &&
-           alarm.frequency === currentAlarm.frequency &&
-           alarm.times.join(',') === currentAlarm.times.join(',')
-       );
+      const alarmIndex = alarms.findIndex(
+        (alarm) =>
+          alarm.name === currentAlarm.name &&
+          alarm.frequency === currentAlarm.frequency &&
+          alarm.times.join(',') === currentAlarm.times.join(',')
+      );
       updateAlarm(alarmIndex, {
         name: alarmName,
         frequency,
@@ -183,9 +173,12 @@ const AlarmTime = styled.section`
 `;
 
 const ButtonContainer = styled.div`
+  position: fixed;
+  bottom: 0px;
   display: flex;
   justify-content: space-around;
   align-items: center;
+  width: 100%;
   margin-bottom: 100px;
   height: 60px;
   background-color: var(--main-color);

@@ -1,18 +1,58 @@
-/**
-File Name : CardNews
-Description : 카드뉴스
-Author : 임지영
-
-History
-Date        Author   Status    Description
-2024.07.16  임지영   Created
-2024.07.17  임지영   Modified    카드뉴스 width 높임
-2024.07.18  임지영   Modified    tsx
-2024.07.18  임지영   Modified    style 변경
-*/
-
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
+
+const News1 = ({
+  onClick
+}: {
+  onClick: React.MouseEventHandler<HTMLImageElement>;
+}) => (
+  <NewsImage num={1} onClick={onClick}>
+    <img src={`/img/cardNews/news1_1.png`} alt='News 1' />
+  </NewsImage>
+);
+
+const News2 = ({
+  onClick
+}: {
+  onClick: React.MouseEventHandler<HTMLImageElement>;
+}) => (
+  <NewsImage num={2} onClick={onClick}>
+    <img src={`/img/cardNews/news2_1.png`} alt='News 2' />
+  </NewsImage>
+);
+
+const News3 = ({
+  onClick
+}: {
+  onClick: React.MouseEventHandler<HTMLImageElement>;
+}) => (
+  <NewsImage num={3} onClick={onClick}>
+    <img src={`/img/cardNews/news3_1.png`} alt='News 3' />
+  </NewsImage>
+);
+
+const CardNews: React.FC = () => {
+  const navigate = useNavigate();
+  // 카드뉴스 열기
+  const openCardNews = (num: number) => () => {
+    navigate(`/news/${num}`);
+  };
+
+  return (
+    <Container>
+      <Title>
+        <News />
+        뭐약뉴스
+      </Title>
+      <Explanation>이약뭐약에서 제공하는 카드뉴스입니다</Explanation>
+      <Contents>
+        <News1 onClick={openCardNews(1)} />
+        <News2 onClick={openCardNews(2)} />
+        <News3 onClick={openCardNews(3)} />
+      </Contents>
+    </Container>
+  );
+};
 
 const Container = styled.div`
   margin: 8vh 8vw;
@@ -86,58 +126,5 @@ const NewsImage = styled.div<NewsImageProps>`
     opacity: 1;
   }
 `;
-
-const News1 = ({
-  onClick
-}: {
-  onClick: React.MouseEventHandler<HTMLImageElement>;
-}) => (
-  <NewsImage num={1} onClick={onClick}>
-    <img src={`/img/cardNews/news1_1.png`} alt='News 1' />
-  </NewsImage>
-);
-
-const News2 = ({
-  onClick
-}: {
-  onClick: React.MouseEventHandler<HTMLImageElement>;
-}) => (
-  <NewsImage num={2} onClick={onClick}>
-    <img src={`/img/cardNews/news2_1.png`} alt='News 2' />
-  </NewsImage>
-);
-
-const News3 = ({
-  onClick
-}: {
-  onClick: React.MouseEventHandler<HTMLImageElement>;
-}) => (
-  <NewsImage num={3} onClick={onClick}>
-    <img src={`/img/cardNews/news3_1.png`} alt='News 3' />
-  </NewsImage>
-);
-
-const CardNews: React.FC = () => {
-  const navigate = useNavigate();
-  // 카드뉴스 열기
-  const openCardNews = (num: number) => () => {
-    navigate(`/news/${num}`);
-  };
-
-  return (
-    <Container>
-      <Title>
-        <News />
-        뭐약뉴스
-      </Title>
-      <Explanation>이약뭐약에서 제공하는 카드뉴스입니다</Explanation>
-      <Contents>
-        <News1 onClick={openCardNews(1)} />
-        <News2 onClick={openCardNews(2)} />
-        <News3 onClick={openCardNews(3)} />
-      </Contents>
-    </Container>
-  );
-};
 
 export default CardNews;

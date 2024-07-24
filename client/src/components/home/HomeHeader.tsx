@@ -1,15 +1,3 @@
-/**
-File Name : HomeHeader
-Description : 메인페이지 상단 컴포넌트
-Author : 임지영
-
-History
-Date        Author   Status    Description
-2024.07.16  임지영   Created
-2024.07.16  임지영   Modified    색상 #ffeb41
-2024.07.18  임지영   Modified    tsx
-*/
-
 import { useState } from 'react';
 import styled from 'styled-components';
 import SearchBox from '../SearchBox';

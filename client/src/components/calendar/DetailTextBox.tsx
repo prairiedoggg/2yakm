@@ -1,107 +1,4 @@
-/**
-File Name : DetailTextBox
-Description : 캘린더 하단 세부 내용 텍스트 박스
-Author : 임지영
-
-History
-Date        Author   Status    Description
-2024.07.19  임지영   Created
-2024.07.20  임지영   Modified    스타일 조정
-*/
-
 import styled from 'styled-components';
-
-const Container = styled.div<{ isPill?: boolean }>`
-  border: 0.5px #d9d9d9 solid;
-  border-radius: 10px;
-  padding: 13px 10px;
-  margin: 15px 0;
-  display: ${({ isPill }) => (isPill ? 'block' : 'flex')};
-  justify-content: ${({ isPill }) => (isPill ? 'normal' : 'space-between')};
-`;
-
-const ContentTitle = styled.div`
-  font-size: 14pt;
-`;
-
-const UnitContainer = styled.div`
-  display: flex;
-`;
-
-const Text = styled.div`
-  font-size: 15pt;
-`;
-
-const Blood = styled.div`
-  font-size: 15pt;
-  width: 40px;
-  text-align: center;
-`;
-
-const TextContainer = styled.div`
-  display: flex;
-`;
-
-const Unit = styled.div`
-  font-size: 12pt;
-  line-height: 25px;
-`;
-
-const StyledLabel = styled.label`
-  display: flex;
-`;
-
-const StyledInput = styled.input`
-  appearance: none;
-  border: 1.5px solid gainsboro;
-  border-radius: 0.35rem;
-  width: 1.5rem;
-  height: 1.5rem;
-
-  &:checked {
-    border-color: transparent;
-    background-image: url("data:image/svg+xml,%3csvg viewBox='0 0 16 16' fill='white' xmlns='http://www.w3.org/2000/svg'%3e%3cpath d='M5.707 7.293a1 1 0 0 0-1.414 1.414l2 2a1 1 0 0 0 1.414 0l4-4a1 1 0 0 0-1.414-1.414L7 8.586 5.707 7.293z'/%3e%3c/svg%3e");
-    background-size: 120% 120%;
-    background-position: 50%;
-    background-repeat: no-repeat;
-    background-color: #72bf44;
-  }
-
-  &:not(:checked) {
-    border-color: transparent;
-    background-image: url("data:image/svg+xml,%3csvg viewBox='0 0 16 16' fill='white' xmlns='http://www.w3.org/2000/svg'%3e%3cpath d='M5.707 7.293a1 1 0 0 0-1.414 1.414l2 2a1 1 0 0 0 1.414 0l4-4a1 1 0 0 0-1.414-1.414L7 8.586 5.707 7.293z'/%3e%3c/svg%3e");
-    background-size: 120% 120%;
-    background-position: 50%;
-    background-repeat: no-repeat;
-    background-color: #d9d9d9;
-  }
-`;
-
-const Time = styled.div`
-  display: flex;
-  align-items: center;
-`;
-
-const PillCheck = styled.div`
-  margin-top: 10px;
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-`;
-
-const PillRow = styled.div`
-  display: flex;
-  align-items: center;
-  margin-top: 10px;
-  justify-content: space-between;
-`;
-
-const PillTimeContainer = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin-left: 10px;
-`;
 
 interface ColorTextProps {
   temp?: number;
@@ -268,5 +165,97 @@ const DetailTextBox = ({
     </Container>
   ) : null;
 };
+
+const Container = styled.div<{ isPill?: boolean }>`
+  border: 0.5px #d9d9d9 solid;
+  border-radius: 10px;
+  padding: 13px 10px;
+  margin: 15px 0;
+  display: ${({ isPill }) => (isPill ? 'block' : 'flex')};
+  justify-content: ${({ isPill }) => (isPill ? 'normal' : 'space-between')};
+`;
+
+const ContentTitle = styled.div`
+  font-size: 14pt;
+`;
+
+const UnitContainer = styled.div`
+  display: flex;
+`;
+
+const Text = styled.div`
+  font-size: 15pt;
+`;
+
+const Blood = styled.div`
+  font-size: 15pt;
+  width: 40px;
+  text-align: center;
+`;
+
+const TextContainer = styled.div`
+  display: flex;
+`;
+
+const Unit = styled.div`
+  font-size: 12pt;
+  line-height: 25px;
+`;
+
+const StyledLabel = styled.label`
+  display: flex;
+`;
+
+const StyledInput = styled.input`
+  appearance: none;
+  border: 1.5px solid gainsboro;
+  border-radius: 0.35rem;
+  width: 1.5rem;
+  height: 1.5rem;
+
+  &:checked {
+    border-color: transparent;
+    background-image: url("data:image/svg+xml,%3csvg viewBox='0 0 16 16' fill='white' xmlns='http://www.w3.org/2000/svg'%3e%3cpath d='M5.707 7.293a1 1 0 0 0-1.414 1.414l2 2a1 1 0 0 0 1.414 0l4-4a1 1 0 0 0-1.414-1.414L7 8.586 5.707 7.293z'/%3e%3c/svg%3e");
+    background-size: 120% 120%;
+    background-position: 50%;
+    background-repeat: no-repeat;
+    background-color: #72bf44;
+  }
+
+  &:not(:checked) {
+    border-color: transparent;
+    background-image: url("data:image/svg+xml,%3csvg viewBox='0 0 16 16' fill='white' xmlns='http://www.w3.org/2000/svg'%3e%3cpath d='M5.707 7.293a1 1 0 0 0-1.414 1.414l2 2a1 1 0 0 0 1.414 0l4-4a1 1 0 0 0-1.414-1.414L7 8.586 5.707 7.293z'/%3e%3c/svg%3e");
+    background-size: 120% 120%;
+    background-position: 50%;
+    background-repeat: no-repeat;
+    background-color: #d9d9d9;
+  }
+`;
+
+const Time = styled.div`
+  display: flex;
+  align-items: center;
+`;
+
+const PillCheck = styled.div`
+  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+`;
+
+const PillRow = styled.div`
+  display: flex;
+  align-items: center;
+  margin-top: 10px;
+  justify-content: space-between;
+`;
+
+const PillTimeContainer = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-left: 10px;
+`;
 
 export default DetailTextBox;

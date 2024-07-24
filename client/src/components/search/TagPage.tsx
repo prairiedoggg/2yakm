@@ -1,17 +1,7 @@
-/**
- * File Name : TagPage
- * Description : 증상과 연관된 약 나열
- * Author : 민선옥
- *
- * History
- * Date        Author   Status    Description
- * 2024.07.19  민선옥    Created
- */
 
 import { useParams } from 'react-router-dom';
 import styled from 'styled-components'; 
-import Header from '../Header';
-import Nav from '../Nav';
+import Layout from '../Layout'
 
 
 const TagPage = () => {
@@ -19,7 +9,7 @@ const TagPage = () => {
 
   return (
     <>
-      <Header />
+      <Layout/>
       <TagTitle>{tag}</TagTitle>
       <ListContainer>
         <p>즐겨찾기 개수로 정렬되었습니다.</p>
@@ -44,7 +34,6 @@ const TagPage = () => {
           </PillItem>
         </PillList>
       </ListContainer>
-      <Nav />
     </>
   );
 };

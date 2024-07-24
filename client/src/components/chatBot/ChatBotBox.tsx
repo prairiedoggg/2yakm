@@ -1,13 +1,3 @@
-/**
-File Name : ChatBotBox
-Description : 챗봇 대화상자
-Author : 임지영
-
-History
-Date        Author   Status    Description
-2024.07.22  임지영   Created
-*/
-
 import styled from 'styled-components';
 
 const ChatBotBoxContainer = styled.div`

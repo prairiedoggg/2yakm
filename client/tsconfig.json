@@ -16,7 +16,7 @@
     "module": "ESNext",
     "baseUrl": ".",
     "paths": {
-      "/img/*": ["./public/img/*"]
+      "/img/*": ["./src/assets/img/*"]
     }
   }
 }

@@ -1,13 +1,4 @@
-/**
- * File Name : AlarmPage
- * Description : 알람설정
- * Author : 민선옥
- *
- * History
- * Date        Author   Status    Description
- * 2024.07.20  민선옥    Created
- * 2024.07.21  민선옥    알람설정과 연동
- */
+
 
 import { Icon } from '@iconify-icon/react';
 import { useState } from 'react';
@@ -17,9 +8,9 @@ import { Alarm, useAlarmStore } from '../../store/alarm';
 
 const AlarmPage = () => {
   const { alarms, setCurrentPage, removeAlarm, setCurrentAlarm } =
-    useAlarmStore(); // 수정된 부분
+    useAlarmStore(); 
   const [isToggled, setIsToggled] = useState(Array(alarms.length).fill(true));
-  const [isDeleteMode, setIsDeleteMode] = useState(false); // 삭제 모드 상태
+  const [isDeleteMode, setIsDeleteMode] = useState(false); 
 
   // 알람 온오프 토글기능
   const handleToggle = (index: number) => {
@@ -57,22 +48,18 @@ const AlarmPage = () => {
           {alarms.map((alarm, index) => (
             <AlarmItemContainer key={index}>
               <AlarmItem onClick={() => handleEditAlarm(alarm)}>
-                {' '}
-                {/* 수정된 부분 */}
                 <AlarmHeader>
-                 
-                    <AlarmName>{alarm.name}</AlarmName>
-                    <AlarmFrequency>{alarm.frequency}</AlarmFrequency>
-                  
-                    <ToggleSwitch>
-                      <input
-                        type='checkbox'
-                        checked={isToggled[index]}
-                        onChange={() => handleToggle(index)}
-                      />
-                      <Slider />
-                    </ToggleSwitch>
-    
+                  <AlarmName>{alarm.name}</AlarmName>
+                  <AlarmFrequency>{alarm.frequency}</AlarmFrequency>
+
+                  <ToggleSwitch onClick={(event) => event.stopPropagation()}>
+                    <input
+                      type='checkbox'
+                      checked={isToggled[index]}
+                      onChange={() => handleToggle(index)}
+                    />
+                    <Slider />
+                  </ToggleSwitch>
                 </AlarmHeader>
                 <AlarmTimes>
                   {alarm.times.map((time, i) => (
