@@ -20,6 +20,8 @@ type MedicationItem = {
 };
 
 const FavoriteMedications = () => {
+  const [deleteItem, setDeleteItem] = useState(false);
+
   const items: MedicationItem[] = [
     // test
     {
@@ -51,6 +53,7 @@ const FavoriteMedications = () => {
             style={{ color: 'black' }}
           />
         </div>
+        {deleteItem ? <div className='delete-button'>삭제</div> : ''}
         <div className='registration'>등록일 {item.registrationDate}</div>
         <TagContainer>
           {item.tags.map((tag, index) => (
@@ -66,7 +69,16 @@ const FavoriteMedications = () => {
   return (
     <MyPageContainer>
       <StyledContent>
-        <div className='totalCount'>총 {items.length}개</div>
+        <div className='totalCount'>
+          총 {items.length}개{' '}
+          <Icon
+            onClick={() => setDeleteItem(!deleteItem)}
+            icon='ic:baseline-edit'
+            width='1.3rem'
+            height='1.3rem'
+            style={{ color: '#d1d1d1' }}
+          />
+        </div>
         <div className='items'>{items.map((item) => renderItems(item))}</div>
       </StyledContent>
     </MyPageContainer>
@@ -91,6 +103,8 @@ const StyledContent = styled.div`
 
   .totalCount {
     font-weight: 500;
+    display: flex;
+    justify-content: space-between;
   }
 
   .items {
@@ -115,6 +129,17 @@ const Item = styled.div`
   .registration {
     color: gray;
     font-size: 0.8em;
+  }
+
+  .delete-button {
+    position: absolute;
+    right: 30px;
+    background-color: #d9d9d9;
+    border: none;
+    border-radius: 25px;
+    padding: 3px 8px;
+    cursor: pointer;
+    font-size: 0.9em;
   }
 `;
 

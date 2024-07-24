@@ -11,7 +11,7 @@ Date        Author   Status    Description
 import styled from 'styled-components';
 import { Icon } from '@iconify-icon/react';
 import BottomSheet from '../BottomSheet';
-import { ChangeEvent, useEffect, useState } from 'react';
+import { ChangeEvent, useState } from 'react';
 
 type MedicationItem = {
   title: string;
@@ -55,6 +55,7 @@ const MyMedications = () => {
         <div className='title'>
           {item.title}
           <Icon
+            onClick={() => setDeleteItem(!deleteItem)}
             icon='ep:arrow-right-bold'
             width='1.2em'
             height='1.2em'
@@ -93,16 +94,9 @@ const MyMedications = () => {
               <div className='input-container'>
                 <input
                   type='text'
-                  placeholder='직접 입력 또는 사진으로 등록'
+                  placeholder='약 이름'
                   value={name}
                   onChange={handleNameChange}
-                />
-                <Icon
-                  className='clearButton'
-                  icon='ph:camera-light'
-                  width='1.3rem'
-                  height='1.3rem'
-                  style={{ color: 'black' }}
                 />
               </div>
             </div>
@@ -123,13 +117,6 @@ const MyMedications = () => {
                   placeholder='직접 입력 또는 사진으로 등록'
                   value={date}
                   onChange={handleDateChange}
-                />
-                <Icon
-                  className='clearButton'
-                  icon='ph:camera-light'
-                  width='1.3rem'
-                  height='1.3rem'
-                  style={{ color: 'black' }}
                 />
               </div>
             </div>
@@ -184,7 +171,6 @@ const Sheet = styled.div`
     border: none;
     border-radius: 4px;
     padding: 12px;
-    padding-right: 30px;
     box-sizing: border-box;
   }
   .bottomClose {

@@ -8,6 +8,8 @@ Date        Author   Status    Description
 2024.07.19  오선아   Created
 */
 
+import { Icon } from '@iconify-icon/react';
+import { useState } from 'react';
 import styled from 'styled-components';
 
 type MedicationItem = {
@@ -17,6 +19,8 @@ type MedicationItem = {
 };
 
 const ManageReviews = () => {
+  const [deleteItem, setDeleteItem] = useState(false);
+
   const items: MedicationItem[] = [
     // test
     {
@@ -42,7 +46,7 @@ const ManageReviews = () => {
         <div className='title'>
           <div className='name_ko'>{item.title}</div>
           <div className='name_en'>{item.titleEn}</div>
-          <div className='delete-button'>삭제</div>
+          {deleteItem ? <div className='delete-button'>삭제</div> : ''}
         </div>
         <div className='desc'>{item.desc}</div>
         {showHr ? <hr /> : ''}
@@ -53,7 +57,16 @@ const ManageReviews = () => {
   return (
     <MyPageContainer>
       <StyledContent>
-        <div className='totalCount'>내가 쓴 총 리뷰 {items.length}개</div>
+        <div className='totalCount'>
+          내가 쓴 총 리뷰 {items.length}개{' '}
+          <Icon
+            onClick={() => setDeleteItem(!deleteItem)}
+            icon='ic:baseline-edit'
+            width='1.3rem'
+            height='1.3rem'
+            style={{ color: '#d1d1d1' }}
+          />
+        </div>
         <div className='items'>
           {items.map((item, index) =>
             renderItems(item, index < items.length - 1)
@@ -82,6 +95,8 @@ const StyledContent = styled.div`
 
   .totalCount {
     font-weight: 500;
+    display: flex;
+    justify-content: space-between;
   }
 
   .items {
