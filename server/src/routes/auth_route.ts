@@ -14,7 +14,8 @@ import {
   verifyEmailController,
   requestEmailVerificationController,
   changeUsernameController,
-  deleteAccountController
+  deleteAccountController,
+  naverAuthController
 } from '../controllers/authController';
 
 const router = Router();
@@ -182,6 +183,46 @@ router.post('/token', refreshTokenController);
  *         description: 인증 실패
  */
 router.get('/kakao/callback', kakaoAuthController);
+
+/**
+ * @swagger
+ * /api/auth/naver/callback:
+ *   get:
+ *     summary: 네이버 로그인 콜백
+ *     tags: [Auth]
+ *     parameters:
+ *       - name: code
+ *         in: query
+ *         required: true
+ *         schema:
+ *           type: string
+ *       - name: state
+ *         in: query
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: 로그인 성공
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                 token:
+ *                   type: string
+ *                 refreshToken:
+ *                   type: string
+ *                 userName:
+ *                   type: string
+ *                 email:
+ *                   type: string
+ *       400:
+ *         description: 인증 실패
+ */
+router.get('/naver/callback', naverAuthController);
 
 /**
  * @swagger

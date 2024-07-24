@@ -8,6 +8,7 @@ import {
   requestPasswordService,
   resetPasswordService,
   googleAuthService,
+  naverAuthService,
   linkSocialAccountService,
   verifyEmailService,
   requestEmailVerification,
@@ -104,6 +105,25 @@ export const kakaoAuthController = async (req: Request, res: Response, next: Nex
     next(error);
   }
 };
+
+// 네이버 로그인
+export const naverAuthController = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { code, state } = req.query;
+    const result = await naverAuthService(code as string, state as string);
+    
+    if (result.message) {
+      res.status(400).json({ message: result.message });
+    } else {
+      res.cookie('jwt', result.token, { httpOnly: true });
+      res.cookie('refreshToken', result.refreshToken, { httpOnly: true });
+      res.status(200).json({ message: '네이버 인증 성공', token: result.token, refreshToken: result.refreshToken, userName: result.userName, email: result.email });
+    }
+  } catch (error) {
+    next(error);
+  }
+};
+
 
 // 구글 로그인
 export const googleAuthController = async (req: Request, res: Response, next: NextFunction) => {

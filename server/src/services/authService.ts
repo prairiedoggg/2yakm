@@ -299,6 +299,101 @@ export const kakaoAuthService = async (
   }
 };
 
+// 네이버 소셜
+export const naverAuthService = async (
+  code: string,
+  state: string
+): Promise<{ token?: string, refreshToken?: string, message?: string, userName?: string, email?: string }> => {
+  const redirectUri = 'http://localhost:5173/naver/callback';
+  const naverTokenUrl = `https://nid.naver.com/oauth2.0/token`;
+  const naverUserInfoUrl = `https://openapi.naver.com/v1/nid/me`;
+
+  try {
+    const tokenResponse = await axios.post(naverTokenUrl, null, {
+      params: {
+        grant_type: 'authorization_code',
+        client_id: process.env.NAVER_CLIENT_ID,
+        client_secret: process.env.NAVER_CLIENT_SECRET,
+        code,
+        state,
+        redirect_uri: redirectUri,
+      },
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+    });
+
+    const { access_token } = tokenResponse.data;
+    const userInfoResponse = await axios.get(naverUserInfoUrl, {
+      headers: {
+        Authorization: `Bearer ${access_token}`,
+      },
+    });
+
+    const { id, email, nickname } = userInfoResponse.data.response;
+
+    if (!email) {
+      throw createError(
+        'NaverAuthError',
+        '네이버에서 사용자 정보가 충분하지 않습니다.',
+        400
+      );
+    }
+
+    try {
+      const checkEmailQuery = 'SELECT * FROM users WHERE email = $1';
+      const checkEmailValues = [email];
+      const existingEmailResult = await pool.query(checkEmailQuery, checkEmailValues);
+
+      if (existingEmailResult.rows.length > 0) {
+        const user = existingEmailResult.rows[0];
+        if (!user.naverid) {
+          return { message: '해당 이메일은 이미 로컬 계정으로 존재합니다. 소셜 계정을 연동해주세요.' };
+        }
+      }
+
+      const checkUserQuery = 'SELECT * FROM users WHERE naverid = $1';
+      const checkUserValues = [id];
+      const existingUserResult = await pool.query(checkUserQuery, checkUserValues);
+
+      let user;
+      if (existingUserResult.rows.length > 0) {
+        user = existingUserResult.rows[0];
+      } else {
+        const insertUserQuery = `
+          INSERT INTO users (email, username, password, role, naverid) VALUES ($1, $2, $3, $4, $5)
+          RETURNING *
+        `;
+        const insertUserValues = [
+          email,
+          nickname,
+          'naver_auth_password',
+          false,
+          id,
+        ];
+        const newUserResult = await pool.query(insertUserQuery, insertUserValues);
+        user = newUserResult.rows[0];
+      }
+
+      const payload = { id: user.userid, email: user.email };
+      const token = jwt.sign(payload, SECRET_KEY, {
+        expiresIn: '30m',
+      });
+      const refreshToken = jwt.sign(
+        { id: user.userid },
+        REFRESH_TOKEN_SECRET_KEY,
+        { expiresIn: '7d' }
+      );
+
+      return { token, refreshToken, userName: user.username, email: user.email };
+    } catch (error) {
+      throw createError('DBError', '데이터베이스 오류가 발생했습니다.', 500);
+    }
+  } catch (error) {
+    throw createError('NaverAuthError', '네이버 인증 실패', 500);
+  }
+};
+
 // 구글 소셜
 export const googleAuthService = async (
   code: string
