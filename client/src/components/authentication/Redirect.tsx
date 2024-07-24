@@ -1,32 +1,25 @@
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthentication } from '../../store/authentication';
-// import { useQuery } from '@tanstack/react-query';
 import axios from 'axios';
 
-interface RedirectProps {
-  sns: string;
-}
-
-let url: string = '';
-
-const handleUrl = (sns: string) => {
-  switch (sns) {
-    case 'kakao':
-      return (url = 'http://localhost:3000/api/auth/kakao/callback');
-    case 'google':
-      return (url = 'http://localhost:3000/api/auth/google/callback');
-    default:
-      break;
-  }
-};
-
-const Redirect = ({ sns }: RedirectProps) => {
+const Redirect = ({ sns }: { sns: string }) => {
   const navigate = useNavigate();
   const { checkAuthentication } = useAuthentication();
 
   useEffect(() => {
-    handleUrl(sns);
+    let url = '';
+    switch (sns) {
+      case 'kakao':
+        url = 'http://localhost:3000/api/auth/kakao/callback';
+        break;
+      case 'google':
+        url = 'http://localhost:3000/api/auth/google/callback';
+        break;
+      default:
+        console.error('알 수 없는 SNS 제공자');
+        return;
+    }
 
     console.log(window.location.href);
     const code = new URL(window.location.href).searchParams.get('code');
@@ -52,7 +45,7 @@ const Redirect = ({ sns }: RedirectProps) => {
       console.error('인증 코드 없음');
       navigate('/login');
     }
-  }, []);
+  }, [sns, checkAuthentication, navigate]);
 
   return null;
 };
