@@ -5,19 +5,9 @@ import CalendarDetail from './CalendarDetail';
 import CalendarSection from './CalendarSection';
 import Nav from '../Nav';
 import { useDateStore } from '../../store/store';
-import { useEffect } from 'react';
-import axios from 'axios';
 
 const CalendarPage: React.FC = () => {
   const { value, arrow, setArrow, edit, setEdit } = useDateStore();
-
-  useEffect(() => {
-    axios
-      .get('http://localhost:3000/api/calendars', {
-        withCredentials: true
-      })
-      .then((res) => console.log(res.data));
-  }, []);
 
   dayjs.locale('ko');
   const days = dayjs(value).format('D. ddd');

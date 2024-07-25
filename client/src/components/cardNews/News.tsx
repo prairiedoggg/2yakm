@@ -55,6 +55,7 @@ const News = () => {
 const NewsContainer = styled.div`
   width: 100%;
   overflow: hidden;
+  margin-bottom: 80px;
 `;
 
 export default News;

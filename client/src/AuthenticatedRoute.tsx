@@ -9,7 +9,6 @@ const AuthenticatedRoute = ({
   element: Component
 }: AuthenticatedRouteProps) => {
   const token = Cookies.get('token');
-  console.log('Token:', token);
 
   return token ? <Component /> : <Navigate to='/login' />;
 };
