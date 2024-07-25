@@ -10,14 +10,14 @@ Date        Author   Status    Description
 
 import styled from 'styled-components';
 import { Icon } from '@iconify-icon/react';
-import { ChangeEvent, useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 
-type MedicationItem = {
+interface MedicationItem {
   title: string;
   registrationDate: string;
   tags: string[];
-};
+}
 
 const FavoriteMedications = () => {
   const [deleteItem, setDeleteItem] = useState(false);

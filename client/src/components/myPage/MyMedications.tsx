@@ -3,10 +3,10 @@ import { Icon } from '@iconify-icon/react';
 import BottomSheet from '../BottomSheet';
 import { ChangeEvent, useState } from 'react';
 
-type MedicationItem = {
+interface MedicationItem {
   title: string;
   expiration: string;
-};
+}
 
 const MyMedications = () => {
   const [bottomSheet, setBottomSheet] = useState(false);

@@ -1,13 +1,3 @@
-/**
-File Name : MyPage
-Description : 마이페이지
-Author : 오선아
-
-History
-Date        Author   Status    Description
-2024.07.17  오선아   Created
-*/
-
 import styled from 'styled-components';
 import Header from '../Header';
 import MyInformation from './MyInformation';
@@ -19,8 +9,6 @@ import EditPharmacist from './EditPharmacist';
 import FavoriteMedications from './FavoriteMedications';
 import ManageReviews from './ManageReviews';
 import MyMedications from './MyMedications';
-
-import Login from '../authentication/Login';
 
 import Toast from '../Toast';
 import Nav from '../Nav';

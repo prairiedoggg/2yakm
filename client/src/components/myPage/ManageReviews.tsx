@@ -12,11 +12,11 @@ import { Icon } from '@iconify-icon/react';
 import { useState } from 'react';
 import styled from 'styled-components';
 
-type MedicationItem = {
+interface MedicationItem {
   title: string;
   titleEn: string;
   desc: string;
-};
+}
 
 const ManageReviews = () => {
   const [deleteItem, setDeleteItem] = useState(false);
