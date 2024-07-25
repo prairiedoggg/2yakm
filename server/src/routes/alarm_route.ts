@@ -34,11 +34,6 @@ const router = Router();
  *                       pattern: ^\d{2}:\d{2}$
  *                     status:
  *                       type: boolean
- *               message:
- *                 type: string
- *               frequency:
- *                 type: integer
- *                 minimum: 1
  *     responses:
  *       201:
  *         description: 알람 생성 성공
@@ -112,11 +107,6 @@ router.get('/', alarmController.getUserAlarmsController);
  *                       pattern: ^\d{2}:\d{2}$
  *                     status:
  *                       type: boolean
- *               message:
- *                 type: string
- *               frequency:
- *                 type: integer
- *                 minimum: 1
  *     responses:
  *       200:
  *         description: 알람 업데이트 성공
@@ -193,11 +183,6 @@ router.delete('/:id', alarmController.deleteAlarmController);
  *                 pattern: ^\d{2}:\d{2}$
  *               status:
  *                 type: boolean
- *         message:
- *           type: string
- *         frequency:
- *           type: integer
- *           minimum: 1
  */
 
 export default router;

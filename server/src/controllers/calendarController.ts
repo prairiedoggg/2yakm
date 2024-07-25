@@ -41,7 +41,7 @@ export const createCalendar = [
         return res.status(400).json({ message: '유효하지 않은 날짜 형식입니다.' });
       }
       
-      const medications = JSON.parse(req.body.medications ?? '[]');
+      const medications = req.body.medications ? JSON.parse(req.body.medications) : [];
       
       const calendarData: Partial<Calendar> = {
         userId,

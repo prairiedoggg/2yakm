@@ -20,8 +20,13 @@ export const createAlarm = async (alarm: Omit<Alarm, 'id'>): Promise<Alarm> => {
     const values = [userId, name, startDate, endDate, JSON.stringify(times)];
     const result = await pool.query(query, values);
     const newAlarm = result.rows[0];
-
-    scheduleAlarmService(newAlarm);
+    
+    const scheduleTime = result.rows[0];
+    console.log(scheduleTime);
+    // scheduleTime.startDate = new Date(scheduleTime.startDate);
+    // scheduleTime.endDate = new Date(scheduleTime.endDate);
+    // scheduleTime.times = JSON.parse(scheduleTime.times);
+    scheduleAlarmService(scheduleTime);
 
     return newAlarm;
   } catch (error) {
@@ -85,9 +90,9 @@ const cancelExistingAlarms = (alarmId: string) => {
 
 export const scheduleAlarmService = (alarm: Alarm) => {
   const { startDate, endDate, times } = alarm;
-  const currentDate = new Date();
   const endDateTime = new Date(endDate);
-
+  const startDateTime = new Date(startDate);
+  let currentDate = new Date(startDateTime);
   while (currentDate <= endDateTime) {
     times.forEach((alarmTime: AlarmTime) => {
       if (alarmTime.status) {
@@ -105,10 +110,10 @@ export const scheduleAlarmService = (alarm: Alarm) => {
       }
     });
 
-    currentDate.setDate(currentDate.getDate());
+    currentDate.setDate(currentDate.getDate() + 1);
   }
   
-  console.log(`알람 예약 완료: ${startDate}부터 ${endDate}까지 일 간격으로 ${times.map((t: { time: any; }) => t.time).join(', ')}에 알림`);
+  console.log(`알람 예약 완료: ${startDate}부터 ${endDate}까지 ${times.map((t: { time: any; }) => t.time).join(', ')}에 알림`);
 };
 
 

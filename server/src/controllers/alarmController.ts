@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import { createAlarm, getAlarmsByUserId, updateAlarm, deleteAlarm, scheduleAlarmService } from '../services/alarmService';
+import { createAlarm, getAlarmsByUserId, updateAlarm, deleteAlarm } from '../services/alarmService';
 import { CustomRequest } from '../types/express.d';
 
 export const createAndScheduleAlarm = async (req: CustomRequest, res: Response, next: NextFunction) => {
@@ -18,15 +18,14 @@ export const createAndScheduleAlarm = async (req: CustomRequest, res: Response, 
     if (!Array.isArray(times) || times.length === 0 || !times.every((time: { time: string; }) => /^\d{2}:\d{2}$/.test(time.time))) {
       return res.status(400).json({ message: '유효하지 않은 시간 형식입니다. {time: "HH:MM", status: boolean} 형식의 배열이어야 합니다.' });
     }
-    
+
     const alarm = await createAlarm({
       userId,
       name,
       startDate: alarmStartDate,
-      endDate: alarmEndDate,
+      endDate: alarmEndDate, 
       times
     });
-
     res.status(201).json(alarm);
   } catch (error) {
     next(error);
