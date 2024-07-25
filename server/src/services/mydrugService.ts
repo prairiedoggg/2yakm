@@ -7,7 +7,7 @@ interface PaginatedResult<T> {
   data: T[];
 }
 
-const addDrug = async (userId: string, updateData: any): Promise<string> => {
+export const addDrug = async (userId: string, updateData: any): Promise<string> => {
   const mydrugId = uuidv4();
 
   try {
@@ -30,7 +30,7 @@ const addDrug = async (userId: string, updateData: any): Promise<string> => {
   }
 };
 
-const updateDrug = async (mydrugId: string, updateData: any): Promise<string> => {
+export const updateDrug = async (mydrugId: string, updateData: any): Promise<string> => {
   try {
     const query = `
       UPDATE mydrug SET drugname = $1, expiredat = $2 WHERE mydrugid = $3 
@@ -55,7 +55,7 @@ const updateDrug = async (mydrugId: string, updateData: any): Promise<string> =>
   }
 };
 
-const getDrugs = async (userId: string, limit: number, offset: number, sortedBy: string, order: string): Promise<PaginatedResult<{ mydrugid: string; drugname: string; expiredat: string }>> => {
+export const getDrugs = async (userId: string, limit: number, offset: number, sortedBy: string, order: string): Promise<PaginatedResult<{ mydrugid: string; drugname: string; expiredat: string }>> => {
   try {
     const countQuery = `
       SELECT COUNT(*) AS total
@@ -92,7 +92,7 @@ const getDrugs = async (userId: string, limit: number, offset: number, sortedBy:
   }
 };
 
-const deleteDrug = async (mydrugId: string): Promise<string> => {
+export const deleteDrug = async (mydrugId: string): Promise<string> => {
   try {
     const query = `
       DELETE FROM mydrug WHERE mydrugid = $1
@@ -117,9 +117,4 @@ const deleteDrug = async (mydrugId: string): Promise<string> => {
   }
 };
 
-module.exports = {
-  addDrug,
-  updateDrug,
-  getDrugs,
-  deleteDrug
-};
+

@@ -1,6 +1,6 @@
 import { Response, Request, NextFunction } from 'express';
 import Joi from 'joi';
-const { addDrug, updateDrug, getDrugs, deleteDrug } = require('../services/mydrugService');
+import  { addDrug, updateDrug, getDrugs, deleteDrug } from '../services/mydrugService';
 
 const createDrugSchema = Joi.object({
   drugname: Joi.string().required(),

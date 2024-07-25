@@ -7,11 +7,12 @@ import {
   searchDrugsbyName,
   searchDrugsbyEfficacy,
   searchDrugsByImage,
-  searchDrugsbyEngName
+  searchDrugsbyEngName, 
+  getPillFavoriteCountService
 } from '../services/drugService';
 
 
-const getDrugsHandler = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+export const getDrugsHandler = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     const limit = parseInt(req.query.limit as string, 10) || 10;
     const offset = parseInt(req.query.offset as string, 10) || 0;
@@ -24,7 +25,7 @@ const getDrugsHandler = async (req: Request, res: Response, next: NextFunction):
   }
 };
 
-const getDrugByIdHandler = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+export const getDrugByIdHandler = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     const drugid = parseInt(req.params.drugid as string, 10);
     const drug = await getDrugById(drugid);
@@ -37,7 +38,8 @@ const getDrugByIdHandler = async (req: Request, res: Response, next: NextFunctio
     next(error);
   }
 };
-const updateDrugHandler = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+
+export const updateDrugHandler = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     const updatedDrug = await updateDrug(parseInt(req.params.drugid, 10), req.body);
     if (updatedDrug) {
@@ -50,7 +52,7 @@ const updateDrugHandler = async (req: Request, res: Response, next: NextFunction
   }
 };
 
-const deleteDrugHandler = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+export const deleteDrugHandler = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     const deleted = await deleteDrug(parseInt(req.params.drugid, 10));
     if (deleted) {
@@ -63,7 +65,7 @@ const deleteDrugHandler = async (req: Request, res: Response, next: NextFunction
   }
 };
 
-const searchDrugsbyNameHandler = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+export const searchDrugsbyNameHandler = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     const drugname = req.query.name as string;
     const offset = parseInt(req.query.offset as string, 10) || 0;
@@ -75,7 +77,7 @@ const searchDrugsbyNameHandler = async (req: Request, res: Response, next: NextF
   }
 };
 
-const searchDrugsbyEngNameHandler = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+export const searchDrugsbyEngNameHandler = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     const drugname = req.query.name as string;
     const offset = parseInt(req.query.offset as string, 10) || 0;
@@ -88,7 +90,7 @@ const searchDrugsbyEngNameHandler = async (req: Request, res: Response, next: Ne
 };
 
 
-const searchDrugsbyEfficacyHandler = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+export const searchDrugsbyEfficacyHandler = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     const efficacy = req.query.efficacy as string;
     const offset = parseInt(req.query.offset as string, 10) || 0;
@@ -100,7 +102,7 @@ const searchDrugsbyEfficacyHandler = async (req: Request, res: Response, next: N
   }
 };
 
-const searchDrugsByImageHandler = async (req: Request, res: Response, next: NextFunction) => {
+export const searchDrugsByImageHandler = async (req: Request, res: Response, next: NextFunction) => {
   try {
     if (!req.file) {
       return res.status(400).json({ message: 'No file uploaded' });
@@ -116,14 +118,21 @@ const searchDrugsByImageHandler = async (req: Request, res: Response, next: Next
 };
 
 
-export {
-  getDrugsHandler,
-  getDrugByIdHandler,
-  updateDrugHandler,
-  deleteDrugHandler,
-  searchDrugsbyNameHandler,
-  searchDrugsbyEfficacyHandler,
-  searchDrugsByImageHandler,
-  searchDrugsbyEngNameHandler
-};
+export const getPillFavoriteCount = async (
+   req: Request<{ id: string }, unknown, unknown, unknown>,
+   res: Response,
+   next: NextFunction
+ ): Promise<void> => {
+   const id = parseInt(req.params.id, 10);
+
+   try {
+     const count = await getPillFavoriteCountService(id);
+
+     res.status(200).send({ count });
+   } catch (error: any) {
+     next(error);
+   }
+ };
+
+
 

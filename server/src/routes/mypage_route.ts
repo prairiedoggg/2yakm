@@ -27,7 +27,7 @@ const router = express.Router();
  *       500:
  *         description: Internal server error
  */
-router.get('/', authByToken, mypageController.getUserprofile);
+router.get('/', mypageController.getUserprofile);
 
 /**
  * @swagger
@@ -61,7 +61,7 @@ router.get('/', authByToken, mypageController.getUserprofile);
  *       500:
  *         description: Internal server error
  */
-router.put('/', authByToken, mypageController.updateName);
+router.put('/', mypageController.updateName);
 
 /**
  * @swagger
@@ -96,7 +96,7 @@ router.put('/', authByToken, mypageController.updateName);
  *       500:
  *         description: Internal server error
  */
-router.put('/profile-picture/memory', authByToken, uploadToMemory.single('profilePicture'), mypageController.updateProfilePictureMemory);
+router.put('/profile-picture/memory', uploadToMemory.single('profilePicture'), mypageController.updateProfilePictureMemory);
 
 /**
  * @swagger
@@ -131,6 +131,6 @@ router.put('/profile-picture/memory', authByToken, uploadToMemory.single('profil
  *       500:
  *         description: Internal server error
  */
-router.put('/profile-picture/s3', authByToken, uploadToS3.single('profilePicture'), mypageController.updateProfilePictureS3);
+router.put('/profile-picture/s3', uploadToS3.single('profilePicture'), mypageController.updateProfilePictureS3);
 
 export default router

@@ -18,7 +18,7 @@ interface PillData {
     imagepath: string;
   }
 
-const getDrugs = async (limit: number, offset: number, sortedBy: string, order: string): Promise<any> => {
+export const getDrugs = async (limit: number, offset: number, sortedBy: string, order: string): Promise<any> => {
   const countQuery = `SELECT COUNT(*) AS total FROM drugs`;
   const countResults = await pool.query(countQuery);
   const totalCount = parseInt(countResults.rows[0].total, 10);
@@ -43,13 +43,13 @@ const getDrugs = async (limit: number, offset: number, sortedBy: string, order: 
   };
 };
 
-const getDrugById = async (drugid: number): Promise<any> => {
+export const getDrugById = async (drugid: number): Promise<any> => {
   const query = 'SELECT * FROM drugs WHERE drugid = $1';
   const result = await pool.query(query, [drugid]);
   return result.rows[0];
 };
 
-const updateDrug = async (drugid: number, drugData: any): Promise<any> => {
+export const updateDrug = async (drugid: number, drugData: any): Promise<any> => {
   const {
     drugname,
     drugengname,
@@ -92,14 +92,14 @@ const updateDrug = async (drugid: number, drugData: any): Promise<any> => {
   return result.rows[0];
 };
 
-const deleteDrug = async (drugid: number): Promise<boolean> => {
+export const deleteDrug = async (drugid: number): Promise<boolean> => {
   const query = 'DELETE FROM drugs WHERE drugid = $1';
   const result = await pool.query(query, [drugid]);
   return result.rowCount > 0;
 };
 
 
-const searchDrugsbyName = async (drugname: string, limit: number, offset: number) => {
+export const searchDrugsbyName = async (drugname: string, limit: number, offset: number) => {
   const query = 'SELECT * FROM drugs WHERE drugname ILIKE $1 ORDER BY created_at DESC LIMIT $2 OFFSET $3';
   const values = [`%${drugname}%`, limit, offset];
 
@@ -120,7 +120,7 @@ const searchDrugsbyName = async (drugname: string, limit: number, offset: number
   }
 };
 
-const searchDrugsbyEngName = async (drugname: string, limit: number, offset: number) => {
+export const searchDrugsbyEngName = async (drugname: string, limit: number, offset: number) => {
   const query = 'SELECT * FROM drugs WHERE drugengname ILIKE $1 ORDER BY created_at DESC LIMIT $2 OFFSET $3';
   const values = [`%${drugname}%`, limit, offset];
 
@@ -141,7 +141,7 @@ const searchDrugsbyEngName = async (drugname: string, limit: number, offset: num
   }
 };
 
-const searchDrugsbyEfficacy = async (efficacy: string, limit: number, offset: number) => {
+export const searchDrugsbyEfficacy = async (efficacy: string, limit: number, offset: number) => {
   const efficacyArray = efficacy.split(',').map(eff => `%${eff.trim()}%`);
   const query = `
       SELECT * 
@@ -218,7 +218,7 @@ const detectTextInImage = async (imageBuffer: Buffer) => {
   }
 };
 
-const searchDrugsByImage = async (imageBuffer: Buffer, limit: number, offset: number) => {
+export const searchDrugsByImage = async (imageBuffer: Buffer, limit: number, offset: number) => {
   try {
     const detectedText = await detectTextInImage(imageBuffer);
     if (!detectedText || detectedText.length === 0) {
@@ -253,13 +253,22 @@ const searchDrugsByImage = async (imageBuffer: Buffer, limit: number, offset: nu
   }
 };
 
-export {
-  getDrugs,
-  getDrugById,
-  updateDrug,
-  deleteDrug,
-  searchDrugsbyName,
-  searchDrugsbyEfficacy,
-  searchDrugsByImage,
-  searchDrugsbyEngName  
-};
+export const getPillFavoriteCountService = async (
+   id: number
+ ): Promise<number> => {
+   try {
+     const query = `
+   SELECT COUNT(*) AS count
+   FROM favorites
+   WHERE id = $1
+   `;
+     const values = [id];
+     const { rows } = await pool.query(query, values);
+
+     return parseInt(rows[0].count, 10);
+   } catch (error: any) {
+     throw error;
+   }
+ };
+
+

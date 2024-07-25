@@ -1,5 +1,4 @@
 const mydrugController = require('../controllers/mydrugController');
-const authByToken = require('../middlewares/authByToken');
 const express = require('express');
 const router = express.Router();
 
@@ -30,7 +29,7 @@ const router = express.Router();
  *       500:
  *         description: Internal server error
  */
-router.post('/', authByToken, mydrugController.addMyDrug);
+router.post('/', mydrugController.addMyDrug);
 
 /**
  * @swagger
@@ -68,7 +67,7 @@ router.post('/', authByToken, mydrugController.addMyDrug);
  *       500:
  *         description: Internal server error
  */
-router.put('/:mydrugid', authByToken, mydrugController.updateMyDrug);
+router.put('/:mydrugid', mydrugController.updateMyDrug);
 
 /**
  * @swagger
@@ -97,7 +96,7 @@ router.put('/:mydrugid', authByToken, mydrugController.updateMyDrug);
  *       500:
  *         description: Internal server error
  */
-router.get('/', authByToken, mydrugController.getMyDrugs);
+router.get('/', mydrugController.getMyDrugs);
 
 /**
  * @swagger
@@ -124,6 +123,6 @@ router.get('/', authByToken, mydrugController.getMyDrugs);
  *       500:
  *         description: Internal server error
  */
-router.delete('/:mydrugid', authByToken, mydrugController.deleteMyDrug);
+router.delete('/:mydrugid', mydrugController.deleteMyDrug);
 
 export default router

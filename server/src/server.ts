@@ -8,6 +8,7 @@ const helmet = require('helmet');
 const cookieParser = require('cookie-parser');
 const path = require('path');
 const fs = require('fs');
+import { errorHandler } from './middlewares/errorHandler';
 import authByToken from './middlewares/authByToken';
 
 import drugRouter from './routes/drug_route';
@@ -59,8 +60,8 @@ app.use(cookieParser());
 app.use('/api/reviews', reviewRouter);
 app.use('/api/auth', authRouter);
 app.use('/api/favorites', favoriteRouter);
-app.use('/mypage', mypageRouter);
-app.use('/mydrugs', mydrugRouter);
+app.use('/mypage', authByToken, mypageRouter);
+app.use('/mydrugs', authByToken, mydrugRouter);
 app.use('/api/chatbot', authByToken, chatbotRouter);
 app.use('/api/calendars', authByToken, calendarRouter);
 app.use('/api/alarms', authByToken, alarmRouter);
