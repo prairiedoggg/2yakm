@@ -1,8 +1,6 @@
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import loadable from '@loadable/component';
-import { useEffect } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { useAuthentication } from './store/authentication';
 import AuthenticatedRoute from './AuthenticatedRoute';
 
 const Home = loadable(() => import('./components/home/Home'));
