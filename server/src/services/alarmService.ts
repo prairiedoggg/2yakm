@@ -11,23 +11,29 @@ const runningJobs = new Map<string, schedule.Job>();
 export const createAlarm = async (alarm: Omit<Alarm, 'id'>): Promise<Alarm> => {
   try {
     const { userId, name, startDate, endDate, times } = alarm;
-    
     const query = `
-      INSERT INTO alarms (userId, name, startDate, endDate, times)
-      VALUES ($1, $2, $3, $4, $5)
-      RETURNING *
+    INSERT INTO alarms (userId, name, startDate, endDate, times)
+    VALUES ($1, $2, $3, $4, $5)
+    RETURNING       id,
+    userId,
+    name,
+    startDate AS "startDate",
+    endDate AS "endDate",
+    times,
+    created_at AS "createdAt",
+    updated_at AS "updatedAt"
     `;
     const values = [userId, name, startDate, endDate, JSON.stringify(times)];
     const result = await pool.query(query, values);
     const newAlarm = result.rows[0];
     
-    const scheduleTime = result.rows[0];
-    console.log(scheduleTime);
-    // scheduleTime.startDate = new Date(scheduleTime.startDate);
-    // scheduleTime.endDate = new Date(scheduleTime.endDate);
-    // scheduleTime.times = JSON.parse(scheduleTime.times);
-    scheduleAlarmService(scheduleTime);
-
+    console.log('newAlarm', newAlarm)
+    const schedule = {startdate:'',enddate:'',times:0}
+    schedule.startdate = newAlarm.startDate;
+    schedule.enddate = newAlarm.endDate;
+    schedule.times = newAlarm.times;
+    scheduleAlarmService(newAlarm);
+    
     return newAlarm;
   } catch (error) {
     throw createError('DBError', '알람 생성 중 데이터베이스 오류가 발생했습니다.', 500);
@@ -87,9 +93,9 @@ const cancelExistingAlarms = (alarmId: string) => {
     }
   }
 };
-
 export const scheduleAlarmService = (alarm: Alarm) => {
   const { startDate, endDate, times } = alarm;
+  console.log("alarm", alarm);
   const endDateTime = new Date(endDate);
   const startDateTime = new Date(startDate);
   let currentDate = new Date(startDateTime);

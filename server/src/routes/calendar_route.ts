@@ -34,10 +34,13 @@ const router = Router();
  *           items:
  *             type: object
  *             properties:
+ *               name:
+ *                 type: string
  *               time:
  *                 type: string
  *               taken:
  *                 type: boolean
+ * 
  */
 
 /**
