@@ -1,17 +1,9 @@
-/**
-File Name : EditMyInformation
-Description : 내 정보 수정 페이지
-Author : 오선아
-
-History
-Date        Author   Status    Description
-2024.07.19  오선아   Created
-*/
-
 import styled from 'styled-components';
 import BottomPictureSheet from './BottomPictureSheet';
 import { Icon } from '@iconify-icon/react';
 import { useState } from 'react';
+import { logout } from '../../api/authService';
+import { useNavigate } from 'react-router-dom';
 
 interface Info {
   info: string;
@@ -28,6 +20,7 @@ const EditMyInformation = ({
   onEditPharmacistClick: () => void;
 }) => {
   const [bottomSheet, setBottomSheet] = useState(false);
+  const navigate = useNavigate();
 
   const infos1: Info[] = [
     { info: '이메일', onClick: undefined },
@@ -93,7 +86,19 @@ const EditMyInformation = ({
 
         <div className='informations'>{generateItems(infos2)}</div>
 
-        <div className='bottom-menu'>로그아웃 | 회원탈퇴</div>
+        <div className='bottom-menu'>
+          <div
+            onClick={() =>
+              logout(() => {
+                navigate('/', { replace: true });
+                window.location.reload();
+              })
+            }
+          >
+            로그아웃
+          </div>{' '}
+          | <div>회원탈퇴</div>
+        </div>
       </StyledContent>
 
       <BottomPictureSheet
@@ -182,6 +187,8 @@ const StyledContent = styled.div`
   .bottom-menu {
     color: gray;
     margin-top: 50px;
+    display: flex;
+    gap: 10px;
   }
 `;
 

@@ -1,13 +1,3 @@
-/**
-File Name : MyPage
-Description : 마이페이지
-Author : 오선아
-
-History
-Date        Author   Status    Description
-2024.07.17  오선아   Created
-*/
-
 import styled from 'styled-components';
 import Header from '../Header';
 import MyInformation from './MyInformation';
@@ -20,14 +10,10 @@ import FavoriteMedications from './FavoriteMedications';
 import ManageReviews from './ManageReviews';
 import MyMedications from './MyMedications';
 
-import Login from '../authentication/Login';
-
 import Toast from '../Toast';
 import Nav from '../Nav';
 import { Icon } from '@iconify-icon/react';
-import { useEffect, useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
-import { useAuthentication } from '../../store/authentication';
+import { useState } from 'react';
 
 enum pageState {
   Main,
@@ -42,15 +28,7 @@ enum pageState {
 }
 
 const MyPage = () => {
-  const { isAuthenticated } = useAuthentication();
-  const location = useLocation();
   const [currentState, setCurrentState] = useState(pageState.Main);
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    setCurrentState(pageState.Main);
-    if (!isAuthenticated) navigate('/login');
-  }, [location.key, isAuthenticated]);
 
   const renderContent = () => {
     switch (currentState) {
