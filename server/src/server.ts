@@ -1,5 +1,4 @@
 import express from 'express';
-import { Request, Response, NextFunction } from 'express';
 import swaggerUi from 'swagger-ui-express';
 import specs from './swagger';
 import dotenv from 'dotenv';
@@ -7,8 +6,6 @@ import bodyParser from 'body-parser';
 import cors from 'cors';
 import helmet from 'helmet';
 import cookieParser from 'cookie-parser';
-// import path from 'path';
-// import fs from 'fs';
 import { errorHandler, notFoundHandler } from './middlewares/errorHandler';
 import authByToken from './middlewares/authByToken';
 
