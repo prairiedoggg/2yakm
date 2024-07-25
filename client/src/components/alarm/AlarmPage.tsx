@@ -1,8 +1,10 @@
 import { Icon } from '@iconify-icon/react';
+import { useEffect } from 'react';
 import { useState } from 'react';
 import styled from 'styled-components';
 import Header from '../Header';
 import { Alarm, useAlarmStore } from '../../store/alarm';
+import axios from 'axios';
 
 
 const AlarmPage = () => {
@@ -10,6 +12,10 @@ const AlarmPage = () => {
     useAlarmStore();
   const [isToggled, setIsToggled] = useState(Array(alarms.length).fill(true));
   const [isDeleteMode, setIsDeleteMode] = useState(false);
+
+  useEffect(() => { 
+    axios.get('http://localhost:3000/api/alarms');
+  })
 
   // 알람 온오프 토글기능
   const handleToggle = (index: number) => {
