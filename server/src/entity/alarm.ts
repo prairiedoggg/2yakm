@@ -10,6 +10,4 @@ export interface Alarm {
     startDate: Date;
     endDate: Date;
     times: AlarmTime[];
-    message: string;
-    frequency: number;
 }

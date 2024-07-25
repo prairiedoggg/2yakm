@@ -10,14 +10,14 @@ const runningJobs = new Map<string, schedule.Job>();
 
 export const createAlarm = async (alarm: Omit<Alarm, 'id'>): Promise<Alarm> => {
   try {
-    const { userId, name, startDate, endDate, times, message, frequency } = alarm;
+    const { userId, name, startDate, endDate, times } = alarm;
     
     const query = `
-      INSERT INTO alarms (userId, name, startDate, endDate, times, message, frequency)
-      VALUES ($1, $2, $3, $4, $5, $6, $7)
+      INSERT INTO alarms (userId, name, startDate, endDate, times)
+      VALUES ($1, $2, $3, $4, $5)
       RETURNING *
     `;
-    const values = [userId, name, startDate, endDate, JSON.stringify(times), message, frequency];
+    const values = [userId, name, startDate, endDate, JSON.stringify(times)];
     const result = await pool.query(query, values);
     const newAlarm = result.rows[0];
 
@@ -31,7 +31,7 @@ export const createAlarm = async (alarm: Omit<Alarm, 'id'>): Promise<Alarm> => {
 
 export const updateAlarm = async (id: string, alarm: Partial<Alarm>): Promise<Alarm | null> => {
   try {
-    const { userId, name, startDate, endDate, times, message, frequency } = alarm;
+    const { userId, name, startDate, endDate, times } = alarm;
     const text = `
       UPDATE alarms
       SET userId = COALESCE($1, userId),
@@ -39,10 +39,8 @@ export const updateAlarm = async (id: string, alarm: Partial<Alarm>): Promise<Al
           startDate = COALESCE($3, startDate),
           endDate = COALESCE($4, endDate),
           times = COALESCE($5, times::jsonb),
-          message = COALESCE($6, message),
-          frequency = COALESCE($7, frequency),
           updated_at = CURRENT_TIMESTAMP
-      WHERE id = $8
+      WHERE id = $6
       RETURNING *
     `;
     const values = [
@@ -51,8 +49,6 @@ export const updateAlarm = async (id: string, alarm: Partial<Alarm>): Promise<Al
       startDate,
       endDate,
       JSON.stringify(times),
-      message,
-      frequency,
       id
     ];
     const result = await pool.query(text, values);
@@ -88,7 +84,7 @@ const cancelExistingAlarms = (alarmId: string) => {
 };
 
 export const scheduleAlarmService = (alarm: Alarm) => {
-  const { startDate, endDate, times, frequency } = alarm;
+  const { startDate, endDate, times } = alarm;
   const currentDate = new Date();
   const endDateTime = new Date(endDate);
 
@@ -101,7 +97,7 @@ export const scheduleAlarmService = (alarm: Alarm) => {
 
         if (scheduleDate >= new Date(startDate) && scheduleDate <= endDateTime) {
           const job = schedule.scheduleJob(scheduleDate, async () => {
-            await sendEmail(alarm.message, alarm.userId);
+            await sendEmail(alarm.userId);
           });
           
           runningJobs.set(`${alarm.id}_${alarmTime.time}_${scheduleDate.toISOString()}`, job);
@@ -109,10 +105,10 @@ export const scheduleAlarmService = (alarm: Alarm) => {
       }
     });
 
-    currentDate.setDate(currentDate.getDate() + frequency);
+    currentDate.setDate(currentDate.getDate());
   }
   
-  console.log(`알람 예약 완료: ${startDate}부터 ${endDate}까지 ${frequency}일 간격으로 ${times.map((t: { time: any; }) => t.time).join(', ')}에 "${alarm.message}" 알림`);
+  console.log(`알람 예약 완료: ${startDate}부터 ${endDate}까지 일 간격으로 ${times.map((t: { time: any; }) => t.time).join(', ')}에 알림`);
 };
 
 
@@ -151,7 +147,7 @@ export const deleteAlarm = async (id: string): Promise<boolean> => {
 };
 
 //메일 발송
-const sendEmail = async (message: string, recipientEmail: string) => {
+const sendEmail = async (recipientEmail: string) => {
   const transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {
@@ -164,7 +160,7 @@ const sendEmail = async (message: string, recipientEmail: string) => {
     from: process.env.EMAIL_USER,
     to: recipientEmail,
     subject: '알람 메시지',
-    text: message
+    text: '약 드세요!'
   };
 
   try {

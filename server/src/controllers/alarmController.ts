@@ -3,7 +3,7 @@ import { createAlarm, getAlarmsByUserId, updateAlarm, deleteAlarm, scheduleAlarm
 import { CustomRequest } from '../types/express.d';
 
 export const createAndScheduleAlarm = async (req: CustomRequest, res: Response, next: NextFunction) => {
-  const { name, startDate, endDate, times, message, frequency } = req.body;
+  const { name, startDate, endDate, times } = req.body;
   const userId = req.user?.email;
   if (!userId) {
     return res.status(401).json({ message: '인증되지 않은 사용자입니다.' });
@@ -19,18 +19,12 @@ export const createAndScheduleAlarm = async (req: CustomRequest, res: Response, 
       return res.status(400).json({ message: '유효하지 않은 시간 형식입니다. {time: "HH:MM", status: boolean} 형식의 배열이어야 합니다.' });
     }
     
-    if (typeof frequency !== 'number' || frequency < 1) {
-      return res.status(400).json({ message: '유효하지 않은 빈도수입니다. 1 이상의 숫자여야 합니다.' });
-    }
-    
     const alarm = await createAlarm({
       userId,
       name,
       startDate: alarmStartDate,
       endDate: alarmEndDate,
-      times,
-      message,
-      frequency,
+      times
     });
 
     res.status(201).json(alarm);
@@ -42,7 +36,7 @@ export const createAndScheduleAlarm = async (req: CustomRequest, res: Response, 
 
 export const updateAlarmController = async (req: CustomRequest, res: Response, next: NextFunction) => {
   const { id } = req.params;
-  const { name, startDate, endDate, times, message, frequency } = req.body;
+  const { name, startDate, endDate, times } = req.body;
   const userId = req.user?.email;
 
   if (!userId) {
@@ -61,11 +55,7 @@ export const updateAlarmController = async (req: CustomRequest, res: Response, n
       return res.status(400).json({ message: '유효하지 않은 시간 형식입니다. {time: "HH:MM", status: boolean} 형식의 배열이어야 합니다.' });
     }
 
-    if (frequency !== undefined && (typeof frequency !== 'number' || frequency < 1)) {
-      return res.status(400).json({ message: '유효하지 않은 빈도수입니다. 1 이상의 숫자여야 합니다.' });
-    }
-
-    const updatedAlarm = await updateAlarm(id, { name, startDate: alarmStartDate, endDate: alarmEndDate, times, message, frequency, userId });
+    const updatedAlarm = await updateAlarm(id, { name, startDate: alarmStartDate, endDate: alarmEndDate, times, userId });
     if (updatedAlarm) {
       res.status(200).json(updatedAlarm);
     } else {
