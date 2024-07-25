@@ -41,7 +41,7 @@ if (!SECRET_KEY || !REFRESH_TOKEN_SECRET_KEY) {
 export const login = async (
   email: string,
   password: string
-): Promise<{ token: string; refreshToken: string }> => {
+): Promise<{ token: string, refreshToken: string, userName: string, email: string }> => {
   try {
     const query = 'SELECT * FROM users WHERE email = $1';
     const values = [email];
@@ -71,7 +71,7 @@ export const login = async (
       { expiresIn: '7d' }
     );
 
-    return { token, refreshToken };
+    return { token, refreshToken, userName: user.username, email: user.email };
   } catch (error) {
     throw createError('DBError', '데이터베이스 오류가 발생했습니다.', 500);
   }
@@ -205,8 +205,8 @@ export const refreshTokenService = async (
 // 카카오 소셜
 export const kakaoAuthService = async (
   code: string
-): Promise<{ token?: string; refreshToken?: string; message?: string }> => {
-  const redirectUri = 'http://localhost:3000/api/auth/kakao/callback';
+): Promise<{ token?: string, refreshToken?: string, message?: string, userName?:string, email?: string }> => {
+  const redirectUri = 'http://localhost:5173/kakao/callback';
   const kakaoTokenUrl = `https://kauth.kakao.com/oauth/token`;
 
   try {
@@ -290,7 +290,7 @@ export const kakaoAuthService = async (
         { expiresIn: '7d' }
       );
 
-      return { token, refreshToken };
+      return { token, refreshToken, userName: user.name, email: user.email };
     } catch (error) {
       throw createError('DBError', '데이터베이스 오류가 발생했습니다.', 500);
     }
@@ -299,11 +299,105 @@ export const kakaoAuthService = async (
   }
 };
 
+// 네이버 소셜
+export const naverAuthService = async (
+  code: string,
+  state: string
+): Promise<{ token?: string, refreshToken?: string, message?: string, userName?: string, email?: string }> => {
+  const redirectUri = 'http://localhost:5173/naver/callback';
+  const naverTokenUrl = `https://nid.naver.com/oauth2.0/token`;
+  const naverUserInfoUrl = `https://openapi.naver.com/v1/nid/me`;
+
+  try {
+    const tokenResponse = await axios.post(naverTokenUrl, null, {
+      params: {
+        grant_type: 'authorization_code',
+        client_id: process.env.NAVER_CLIENT_ID,
+        client_secret: process.env.NAVER_CLIENT_SECRET,
+        code,
+        state,
+        redirect_uri: redirectUri,
+      },
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+    });
+
+    const { access_token } = tokenResponse.data;
+    const userInfoResponse = await axios.get(naverUserInfoUrl, {
+      headers: {
+        Authorization: `Bearer ${access_token}`,
+      },
+    });
+
+    const { id, email, nickname } = userInfoResponse.data.response;
+
+    if (!email) {
+      throw createError(
+        'NaverAuthError',
+        '네이버에서 사용자 정보가 충분하지 않습니다.',
+        400
+      );
+    }
+
+    try {
+      const checkEmailQuery = 'SELECT * FROM users WHERE email = $1';
+      const checkEmailValues = [email];
+      const existingEmailResult = await pool.query(checkEmailQuery, checkEmailValues);
+
+      if (existingEmailResult.rows.length > 0) {
+        const user = existingEmailResult.rows[0];
+        if (!user.naverid) {
+          return { message: '해당 이메일은 이미 로컬 계정으로 존재합니다. 소셜 계정을 연동해주세요.' };
+        }
+      }
+
+      const checkUserQuery = 'SELECT * FROM users WHERE naverid = $1';
+      const checkUserValues = [id];
+      const existingUserResult = await pool.query(checkUserQuery, checkUserValues);
+
+      let user;
+      if (existingUserResult.rows.length > 0) {
+        user = existingUserResult.rows[0];
+      } else {
+        const insertUserQuery = `
+          INSERT INTO users (email, username, password, role, naverid) VALUES ($1, $2, $3, $4, $5)
+          RETURNING *
+        `;
+        const insertUserValues = [
+          email,
+          nickname,
+          'naver_auth_password',
+          false,
+          id,
+        ];
+        const newUserResult = await pool.query(insertUserQuery, insertUserValues);
+        user = newUserResult.rows[0];
+      }
+
+      const payload = { id: user.userid, email: user.email };
+      const token = jwt.sign(payload, SECRET_KEY, {
+        expiresIn: '30m',
+      });
+      const refreshToken = jwt.sign(
+        { id: user.userid },
+        REFRESH_TOKEN_SECRET_KEY,
+        { expiresIn: '7d' }
+      );
+
+      return { token, refreshToken, userName: user.username, email: user.email };
+    } catch (error) {
+      throw createError('DBError', '데이터베이스 오류가 발생했습니다.', 500);
+    }
+  } catch (error) {
+    throw createError('NaverAuthError', '네이버 인증 실패', 500);
+  }
+};
 
 // 구글 소셜
 export const googleAuthService = async (
   code: string
-): Promise<{ token?: string; refreshToken?: string; message?: string }> => {
+): Promise<{ token?: string, refreshToken?: string, message?: string, userName?:string, email?: string }> => {
   const tokenUrl = 'https://oauth2.googleapis.com/token';
   const userInfoUrl = 'https://www.googleapis.com/oauth2/v2/userinfo';
 
@@ -313,7 +407,7 @@ export const googleAuthService = async (
         code,
         client_id: process.env.GOOGLE_CLIENT_ID,
         client_secret: process.env.GOOGLE_CLIENT_SECRET,
-        redirect_uri: 'http://localhost:3000/api/auth/google/callback',
+        redirect_uri: 'http://localhost:5173/google/callback',
         grant_type: 'authorization_code',
       },
       headers: {
@@ -383,7 +477,7 @@ export const googleAuthService = async (
         { expiresIn: '7d' }
       );
 
-      return { token, refreshToken };
+      return { token, refreshToken, userName: user.name, email: user.email };
     } catch (error) {
       throw createError('DBError', '데이터베이스 오류가 발생했습니다.', 500);
     }
@@ -446,6 +540,9 @@ export const requestPasswordService = async (email: string): Promise<void> => {
 
     if (!user) {
       throw createError('User Not Found', '사용자를 찾을 수 없습니다', 404);
+    }
+    if (user.kakaoid ?? user.goolgeid) {
+      throw createError('Social User Error', '소셜 회원은 비밀번호를 재설정할 수 없습니다.', 400);
     }
 
     const token = jwt.sign(
@@ -536,5 +633,67 @@ export const linkSocialAccountService = async (userId: number, socialId: string,
   } catch (error) {
     console.error('Error in linkSocialAccountService:', error);
     throw createError('DBError', '데이터베이스 오류가 발생했습니다.', 500);
+  }
+};
+
+// 유저네임 변경
+export const changeUsernameService = async (email: string, newUsername: string): Promise<void> => {
+  try {
+    const query = 'UPDATE users SET username = $1 WHERE email = $2';
+    const values = [newUsername, email];
+    await pool.query(query, values);
+  } catch (error) {
+    throw createError('DBError', '데이터베이스 오류가 발생했습니다.', 500);
+  }
+};
+
+// 회원 탈퇴
+export const deleteAccountService = async (userId: string): Promise<void> => {
+  try {
+    const query = 'SELECT * FROM users WHERE userid = $1';
+    const values = [userId];
+    const result = await pool.query(query, values);
+    const user = result.rows[0];
+
+    if (!user) {
+      throw createError('User Not Found', '사용자를 찾을 수 없습니다.', 404);
+    }
+
+    // 소셜 연동 해제
+    if (user.kakaoid) {
+      await unlinkKakaoAccount(user.kakaoid);
+    } else if (user.googleid) {
+      await unlinkGoogleAccount(user.googleid);
+    }
+
+    const deleteQuery = 'DELETE FROM users WHERE userid = $1';
+    await pool.query(deleteQuery, values);
+  } catch (error) {
+    throw createError('DBError', '데이터베이스 오류 발생', 500);
+  }
+};
+
+// 카카오 연동 해제
+const unlinkKakaoAccount = async (kakaoId: string): Promise<void> => {
+  try {
+    const unlinkUrl = `https://kapi.kakao.com/v1/user/unlink`;
+    await axios.post(unlinkUrl, null, {
+      headers: {
+        'Authorization': `Bearer ${kakaoId}`
+      }
+    });
+  } catch (error) {
+    throw createError('kakaoUnlinkError', '카카오 연동 해제 실패', 500);
+  }
+};
+
+
+// 구글 계정 연동 해제
+const unlinkGoogleAccount = async (googleId: string): Promise<void> => {
+  try {
+    const unlinkUrl = `https://accounts.google.com/o/oauth2/revoke?token=${googleId}`;
+    await axios.post(unlinkUrl, null);
+  } catch (error) {
+    throw createError('GoogleUnlinkError', '구글 계정 연동 해제 실패', 500);
   }
 };

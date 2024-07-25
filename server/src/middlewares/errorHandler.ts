@@ -24,4 +24,16 @@ const errorHandler = (err: CustomError, req: Request, res: Response, next: NextF
   });
 };
 
-export { CustomError, errorHandler };
+// 404 핸들러
+const notFoundHandler = (err: CustomError, req: Request, res: Response, next: NextFunction) => {
+  console.error(`[${err.name}] ${err.message}`);
+
+  res.status(err.status || 404).json({
+    error: {
+      name: err.name,
+      message: err.message
+    }
+  });
+};
+
+export { CustomError, errorHandler, notFoundHandler };

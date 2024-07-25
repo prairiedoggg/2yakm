@@ -7,9 +7,9 @@ import bodyParser from 'body-parser';
 import cors from 'cors';
 import helmet from 'helmet';
 import cookieParser from 'cookie-parser';
-import path from 'path';
-import fs from 'fs';
-import { errorHandler } from './middlewares/errorHandler';
+// import path from 'path';
+// import fs from 'fs';
+import { errorHandler, notFoundHandler } from './middlewares/errorHandler';
 import authByToken from './middlewares/authByToken';
 
 import reviewRouter from './routes/review_route';
@@ -37,21 +37,6 @@ app.use(
   })
 );
 
-app.use(express.static(path.join(__dirname, 'public')));
-app.get('/', (req: any, res: any) => {
-  const filePath = path.join(__dirname, 'public', 'index.html');
-  fs.readFile(filePath, 'utf8', (err: any, data: any) => {
-    if (err) {
-      return res.status(500).send('Error reading index.html');
-    }
-    const renderedHtml = data.replace(
-      /YOUR_REST_API_KEY/g,
-      process.env.KAKAO_CLIENT_ID || ''
-    );
-    res.send(renderedHtml);
-  });
-});
-
 app.use(express.json());
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
 app.use(bodyParser.json());
@@ -67,13 +52,7 @@ app.use('/api/chatbot', authByToken, chatbotRouter);
 app.use('/api/calendars', authByToken, calendarRouter);
 app.use('/api/alarms', authByToken, alarmRouter);
 
-
-// 404 error Handler
-app.use((req: Request, res: Response, next: NextFunction) => {
-  res
-    .status(404)
-    .send('404 Not Found: The page you are looking for does not exist.');
-});
+app.use(notFoundHandler);
 app.use(errorHandler);
 
 app.listen(port, () => {

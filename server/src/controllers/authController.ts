@@ -8,9 +8,12 @@ import {
   requestPasswordService,
   resetPasswordService,
   googleAuthService,
+  naverAuthService,
   linkSocialAccountService,
   verifyEmailService,
-  requestEmailVerification
+  requestEmailVerification,
+  changeUsernameService,
+  deleteAccountService
 } from '../services/authService';
 import { createError } from '../utils/error';
 
@@ -21,7 +24,7 @@ export const loginController = async (req: Request, res: Response, next: NextFun
     const result = await login(email, password);
     res.cookie('jwt', result.token, { httpOnly: true });
     res.cookie('refreshToken', result.refreshToken, { httpOnly: true });
-    res.status(200).json({ message: '로그인 성공', token: result.token });
+    res.status(200).json({ message: '로그인 성공', token: result.token, refreshToken: result.refreshToken, userName: result.userName, email: result.email });
   } catch (error) {
     next(error);
   }
@@ -89,19 +92,38 @@ export const refreshTokenController = async (req: Request, res: Response, next: 
 export const kakaoAuthController = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { code } = req.query;
-    console.log({ code });
+    console.log({code});
     const result = await kakaoAuthService(code as string);
     if (result.message) {
       res.status(400).json({ message: result.message });
     } else {
       res.cookie('jwt', result.token, { httpOnly: true });
       res.cookie('refreshToken', result.refreshToken, { httpOnly: true });
-      res.status(200).json({ message: '로그인 성공', token: result.token });
+      res.status(200).json({ message: '로그인 성공', token: result.token, refreshToken: result.refreshToken, userName: result.userName, email: result.email });
     }
   } catch (error) {
     next(error);
   }
 };
+
+// 네이버 로그인
+export const naverAuthController = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { code, state } = req.query;
+    const result = await naverAuthService(code as string, state as string);
+    
+    if (result.message) {
+      res.status(400).json({ message: result.message });
+    } else {
+      res.cookie('jwt', result.token, { httpOnly: true });
+      res.cookie('refreshToken', result.refreshToken, { httpOnly: true });
+      res.status(200).json({ message: '네이버 인증 성공', token: result.token, refreshToken: result.refreshToken, userName: result.userName, email: result.email });
+    }
+  } catch (error) {
+    next(error);
+  }
+};
+
 
 // 구글 로그인
 export const googleAuthController = async (req: Request, res: Response, next: NextFunction) => {
@@ -114,7 +136,7 @@ export const googleAuthController = async (req: Request, res: Response, next: Ne
     } else {
       res.cookie('jwt', result.token, { httpOnly: true });
       res.cookie('refreshToken', result.refreshToken, { httpOnly: true });
-      res.status(200).json({ message: '구글 인증 성공', token: result.token });
+      res.status(200).json({ message: '구글 인증 성공', token: result.token, refreshToken: result.refreshToken, userName: result.userName, email: result.email });
     }
   } catch (error) {
     next(error);
@@ -186,6 +208,28 @@ export const linkGoogleAccountController = async (req: Request, res: Response, n
     console.log('Google',{ userId, socialId });
     await linkSocialAccountService(userId, socialId, 'google');
     res.status(200).json({ message: '구글 계정 연동 성공' });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// 유저네임 변경
+export const changeUsernameController = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { email, newUsername} = req.body;
+    await changeUsernameService(email, newUsername);
+    res.status(200).json({ message: '유저네임 변경 완료' });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// 회원탈퇴
+export const deleteAccountController = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { userId } = req.body;
+    await deleteAccountService(userId);
+    res.status(200).json({ message: '회원탈퇴 완료' });
   } catch (error) {
     next(error);
   }

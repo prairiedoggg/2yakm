@@ -12,7 +12,10 @@ import {
   linkKakaoAccountController,
   linkGoogleAccountController,
   verifyEmailController,
-  requestEmailVerificationController
+  requestEmailVerificationController,
+  changeUsernameController,
+  deleteAccountController,
+  naverAuthController
 } from '../controllers/authController';
 
 const router = Router();
@@ -96,7 +99,7 @@ router.post('/signup', signupController);
 
 /**
  * @swagger
- * /auth/request-email-verification:
+ * /api/auth/request-email-verification:
  *   post:
  *     summary: 이메일 인증 요청
  *     tags: [Auth]
@@ -124,7 +127,7 @@ router.post('/request-email-verification', requestEmailVerificationController);
 
 /**
  * @swagger
- * /auth/token:
+ * /api/auth/token:
  *   post:
  *     summary: 토큰 갱신
  *     tags: [Auth]
@@ -152,24 +155,18 @@ router.post('/request-email-verification', requestEmailVerificationController);
  */
 router.post('/token', refreshTokenController);
 
-
 /**
  * @swagger
- * /auth/kakao/callback:
- *   post:
+ * /api/auth/kakao/callback:
+ *   get:
  *     summary: 카카오 로그인 콜백
  *     tags: [Auth]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               code:
- *                 type: string
- *               redirectUri:
- *                 type: string
+ *     parameters:
+ *       - name: code
+ *         in: query
+ *         required: true
+ *         schema:
+ *           type: string
  *     responses:
  *       200:
  *         description: 로그인 성공
@@ -185,8 +182,47 @@ router.post('/token', refreshTokenController);
  *       400:
  *         description: 인증 실패
  */
-
 router.get('/kakao/callback', kakaoAuthController);
+
+/**
+ * @swagger
+ * /api/auth/naver/callback:
+ *   get:
+ *     summary: 네이버 로그인 콜백
+ *     tags: [Auth]
+ *     parameters:
+ *       - name: code
+ *         in: query
+ *         required: true
+ *         schema:
+ *           type: string
+ *       - name: state
+ *         in: query
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: 로그인 성공
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                 token:
+ *                   type: string
+ *                 refreshToken:
+ *                   type: string
+ *                 userName:
+ *                   type: string
+ *                 email:
+ *                   type: string
+ *       400:
+ *         description: 인증 실패
+ */
+router.get('/naver/callback', naverAuthController);
 
 /**
  * @swagger
@@ -238,8 +274,8 @@ router.post('/logout', logoutController);
 
 /**
  * @swagger
- * /auth/change-password:
- *   post:
+ * /api/auth/change-password:
+ *   patch:
  *     summary: 비밀번호 변경
  *     tags: [Auth]
  *     requestBody:
@@ -266,7 +302,7 @@ router.post('/logout', logoutController);
  *                 message:
  *                   type: string
  */
-router.post('/change-password', changePasswordController);
+router.patch('/change-password', changePasswordController);
 
 /**
  * @swagger
@@ -414,5 +450,63 @@ router.post('/link/google', linkGoogleAccountController);
  *                    type: string
  */
 router.get('/verify-email', verifyEmailController);
+
+/**
+ * @swagger
+ * /api/auth/change-username:
+ *   patch:
+ *     summary: 유저네임 변경
+ *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               email:
+ *                 type: string
+ *               newUsername:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: 유저네임 변경 성공
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ */
+router.patch('/change-username', changeUsernameController);
+
+/**
+ * @swagger
+ * /api/auth/delete-account:
+ *   delete:
+ *     summary: 회원탈퇴
+ *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               userId:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: 회원탈퇴 성공
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ */
+router.delete('/delete-account', deleteAccountController);
 
 export default router;
