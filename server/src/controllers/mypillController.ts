@@ -1,61 +1,61 @@
 import { Response, Request, NextFunction } from 'express';
 import Joi from 'joi';
-import  { addDrug, updateDrug, getDrugs, deleteDrug } from '../services/mydrugService';
+import  { addPill, updatePill, getPills, deletePill } from '../services/mypillService';
 
-const createDrugSchema = Joi.object({
+const createPillSchema = Joi.object({
   drugname: Joi.string().required(),
   expiredat: Joi.date().required(),
   created_at: Joi.date().required()
 });
 
-const updateDrugSchema = Joi.object({
+const updatePillSchema = Joi.object({
   mydrugid: Joi.string().required(),
   drugname: Joi.string().required(),
   expiredat: Joi.date().required(),
   created_at: Joi.date().required()
 });
 
-const addMyDrug = async (req: any, res: Response, next: NextFunction)=> {
+const addMyPill = async (req: any, res: Response, next: NextFunction)=> {
   try {
     const user = req.user;
     if (!user) {
       return res.status(401).json({ message: 'Unauthorized' });
     }
     const userId = user.id;
-    const { error, value } = createDrugSchema.validate(req.body);
+    const { error, value } = createPillSchema.validate(req.body);
 
     if (error) {
       return res.status(400).json({ error: error.details[0].message });
     }
 
-    const newDrug = await addDrug(userId, value);
-    res.status(200).json(newDrug);
+    const newPill = await addPill(userId, value);
+    res.status(200).json(newPill);
   } catch (error) {
     next(error);
   }
 };
 
-const updateMyDrug = async (req: any, res: Response, next: NextFunction) => {
+const updateMyPill = async (req: any, res: Response, next: NextFunction) => {
   try {
     const user = req.user;
     if (!user) {
       return res.status(401).json({ message: 'Unauthorized' });
     }
-    const mydrugId = req.params.mydrugid;
-    const { error, value } = updateDrugSchema.validate({ mydrugid: mydrugId, ...req.body });
+    const mypillId = req.params.mypillid;
+    const { error, value } = updatePillSchema.validate({ mypillid: mypillId, ...req.body });
 
     if (error) {
       return res.status(400).json({ error: error.details[0].message });
     }
 
-    const updatedDrug = await updateDrug(mydrugId, value);
-    res.status(200).json(updatedDrug);
+    const updatedPill = await updatePill(mypillId, value);
+    res.status(200).json(updatedPill);
   } catch (error) {
     next(error);
   }
 };
 
-const getMyDrugs = async (req: any, res: Response, next: NextFunction) => {
+const getMyPills = async (req: any, res: Response, next: NextFunction) => {
   try {
     const user = req.user;
     if (!user) {
@@ -66,24 +66,24 @@ const getMyDrugs = async (req: any, res: Response, next: NextFunction) => {
     const offset = parseInt(req.query.offset as string, 10) ?? 0;
     const sortedBy = (req.query.sortedBy as string) ?? 'created_at';
     const order = (req.query.order as string)?.toUpperCase() ?? 'DESC';
-    const drugs = await getDrugs(userId, limit, offset, sortedBy, order);
-    res.status(200).json(drugs);
+    const pills = await getPills(userId, limit, offset, sortedBy, order);
+    res.status(200).json(pills);
   } catch (error) {
     next(error);
   }
 };
 
-const deleteMyDrug = async (req: any, res: Response, next: NextFunction) => {
+const deleteMyPill = async (req: any, res: Response, next: NextFunction) => {
   try {
     const user = req.user;
     if (!user) {
       return res.status(401).json({ message: 'Unauthorized' });
     }
-    const mydrugId = req.params.mydrugid;
-    if (!mydrugId) {
-      return res.status(400).json({ message: 'mydrugid is required' });
+    const mypillId = req.params.mydrugid;
+    if (!mypillId) {
+      return res.status(400).json({ message: 'mypillid is required' });
     }
-    const result = await deleteDrug(mydrugId);
+    const result = await deletePill(mypillId);
     res.status(200).json(result);
   } catch (error) {
     next(error);
@@ -91,8 +91,8 @@ const deleteMyDrug = async (req: any, res: Response, next: NextFunction) => {
 };
 
 module.exports = {
-  addMyDrug,
-  updateMyDrug,
-  getMyDrugs,
-  deleteMyDrug
+  addMyPill,
+  updateMyPill,
+  getMyPills,
+  deleteMyPill
 };

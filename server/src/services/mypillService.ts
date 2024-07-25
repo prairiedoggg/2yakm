@@ -7,7 +7,7 @@ interface PaginatedResult<T> {
   data: T[];
 }
 
-export const addDrug = async (userId: string, updateData: any): Promise<string> => {
+export const addPill = async (userId: string, updateData: any): Promise<string> => {
   const mydrugId = uuidv4();
 
   try {
@@ -18,44 +18,44 @@ export const addDrug = async (userId: string, updateData: any): Promise<string> 
     const values = [mydrugId, userId, updateData.drugname, updateData.expiredat];
     const result = await pool.query(query, values);
 
-    return `Drug added: ${result.rows[0].drugname}, Expires at: ${result.rows[0].expiredat}`;
+    return `Pill added: ${result.rows[0].drugname}, Expires at: ${result.rows[0].expiredat}`;
   } catch (err: unknown) {
     if (err instanceof Error) {
       console.error('Error executing query', err.stack);
-      throw new Error('Failed to add drug: ' + err.message);
+      throw new Error('Failed to add pill: ' + err.message);
     } else {
       console.error('Unknown error', err);
-      throw new Error('Failed to add drug due to an unknown error');
+      throw new Error('Failed to add pill due to an unknown error');
     }
   }
 };
 
-export const updateDrug = async (mydrugId: string, updateData: any): Promise<string> => {
+export const updatePill = async (mypillId: string, updateData: any): Promise<string> => {
   try {
     const query = `
       UPDATE mydrug SET drugname = $1, expiredat = $2 WHERE mydrugid = $3 
       RETURNING mydrugid, drugname, expiredat`;
 
-    const values = [updateData.drugname, updateData.expiredat, mydrugId];
+    const values = [updateData.drugname, updateData.expiredat, mypillId];
     const result = await pool.query(query, values);
 
     if (result.rows.length === 0) {
-      throw new Error('Drug not found');
+      throw new Error('Pill not found');
     }
 
-    return `Drug updated: ${result.rows[0].drugname}, Expires at: ${result.rows[0].expiredat}`;
+    return `Pill updated: ${result.rows[0].drugname}, Expires at: ${result.rows[0].expiredat}`;
   } catch (err: unknown) {
     if (err instanceof Error) {
       console.error('Error executing query', err.stack);
-      throw new Error('Failed to update drug: ' + err.message);
+      throw new Error('Failed to update pill: ' + err.message);
     } else {
       console.error('Unknown error', err);
-      throw new Error('Failed to update drug due to an unknown error');
+      throw new Error('Failed to update pill due to an unknown error');
     }
   }
 };
 
-export const getDrugs = async (userId: string, limit: number, offset: number, sortedBy: string, order: string): Promise<PaginatedResult<{ mydrugid: string; drugname: string; expiredat: string }>> => {
+export const getPills = async (userId: string, limit: number, offset: number, sortedBy: string, order: string): Promise<PaginatedResult<{ mydrugid: string; drugname: string; expiredat: string }>> => {
   try {
     const countQuery = `
       SELECT COUNT(*) AS total
@@ -92,24 +92,24 @@ export const getDrugs = async (userId: string, limit: number, offset: number, so
   }
 };
 
-export const deleteDrug = async (mydrugId: string): Promise<string> => {
+export const deletePill = async (mypillId: string): Promise<string> => {
   try {
     const query = `
       DELETE FROM mydrug WHERE mydrugid = $1
       RETURNING mydrugid, drugname, expiredat`;
 
-    const values = [mydrugId];
+    const values = [mypillId];
     const result = await pool.query(query, values);
 
     if (result.rows.length === 0) {
       throw new Error('Drug not found');
     }
 
-    return `Drug deleted: ${result.rows[0].drugname}, Expires at: ${result.rows[0].expiredat}`;
+    return `Pill deleted: ${result.rows[0].drugname}, Expires at: ${result.rows[0].expiredat}`;
   } catch (err: unknown) {
     if (err instanceof Error) {
       console.error('Error executing query', err.stack);
-      throw new Error('Failed to delete drug: ' + err.message);
+      throw new Error('Failed to delete pill: ' + err.message);
     } else {
       console.error('Unknown error', err);
       throw new Error('Failed to delete drug due to an unknown error');

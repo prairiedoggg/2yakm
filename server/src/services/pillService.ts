@@ -18,15 +18,15 @@ interface PillData {
     imagepath: string;
   }
 
-export const getDrugs = async (limit: number, offset: number, sortedBy: string, order: string): Promise<any> => {
-  const countQuery = `SELECT COUNT(*) AS total FROM drugs`;
+export const getPills = async (limit: number, offset: number, sortedBy: string, order: string): Promise<any> => {
+  const countQuery = `SELECT COUNT(*) AS total FROM pills`;
   const countResults = await pool.query(countQuery);
   const totalCount = parseInt(countResults.rows[0].total, 10);
   const totalPages = Math.ceil(totalCount / limit);
 
   const query = `
     SELECT 
-      drugid, drugname, drugengname, companyname, companyengname, ingredientname, ingredientengname, efficacy, howtouse, caution, cautionwarning, 
+      id, name, engname, companyname, companyengname, ingredientname, ingredientengname, efficacy, howtouse, caution, cautionwarning, 
       interaction, sideeffect, storagemethod, created_at
     FROM 
       drugs
@@ -43,16 +43,16 @@ export const getDrugs = async (limit: number, offset: number, sortedBy: string, 
   };
 };
 
-export const getDrugById = async (drugid: number): Promise<any> => {
+export const getPillById = async (id: number): Promise<any> => {
   const query = 'SELECT * FROM drugs WHERE drugid = $1';
-  const result = await pool.query(query, [drugid]);
+  const result = await pool.query(query, [id]);
   return result.rows[0];
 };
 
-export const updateDrug = async (drugid: number, drugData: any): Promise<any> => {
+export const updatePill = async (id: number, pillData: any): Promise<any> => {
   const {
-    drugname,
-    drugengname,
+    name,
+    engname,
     companyname,
     companyengname,
     ingredientname,
@@ -64,17 +64,17 @@ export const updateDrug = async (drugid: number, drugData: any): Promise<any> =>
     interaction,
     sideeffect,
     storagemethod,
-  } = drugData;
+  } = pillData;
 
-  const query = `UPDATE drugs SET 
-    drugname=$2, drugengname=$3, companyname=$4, companyengname=$5, ingredientname=$6, ingredientengname=$7, efficacy=$8, howtouse=$9, caution=$10, 
+  const query = `UPDATE pills SET 
+    name=$2, engname=$3, companyname=$4, companyengname=$5, ingredientname=$6, ingredientengname=$7, efficacy=$8, howtouse=$9, caution=$10, 
     cautionwarning=$11, interaction=$12, sideeffect=$13, storagemethod=$14 
     WHERE drugid = $1 RETURNING *`;
 
   const values = [
-    drugid,
-    drugname,
-    drugengname,
+    id,
+    name,
+    engname,
     companyname,
     companyengname,
     ingredientname,
@@ -92,15 +92,36 @@ export const updateDrug = async (drugid: number, drugData: any): Promise<any> =>
   return result.rows[0];
 };
 
-export const deleteDrug = async (drugid: number): Promise<boolean> => {
-  const query = 'DELETE FROM drugs WHERE drugid = $1';
-  const result = await pool.query(query, [drugid]);
+export const deletePill = async (id: number): Promise<boolean> => {
+  const query = 'DELETE FROM pills WHERE id = $1';
+  const result = await pool.query(query, [id]);
   return result.rowCount > 0;
 };
 
 
-export const searchDrugsbyName = async (drugname: string, limit: number, offset: number) => {
-  const query = 'SELECT * FROM drugs WHERE drugname ILIKE $1 ORDER BY created_at DESC LIMIT $2 OFFSET $3';
+export const searchPillsbyName = async (name: string, limit: number, offset: number) => {
+  const query = 'SELECT * FROM pills WHERE name ILIKE $1 ORDER BY created_at DESC LIMIT $2 OFFSET $3';
+  const values = [`%${name}%`, limit, offset];
+
+  try {
+    const result = await pool.query(query, values);
+    return {
+      pills: result.rows,
+      total: result.rowCount,
+      limit,
+      offset,
+    };
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      throw new Error(`Failed to search drugs by name: ${error.message}`);
+    } else {
+      throw new Error('Failed to search drugs by name: An unknown error occurred');
+    }
+  }
+};
+
+export const searchPillsbyEngName = async (drugname: string, limit: number, offset: number) => {
+  const query = 'SELECT * FROM pills WHERE engname ILIKE $1 ORDER BY created_at DESC LIMIT $2 OFFSET $3';
   const values = [`%${drugname}%`, limit, offset];
 
   try {
@@ -120,28 +141,7 @@ export const searchDrugsbyName = async (drugname: string, limit: number, offset:
   }
 };
 
-export const searchDrugsbyEngName = async (drugname: string, limit: number, offset: number) => {
-  const query = 'SELECT * FROM drugs WHERE drugengname ILIKE $1 ORDER BY created_at DESC LIMIT $2 OFFSET $3';
-  const values = [`%${drugname}%`, limit, offset];
-
-  try {
-    const result = await pool.query(query, values);
-    return {
-      drugs: result.rows,
-      total: result.rowCount,
-      limit,
-      offset,
-    };
-  } catch (error: unknown) {
-    if (error instanceof Error) {
-      throw new Error(`Failed to search drugs by name: ${error.message}`);
-    } else {
-      throw new Error('Failed to search drugs by name: An unknown error occurred');
-    }
-  }
-};
-
-export const searchDrugsbyEfficacy = async (efficacy: string, limit: number, offset: number) => {
+export const searchPillsbyEfficacy = async (efficacy: string, limit: number, offset: number) => {
   const efficacyArray = efficacy.split(',').map(eff => `%${eff.trim()}%`);
   const query = `
       SELECT * 
@@ -168,7 +168,7 @@ export const searchDrugsbyEfficacy = async (efficacy: string, limit: number, off
   }
 };
 
-const searchDrugsByFrontAndBack = async (front: string, back:string, limit: number, offset: number) => {
+const searchPillsByFrontAndBack = async (front: string, back:string, limit: number, offset: number) => {
   const query = `
   SELECT * 
   FROM pillocr 
@@ -218,7 +218,7 @@ const detectTextInImage = async (imageBuffer: Buffer) => {
   }
 };
 
-export const searchDrugsByImage = async (imageBuffer: Buffer, limit: number, offset: number) => {
+export const searchPillsByImage = async (imageBuffer: Buffer, limit: number, offset: number) => {
   try {
     const detectedText = await detectTextInImage(imageBuffer);
     if (!detectedText || detectedText.length === 0) {
@@ -232,7 +232,7 @@ export const searchDrugsByImage = async (imageBuffer: Buffer, limit: number, off
       if (text) {  // Ensure text is not null or undefined
         const frontText = detectedText[0];
         const backText = detectedText[1];
-        const resultByFrontAndBack = await searchDrugsByFrontAndBack(frontText, backText, limit, offset);
+        const resultByFrontAndBack = await searchPillsByFrontAndBack(frontText, backText, limit, offset);
         pills.push(...resultByFrontAndBack.drugs);
         total += resultByFrontAndBack.total;
       }

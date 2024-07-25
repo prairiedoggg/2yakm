@@ -11,14 +11,14 @@ const fs = require('fs');
 import { errorHandler } from './middlewares/errorHandler';
 import authByToken from './middlewares/authByToken';
 
-import drugRouter from './routes/drug_route';
+import pillRouter from './routes/pill_route';
 import reviewRouter from './routes/review_route';
 import authRouter from './routes/auth_route';
 const calendarRouter = require('./routes/calendar_route');
 const alarmRouter = require('./routes/alarm_route');
 import favoriteRouter from './routes/favorite_route';
-const mypageRouter = require('./routes/mypage_route');
-const mydrugRouter = require('./routes/mydrug_route');
+import mypageRouter from './routes/mypage_route';
+import mypillRouter from './routes/mypill_route';
 const chatbotRouter = require('./routes/chatbot_route');
 
 dotenv.config();
@@ -61,11 +61,11 @@ app.use('/api/reviews', reviewRouter);
 app.use('/api/auth', authRouter);
 app.use('/api/favorites', favoriteRouter);
 app.use('/mypage', authByToken, mypageRouter);
-app.use('/mydrugs', authByToken, mydrugRouter);
+app.use('/mypills', authByToken, mypillRouter);
 app.use('/api/chatbot', authByToken, chatbotRouter);
 app.use('/api/calendars', authByToken, calendarRouter);
 app.use('/api/alarms', authByToken, alarmRouter);
-app.use('/api/drugs', drugRouter);
+app.use('/api/pills', pillRouter);
 
 app.listen(port, () => {
   console.log(`Server is running http://localhost:${port}`);
