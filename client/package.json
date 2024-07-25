@@ -12,6 +12,7 @@
   "dependencies": {
     "@loadable/component": "^5.16.4",
     "@tanstack/react-query": "^5.51.11",
+    "@tanstack/react-query-devtools": "^5.51.11",
     "antd": "^5.19.3",
     "axios": "^1.7.2",
     "dayjs": "^1.11.12",

@@ -1,17 +1,17 @@
-import { useState, useEffect } from 'react'; 
+import { useState, useEffect } from 'react';
+import { useMutation, useQueryClient } from 'react-query';
 import styled from 'styled-components';
 import { Select, Button, Input } from 'antd';
 import { Icon } from '@iconify-icon/react';
-import { useAlarmStore } from '../../store/alarm';
+import { useAlarmStore, Alarm } from '../../store/alarm';
+import { createAlarm, updateAlarm } from '../../api/alarm';
 
 const { Option } = Select;
 
 const AlarmSettings = () => {
-  const addAlarm = useAlarmStore((state) => state.addAlarm);
-  const updateAlarm = useAlarmStore((state) => state.updateAlarm);
   const setCurrentPage = useAlarmStore((state) => state.setCurrentPage);
   const currentAlarm = useAlarmStore((state) => state.currentAlarm);
-  const alarms = useAlarmStore((state) => state.alarms);
+  const queryClient = useQueryClient();
 
   const [alarmName, setAlarmName] = useState<string>('');
   const [frequency, setFrequency] = useState<string>('하루 3번');
@@ -20,13 +20,14 @@ const AlarmSettings = () => {
     '오후 1:00',
     '오후 8:00'
   ]);
+  const [duration, setDuration] = useState<number>(3);
 
-  // 초기 상태 설정
   useEffect(() => {
     if (currentAlarm) {
       setAlarmName(currentAlarm.name);
       setFrequency(currentAlarm.frequency);
       setAlarmTimes(currentAlarm.times);
+      setDuration(currentAlarm.duration);
     }
   }, [currentAlarm]);
 
@@ -52,23 +53,50 @@ const AlarmSettings = () => {
     newAlarmTimes[index] = value;
     setAlarmTimes(newAlarmTimes);
   };
+// 알람 기간 변경
+    const handleDurationChange = (value: number) => {
+      setDuration(value);
+    };
+
+  // 알람 생성
+  const createMutation = useMutation(createAlarm, {
+    onSuccess: () => {
+      queryClient.invalidateQueries('alarms');
+    }
+  });
+
+  // 알람 업데이트
+  const updateMutation = useMutation(updateAlarm, {
+    onSuccess: () => {
+      queryClient.invalidateQueries('alarms');
+    }
+  });
 
   // 알람 저장후 메인 알람 페이지로 이동
   const handleSave = () => {
+    const startDate = new Date().toISOString();
+    const endDate = new Date(
+      Date.now() + duration * 24 * 60 * 60 * 1000
+    ).toISOString();
+
+    const alarmData: Alarm = {
+      id: currentAlarm?.id,
+      name: alarmName,
+      frequency,
+      times: alarmTimes,
+      startDate,
+      endDate,
+      interval: 0,
+      message: '',
+      time: '',
+      alarmStatus: true,
+      duration
+    };
+
     if (currentAlarm) {
-      const alarmIndex = alarms.findIndex(
-        (alarm) =>
-          alarm.name === currentAlarm.name &&
-          alarm.frequency === currentAlarm.frequency &&
-          alarm.times.join(',') === currentAlarm.times.join(',')
-      );
-      updateAlarm(alarmIndex, {
-        name: alarmName,
-        frequency,
-        times: alarmTimes
-      });
+      updateMutation.mutate({ ...currentAlarm, ...alarmData });
     } else {
-      addAlarm({ name: alarmName, frequency, times: alarmTimes });
+      createMutation.mutate(alarmData);
     }
     setCurrentPage('main');
   };
@@ -79,15 +107,27 @@ const AlarmSettings = () => {
         <h2>알람 설정</h2>
         <SettingList>
           <AlarmName>
-            <h4>알람이름</h4>
+            <h4>어떤 약을 드시고 계신가요?</h4>
             <Input
-              placeholder='약이름'
+              placeholder='알르레기 약'
               value={alarmName}
               onChange={(e) => setAlarmName(e.target.value)}
             />
           </AlarmName>
+          <AlarmDuration>
+            <h4>얼마동안 약을 드셔야 하나요?</h4>
+            <Select
+              defaultValue='3일'
+              style={{ width: 150 }}
+              onChange={(value) => handleDurationChange(Number(value))}
+            >
+              <Option value='3일'>3일</Option>
+              <Option value='5일'>5일</Option>
+              <Option value='무제한'>내가 알람을 끌때까지</Option>
+            </Select>
+          </AlarmDuration>
           <AlarmFrequency>
-            <h4>빈도</h4>
+            <h4>하루에 몇 번 드셔야 하나요</h4>
             <Select
               defaultValue='하루 3번'
               style={{ width: 150 }}
@@ -163,6 +203,8 @@ const SettingList = styled.div`
 `;
 
 const AlarmName = styled.section``;
+
+const AlarmDuration = styled.section``;
 
 const AlarmFrequency = styled.section``;
 
