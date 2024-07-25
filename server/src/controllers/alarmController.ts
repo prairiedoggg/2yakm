@@ -3,27 +3,34 @@ import { createAlarm, getAlarmsByUserId, updateAlarm, deleteAlarm, scheduleAlarm
 import { CustomRequest } from '../types/express.d';
 
 export const createAndScheduleAlarm = async (req: CustomRequest, res: Response, next: NextFunction) => {
-  const { name, date, times, message } = req.body;
+  const { name, startDate, endDate, times, message, frequency } = req.body;
   const userId = req.user?.email;
   if (!userId) {
     return res.status(401).json({ message: '인증되지 않은 사용자입니다.' });
   }
   try {
-    const alarmDate = new Date(date);
-    if (isNaN(alarmDate.getTime())) {
+    const alarmStartDate = new Date(startDate);
+    const alarmEndDate = new Date(endDate);
+    if (isNaN(alarmStartDate.getTime()) || isNaN(alarmEndDate.getTime())) {
       return res.status(400).json({ message: '유효하지 않은 날짜입니다.' });
     }
     
-    if (!Array.isArray(times) ?? times.length === 0 ?? !times.every((time: { time: string; }) => /^\d{2}:\d{2}$/.test(time.time))) {
+    if (!Array.isArray(times) || times.length === 0 || !times.every((time: { time: string; }) => /^\d{2}:\d{2}$/.test(time.time))) {
       return res.status(400).json({ message: '유효하지 않은 시간 형식입니다. {time: "HH:MM", status: boolean} 형식의 배열이어야 합니다.' });
+    }
+    
+    if (typeof frequency !== 'number' || frequency < 1) {
+      return res.status(400).json({ message: '유효하지 않은 빈도수입니다. 1 이상의 숫자여야 합니다.' });
     }
     
     const alarm = await createAlarm({
       userId,
       name,
-      date: alarmDate,
+      startDate: alarmStartDate,
+      endDate: alarmEndDate,
       times,
       message,
+      frequency,
     });
 
     res.status(201).json(alarm);
@@ -35,7 +42,7 @@ export const createAndScheduleAlarm = async (req: CustomRequest, res: Response, 
 
 export const updateAlarmController = async (req: CustomRequest, res: Response, next: NextFunction) => {
   const { id } = req.params;
-  const { name, date, times, message } = req.body;
+  const { name, startDate, endDate, times, message, frequency } = req.body;
   const userId = req.user?.email;
 
   if (!userId) {
@@ -44,16 +51,21 @@ export const updateAlarmController = async (req: CustomRequest, res: Response, n
 
   try {
     console.log(req.body);
-    const alarmDate = date ? new Date(date) : undefined;
-    if (alarmDate && isNaN(alarmDate.getTime())) {
+    const alarmStartDate = startDate ? new Date(startDate) : undefined;
+    const alarmEndDate = endDate ? new Date(endDate) : undefined;
+    if ((alarmStartDate && isNaN(alarmStartDate.getTime())) || (alarmEndDate && isNaN(alarmEndDate.getTime()))) {
       return res.status(400).json({ message: '유효하지 않은 날짜입니다.' });
     }
 
-    if (times && (!Array.isArray(times) ?? times.length === 0 ?? !times.every((time: { time: string; }) => /^\d{2}:\d{2}$/.test(time.time)))) {
+    if (times && (!Array.isArray(times) || times.length === 0 || !times.every((time: { time: string; }) => /^\d{2}:\d{2}$/.test(time.time)))) {
       return res.status(400).json({ message: '유효하지 않은 시간 형식입니다. {time: "HH:MM", status: boolean} 형식의 배열이어야 합니다.' });
     }
 
-    const updatedAlarm = await updateAlarm(id, { name, date: alarmDate, times, message, userId });
+    if (frequency !== undefined && (typeof frequency !== 'number' || frequency < 1)) {
+      return res.status(400).json({ message: '유효하지 않은 빈도수입니다. 1 이상의 숫자여야 합니다.' });
+    }
+
+    const updatedAlarm = await updateAlarm(id, { name, startDate: alarmStartDate, endDate: alarmEndDate, times, message, frequency, userId });
     if (updatedAlarm) {
       res.status(200).json(updatedAlarm);
     } else {

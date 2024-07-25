@@ -18,7 +18,10 @@ const router = Router();
  *             properties:
  *               name:
  *                 type: string
- *               date:
+ *               startDate:
+ *                 type: string
+ *                 format: date-time
+ *               endDate:
  *                 type: string
  *                 format: date-time
  *               times:
@@ -33,6 +36,9 @@ const router = Router();
  *                       type: boolean
  *               message:
  *                 type: string
+ *               frequency:
+ *                 type: integer
+ *                 minimum: 1
  *     responses:
  *       201:
  *         description: 알람 생성 성공
@@ -90,7 +96,10 @@ router.get('/', alarmController.getUserAlarmsController);
  *             properties:
  *               name:
  *                 type: string
- *               date:
+ *               startDate:
+ *                 type: string
+ *                 format: date-time
+ *               endDate:
  *                 type: string
  *                 format: date-time
  *               times:
@@ -105,6 +114,9 @@ router.get('/', alarmController.getUserAlarmsController);
  *                       type: boolean
  *               message:
  *                 type: string
+ *               frequency:
+ *                 type: integer
+ *                 minimum: 1
  *     responses:
  *       200:
  *         description: 알람 업데이트 성공
@@ -165,7 +177,10 @@ router.delete('/:id', alarmController.deleteAlarmController);
  *           type: string
  *         name:
  *           type: string
- *         date:
+ *         startDate:
+ *           type: string
+ *           format: date-time
+ *         endDate:
  *           type: string
  *           format: date-time
  *         times:
@@ -180,6 +195,9 @@ router.delete('/:id', alarmController.deleteAlarmController);
  *                 type: boolean
  *         message:
  *           type: string
+ *         frequency:
+ *           type: integer
+ *           minimum: 1
  */
 
 export default router;

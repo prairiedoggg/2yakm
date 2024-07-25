@@ -7,7 +7,9 @@ export interface Alarm {
     id: string;
     userId: string;
     name: string;
-    date: Date;
+    startDate: Date;
+    endDate: Date;
     times: AlarmTime[];
     message: string;
+    frequency: number;
 }
