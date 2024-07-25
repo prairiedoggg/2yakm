@@ -2,20 +2,20 @@ import { Response, Request, NextFunction } from 'express';
 import Joi from 'joi';
 import  { addPill, updatePill, getPills, deletePill } from '../services/mypillService';
 
-const createPillSchema = Joi.object({
+export const createPillSchema = Joi.object({
   drugname: Joi.string().required(),
   expiredat: Joi.date().required(),
   created_at: Joi.date().required()
 });
 
-const updatePillSchema = Joi.object({
+export const updatePillSchema = Joi.object({
   mydrugid: Joi.string().required(),
   drugname: Joi.string().required(),
   expiredat: Joi.date().required(),
   created_at: Joi.date().required()
 });
 
-const addMyPill = async (req: any, res: Response, next: NextFunction)=> {
+export const addMyPill = async (req: any, res: Response, next: NextFunction)=> {
   try {
     const user = req.user;
     if (!user) {
@@ -35,7 +35,7 @@ const addMyPill = async (req: any, res: Response, next: NextFunction)=> {
   }
 };
 
-const updateMyPill = async (req: any, res: Response, next: NextFunction) => {
+export const updateMyPill = async (req: any, res: Response, next: NextFunction) => {
   try {
     const user = req.user;
     if (!user) {
@@ -55,17 +55,33 @@ const updateMyPill = async (req: any, res: Response, next: NextFunction) => {
   }
 };
 
-const getMyPills = async (req: any, res: Response, next: NextFunction) => {
+// Define the request user interface
+interface RequestUser {
+  id: string;
+}
+
+// Extend the Request interface to include the user
+interface AuthenticatedRequest extends Request {
+  user?: RequestUser;
+}
+
+// The getMyPills function
+export const getMyPills = async (
+  req: AuthenticatedRequest,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     const user = req.user;
     if (!user) {
       return res.status(401).json({ message: 'Unauthorized' });
     }
     const userId = user.id;
-    const limit = parseInt(req.query.limit as string, 10) ?? 10;
-    const offset = parseInt(req.query.offset as string, 10) ?? 0;
+    const limit = parseInt(req.query.limit as string ?? '10', 10);
+    const offset = parseInt(req.query.offset as string ?? '0', 10);
     const sortedBy = (req.query.sortedBy as string) ?? 'created_at';
-    const order = (req.query.order as string)?.toUpperCase() ?? 'DESC';
+    const order = (req.query.order as string)?.toUpperCase() as 'ASC' | 'DESC' ?? 'DESC';
+
     const pills = await getPills(userId, limit, offset, sortedBy, order);
     res.status(200).json(pills);
   } catch (error) {
@@ -73,7 +89,7 @@ const getMyPills = async (req: any, res: Response, next: NextFunction) => {
   }
 };
 
-const deleteMyPill = async (req: any, res: Response, next: NextFunction) => {
+export const deleteMyPill = async (req: any, res: Response, next: NextFunction) => {
   try {
     const user = req.user;
     if (!user) {
@@ -90,9 +106,3 @@ const deleteMyPill = async (req: any, res: Response, next: NextFunction) => {
   }
 };
 
-module.exports = {
-  addMyPill,
-  updateMyPill,
-  getMyPills,
-  deleteMyPill
-};

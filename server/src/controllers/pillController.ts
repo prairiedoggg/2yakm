@@ -8,16 +8,25 @@ import {
   searchPillsbyEfficacy,
   searchPillsByImage,
   searchPillsbyEngName, 
-  getPillFavoriteCountService
+  getPillFavoriteCountService,
+  getPillReviewCountService
 } from '../services/pillService';
 
+interface PillsQueryParams {
+  limit?: string;
+  offset?: string;
+  sortedBy?: string;
+  order?: 'ASC' | 'DESC';
+}
 
-export const getPillsHandler = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+// The getPillsHandler function using generics
+export const getPillsHandler = async <T extends PillsQueryParams>(req: Request<unknown, unknown, unknown, T>, res: Response, next: NextFunction): Promise<void> => {
   try {
-    const limit = parseInt(req.query.limit as string, 10) || 10;
-    const offset = parseInt(req.query.offset as string, 10) || 0;
-    const sortedBy = (req.query.sortedBy as string) || 'created_at';
-    const order = (req.query.order as string)?.toUpperCase() || 'DESC';
+    const limit = parseInt(req.query.limit ?? '10', 10);
+    const offset = parseInt(req.query.offset ?? '0', 10);
+    const sortedBy = req.query.sortedBy ?? 'created_at';
+    const order = (req.query.order?.toUpperCase() as 'ASC' | 'DESC') ?? 'DESC';
+
     const pills = await getPills(limit, offset, sortedBy, order);
     res.status(200).json(pills);
   } catch (error) {
@@ -158,7 +167,7 @@ export const searchPillsByImageHandler = async (
 };
 
 export const getPillFavoriteCount = async (
-   req: Request<{ id: string }, unknown, unknown, unknown>,
+   req: Request<{ id: any }, unknown, unknown, unknown>,
    res: Response,
    next: NextFunction
  ): Promise<void> => {
@@ -173,5 +182,20 @@ export const getPillFavoriteCount = async (
    }
  };
 
+ export const getPillReviewCount = async (
+  req: Request<{ id: any }, unknown, unknown, unknown>,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  const id = parseInt(req.params.id, 10);
+
+  try {
+    const count = await getPillReviewCountService(id);
+
+    res.status(200).send({ count });
+  } catch (error: any) {
+    next(error);
+  }
+};
 
 

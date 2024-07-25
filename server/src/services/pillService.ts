@@ -100,7 +100,7 @@ export const deletePill = async (id: number): Promise<boolean> => {
 
 
 export const searchPillsbyName = async (name: string, limit: number, offset: number) => {
-  const query = 'SELECT * FROM drugs WHERE drugname ILIKE $1 ORDER BY created_at DESC LIMIT $2 OFFSET $3';
+  const query = 'SELECT * FROM pills WHERE name ILIKE $1 ORDER BY created_at DESC LIMIT $2 OFFSET $3';
   const values = [`%${name}%`, limit, offset];
 
   try {
@@ -121,7 +121,7 @@ export const searchPillsbyName = async (name: string, limit: number, offset: num
 };
 
 export const searchPillsbyEngName = async (drugname: string, limit: number, offset: number) => {
-  const query = 'SELECT * FROM drugs WHERE drugengname ILIKE $1 ORDER BY created_at DESC LIMIT $2 OFFSET $3';
+  const query = 'SELECT * FROM pills WHERE engname ILIKE $1 ORDER BY created_at DESC LIMIT $2 OFFSET $3';
   const values = [`%${drugname}%`, limit, offset];
 
   try {
@@ -145,7 +145,7 @@ export const searchPillsbyEfficacy = async (efficacy: string, limit: number, off
   const efficacyArray = efficacy.split(',').map(eff => `%${eff.trim()}%`);
   const query = `
       SELECT * 
-      FROM drugs 
+      FROM pills 
       WHERE ${efficacyArray.map((_, index) => `efficacy ILIKE $${index + 1}`).join(' AND ')} 
       ORDER BY created_at DESC 
       LIMIT $${efficacyArray.length + 1} OFFSET $${efficacyArray.length + 2}`;
@@ -174,7 +174,8 @@ const searchPillsByFrontAndBack = async (front: string, back:string, limit: numb
   FROM pillocr 
   WHERE front = $1 AND back = $2
   LIMIT $3 OFFSET $4`;
-const values = [front, back, limit, offset];
+  
+  const values = [front, back, limit, offset];
 
   try {
     const result = await pool.query(query, values);
@@ -271,4 +272,22 @@ export const getPillFavoriteCountService = async (
    }
  };
 
+
+export const getPillReviewCountService = async (
+  id: number
+): Promise<number> => {
+  try {
+    const query = `
+  SELECT COUNT(*) AS count
+  FROM reviews
+  WHERE id = $1
+  `;
+    const values = [id];
+    const { rows } = await pool.query(query, values);
+
+    return parseInt(rows[0].count, 10);
+  } catch (error: any) {
+    throw error;
+  }
+};
 

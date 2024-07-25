@@ -2,11 +2,11 @@ import { Response, Request, NextFunction } from 'express';
 import { getUserProfile, updateUsername, updateProfilePicture, uploadFileToS3 } from '../services/mypageService';
 import Joi from 'joi';
 
-const updateUsernameSchema = Joi.object({
+export const updateUsernameSchema = Joi.object({
   username: Joi.string().min(3).max(30).required(),
 });
 
-const getUserprofile = async (req: any, res: Response, next: NextFunction) => {
+export const getUserprofile = async (req: any, res: Response, next: NextFunction) => {
   try {
     const user = req.user;
     if (!user) {
@@ -24,7 +24,7 @@ const getUserprofile = async (req: any, res: Response, next: NextFunction) => {
   }
 };
 
-const updateName = async (req: any, res: Response, next: NextFunction) => {
+export const updateName = async (req: any, res: Response, next: NextFunction) => {
   try {
     const user = req.user;
     if (!user) {
@@ -46,7 +46,7 @@ const updateName = async (req: any, res: Response, next: NextFunction) => {
   }
 };
 
-const updateProfilePictureMemory = async (req: any, res: Response, next: NextFunction) => {
+export const updateProfilePictureMemory = async (req: any, res: Response, next: NextFunction) => {
   try {
     const user = req.user;
     if (!user) {
@@ -67,7 +67,7 @@ const updateProfilePictureMemory = async (req: any, res: Response, next: NextFun
   }
 };
 
-const updateProfilePictureS3 = async (req: any, res: Response, next: NextFunction)=> {
+export const updateProfilePictureS3 = async (req: any, res: Response, next: NextFunction)=> {
   try {
     const user = req.user;
     if (!user) {
@@ -90,11 +90,4 @@ const updateProfilePictureS3 = async (req: any, res: Response, next: NextFunctio
       next(new Error('An unknown error occurred'));
     }
   }
-};
-
-export {
-  getUserprofile,
-  updateName,
-  updateProfilePictureMemory,
-  updateProfilePictureS3,
 };
