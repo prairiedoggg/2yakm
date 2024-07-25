@@ -25,11 +25,7 @@ export const getPills = async (limit: number, offset: number, sortedBy: string, 
   const totalPages = Math.ceil(totalCount / limit);
 
   const query = `
-    SELECT 
-      id, name, engname, companyname, companyengname, ingredientname, ingredientengname, efficacy, howtouse, caution, cautionwarning, 
-      interaction, sideeffect, storagemethod, created_at
-    FROM 
-      drugs
+    SELECT * FROM pills
     ORDER BY ${sortedBy} ${order}
     LIMIT $1 OFFSET $2`;
 
@@ -44,7 +40,7 @@ export const getPills = async (limit: number, offset: number, sortedBy: string, 
 };
 
 export const getPillById = async (id: number): Promise<any> => {
-  const query = 'SELECT * FROM drugs WHERE drugid = $1';
+  const query = 'SELECT * FROM pills WHERE id = $1';
   const result = await pool.query(query, [id]);
   return result.rows[0];
 };
@@ -57,8 +53,10 @@ export const updatePill = async (id: number, pillData: any): Promise<any> => {
     companyengname,
     ingredientname,
     ingredientengname,
+    type,
+    shape,
     efficacy,
-    howtouse,
+    dosage,
     caution,
     cautionwarning,
     interaction,
@@ -67,9 +65,9 @@ export const updatePill = async (id: number, pillData: any): Promise<any> => {
   } = pillData;
 
   const query = `UPDATE pills SET 
-    name=$2, engname=$3, companyname=$4, companyengname=$5, ingredientname=$6, ingredientengname=$7, efficacy=$8, howtouse=$9, caution=$10, 
-    cautionwarning=$11, interaction=$12, sideeffect=$13, storagemethod=$14 
-    WHERE drugid = $1 RETURNING *`;
+    name=$2, engname=$3, companyname=$4, companyengname=$5, ingredientname=$6, ingredientengname=$7, type =$8 , shape =$9, efficacy=$10, dosage=$11, caution=$12, 
+    cautionwarning=$13, interaction=$14 , sideeffect=$15, storagemethod=$16
+    WHERE id = $1 RETURNING *`;
 
   const values = [
     id,
@@ -79,13 +77,15 @@ export const updatePill = async (id: number, pillData: any): Promise<any> => {
     companyengname,
     ingredientname,
     ingredientengname,
+    type,
+    shape,
     efficacy,
-    howtouse,
+    dosage,
     caution,
     cautionwarning,
     interaction,
     sideeffect,
-    storagemethod,
+    storagemethod
   ];
 
   const result = await pool.query(query, values);
@@ -100,7 +100,7 @@ export const deletePill = async (id: number): Promise<boolean> => {
 
 
 export const searchPillsbyName = async (name: string, limit: number, offset: number) => {
-  const query = 'SELECT * FROM pills WHERE name ILIKE $1 ORDER BY created_at DESC LIMIT $2 OFFSET $3';
+  const query = 'SELECT * FROM drugs WHERE drugname ILIKE $1 ORDER BY created_at DESC LIMIT $2 OFFSET $3';
   const values = [`%${name}%`, limit, offset];
 
   try {
@@ -113,15 +113,15 @@ export const searchPillsbyName = async (name: string, limit: number, offset: num
     };
   } catch (error: unknown) {
     if (error instanceof Error) {
-      throw new Error(`Failed to search drugs by name: ${error.message}`);
+      throw new Error(`Failed to search pills by name: ${error.message}`);
     } else {
-      throw new Error('Failed to search drugs by name: An unknown error occurred');
+      throw new Error('Failed to search pills by name: An unknown error occurred');
     }
   }
 };
 
 export const searchPillsbyEngName = async (drugname: string, limit: number, offset: number) => {
-  const query = 'SELECT * FROM pills WHERE engname ILIKE $1 ORDER BY created_at DESC LIMIT $2 OFFSET $3';
+  const query = 'SELECT * FROM drugs WHERE drugengname ILIKE $1 ORDER BY created_at DESC LIMIT $2 OFFSET $3';
   const values = [`%${drugname}%`, limit, offset];
 
   try {
@@ -134,9 +134,9 @@ export const searchPillsbyEngName = async (drugname: string, limit: number, offs
     };
   } catch (error: unknown) {
     if (error instanceof Error) {
-      throw new Error(`Failed to search drugs by name: ${error.message}`);
+      throw new Error(`Failed to search pills by name: ${error.message}`);
     } else {
-      throw new Error('Failed to search drugs by name: An unknown error occurred');
+      throw new Error('Failed to search pills by name: An unknown error occurred');
     }
   }
 };
@@ -161,9 +161,9 @@ export const searchPillsbyEfficacy = async (efficacy: string, limit: number, off
     };
   } catch (error: unknown) {
     if (error instanceof Error) {
-      throw new Error(`Failed to search drugs by efficacy: ${error.message}`);
+      throw new Error(`Failed to search pills by efficacy: ${error.message}`);
     } else {
-      throw new Error('Failed to search drugs by efficacy: An unknown error occurred');
+      throw new Error('Failed to search pills by efficacy: An unknown error occurred');
     }
   }
 };
@@ -205,7 +205,7 @@ const detectTextInImage = async (imageBuffer: Buffer) => {
       // Remove numbers, dots, parentheses, square brackets, one-character length elements, and elements containing '밀리그람' or '의약품'
       const filteredText = detections
         .map(text => text?.description ?? '')
-        .filter(text => !text.match(/[\d\.()]/) && !text.includes('밀리그람') && !text.includes('의약품'))
+        .filter(text => !text.match(/[\d\.()]/))
 
       console.log('Filtered text:', filteredText);
       return filteredText;
