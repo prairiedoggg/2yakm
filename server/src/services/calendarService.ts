@@ -50,9 +50,10 @@ export const createCalendar = async (
     const text = `
       INSERT INTO calendar 
       (userid, date, calimg, condition, weight, temperature, 
-      bloodsugarBefore, bloodsugarAfter, medications) 
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) 
-      RETURNING *
+        bloodsugarBefore, bloodsugarAfter, medications) 
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) 
+        RETURNING userid AS "userId", date, calimg, condition, weight, temperature, 
+        bloodsugarBefore, bloodsugarAfter, medications
     `;
     const values = [
       calendar.userId,
@@ -90,7 +91,8 @@ export const updateCalendar = async (
           bloodsugarBefore = $5, bloodsugarAfter = $6,
           medications = $7, date = $8
       WHERE id = $9 
-      RETURNING *
+      RETURNING userid AS "userId", date, calimg, condition, weight, temperature, 
+      bloodsugarBefore, bloodsugarAfter, medications
     `;
     const values = [
       calendar.calImg ?? existingCalendar.calImg,

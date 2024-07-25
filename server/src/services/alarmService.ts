@@ -11,6 +11,11 @@ const runningJobs = new Map<string, schedule.Job>();
 export const createAlarm = async (alarm: Omit<Alarm, 'id'>): Promise<Alarm> => {
   try {
     const { userId, name, startDate, endDate, times } = alarm;
+
+    if (new Date(startDate) > new Date(endDate)) {
+      throw createError('InvalidDateRange', '시작 날짜는 종료 날짜보다 늦을 수 없습니다.', 400);
+    }
+
     const query = `
     INSERT INTO alarms (userId, name, startDate, endDate, times)
     VALUES ($1, $2, $3, $4, $5)
@@ -26,12 +31,6 @@ export const createAlarm = async (alarm: Omit<Alarm, 'id'>): Promise<Alarm> => {
     const values = [userId, name, startDate, endDate, JSON.stringify(times)];
     const result = await pool.query(query, values);
     const newAlarm = result.rows[0];
-    
-    console.log('newAlarm', newAlarm)
-    const schedule = {startdate:'',enddate:'',times:0}
-    schedule.startdate = newAlarm.startDate;
-    schedule.enddate = newAlarm.endDate;
-    schedule.times = newAlarm.times;
     scheduleAlarmService(newAlarm);
     
     return newAlarm;
@@ -43,6 +42,11 @@ export const createAlarm = async (alarm: Omit<Alarm, 'id'>): Promise<Alarm> => {
 export const updateAlarm = async (id: string, alarm: Partial<Alarm>): Promise<Alarm | null> => {
   try {
     const { userId, name, startDate, endDate, times } = alarm;
+    if (startDate && endDate) {
+      if (new Date(startDate) > new Date(endDate)) {
+        throw createError('InvalidDateRange', '시작 날짜는 종료 날짜보다 늦을 수 없습니다.', 400);
+      }
+    }
     const text = `
       UPDATE alarms
       SET userId = COALESCE($1, userId),
@@ -95,21 +99,9 @@ const cancelExistingAlarms = (alarmId: string) => {
 };
 export const scheduleAlarmService = (alarm: Alarm) => {
   const { startDate, endDate, times } = alarm;
-  console.log("alarm", alarm);
   const endDateTime = new Date(endDate);
   const startDateTime = new Date(startDate);
   let currentDate = new Date(startDateTime);
-
-    // 테스트용 즉시 실행 알람
-    const testDate = new Date(Date.now() + 10000); // 10초 후 실행
-    const testJob = schedule.scheduleJob(testDate, async () => {
-      console.log('테스트 알람', alarm);
-      console.log('테스트 알람 user id', alarm.userId);
-      console.log(`테스트 알람 실행: ${alarm.id}, 시간: ${testDate.toISOString()}`);
-      await sendEmail(alarm.userId);
-    });
-    console.log(`테스트 알람 예약됨: ${alarm.id}, 시간: ${testDate.toISOString()}`);
-    runningJobs.set(`${alarm.id}_test_${testDate.toISOString()}`, testJob);
 
   while (currentDate <= endDateTime) {
     times.forEach((alarmTime: AlarmTime) => {

@@ -1,6 +1,6 @@
 import { Response, NextFunction } from 'express';
 import { CustomRequest } from '../types/express.d';
-import { Calendar } from '../entity/calendar';
+import { Calendar, Medication } from '../entity/calendar';
 import * as calendarService from '../services/calendarService';
 import { uploadToS3 } from '../config/imgUploads';
 
@@ -28,12 +28,19 @@ export const getCalendarById =  async (req: CustomRequest, res: Response, next: 
   }
 };
 
+const validateMedications = (medications: Medication[]): boolean => {
+  return medications.every(med => {
+    const [hours, minutes] = med.time.split(':').map(Number);
+    return /^\d{2}:\d{2}$/.test(med.time) && hours >= 0 && hours < 24 && minutes >= 0 && minutes < 60;
+  });
+};
+
+
 export const createCalendar = [
   uploadToS3.single('calImg'),
   async (req: CustomRequest, res: Response, next: NextFunction) => {
     try {
       const userId = req.user?.email;
-      console.log('req.user', req.user);
       const calImgUrl = req.file ? (req.file as any).location : null;
 
       const date = req.body.date ? new Date(req.body.date) : new Date();
@@ -42,6 +49,9 @@ export const createCalendar = [
       }
       
       const medications = req.body.medications ? JSON.parse(req.body.medications) : [];
+      if (!Array.isArray(medications) ?? !validateMedications(medications)) {
+        return res.status(400).json({ message: '유효하지 않은 약물 시간 형식입니다. 시간은 HH:MM 형식이어야 하며, 00:00에서 23:59 사이여야 합니다.' });
+      }
       
       const calendarData: Partial<Calendar> = {
         userId,
@@ -56,10 +66,6 @@ export const createCalendar = [
       };
 
       console.log("Processed calendarData:", calendarData);
-
-      if (!calendarData.calImg) {
-        return res.status(400).json({ message: 'calImg is required' });
-      }
 
       const newCalendar: Calendar = await calendarService.createCalendar(calendarData as Omit<Calendar, 'id'>);
       res.status(201).json(newCalendar);
@@ -80,7 +86,9 @@ export const updateCalendar  = [
       const calImgUrl = req.file ? (req.file as any).location : null;
       
       const medications = JSON.parse(req.body.medications ?? '[]');
-      
+      if (!Array.isArray(medications) ?? !validateMedications(medications)) {
+        return res.status(400).json({ message: '유효하지 않은 약물 시간 형식입니다. 시간은 HH:MM 형식이어야 하며, 00:00에서 23:59 사이여야 합니다.' });
+      }
       const calendarData: Partial<Calendar> = {
         ...req.body,
         calImg: calImgUrl,
@@ -96,7 +104,7 @@ export const updateCalendar  = [
       if (updatedCalendar) {
         res.status(200).json(updatedCalendar);
       } else {
-        res.status(404).json({ message: 'Calendar not found' });
+        res.status(404).json({ message: '대상 캘린더를 찾을 수 없습니다.' });
       }
     } catch (error) {
       next(error);
@@ -111,9 +119,9 @@ export const deleteCalendar = async (req: CustomRequest, res: Response, next: Ne
     const { id } = req.params;
     const success: boolean = await calendarService.deleteCalendar(id);
     if (success) {
-      res.status(200).json({ message: 'Calendar deleted successfully' });
+      res.status(200).json({ message: '캘린더 삭제 완료' });
     } else {
-      res.status(404).json({ message: 'Calendar not found' });
+      res.status(404).json({ message: '대상 캘린더를 찾을 수 없습니다.' });
     }
   } catch (error) {
     next(error);
