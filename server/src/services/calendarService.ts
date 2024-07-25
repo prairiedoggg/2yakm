@@ -22,12 +22,27 @@ export const getCalendarById = async (
     const text = 'SELECT * FROM calendar WHERE id = $1';
     const values = [id];
     const result = await pool.query(text, values);
-    return result.rows[0] ?? null;
+    
+    if (result.rows.length === 0) {
+      return null;
+    }
+    
+    const calendar = result.rows[0];
+    
+    // medications 필드를 JSON으로 파싱
+    if (typeof calendar.medications === 'string') {
+      calendar.medications = JSON.parse(calendar.medications);
+    }
+    
+    // 날짜 필드를 Date 객체로 변환
+    calendar.date = new Date(calendar.date);
+    
+    return calendar;
   } catch (error) {
+    console.error('getCalendarById 오류:', error);
     throw createError('DBError', '캘린더 조회 중 데이터베이스 오류가 발생했습니다.', 500);
   }
 };
-
 export const createCalendar = async (
   calendar: Omit<Calendar, 'id'>
 ): Promise<Calendar> => {

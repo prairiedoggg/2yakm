@@ -16,8 +16,8 @@ export const getAllCalendars = async (req: CustomRequest, res: Response, next: N
 
 export const getCalendarById =  async (req: CustomRequest, res: Response, next: NextFunction) => {
   try {
-    const userId = req.user?.email;
-    const calendar: Calendar | null = await calendarService.getCalendarById(userId);
+    const { id } = req.params;
+    const calendar: Calendar | null = await calendarService.getCalendarById(id);
     if (calendar) {
       res.status(200).json(calendar);
     } else {
