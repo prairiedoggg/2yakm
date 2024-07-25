@@ -2,6 +2,13 @@ import { post } from './api';
 import useUserStore from '../store/user';
 import Cookies from 'js-cookie';
 
+export const changePassword = async (email: string, oldPassword: string, newPassword: string, callback?:()=>void) => {
+  try {
+    const data = await post('/api/auth/change-password', { email: email, oldPassword:oldPassword, newPassword:newPassword });
+  } catch (error) {
+    console.error('Login failed', error);
+  }
+};
 
 export const login = async (email: string, password: string) => {
   try {
@@ -9,6 +16,20 @@ export const login = async (email: string, password: string) => {
     storeLoginData(data);
   } catch (error) {
     console.error('Login failed', error);
+  }
+};
+
+export const logout = async (callback?:()=>void) => {
+  try {
+    await post('/api/auth/logout', {});
+    useUserStore.getState().clearUser();
+    Cookies.remove('jwt');
+    if (callback) {
+        callback();
+    }
+
+  } catch (error) {
+    console.error('Logout failed', error);
   }
 };
 
@@ -40,17 +61,3 @@ const storeLoginData = (data:any)=>{
         Cookies.set('jwt', `${data.token}`, { path: '/' });
     }
 }
-
-export const logout = async (callback?:()=>void) => {
-  try {
-    await post('/api/auth/logout', {});
-    useUserStore.getState().clearUser();
-    Cookies.remove('jwt');
-    if (callback) {
-        callback();
-    }
-
-  } catch (error) {
-    console.error('Logout failed', error);
-  }
-};
