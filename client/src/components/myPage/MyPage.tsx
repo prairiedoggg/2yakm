@@ -19,7 +19,6 @@ enum pageState {
   Main,
   EditInfo,
   EditName,
-  ConfirmPassword,
   EditPassword,
   EditPharmacist,
   MyMedications,
@@ -34,7 +33,6 @@ const MyPage = () => {
     switch (currentState) {
       case pageState.EditInfo:
       case pageState.EditName:
-      case pageState.ConfirmPassword:
       case pageState.EditPassword:
       case pageState.EditPharmacist:
       case pageState.MyMedications:
@@ -70,9 +68,7 @@ const MyPage = () => {
         return (
           <EditMyInformation
             onEditNameClick={() => setCurrentState(pageState.EditName)}
-            onEditPasswordClick={() =>
-              setCurrentState(pageState.ConfirmPassword)
-            }
+            onEditPasswordClick={() => setCurrentState(pageState.EditPassword)}
             onEditPharmacistClick={() =>
               setCurrentState(pageState.EditPharmacist)
             }
@@ -84,15 +80,6 @@ const MyPage = () => {
           <EditName
             onEdit={() => {
               setCurrentState(pageState.EditInfo);
-            }}
-          />
-        );
-
-      case pageState.ConfirmPassword:
-        return (
-          <ConfirmPassword
-            onEdit={() => {
-              setCurrentState(pageState.EditPassword);
             }}
           />
         );
@@ -133,7 +120,6 @@ const MyPage = () => {
       case pageState.EditName:
         return '이름 변경';
       case pageState.EditPassword:
-      case pageState.ConfirmPassword:
         return '비밀번호 변경';
       case pageState.EditPharmacist:
         return '약사 인증';
@@ -149,7 +135,6 @@ const MyPage = () => {
   const getStateBackPage = (state: pageState) => {
     switch (state) {
       case pageState.EditName:
-      case pageState.ConfirmPassword:
       case pageState.EditPassword:
       case pageState.EditPharmacist:
         return pageState.EditInfo;
