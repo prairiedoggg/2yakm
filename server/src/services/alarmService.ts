@@ -15,7 +15,7 @@ export const createAlarm = async (alarm: Omit<Alarm, 'id'>): Promise<Alarm> => {
     INSERT INTO alarms (userId, name, startDate, endDate, times)
     VALUES ($1, $2, $3, $4, $5)
     RETURNING       id,
-    userId,
+    userId As "userId",
     name,
     startDate AS "startDate",
     endDate AS "endDate",
@@ -52,7 +52,7 @@ export const updateAlarm = async (id: string, alarm: Partial<Alarm>): Promise<Al
           times = COALESCE($5, times::jsonb),
           updated_at = CURRENT_TIMESTAMP
       WHERE id = $6
-      RETURNING *
+      RETURNING userid AS "userId", name, startDate AS "startDate", endDate AS "endDate", times
     `;
     const values = [
       userId,
@@ -99,6 +99,18 @@ export const scheduleAlarmService = (alarm: Alarm) => {
   const endDateTime = new Date(endDate);
   const startDateTime = new Date(startDate);
   let currentDate = new Date(startDateTime);
+
+    // 테스트용 즉시 실행 알람
+    const testDate = new Date(Date.now() + 10000); // 10초 후 실행
+    const testJob = schedule.scheduleJob(testDate, async () => {
+      console.log('테스트 알람', alarm);
+      console.log('테스트 알람 user id', alarm.userId);
+      console.log(`테스트 알람 실행: ${alarm.id}, 시간: ${testDate.toISOString()}`);
+      await sendEmail(alarm.userId);
+    });
+    console.log(`테스트 알람 예약됨: ${alarm.id}, 시간: ${testDate.toISOString()}`);
+    runningJobs.set(`${alarm.id}_test_${testDate.toISOString()}`, testJob);
+
   while (currentDate <= endDateTime) {
     times.forEach((alarmTime: AlarmTime) => {
       if (alarmTime.status) {
@@ -108,9 +120,11 @@ export const scheduleAlarmService = (alarm: Alarm) => {
 
         if (scheduleDate >= new Date(startDate) && scheduleDate <= endDateTime) {
           const job = schedule.scheduleJob(scheduleDate, async () => {
+            console.log(`알람 실행: ${alarm.id}, 시간: ${scheduleDate.toISOString()}`);
             await sendEmail(alarm.userId);
           });
           
+          console.log(`알람 예약됨: ${alarm.id}, 시간: ${scheduleDate.toISOString()}`);
           runningJobs.set(`${alarm.id}_${alarmTime.time}_${scheduleDate.toISOString()}`, job);
         }
       }
@@ -159,6 +173,8 @@ export const deleteAlarm = async (id: string): Promise<boolean> => {
 
 //메일 발송
 const sendEmail = async (recipientEmail: string) => {
+  console.log(`이메일 전송 시도: ${recipientEmail}`);
+
   const transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {
