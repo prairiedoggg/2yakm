@@ -39,9 +39,9 @@ const MyMedications = () => {
     }
   ];
 
-  const renderItems = (item: MedicationItem) => {
+  const renderItems = (item: MedicationItem, key: number) => {
     return (
-      <Item>
+      <Item key={key}>
         <div className='title'>
           {item.title}
           <Icon
@@ -69,7 +69,9 @@ const MyMedications = () => {
             style={{ color: '#ffbb25' }}
           />
         </div>
-        <div className='items'>{items.map((item) => renderItems(item))}</div>
+        <div className='items'>
+          {items.map((item, index) => renderItems(item, index))}
+        </div>
 
         <Sheet>
           <BottomSheet

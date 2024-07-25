@@ -40,9 +40,9 @@ const ManageReviews = () => {
     }
   ];
 
-  const renderItems = (item: MedicationItem, showHr: boolean) => {
+  const renderItems = (item: MedicationItem, showHr: boolean, key: number) => {
     return (
-      <Item>
+      <Item key={key}>
         <div className='title'>
           <div className='name_ko'>{item.title}</div>
           <div className='name_en'>{item.titleEn}</div>
@@ -69,7 +69,7 @@ const ManageReviews = () => {
         </div>
         <div className='items'>
           {items.map((item, index) =>
-            renderItems(item, index < items.length - 1)
+            renderItems(item, index < items.length - 1, index)
           )}
         </div>
       </StyledContent>
