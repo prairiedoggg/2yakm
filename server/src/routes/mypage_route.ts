@@ -1,31 +1,28 @@
+import { Router } from 'express';
+const router = Router();
 const mypageController = require('../controllers/mypageController');
 const { uploadToMemory, uploadToS3 } = require('../config/imgUploads');
-const authByToken = require('../middlewares/authByToken');
-const express = require('express');
-const router = express.Router();
 
 /**
  * @swagger
  * /mypage:
  *   get:
- *     summary: Get user profile
- *     tags: [MyPage]
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - in: header
- *         name: Authorization
- *         required: true
- *         schema:
- *           type: string
- *         description: Bearer token
+ *     summary: 사용자 프로필 가져오기
+ *     tags: [마이페이지]
  *     responses:
  *       200:
- *         description: User profile found
- *       401:
- *         description: Unauthorized
- *       500:
- *         description: Internal server error
+ *         description: 성공
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 email:
+ *                   type: string
+ *                 username:
+ *                   type: string
+ *                 profileimg:
+ *                   type: string
  */
 router.get('/', mypageController.getUserprofile);
 
@@ -33,17 +30,8 @@ router.get('/', mypageController.getUserprofile);
  * @swagger
  * /mypage:
  *   put:
- *     summary: Update username
- *     tags: [MyPage]
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - in: header
- *         name: Authorization
- *         required: true
- *         schema:
- *           type: string
- *         description: Bearer token
+ *     summary: 사용자 이름 업데이트
+ *     tags: [마이페이지]
  *     requestBody:
  *       required: true
  *       content:
@@ -53,13 +41,10 @@ router.get('/', mypageController.getUserprofile);
  *             properties:
  *               username:
  *                 type: string
+ *                 example: 새사용자이름
  *     responses:
  *       200:
- *         description: Username updated successfully
- *       401:
- *         description: Unauthorized
- *       500:
- *         description: Internal server error
+ *         description: 성공
  */
 router.put('/', mypageController.updateName);
 
@@ -67,34 +52,25 @@ router.put('/', mypageController.updateName);
  * @swagger
  * /mypage/profile-picture/memory:
  *   put:
- *     summary: Update profile picture (Memory)
- *     tags: [MyPage]
- *     security:
- *       - bearerAuth: []
+ *     summary: 메모리에 프로필 사진 업데이트
+ *     tags: [마이페이지]
+ *     consumes:
+ *       - multipart/form-data
  *     parameters:
- *       - in: header
- *         name: Authorization
- *         required: true
- *         schema:
- *           type: string
- *         description: Bearer token
- *     requestBody:
- *       required: true
- *       content:
- *         multipart/form-data:
- *           schema:
- *             type: object
- *             properties:
- *               profilePicture:
- *                 type: string
- *                 format: binary
+ *       - in: formData
+ *         name: profilePicture
+ *         type: file
+ *         description: 업로드할 프로필 사진
  *     responses:
  *       200:
- *         description: Profile picture updated successfully
- *       401:
- *         description: Unauthorized
- *       500:
- *         description: Internal server error
+ *         description: 성공
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 profileimg:
+ *                   type: string
  */
 router.put('/profile-picture/memory', uploadToMemory.single('profilePicture'), mypageController.updateProfilePictureMemory);
 
@@ -102,35 +78,26 @@ router.put('/profile-picture/memory', uploadToMemory.single('profilePicture'), m
  * @swagger
  * /mypage/profile-picture/s3:
  *   put:
- *     summary: Update profile picture (S3)
- *     tags: [MyPage]
- *     security:
- *       - bearerAuth: []
+ *     summary: S3에 프로필 사진 업데이트
+ *     tags: [마이페이지]
+ *     consumes:
+ *       - multipart/form-data
  *     parameters:
- *       - in: header
- *         name: Authorization
- *         required: true
- *         schema:
- *           type: string
- *         description: Bearer token
- *     requestBody:
- *       required: true
- *       content:
- *         multipart/form-data:
- *           schema:
- *             type: object
- *             properties:
- *               profilePicture:
- *                 type: string
- *                 format: binary
+ *       - in: formData
+ *         name: profilePicture
+ *         type: file
+ *         description: 업로드할 프로필 사진
  *     responses:
  *       200:
- *         description: Profile picture updated successfully
- *       401:
- *         description: Unauthorized
- *       500:
- *         description: Internal server error
+ *         description: 성공
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 profileimg:
+ *                   type: string
  */
 router.put('/profile-picture/s3', uploadToS3.single('profilePicture'), mypageController.updateProfilePictureS3);
 
-export default router
+export default router;
