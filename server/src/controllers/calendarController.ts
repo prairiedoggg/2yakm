@@ -1,10 +1,10 @@
 import { Response, NextFunction } from 'express';
 import { CustomRequest } from '../types/express.d';
 import { Calendar } from '../entity/calendar';
-const calendarService = require('../services/calendarService');
-const { uploadToS3 } = require('../config/imgUploads');
+import * as calendarService from '../services/calendarService';
+import { uploadToS3 } from '../config/imgUploads';
 
-exports.getAllCalendars = async (req: CustomRequest, res: Response, next: NextFunction) => {
+export const getAllCalendars = async (req: CustomRequest, res: Response, next: NextFunction) => {
   try {
     const userId = req.user?.email;
     const calendars: Calendar[] = await calendarService.getAllCalendars(userId);
@@ -14,7 +14,7 @@ exports.getAllCalendars = async (req: CustomRequest, res: Response, next: NextFu
   }
 };
 
-exports.getCalendarById = async (req: CustomRequest, res: Response, next: NextFunction) => {
+export const getCalendarById =  async (req: CustomRequest, res: Response, next: NextFunction) => {
   try {
     const userId = req.user?.email;
     const calendar: Calendar | null = await calendarService.getCalendarById(userId);
@@ -28,7 +28,7 @@ exports.getCalendarById = async (req: CustomRequest, res: Response, next: NextFu
   }
 };
 
-exports.createCalendar = [
+export const createCalendar = [
   uploadToS3.single('calImg'),
   async (req: CustomRequest, res: Response, next: NextFunction) => {
     try {
@@ -41,7 +41,7 @@ exports.createCalendar = [
         return res.status(400).json({ message: '유효하지 않은 날짜 형식입니다.' });
       }
       
-      const medications = JSON.parse(req.body.medications || '[]');
+      const medications = req.body.medications ? JSON.parse(req.body.medications) : [];
       
       const calendarData: Partial<Calendar> = {
         userId,
@@ -57,7 +57,11 @@ exports.createCalendar = [
 
       console.log("Processed calendarData:", calendarData);
 
-      const newCalendar: Calendar = await calendarService.createCalendar(calendarData);
+      if (!calendarData.calImg) {
+        return res.status(400).json({ message: 'calImg is required' });
+      }
+
+      const newCalendar: Calendar = await calendarService.createCalendar(calendarData as Omit<Calendar, 'id'>);
       res.status(201).json(newCalendar);
     } catch (error) {
       console.error("Error in createCalendar:", error);
@@ -66,7 +70,7 @@ exports.createCalendar = [
   } 
 ];
 
-exports.updateCalendar = [
+export const updateCalendar  = [
   uploadToS3.single('calImg'),
   async (req: CustomRequest, res: Response, next: NextFunction) => {
     console.log('Update request body:', req.body);
@@ -75,7 +79,7 @@ exports.updateCalendar = [
       const { id } = req.params;
       const calImgUrl = req.file ? (req.file as any).location : null;
       
-      const medications = JSON.parse(req.body.medications || '[]');
+      const medications = JSON.parse(req.body.medications ?? '[]');
       
       const calendarData: Partial<Calendar> = {
         ...req.body,
@@ -88,7 +92,7 @@ exports.updateCalendar = [
         bloodsugarAfter: req.body.bloodsugarAfter ? parseFloat(req.body.bloodsugarAfter) : undefined,
         medications: medications
       };
-      const updatedCalendar: Calendar = await calendarService.updateCalendar(id, calendarData);
+      const updatedCalendar: Calendar | null = await calendarService.updateCalendar(id, calendarData);
       if (updatedCalendar) {
         res.status(200).json(updatedCalendar);
       } else {
@@ -101,7 +105,7 @@ exports.updateCalendar = [
 ];
 
 
-exports.deleteCalendar = async (req: CustomRequest, res: Response, next: NextFunction) => {
+export const deleteCalendar = async (req: CustomRequest, res: Response, next: NextFunction) => {
   try {
     const userId = req.user?.email;
     const { id } = req.params;

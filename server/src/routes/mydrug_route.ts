@@ -8,4 +8,4 @@ router.put('/:mydrugid', updateMyDrug)
 router.get('/:userid', getMyDrugs)
 router.delete('/:mydrugid', deleteMyDrug)
 
-module.exports = router;
+export default router;

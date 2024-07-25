@@ -1,7 +1,7 @@
-const express = require('express');
-const alarmController = require('../controllers/alarmController');
+import { Router } from 'express';
+import * as alarmController from '../controllers/alarmController';
 
-const router = express.Router();
+const router = Router();
 
 /**
  * @swagger
@@ -18,7 +18,10 @@ const router = express.Router();
  *             properties:
  *               name:
  *                 type: string
- *               date:
+ *               startDate:
+ *                 type: string
+ *                 format: date-time
+ *               endDate:
  *                 type: string
  *                 format: date-time
  *               times:
@@ -31,8 +34,6 @@ const router = express.Router();
  *                       pattern: ^\d{2}:\d{2}$
  *                     status:
  *                       type: boolean
- *               message:
- *                 type: string
  *     responses:
  *       201:
  *         description: 알람 생성 성공
@@ -90,7 +91,10 @@ router.get('/', alarmController.getUserAlarmsController);
  *             properties:
  *               name:
  *                 type: string
- *               date:
+ *               startDate:
+ *                 type: string
+ *                 format: date-time
+ *               endDate:
  *                 type: string
  *                 format: date-time
  *               times:
@@ -103,8 +107,6 @@ router.get('/', alarmController.getUserAlarmsController);
  *                       pattern: ^\d{2}:\d{2}$
  *                     status:
  *                       type: boolean
- *               message:
- *                 type: string
  *     responses:
  *       200:
  *         description: 알람 업데이트 성공
@@ -165,7 +167,10 @@ router.delete('/:id', alarmController.deleteAlarmController);
  *           type: string
  *         name:
  *           type: string
- *         date:
+ *         startDate:
+ *           type: string
+ *           format: date-time
+ *         endDate:
  *           type: string
  *           format: date-time
  *         times:
@@ -178,8 +183,6 @@ router.delete('/:id', alarmController.deleteAlarmController);
  *                 pattern: ^\d{2}:\d{2}$
  *               status:
  *                 type: boolean
- *         message:
- *           type: string
  */
 
-module.exports = router;
+export default router;

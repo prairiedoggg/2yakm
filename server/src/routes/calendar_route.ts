@@ -1,5 +1,6 @@
-const { Router } = require("express");
-const calendarController = require('../controllers/calendarController');
+import { Router } from 'express';
+import * as calendarController from '../controllers/calendarController';
+
 const router = Router();
 
 /**
@@ -210,4 +211,4 @@ router.put('/:id', calendarController.updateCalendar);
  */
 router.delete('/:id', calendarController.deleteCalendar);
 
-module.exports = router;
+export default router;

@@ -11,10 +11,16 @@ async function webSearch(query: string) {
         key: process.env.GOOGLE_API_KEY,
         cx: process.env.GOOGLE_CSE_ID,
         q: query
+      },
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+        'User-Agent': 'axios/1.7.2',
+        'Accept-Encoding': 'gzip, compress, deflate, br'
       }
     });
 
-    return response.data.items || [];
+    return response.data.items ?? [];
   } catch (error) {
     console.error('웹 검색 오류:', error);
     if (axios.isAxiosError(error)) {
