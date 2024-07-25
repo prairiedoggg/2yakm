@@ -1,39 +1,32 @@
 import { useState, useEffect } from 'react';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
 import styled from 'styled-components';
-import { Select, Button, Input } from 'antd';
+import { Button, Input, DatePicker } from 'antd';
 import { Icon } from '@iconify-icon/react';
 import { useAlarmStore, Alarm } from '../../store/alarm';
-
-const { Option } = Select;
+import axios from 'axios';
+import dayjs, { Dayjs } from 'dayjs';
 
 const AlarmSettings = () => {
   const setCurrentPage = useAlarmStore((state) => state.setCurrentPage);
   const currentAlarm = useAlarmStore((state) => state.currentAlarm);
-  const queryClient = useQueryClient();
 
   const [alarmName, setAlarmName] = useState<string>('');
-  const [frequency, setFrequency] = useState<string>('하루 3번');
   const [alarmTimes, setAlarmTimes] = useState<string[]>([
     '오전 9:00',
     '오후 1:00',
     '오후 8:00'
   ]);
-  const [duration, setDuration] = useState<number>(3);
+  const [startDate, setStartDate] = useState<Dayjs | null>(dayjs()); 
+  const [endDate, setEndDate] = useState<Dayjs | null>(dayjs().add(3, 'days')); 
 
   useEffect(() => {
     if (currentAlarm) {
       setAlarmName(currentAlarm.name);
-      setFrequency(currentAlarm.frequency);
       setAlarmTimes(currentAlarm.times);
-      setDuration(currentAlarm.duration);
+      setStartDate(dayjs(currentAlarm.startDate));
+      setEndDate(dayjs(currentAlarm.endDate));
     }
   }, [currentAlarm]);
-
-  // 빈도 변경
-  const handleFrequencyChange = (value: string) => {
-    setFrequency(value);
-  };
 
   // 알람 시간 추가
   const handleAddTime = () => {
@@ -52,36 +45,42 @@ const AlarmSettings = () => {
     newAlarmTimes[index] = value;
     setAlarmTimes(newAlarmTimes);
   };
-// 알람 기간 변경
-    const handleDurationChange = (value: number) => {
-      setDuration(value);
-    };
 
   // 알람 저장후 메인 알람 페이지로 이동
   const handleSave = () => {
-    const startDate = new Date().toISOString();
-    const endDate = new Date(
-      Date.now() + duration * 24 * 60 * 60 * 1000
-    ).toISOString();
-
     const alarmData: Alarm = {
       id: currentAlarm?.id,
       name: alarmName,
-      frequency,
       times: alarmTimes,
-      startDate,
-      endDate,
-      interval: 0,
-      message: '',
-      time: '',
-      alarmStatus: true,
-      duration
+      startDate: startDate?.toISOString() || '',
+      endDate: endDate?.toISOString() || '',
+      alarmStatus: true
     };
 
     if (currentAlarm) {
     } else {
     }
     setCurrentPage('main');
+
+    if (currentAlarm) {
+      axios
+        .put(
+          `${import.meta.env.VITE_APP_SERVER_BASE_URL}/api/alarms/${
+            currentAlarm.id
+          }`,
+          alarmData
+        )
+        .then(() => setCurrentPage('main'))
+        .catch((error) => console.error('에러:', error));
+    } else {
+      axios
+        .post(
+          `${import.meta.env.VITE_APP_SERVER_BASE_URL}/api/alarms`,
+          alarmData
+        )
+        .then(() => setCurrentPage('main'))
+        .catch((error) => console.error('에러:', error));
+    }
   };
 
   return (
@@ -97,30 +96,17 @@ const AlarmSettings = () => {
               onChange={(e) => setAlarmName(e.target.value)}
             />
           </AlarmName>
-          <AlarmDuration>
-            <h4>얼마동안 약을 드셔야 하나요?</h4>
-            <Select
-              defaultValue='3일'
-              style={{ width: 150 }}
-              onChange={(value) => handleDurationChange(Number(value))}
-            >
-              <Option value='3일'>3일</Option>
-              <Option value='5일'>5일</Option>
-              <Option value='무제한'>내가 알람을 끌때까지</Option>
-            </Select>
-          </AlarmDuration>
-          <AlarmFrequency>
-            <h4>하루에 몇 번 드셔야 하나요</h4>
-            <Select
-              defaultValue='하루 3번'
-              style={{ width: 150 }}
-              onChange={handleFrequencyChange}
-            >
-              <Option value='하루 3번'>하루 3번</Option>
-              <Option value='하루 2번'>하루 2번</Option>
-              <Option value='하루 1번'>하루 1번</Option>
-            </Select>
-          </AlarmFrequency>
+          <AlarmStartDate>
+            <h4>언제부터 약을 드시나요?</h4>
+            <DatePicker
+              value={startDate}
+              onChange={(date) => setStartDate(date)}
+            />
+          </AlarmStartDate>
+          <AlarmEndDate>
+            <h4>언제까지 약을 드시나요?</h4>
+            <DatePicker value={endDate} onChange={(date) => setEndDate(date)} />
+          </AlarmEndDate>
           <AlarmTime>
             <h4>알람 시간</h4>
             {alarmTimes.map((time, index) => (
@@ -187,9 +173,9 @@ const SettingList = styled.div`
 
 const AlarmName = styled.section``;
 
-const AlarmDuration = styled.section``;
+const AlarmStartDate = styled.section``;
 
-const AlarmFrequency = styled.section``;
+const AlarmEndDate = styled.section``;
 
 const AlarmTime = styled.section`
   div {

@@ -18,10 +18,10 @@ const AlarmPage = () => {
       })
       .then((res) => {
         setAlarms(res.data);
-        console.log(res.data)
-        setIsToggled(Array(res.data.length).fill(true)); 
+        console.log('알람페이지:', res.data);
+        setIsToggled(Array(res.data.length).fill(true));
       })
-      .catch((error) => console.error(error));
+      .catch((error) => console.error('에러:', error));
   }, [setAlarms]);
 
   // 알람 온오프 토글기능
@@ -50,7 +50,7 @@ const AlarmPage = () => {
           setAlarms(alarms.filter((_, i) => i !== index));
           setIsToggled(isToggled.filter((_, i) => i !== index));
         })
-        .catch((error) => console.error(error));
+        .catch((error) => console.error('에러:', error));
     }
   };
 
@@ -73,8 +73,7 @@ const AlarmPage = () => {
               <AlarmItem onClick={() => handleEditAlarm(alarm)}>
                 <AlarmHeader>
                   <AlarmName>{alarm.name}</AlarmName>
-                  <AlarmFrequency>{alarm.frequency}</AlarmFrequency>
-
+           
                   <ToggleSwitch onClick={(event) => event.stopPropagation()}>
                     <input
                       type='checkbox'
@@ -152,10 +151,6 @@ const AlarmHeader = styled.div`
 const AlarmName = styled.h4`
   padding-left: 5px;
   font-weight: 500;
-`;
-
-const AlarmFrequency = styled.p`
-  font-weight: 300;
 `;
 
 const AlarmTimes = styled.div`

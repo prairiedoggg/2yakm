@@ -3,16 +3,11 @@ import create from 'zustand';
 export interface Alarm {
   id?: string;
   userId?: string;
+  name: string;
   startDate: string;
   endDate?: string;
-  interval: number;
-  message: string;
-  time: string;
-  alarmStatus?: boolean;
-  name: string;
-  frequency: string;
   times: string[];
-  duration: number;
+  alarmStatus?: boolean;
 }
 
 interface AlarmState {
