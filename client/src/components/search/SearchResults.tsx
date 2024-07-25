@@ -1,8 +1,15 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { Icon } from '@iconify-icon/react';
 import styled from 'styled-components';
 import PillExp from './PillExp';
 import Review from './Review';
+import { useFavoriteStore } from '../../store/favorite';
+import { fetchPillData } from '../../api/pillApi';
+import {
+  toggleFavoriteApi,
+  fetchFavoriteStatusApi
+} from '../../api/favoriteApi';
 
 interface SearchResultsProps {
   searchQuery: string;
@@ -10,11 +17,40 @@ interface SearchResultsProps {
 
 const SearchResults = ({ searchQuery }: SearchResultsProps) => {
   const [activeTab, setActiveTab] = useState<string>('effectiveness');
-  
-    const tabs = [
-      { key: 'effectiveness', label: '효능•용법' },
-      { key: 'review', label: '리뷰' }
-    ];
+  const { isFavorite, setIsFavorite } = useFavoriteStore();
+  const [pillId, setPillId] = useState<string | null>(null);
+  const [pillData, setPillData] = useState<any>(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const data = await fetchPillData(searchQuery);
+        setPillId(data.id);
+        setPillData(data);
+        console.log('약데이터', data);
+        const status = await fetchFavoriteStatusApi(data.id);
+        setIsFavorite(status);
+      } catch (error) {
+        console.error('검색결과페이지 실패:', error);
+      }
+    };
+    fetchData();
+  }, [searchQuery, setIsFavorite]);
+
+  const handleToggleFavorite = async () => {
+    if (!pillId) return;
+    try {
+      await toggleFavoriteApi(pillId);
+      setIsFavorite(!isFavorite);
+    } catch (error) {
+      console.error('좋아요상태 실패:', error);
+    }
+  };
+
+  const tabs = [
+    { key: 'effectiveness', label: '효능•용법' },
+    { key: 'review', label: '리뷰' }
+  ];
 
   return (
     <SearchResultsContainer>
@@ -22,10 +58,17 @@ const SearchResults = ({ searchQuery }: SearchResultsProps) => {
         <img src={`/img/pill.png`} alt='pill' />
         <section>
           <PillTitle>
-            <p>{searchQuery}</p>
-            <h3>타이레놀정500밀리그람 (아세트아미노펜)</h3>
-            <span>Tylenol Tablet 500mg</span>
-            <p>한국존슨앤드존슨판매(유)</p>
+            <h3>{pillData.name}</h3>
+            <span>{pillData.engname}</span>
+            <p>{pillData.companyname}</p>
+            <HeartButton onClick={handleToggleFavorite}>
+              <Icon
+                icon='mdi:heart'
+                color={isFavorite ? 'red' : 'gray'}
+                width='24'
+                height='24'
+              />
+            </HeartButton>
           </PillTitle>
           <TagContainer>
             <Tag to='/search/tag/두통'>두통</Tag>
@@ -82,6 +125,13 @@ const PillTitle = styled.div`
     font-size: 10px;
     font-style: italic;
   }
+`;
+
+const HeartButton = styled.button`
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
 `;
 
 const TagContainer = styled.div`

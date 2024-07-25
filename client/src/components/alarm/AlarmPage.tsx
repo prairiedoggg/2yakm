@@ -19,6 +19,7 @@ const AlarmPage = () => {
       .then((res) => {
         setAlarms(res.data);
         console.log('알람페이지:', res.data);
+        console.log('알람:', alarms)
         setIsToggled(Array(res.data.length).fill(true));
       })
       .catch((error) => console.error('에러:', error));
@@ -43,7 +44,10 @@ const AlarmPage = () => {
       axios
         .delete(
           `${import.meta.env.VITE_APP_SERVER_BASE_URL}/api/alarms/${
-            alarmToDelete.id
+            (alarmToDelete.id,
+            {
+              withCredentials: true
+            })
           }`
         )
         .then(() => {

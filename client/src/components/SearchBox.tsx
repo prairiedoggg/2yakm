@@ -1,7 +1,7 @@
 import { ChangeEvent, useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { Link } from 'react-router-dom';
-import { useSearchHistoryStore } from '../store/search';
+import { useSearchHistoryStore } from '../store/searchHistory';
 
 interface SearchBoxProps {
   setSearchQuery: (query: string) => void;

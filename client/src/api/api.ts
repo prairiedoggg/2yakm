@@ -18,7 +18,7 @@ export const get = async (url: string, params?: any) => {
 export const post = async (url: string, data: any) => {
     try {
       const response = await api.post(url, data);
-      console.log(response);
+      console.log('확인:',response);
       return response.data;
     } catch (error) {
       console.error(`POST request to ${url} failed`, error);

@@ -16,8 +16,8 @@ const AlarmSettings = () => {
     '오후 1:00',
     '오후 8:00'
   ]);
-  const [startDate, setStartDate] = useState<Dayjs | null>(dayjs()); 
-  const [endDate, setEndDate] = useState<Dayjs | null>(dayjs().add(3, 'days')); 
+  const [startDate, setStartDate] = useState<Dayjs | null>(dayjs());
+  const [endDate, setEndDate] = useState<Dayjs | null>(dayjs().add(3, 'days'));
 
   useEffect(() => {
     if (currentAlarm) {
@@ -58,17 +58,15 @@ const AlarmSettings = () => {
     };
 
     if (currentAlarm) {
-    } else {
-    }
-    setCurrentPage('main');
-
-    if (currentAlarm) {
       axios
         .put(
           `${import.meta.env.VITE_APP_SERVER_BASE_URL}/api/alarms/${
             currentAlarm.id
           }`,
-          alarmData
+          alarmData,
+          {
+            withCredentials: true
+          }
         )
         .then(() => setCurrentPage('main'))
         .catch((error) => console.error('에러:', error));
@@ -76,7 +74,10 @@ const AlarmSettings = () => {
       axios
         .post(
           `${import.meta.env.VITE_APP_SERVER_BASE_URL}/api/alarms`,
-          alarmData
+          alarmData,
+          {
+            withCredentials: true
+          }
         )
         .then(() => setCurrentPage('main'))
         .catch((error) => console.error('에러:', error));

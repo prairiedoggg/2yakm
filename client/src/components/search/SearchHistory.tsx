@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import styled from 'styled-components';
-import { useSearchHistoryStore } from '../../store/search';
+import { useSearchHistoryStore } from '../../store/searchHistory';
 
 const SearchHistory = () => {
   const { history, clearHistory, setHistory } = useSearchHistoryStore(

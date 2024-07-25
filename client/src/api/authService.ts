@@ -4,7 +4,7 @@ import Cookies from 'js-cookie';
 
 export const changePassword = async (email: string, oldPassword: string, newPassword: string, callback?:()=>void) => {
   try {
-    const data = await post('/api/auth/change-password', { email: email, oldPassword:oldPassword, newPassword:newPassword });
+    const data = await post('/api/auth/change-password', { email: email, oldPassword: oldPassword, newPassword: newPassword });
   } catch (error) {
     console.error('Login failed', error);
   }
