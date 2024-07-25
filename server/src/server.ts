@@ -9,15 +9,16 @@ import cookieParser from 'cookie-parser';
 import { errorHandler, notFoundHandler } from './middlewares/errorHandler';
 import authByToken from './middlewares/authByToken';
 
-import visionRouter from './routes/vision_route';
+// import visionRouter from './routes/vision_route';
 import reviewRouter from './routes/review_route';
 import authRouter from './routes/auth_route';
 import calendarRouter from './routes/calendar_route';
 import alarmRouter from './routes/alarm_route';
 import mypageRouter from './routes/mypage_route';
-import mydrugRouter from './routes/mydrug_route';
 import chatbotRouter from './routes/chatbot_route';
 import favoriteRouter from './routes/favorite_route';
+import mypillRouter from './routes/mypill_route';
+import pillRouter from './routes/pill_route';
 
 dotenv.config();
 
@@ -44,15 +45,15 @@ app.use(cookieParser());
 app.use('/api/reviews', reviewRouter);
 app.use('/api/auth', authRouter);
 app.use('/api/favorites', favoriteRouter);
-app.use('/mypage', mypageRouter);
-app.use('/mydrugs', mydrugRouter);
+app.use('/api/mypage', authByToken, mypageRouter);
+app.use('/api/mypills', authByToken, mypillRouter);
 app.use('/api/chatbot', authByToken, chatbotRouter);
 app.use('/api/calendars', authByToken, calendarRouter);
 app.use('/api/alarms', authByToken, alarmRouter);
+app.use('/api/pills', pillRouter);
 
 app.use(notFoundHandler);
 app.use(errorHandler);
-
 app.listen(port, () => {
   console.log(`Server is running http://localhost:${port}`);
 });
