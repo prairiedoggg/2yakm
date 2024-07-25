@@ -1,6 +1,7 @@
 import { Router } from 'express';
 const router = Router();
-const mypageController = require('../controllers/mypageController');
+import {getUserprofile, updateName, updateProfilePictureMemory, updateProfilePictureS3} from '../controllers/mypageController';
+
 const { uploadToMemory, uploadToS3 } = require('../config/imgUploads');
 
 /**
@@ -24,7 +25,7 @@ const { uploadToMemory, uploadToS3 } = require('../config/imgUploads');
  *                 profileimg:
  *                   type: string
  */
-router.get('/', mypageController.getUserprofile);
+router.get('/', getUserprofile);
 
 /**
  * @swagger
@@ -46,7 +47,7 @@ router.get('/', mypageController.getUserprofile);
  *       200:
  *         description: 성공
  */
-router.put('/', mypageController.updateName);
+router.put('/', updateName);
 
 /**
  * @swagger
@@ -72,7 +73,7 @@ router.put('/', mypageController.updateName);
  *                 profileimg:
  *                   type: string
  */
-router.put('/profile-picture/memory', uploadToMemory.single('profilePicture'), mypageController.updateProfilePictureMemory);
+router.put('/profile-picture/memory', uploadToMemory.single('profilePicture'), updateProfilePictureMemory);
 
 /**
  * @swagger
@@ -98,6 +99,6 @@ router.put('/profile-picture/memory', uploadToMemory.single('profilePicture'), m
  *                 profileimg:
  *                   type: string
  */
-router.put('/profile-picture/s3', uploadToS3.single('profilePicture'), mypageController.updateProfilePictureS3);
+router.put('/profile-picture/s3', uploadToS3.single('profilePicture'), updateProfilePictureS3);
 
 export default router;

@@ -1,5 +1,17 @@
 const { uploadToMemory, uploadToS3 } = require('../config/imgUploads');
-const pillController = require('../controllers/pillController');
+import {
+    getPillsHandler, 
+    getPillByIdHandler, 
+    updatePillHandler, 
+    deletePillHandler, 
+    searchPillsbyNameHandler, 
+    searchPillsbyEngNameHandler,
+    searchPillsbyEfficacyHandler,
+    searchPillsByImageHandler,
+    getPillFavoriteCount,
+    getPillReviewCount
+} from "../controllers/pillController"
+
 import { Router } from 'express';
 const router = Router();
 
@@ -74,7 +86,7 @@ const router = Router();
  *                   storagemethod:
  *                     type: string
  */
-router.get('/', pillController.getPillsHandler);
+router.get('/', getPillsHandler);
 
 /**
  * @swagger
@@ -130,7 +142,7 @@ router.get('/', pillController.getPillsHandler);
  *                 storagemethod:
  *                   type: string
  */
-router.get('/:id', pillController.getPillByIdHandler);
+router.get('/:id', getPillByIdHandler);
 
 /**
  * @swagger
@@ -186,7 +198,7 @@ router.get('/:id', pillController.getPillByIdHandler);
  *       200:
  *         description: 성공
  */
-router.put('/:id', pillController.updatePillHandler);
+router.put('/:id', updatePillHandler);
 
 /**
  * @swagger
@@ -205,7 +217,7 @@ router.put('/:id', pillController.updatePillHandler);
  *       200:
  *         description: 성공
  */
-router.delete('/:id', pillController.deletePillHandler);
+router.delete('/:id', deletePillHandler);
 
 /**
  * @swagger
@@ -231,7 +243,7 @@ router.delete('/:id', pillController.deletePillHandler);
  *                 reviewCount:
  *                   type: integer
  */
-router.get('/:id/reviewcount', pillController.getPillReviewCount);
+router.get('/:id/reviewcount', getPillReviewCount);
 
 /**
  * @swagger
@@ -257,7 +269,7 @@ router.get('/:id/reviewcount', pillController.getPillReviewCount);
  *                 favoriteCount:
  *                   type: integer
  */
-router.get('/:id/favoritecount', pillController.getPillFavoriteCount);
+router.get('/:id/favoritecount', getPillFavoriteCount);
 
 /**
  * @swagger
@@ -325,7 +337,7 @@ router.get('/:id/favoritecount', pillController.getPillFavoriteCount);
  *                   storagemethod:
  *                     type: string
  */
-router.get('/search/name', pillController.searchPillsbyNameHandler);
+router.get('/search/name', searchPillsbyNameHandler);
 
 /**
  * @swagger
@@ -393,7 +405,7 @@ router.get('/search/name', pillController.searchPillsbyNameHandler);
  *                   storagemethod:
  *                     type: string
  */
-router.get('/search/engname', pillController.searchPillsbyEngNameHandler);
+router.get('/search/engname', searchPillsbyEngNameHandler);
 
 /**
  * @swagger
@@ -461,7 +473,7 @@ router.get('/search/engname', pillController.searchPillsbyEngNameHandler);
  *                   storagemethod:
  *                     type: string
  */
-router.get('/search/efficacy', pillController.searchPillsbyEfficacyHandler);
+router.get('/search/efficacy', searchPillsbyEfficacyHandler);
 
 /**
  * @swagger
@@ -530,6 +542,6 @@ router.get('/search/efficacy', pillController.searchPillsbyEfficacyHandler);
  *                   storagemethod:
  *                     type: string
  */
-router.get('/search/image', uploadToMemory.single('image'), pillController.searchPillsByImageHandler);
+router.get('/search/image', uploadToMemory.single('image'), searchPillsByImageHandler);
 
 export default router;

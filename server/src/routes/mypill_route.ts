@@ -1,6 +1,6 @@
 import { Router } from 'express';
 const router = Router();
-const mypillController = require('../controllers/mypillController');
+import {addMyPill, updateMyPill, getMyPills, deleteMyPill} from '../controllers/mypillController';
 
 /**
  * @swagger
@@ -26,7 +26,7 @@ const mypillController = require('../controllers/mypillController');
  *       200:
  *         description: 성공
  */
-router.post('/', mypillController.addMyPill);
+router.post('/', addMyPill);
 
 /**
  * @swagger
@@ -59,7 +59,7 @@ router.post('/', mypillController.addMyPill);
  *       200:
  *         description: 성공
  */
-router.put('/:mypillid', mypillController.updateMyPill);
+router.put('/:mypillid', updateMyPill);
 
 /**
  * @swagger
@@ -110,7 +110,7 @@ router.put('/:mypillid', mypillController.updateMyPill);
  *                     type: string
  *                     format: date
  */
-router.get('/', mypillController.getMyPills);
+router.get('/', getMyPills);
 
 /**
  * @swagger
@@ -129,6 +129,6 @@ router.get('/', mypillController.getMyPills);
  *       200:
  *         description: 성공
  */
-router.delete('/:mypillid', mypillController.deleteMyPill);
+router.delete('/:mypillid', deleteMyPill);
 
 export default router;
