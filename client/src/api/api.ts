@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-    baseURL: process.env.REACT_APP_API_BASE_URL,
+    baseURL: 'http://localhost:3000/',//import.meta.env.SERVER_BASE_URL,
     timeout: 10000,
 });
 
@@ -18,6 +18,7 @@ export const get = async (url: string, params?: any) => {
 export const post = async (url: string, data: any) => {
     try {
       const response = await api.post(url, data);
+      console.log(response);
       return response.data;
     } catch (error) {
       console.error(`POST request to ${url} failed`, error);

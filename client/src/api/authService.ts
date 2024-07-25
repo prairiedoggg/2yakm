@@ -1,5 +1,7 @@
 import { post } from './api';
 import useUserStore from '../store/user';
+import Cookies from 'js-cookie';
+
 
 export const login = async (email: string, password: string) => {
   try {
@@ -29,25 +31,26 @@ export const loginForGoogle = async (code:string) => {
 };  
 
 const storeLoginData = (data:any)=>{
+
     if(data.user){
         useUserStore.getState().setUser(data.user);
     }
 
     if (data.token) {
-        localStorage.setItem('token', data.token);
-        checkAuthentication();
+        Cookies.set('jwt', `${data.token}`, { path: '/' });
     }
 }
 
-export const logout = async () => {
+export const logout = async (callback?:()=>void) => {
   try {
     await post('/api/auth/logout', {});
     useUserStore.getState().clearUser();
+    Cookies.remove('jwt');
+    if (callback) {
+        callback();
+    }
+
   } catch (error) {
     console.error('Logout failed', error);
   }
 };
-
-function checkAuthentication() {
-    throw new Error('Function not implemented.');
-}
