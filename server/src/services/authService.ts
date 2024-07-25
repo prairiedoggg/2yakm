@@ -171,8 +171,6 @@ export const verifyEmailService = async (token: string): Promise<void> => {
   }
 };
 
-
-
 // 토큰 갱신
 export const refreshTokenService = async (
   refreshToken: string
@@ -280,7 +278,7 @@ export const kakaoAuthService = async (
         user = newUserResult.rows[0];
       }
 
-      const payload = { id: user.userid, email: user.email };
+      const payload = { id: user.userid, email: user.email, kakoid: user.kakoid };
       const token = jwt.sign(payload, SECRET_KEY, {
         expiresIn: '30m',
       });
@@ -375,7 +373,7 @@ export const naverAuthService = async (
         user = newUserResult.rows[0];
       }
 
-      const payload = { id: user.userid, email: user.email };
+      const payload = { id: user.userid, email: user.email, naverid: user.naverid };
       const token = jwt.sign(payload, SECRET_KEY, {
         expiresIn: '30m',
       });
@@ -467,7 +465,7 @@ export const googleAuthService = async (
         user = newUserResult.rows[0];
       }
 
-      const payload = { id: user.userid, email: user.email };
+      const payload = { id: user.userid, email: user.email, googleid: user.googleid };
       const token = jwt.sign(payload, SECRET_KEY, {
         expiresIn: '30m',
       });
@@ -528,7 +526,6 @@ export const changePasswordService = async (
     throw createError('DBError', '데이터베이스 오류가 발생했습니다.', 500);
   }
 };
-
 
 // 비번 재설정 요청
 export const requestPasswordService = async (email: string): Promise<void> => {
@@ -686,7 +683,6 @@ const unlinkKakaoAccount = async (kakaoId: string): Promise<void> => {
     throw createError('kakaoUnlinkError', '카카오 연동 해제 실패', 500);
   }
 };
-
 
 // 구글 계정 연동 해제
 const unlinkGoogleAccount = async (googleId: string): Promise<void> => {
