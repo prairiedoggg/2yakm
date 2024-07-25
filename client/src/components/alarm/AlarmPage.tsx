@@ -1,11 +1,9 @@
 import { Icon } from '@iconify-icon/react';
-import { useEffect } from 'react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import Header from '../Header';
 import { Alarm, useAlarmStore } from '../../store/alarm';
 import axios from 'axios';
-
 
 const AlarmPage = () => {
   const { alarms, setCurrentPage, setCurrentAlarm, setAlarms } =
@@ -13,9 +11,18 @@ const AlarmPage = () => {
   const [isToggled, setIsToggled] = useState(Array(alarms.length).fill(true));
   const [isDeleteMode, setIsDeleteMode] = useState(false);
 
-  useEffect(() => { 
-    axios.get('http://localhost:3000/api/alarms');
-  })
+  useEffect(() => {
+    axios
+      .get(`${import.meta.env.VITE_APP_SERVER_BASE_URL}/api/alarms`, {
+        withCredentials: true
+      })
+      .then((res) => {
+        setAlarms(res.data);
+        console.log(res.data)
+        setIsToggled(Array(res.data.length).fill(true)); 
+      })
+      .catch((error) => console.error(error));
+  }, [setAlarms]);
 
   // 알람 온오프 토글기능
   const handleToggle = (index: number) => {
@@ -33,10 +40,18 @@ const AlarmPage = () => {
   const handleDelete = (index: number) => {
     const alarmToDelete = alarms[index];
     if (alarmToDelete && alarmToDelete.id) {
-     
+      axios
+        .delete(
+          `${import.meta.env.VITE_APP_SERVER_BASE_URL}/api/alarms/${
+            alarmToDelete.id
+          }`
+        )
+        .then(() => {
+          setAlarms(alarms.filter((_, i) => i !== index));
+          setIsToggled(isToggled.filter((_, i) => i !== index));
+        })
+        .catch((error) => console.error(error));
     }
-    const newToggledState = isToggled.filter((_, i) => i !== index);
-    setIsToggled(newToggledState);
   };
 
   // 알람 수정 모드로 전환
