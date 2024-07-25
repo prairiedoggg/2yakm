@@ -21,3 +21,13 @@ export const fetchFavoriteStatusApi = async (id: string) => {
     throw error;
   }
 };
+
+export const fetchMyFavorites = async (offset:number, limit?:number, sortedBy?:string, order?:string, callback?:(arg0: any)=>void) => {
+  try {
+    const data = await get('/api/favorites', { offset:offset, limit:limit, sortedBy:sortedBy, order:order } );
+
+    if (callback) callback(data);
+  } catch (error) {
+    console.error('Login failed', error);
+  }
+};
