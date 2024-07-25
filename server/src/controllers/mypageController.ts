@@ -1,77 +1,100 @@
-const { MypageService } = require('../services/mypageService');
-const mypageService = new MypageService();
-import { Response, Request } from 'express';
+import { Response, Request, NextFunction } from 'express';
+import { getUserProfile, updateUsername, updateProfilePicture, uploadFileToS3 } from '../services/mypageService';
+import Joi from 'joi';
 
-const getUserProfile = async (req: Request, res: Response) => {
+const updateUsernameSchema = Joi.object({
+  username: Joi.string().min(3).max(30).required(),
+});
+
+const getUserprofile = async (req: any, res: Response, next: NextFunction) => {
   try {
-    const userId = req.params.id;
-    const userProfile = await mypageService.getUserProfile(userId);
+    const user = req.user;
+    if (!user) {
+      return res.status(401).json({ message: 'Unauthorized' });
+    }
+    const userId = user.id;
+    const userProfile = await getUserProfile(userId);
     res.status(200).json(userProfile);
   } catch (error) {
     if (error instanceof Error) {
-      res.status(500).json({ error: error.message });
+      next(error);
     } else {
-      res.status(500).json({ error: 'An unknown error occurred' });
+      next(new Error('An unknown error occurred'));
     }
   }
 };
 
-const updateUsername = async (req: Request, res: Response) => {
+const updateName = async (req: any, res: Response, next: NextFunction) => {
   try {
-    const userId = req.params.id;
-    const updateData = req.body;
-    const updatedUser = await mypageService.updateUsername(userId, updateData);
+    const user = req.user;
+    if (!user) {
+      return res.status(401).json({ message: 'Unauthorized' });
+    }
+    const userId = user.id;
+    const { error, value } = updateUsernameSchema.validate(req.body);
+    if (error) {
+      return res.status(400).json({ error: error.details[0].message });
+    }
+    const updatedUser = await updateUsername(userId, value);
     res.status(200).json(updatedUser);
   } catch (error) {
     if (error instanceof Error) {
-      res.status(500).json({ error: error.message });
+      next(error);
     } else {
-      res.status(500).json({ error: 'An unknown error occurred' });
+      next(new Error('An unknown error occurred'));
     }
   }
 };
 
-/**
- * @swagger
- * updateUsername에서 updateData에 들어가는 req.body는 json형식으로 {"username":"newusername"} 과 같이 써주세요. 
-*/
-
- 
-
-const updateProfilePictureMemory = async (req: Request , res: Response) => {
+const updateProfilePictureMemory = async (req: any, res: Response, next: NextFunction) => {
   try {
+    const user = req.user;
+    if (!user) {
+      return res.status(401).json({ message: 'Unauthorized' });
+    }
+
     if (!req.file) {
       return res.status(400).json({ message: 'No file uploaded' });
     }
-    const updatedProfilePicture = await mypageService.updateProfilePicture(req.params.id, req.file.buffer.toString('base64'));
+    const updatedProfilePicture = await updateProfilePicture(req.params.id, req.file.buffer.toString('base64'));
     res.status(200).json({ profilePicture: updatedProfilePicture });
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
-    res.status(400).json({ message: errorMessage });
+    if (error instanceof Error) {
+      next(error);
+    } else {
+      next(new Error('An unknown error occurred'));
+    }
   }
 };
 
-const updateProfilePictureS3 = async (req: Request, res: Response) => {
+const updateProfilePictureS3 = async (req: any, res: Response, next: NextFunction)=> {
   try {
+    const user = req.user;
+    if (!user) {
+      return res.status(401).json({ message: 'Unauthorized' });
+    }
+
     if (!req.file) {
       return res.status(400).json({ message: 'No file uploaded' });
     }
-    
-    // Assuming you have a method in MypageService to handle S3 upload and return URL
-    const s3Url = await mypageService.uploadFileToS3(req.file);
-    const updatedProfilePicture = await mypageService.updateProfilePicture(req.params.id, s3Url);
-    
+
+    const fileName = req.file.originalname;
+    const s3Url = await uploadFileToS3(req.file, fileName);
+    const updatedProfilePicture = await updateProfilePicture(req.params.id, s3Url);
+
     res.status(200).json({ profilePicture: updatedProfilePicture });
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
-    res.status(400).json({ message: errorMessage });
+    if (error instanceof Error) {
+      next(error);
+    } else {
+      next(new Error('An unknown error occurred'));
+    }
   }
 };
 
-
-module.exports = {
-  getUserProfile,
-  updateUsername,
+export {
+  getUserprofile,
+  updateName,
   updateProfilePictureMemory,
-  updateProfilePictureS3, 
+  updateProfilePictureS3,
 };
