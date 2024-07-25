@@ -24,6 +24,8 @@ export const logout = async (callback?:()=>void) => {
     await post('/api/auth/logout', {});
     useUserStore.getState().clearUser();
     Cookies.remove('jwt');
+    Cookies.remove('token');
+    Cookies.remove('refreshToken');
     if (callback) {
         callback();
     }
