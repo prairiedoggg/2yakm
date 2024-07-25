@@ -1,10 +1,9 @@
 import { useState, useEffect } from 'react';
-import { useMutation, useQueryClient } from 'react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import styled from 'styled-components';
 import { Select, Button, Input } from 'antd';
 import { Icon } from '@iconify-icon/react';
 import { useAlarmStore, Alarm } from '../../store/alarm';
-import { createAlarm, updateAlarm } from '../../api/alarm';
 
 const { Option } = Select;
 
@@ -58,20 +57,6 @@ const AlarmSettings = () => {
       setDuration(value);
     };
 
-  // 알람 생성
-  const createMutation = useMutation(createAlarm, {
-    onSuccess: () => {
-      queryClient.invalidateQueries('alarms');
-    }
-  });
-
-  // 알람 업데이트
-  const updateMutation = useMutation(updateAlarm, {
-    onSuccess: () => {
-      queryClient.invalidateQueries('alarms');
-    }
-  });
-
   // 알람 저장후 메인 알람 페이지로 이동
   const handleSave = () => {
     const startDate = new Date().toISOString();
@@ -94,9 +79,7 @@ const AlarmSettings = () => {
     };
 
     if (currentAlarm) {
-      updateMutation.mutate({ ...currentAlarm, ...alarmData });
     } else {
-      createMutation.mutate(alarmData);
     }
     setCurrentPage('main');
   };
