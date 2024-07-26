@@ -5,9 +5,14 @@ import CalendarDetail from './CalendarDetail';
 import CalendarSection from './CalendarSection';
 import Nav from '../Nav';
 import { useDateStore } from '../../store/store';
+import { get, post } from '../../api/api';
 
 const CalendarPage: React.FC = () => {
   const { value, arrow, setArrow, edit, setEdit } = useDateStore();
+
+  get('http://localhost:3000/api/calendars')
+    .then((res) => console.log(res))
+    .catch((err) => console.log(err));
 
   dayjs.locale('ko');
   const days = dayjs(value).format('D. ddd');
