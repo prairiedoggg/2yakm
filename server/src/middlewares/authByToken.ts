@@ -1,13 +1,16 @@
 import { Request, Response, NextFunction } from 'express';
-const jwt = require('jsonwebtoken');
-const { commonError, createError } = require('../utils/error');
-require('dotenv').config();
+import jwt from 'jsonwebtoken';
+import { commonError, createError } from '../utils/error';
+import { CustomRequest } from '../types/express';
+import dotenv from 'dotenv';
 
-interface CustomRequest extends Request {
-  user?: any;
-}
+dotenv.config();
 
-const authByToken = async (req: CustomRequest, res: Response, next: NextFunction) => {
+const authByToken = async (
+  req: CustomRequest,
+  res: Response,
+  next: NextFunction
+) => {
   const token = req.cookies.jwt;
 
   if (!token) {
@@ -21,7 +24,7 @@ const authByToken = async (req: CustomRequest, res: Response, next: NextFunction
   }
 
   try {
-    const user = jwt.verify(token, process.env.SECRET_KEY);
+    const user = jwt.verify(token, process.env.SECRET_KEY as string);
     req.user = user;
     next();
   } catch (err) {
@@ -35,4 +38,4 @@ const authByToken = async (req: CustomRequest, res: Response, next: NextFunction
   }
 };
 
-module.exports = authByToken;
+export default authByToken;

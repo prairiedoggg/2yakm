@@ -8,5 +8,5 @@ export interface User {
     kakaoId: string;
     naverId: string;
     googleId: string;
-    created_at: Date;
+    createdAt: Date;
 }

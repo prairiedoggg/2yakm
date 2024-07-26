@@ -1,5 +1,5 @@
-const express = require('express');
-const {
+import { Router } from 'express';
+import {
   loginController,
   signupController,
   refreshTokenController,
@@ -8,9 +8,17 @@ const {
   changePasswordController,
   requestPasswordController,
   resetPasswordController,
-  googleAuthController
-} = require('../controllers/authController');
-const router = express.Router();
+  googleAuthController,
+  linkKakaoAccountController,
+  linkGoogleAccountController,
+  verifyEmailController,
+  requestEmailVerificationController,
+  changeUsernameController,
+  deleteAccountController,
+  naverAuthController
+} from '../controllers/authController';
+
+const router = Router();
 
 /**
  * @swagger
@@ -91,6 +99,64 @@ router.post('/signup', signupController);
 
 /**
  * @swagger
+ * /api/auth/request-email-verification:
+ *   post:
+ *     summary: 이메일 인증 요청
+ *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               email:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: 이메일 인증 링크가 전송되었습니다.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ */
+router.post('/request-email-verification', requestEmailVerificationController);
+
+/**
+ * @swagger
+ * /api/auth/token:
+ *   post:
+ *     summary: 토큰 갱신
+ *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               refreshToken:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: 토큰 갱신 성공
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 token:
+ *                   type: string
+ *                 refreshToken:
+ *                   type: string
+ */
+router.post('/token', refreshTokenController);
+
+/**
+ * @swagger
  * /api/auth/kakao/callback:
  *   get:
  *     summary: 카카오 로그인 콜백
@@ -109,14 +175,54 @@ router.post('/signup', signupController);
  *             schema:
  *               type: object
  *               properties:
+ *                 token:
+ *                   type: string
+ *                 refreshToken:
+ *                   type: string
+ *       400:
+ *         description: 인증 실패
+ */
+router.get('/kakao/callback', kakaoAuthController);
+
+/**
+ * @swagger
+ * /api/auth/naver/callback:
+ *   get:
+ *     summary: 네이버 로그인 콜백
+ *     tags: [Auth]
+ *     parameters:
+ *       - name: code
+ *         in: query
+ *         required: true
+ *         schema:
+ *           type: string
+ *       - name: state
+ *         in: query
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: 로그인 성공
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
  *                 message:
  *                   type: string
  *                 token:
  *                   type: string
- *       500:
- *         description: 서버 오류
+ *                 refreshToken:
+ *                   type: string
+ *                 userName:
+ *                   type: string
+ *                 email:
+ *                   type: string
+ *       400:
+ *         description: 인증 실패
  */
-router.get('/kakao/callback', kakaoAuthController);
+router.get('/naver/callback', naverAuthController);
 
 /**
  * @swagger
@@ -168,29 +274,8 @@ router.post('/logout', logoutController);
 
 /**
  * @swagger
- * /api/auth/token:
- *   post:
- *     summary: 토큰 갱신
- *     tags: [Auth]
- *     responses:
- *       200:
- *         description: 토큰 갱신 성공
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                 token:
- *                   type: string
- */
-router.post('/token', refreshTokenController);
-
-/**
- * @swagger
  * /api/auth/change-password:
- *   post:
+ *   patch:
  *     summary: 비밀번호 변경
  *     tags: [Auth]
  *     requestBody:
@@ -217,7 +302,7 @@ router.post('/token', refreshTokenController);
  *                 message:
  *                   type: string
  */
-router.post('/change-password', changePasswordController);
+router.patch('/change-password', changePasswordController);
 
 /**
  * @swagger
@@ -277,4 +362,151 @@ router.post('/request-password', requestPasswordController);
  */
 router.post('/reset-password', resetPasswordController);
 
-module.exports = router;
+/**
+ * @swagger
+ * /api/auth/link/kakao:
+ *   post:
+ *     summary: 카카오 계정 연동
+ *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               userId:
+ *                 type: number
+ *               socialId:
+ *                 type: string
+ *               email:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: 카카오 계정 연동 성공
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ */
+router.post('/link/kakao', linkKakaoAccountController);
+
+/**
+ * @swagger
+ * /api/auth/link/google:
+ *   post:
+ *     summary: 구글 계정 연동
+ *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               userId:
+ *                 type: number
+ *               socialId:
+ *                 type: string
+ *               email:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: 구글 계정 연동 성공
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ */
+router.post('/link/google', linkGoogleAccountController);
+
+/**
+ * @swagger
+ * /api/auth/verify-email:
+ *   get:
+ *     summary: 이메일 인증
+ *     tags: [Auth]
+ *     parameters:
+ *       - name: token
+ *         in: query
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *        200:
+ *          description: 이메일 인증 완료
+ *          content:
+ *            application/json:
+ *              schema:
+ *                type: object
+ *                properties:
+ *                  message:
+ *                    type: string
+ */
+router.get('/verify-email', verifyEmailController);
+
+/**
+ * @swagger
+ * /api/auth/change-username:
+ *   patch:
+ *     summary: 유저네임 변경
+ *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               email:
+ *                 type: string
+ *               newUsername:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: 유저네임 변경 성공
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ */
+router.patch('/change-username', changeUsernameController);
+
+/**
+ * @swagger
+ * /api/auth/delete-account:
+ *   delete:
+ *     summary: 회원탈퇴
+ *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               userId:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: 회원탈퇴 성공
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ */
+router.delete('/delete-account', deleteAccountController);
+
+export default router;

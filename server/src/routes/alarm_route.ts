@@ -1,7 +1,7 @@
-const express = require('express');
-const alarmController = require('../controllers/alarmController');
+import { Router } from 'express';
+import * as alarmController from '../controllers/alarmController';
 
-const router = express.Router();
+const router = Router();
 
 /**
  * @swagger
@@ -16,44 +16,35 @@ const router = express.Router();
  *           schema:
  *             type: object
  *             properties:
+ *               name:
+ *                 type: string
  *               startDate:
  *                 type: string
  *                 format: date-time
- *               duration:
- *                 type: number
- *               interval:
- *                 type: number
- *               message:
+ *               endDate:
  *                 type: string
- *               time:
- *                 type: string
- *                 pattern: ^\d{2}:\d{2}$
+ *                 format: date-time
+ *               times:
+ *                 type: array
+ *                 items:
+ *                   type: object
+ *                   properties:
+ *                     time:
+ *                       type: string
+ *                       pattern: ^\d{2}:\d{2}$
+ *                     status:
+ *                       type: boolean
  *     responses:
  *       201:
  *         description: 알람 생성 성공
  *         content:
  *           application/json:
  *             schema:
- *               type: object
- *               properties:
- *                 userId:
- *                   type: string
- *                 startDate:
- *                   type: string
- *                   format: date-time
- *                 endDate:
- *                   type: string
- *                   format: date-time
- *                 interval:
- *                   type: number
- *                 message:
- *                   type: string
- *                 time:
- *                   type: string
- *                 alarmStatus:
- *                   type: boolean
+ *               $ref: '#/components/schemas/Alarm'
  *       400:
  *         description: 잘못된 요청
+ *       401:
+ *         description: 인증되지 않은 사용자
  *       500:
  *         description: 서버 오류
  */
@@ -73,24 +64,7 @@ router.post('/', alarmController.createAndScheduleAlarm);
  *             schema:
  *               type: array
  *               items:
- *                 type: object
- *                 properties:
- *                   userId:
- *                     type: string
- *                   startDate:
- *                     type: string
- *                     format: date-time
- *                   endDate:
- *                     type: string
- *                     format: date-time
- *                   interval:
- *                     type: number
- *                   message:
- *                     type: string
- *                   time:
- *                     type: string
- *                   alarmStatus:
- *                     type: boolean
+ *                 $ref: '#/components/schemas/Alarm'
  *       500:
  *         description: 서버 오류
  */
@@ -115,45 +89,35 @@ router.get('/', alarmController.getUserAlarmsController);
  *           schema:
  *             type: object
  *             properties:
+ *               name:
+ *                 type: string
  *               startDate:
  *                 type: string
  *                 format: date-time
  *               endDate:
  *                 type: string
  *                 format: date-time
- *               interval:
- *                 type: number
- *               message:
- *                 type: string
- *               time:
- *                 type: string
- *                 pattern: ^\d{2}:\d{2}$
- *               alarmStatus:
- *                 type: boolean
+ *               times:
+ *                 type: array
+ *                 items:
+ *                   type: object
+ *                   properties:
+ *                     time:
+ *                       type: string
+ *                       pattern: ^\d{2}:\d{2}$
+ *                     status:
+ *                       type: boolean
  *     responses:
  *       200:
  *         description: 알람 업데이트 성공
  *         content:
  *           application/json:
  *             schema:
- *               type: object
- *               properties:
- *                 userId:
- *                   type: string
- *                 startDate:
- *                   type: string
- *                   format: date-time
- *                 endDate:
- *                   type: string
- *                   format: date-time
- *                 interval:
- *                   type: number
- *                 message:
- *                   type: string
- *                 time:
- *                   type: string
- *                 alarmStatus:
- *                   type: boolean
+ *               $ref: '#/components/schemas/Alarm'
+ *       400:
+ *         description: 잘못된 요청
+ *       401:
+ *         description: 인증되지 않은 사용자
  *       404:
  *         description: 알람을 찾을 수 없음
  *       500:
@@ -190,4 +154,35 @@ router.put('/:id', alarmController.updateAlarmController);
  */
 router.delete('/:id', alarmController.deleteAlarmController);
 
-module.exports = router;
+/**
+ * @swagger
+ * components:
+ *   schemas:
+ *     Alarm:
+ *       type: object
+ *       properties:
+ *         id:
+ *           type: string
+ *         userId:
+ *           type: string
+ *         name:
+ *           type: string
+ *         startDate:
+ *           type: string
+ *           format: date-time
+ *         endDate:
+ *           type: string
+ *           format: date-time
+ *         times:
+ *           type: array
+ *           items:
+ *             type: object
+ *             properties:
+ *               time:
+ *                 type: string
+ *                 pattern: ^\d{2}:\d{2}$
+ *               status:
+ *                 type: boolean
+ */
+
+export default router;

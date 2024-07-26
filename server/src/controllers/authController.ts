@@ -1,71 +1,83 @@
 import { Request, Response, NextFunction } from 'express';
-const {
-  loginService,
+import { 
+  login,
   signupService,
   refreshTokenService,
   kakaoAuthService,
   changePasswordService,
   requestPasswordService,
   resetPasswordService,
-  googleAuthService
-} = require('../services/authService');
-const { createError } = require('../utils/error');
+  googleAuthService,
+  naverAuthService,
+  linkSocialAccountService,
+  verifyEmailService,
+  requestEmailVerification,
+  changeUsernameService,
+  deleteAccountService
+} from '../services/authService';
+import { createError } from '../utils/error';
 
 // 로그인
-exports.loginController = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
+export const loginController = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { email, password } = req.body;
-    const result = await loginService(email, password);
+    const result = await login(email, password);
     res.cookie('jwt', result.token, { httpOnly: true });
     res.cookie('refreshToken', result.refreshToken, { httpOnly: true });
-    res.status(200).json({ message: '로그인 성공', token: result.token });
+    res.status(200).json({ message: '로그인 성공', token: result.token, refreshToken: result.refreshToken, userName: result.userName, email: result.email });
   } catch (error) {
     next(error);
   }
 };
 
+// 이메일 인증 요청
+export const requestEmailVerificationController = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { email } = req.body;
+    if (!email) {
+      throw createError('InvalidInput', '이메일을 입력해야 합니다.', 400);
+    }
+    await requestEmailVerification(email);
+    res.status(200).json({ message: '이메일 인증 링크가 전송되었습니다.' });
+  } catch (error) {
+    next(error)
+  }
+};
+
 // 회원가입
-exports.signupController = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
+export const signupController = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { email, username, password, confirmPassword } = req.body;
-    if (!email || !username || !password || !confirmPassword) {
+    if (email == null ?? username == null ?? password == null ?? confirmPassword == null) {
       throw createError(
         'InvalidInput',
         '이메일, 유저네임, 비밀번호를 모두 입력해야 합니다.',
         400
       );
     }
-    const newUser = await signupService(
-      email,
-      username,
-      password,
-      confirmPassword
-    );
-    res.status(201).json({ message: '회원가입 성공', user: newUser });
+    await signupService(email, username, password, confirmPassword);
+    res.status(200).json({ message: '회원가입이 완료되었습니다' });
+  } catch (error) {
+    next(error)
+  }
+};
+
+// 이메일 인증
+export const verifyEmailController = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { token } = req.query;
+    await verifyEmailService(token as string);
+    res.status(200).json({ message: '이메일 인증 완료되었습니다. 회원가입을 계속해주세요.' });
   } catch (error) {
     next(error);
   }
 };
 
 // 토큰 갱신
-exports.refreshTokenController = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
+export const refreshTokenController = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { refreshToken } = req.body;
-    const { token, refreshToken: newRefreshToken } = await refreshTokenService(
-      refreshToken
-    );
+    const { token, refreshToken: newRefreshToken } = await refreshTokenService(refreshToken);
     res.status(200).json({ token, refreshToken: newRefreshToken });
   } catch (error) {
     next(error);
@@ -73,46 +85,62 @@ exports.refreshTokenController = async (
 };
 
 // 카카오 인증 (로그인 및 회원가입)
-exports.kakaoAuthController = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
+export const kakaoAuthController = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { code } = req.query;
-    console.log({ code });
-    const result = await kakaoAuthService(code);
-    res.cookie('jwt', result.token, { httpOnly: true });
-    res.cookie('refreshToken', result.refreshToken, { httpOnly: true });
-    res.status(200).json({ message: '카카오 인증 성공', token: result.token });
+    console.log({code});
+    const result = await kakaoAuthService(code as string);
+    if (result.message) {
+      res.status(400).json({ message: result.message });
+    } else {
+      res.cookie('jwt', result.token, { httpOnly: true });
+      res.cookie('refreshToken', result.refreshToken, { httpOnly: true });
+      res.status(200).json({ message: '로그인 성공', token: result.token, refreshToken: result.refreshToken, userName: result.userName, email: result.email });
+    }
   } catch (error) {
     next(error);
   }
 };
 
+// 네이버 로그인
+export const naverAuthController = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { code, state } = req.query;
+    const result = await naverAuthService(code as string, state as string);
+    
+    if (result.message) {
+      res.status(400).json({ message: result.message });
+    } else {
+      res.cookie('jwt', result.token, { httpOnly: true });
+      res.cookie('refreshToken', result.refreshToken, { httpOnly: true });
+      res.status(200).json({ message: '네이버 인증 성공', token: result.token, refreshToken: result.refreshToken, userName: result.userName, email: result.email });
+    }
+  } catch (error) {
+    next(error);
+  }
+};
+
+
 // 구글 로그인
-exports.googleAuthController = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
+export const googleAuthController = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { code } = req.query;
     const result = await googleAuthService(code as string);
-    res.cookie('jwt', result.token, { httpOnly: true });
-    res.cookie('refreshToken', result.refreshToken, { httpOnly: true });
-    res.status(200).json({ message: '구글 인증 성공', token: result.token });
+    
+    if (result.message) {
+      res.status(400).json({ message: result.message });
+    } else {
+      res.cookie('jwt', result.token, { httpOnly: true });
+      res.cookie('refreshToken', result.refreshToken, { httpOnly: true });
+      res.status(200).json({ message: '구글 인증 성공', token: result.token, refreshToken: result.refreshToken, userName: result.userName, email: result.email });
+    }
   } catch (error) {
     next(error);
   }
 };
 
 // 로그아웃
-exports.logoutController = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
+export const logoutController = async (req: Request, res: Response, next: NextFunction) => {
   try {
     res.clearCookie('jwt');
     res.clearCookie('refreshToken');
@@ -123,11 +151,7 @@ exports.logoutController = async (
 };
 
 // 비밀번호 변경
-exports.changePasswordController = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
+export const changePasswordController = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { email, oldPassword, newPassword } = req.body;
     await changePasswordService(email, oldPassword, newPassword);
@@ -138,11 +162,7 @@ exports.changePasswordController = async (
 };
 
 // 비번 재설정 요청
-exports.requestPasswordController = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
+export const requestPasswordController = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { email } = req.body;
     await requestPasswordService(email);
@@ -155,15 +175,57 @@ exports.requestPasswordController = async (
 };
 
 // 비번 재설정
-exports.resetPasswordController = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
+export const resetPasswordController = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { token, newPassword } = req.body;
     await resetPasswordService(token, newPassword);
     res.status(200).json({ message: '비밀번호가 재설정되었습니다.' });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// 카카오 연동
+export const linkKakaoAccountController = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { userId, socialId } = req.body;
+    console.log('linkKakaoAccountController:', { userId, socialId });
+    await linkSocialAccountService(userId, socialId, 'kakao');
+    res.status(200).json({ message: '카카오 계정 연동 성공' });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// 구글 연동
+export const linkGoogleAccountController = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { userId, socialId } = req.body;
+    console.log('Google',{ userId, socialId });
+    await linkSocialAccountService(userId, socialId, 'google');
+    res.status(200).json({ message: '구글 계정 연동 성공' });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// 유저네임 변경
+export const changeUsernameController = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { email, newUsername} = req.body;
+    await changeUsernameService(email, newUsername);
+    res.status(200).json({ message: '유저네임 변경 완료' });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// 회원탈퇴
+export const deleteAccountController = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { userId } = req.body;
+    await deleteAccountService(userId);
+    res.status(200).json({ message: '회원탈퇴 완료' });
   } catch (error) {
     next(error);
   }

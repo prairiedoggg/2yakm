@@ -1,7 +1,7 @@
 export interface Review {
-  reviewid?: number;
-  drugid: number;
-  userid: string;
+  reviewId?: number;
+  id: number;
+  userId: string;
   content: string;
-  created_at?: Date;
+  createdAt?: Date;
 }
