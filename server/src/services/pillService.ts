@@ -10,13 +10,14 @@ const client = new vision.ImageAnnotatorClient({
 dotenv.config();
 
 interface PillData {
-    id: number;
-    name: string;
-    front: string;
-    back: string;
-    shape: string;
-    imagepath: string;
-  }
+  id: number;
+  name: string;
+  front: string;
+  back: string;
+  shape: string;
+  imagepath: string;
+  favorite_count: number;
+}
 
 export const getPills = async (limit: number, offset: number, sortedBy: string, order: string): Promise<any> => {
   const countQuery = `SELECT COUNT(*) AS total FROM pills`;
@@ -25,8 +26,14 @@ export const getPills = async (limit: number, offset: number, sortedBy: string, 
   const totalPages = Math.ceil(totalCount / limit);
 
   const query = `
-    SELECT * FROM pills
-    ORDER BY ${sortedBy} ${order}
+    SELECT pills.*, COALESCE(favorite_counts.count, 0) as favorite_count
+    FROM pills
+    LEFT JOIN (
+      SELECT id, COUNT(*) AS count
+      FROM favorites
+      GROUP BY id
+    ) AS favorite_counts ON pills.id = favorite_counts.id
+    ORDER BY ${sortedBy === 'favorite_count' ? 'favorite_count' : `pills.${sortedBy}`} ${order}
     LIMIT $1 OFFSET $2`;
 
   const values = [limit, offset];
@@ -38,6 +45,7 @@ export const getPills = async (limit: number, offset: number, sortedBy: string, 
     data: rows,
   };
 };
+
 
 export const getPillById = async (id: number): Promise<any> => {
   const query = 'SELECT * FROM pills WHERE id = $1';
