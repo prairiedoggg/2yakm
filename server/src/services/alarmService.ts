@@ -112,11 +112,9 @@ export const scheduleAlarmService = (alarm: Alarm) => {
 
         if (scheduleDate >= new Date(startDate) && scheduleDate <= endDateTime) {
           const job = schedule.scheduleJob(scheduleDate, async () => {
-            console.log(`알람 실행: ${alarm.id}, 시간: ${scheduleDate.toISOString()}`);
             await sendEmail(alarm.userId);
           });
           
-          console.log(`알람 예약됨: ${alarm.id}, 시간: ${scheduleDate.toISOString()}`);
           runningJobs.set(`${alarm.id}_${alarmTime.time}_${scheduleDate.toISOString()}`, job);
         }
       }
@@ -124,8 +122,6 @@ export const scheduleAlarmService = (alarm: Alarm) => {
 
     currentDate.setDate(currentDate.getDate() + 1);
   }
-  
-  console.log(`알람 예약 완료: ${startDate}부터 ${endDate}까지 ${times.map((t: { time: any; }) => t.time).join(', ')}에 알림`);
 };
 
 
@@ -178,8 +174,8 @@ const sendEmail = async (recipientEmail: string) => {
   const mailOptions = {
     from: process.env.EMAIL_USER,
     to: recipientEmail,
-    subject: '알람 메시지',
-    text: '약 드세요!'
+    subject: '알람 메시지!',
+    text: '약 드세요!!!'
   };
 
   try {
