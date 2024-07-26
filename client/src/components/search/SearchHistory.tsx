@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import styled from 'styled-components';
+import { useSearchStore } from '../../store/search';
 import { useSearchHistoryStore } from '../../store/searchHistory';
 
 const SearchHistory = () => {
@@ -10,6 +11,8 @@ const SearchHistory = () => {
       setHistory: state.setHistory
     })
   );
+
+  const { searchQuery } = useSearchStore();
 
   useEffect(() => {
     const storedHistory = localStorage.getItem('searchHistory');
@@ -23,19 +26,22 @@ const SearchHistory = () => {
   }, [history, setHistory]);
 
   return (
-    <HistoryContainer>
-      <HistoryInner>
-        <HistoryTitle>
-          <span>최근 검색어</span>
-          <span onClick={clearHistory}>전체삭제</span>
-        </HistoryTitle>
-        <HistoryList>
-          {history.map((item, index) => (
-            <HistoryItem key={index}>{item}</HistoryItem>
-          ))}
-        </HistoryList>
-      </HistoryInner>
-    </HistoryContainer>
+    <>
+      <div>{searchQuery}</div>
+      <HistoryContainer>
+        <HistoryInner>
+          <HistoryTitle>
+            <span>최근 검색어</span>
+            <span onClick={clearHistory}>전체삭제</span>
+          </HistoryTitle>
+          <HistoryList>
+            {history.map((item, index) => (
+              <HistoryItem key={index}>{item}</HistoryItem>
+            ))}
+          </HistoryList>
+        </HistoryInner>
+      </HistoryContainer>
+    </>
   );
 };
 

@@ -29,8 +29,8 @@
     "zustand": "^4.5.4"
   },
   "devDependencies": {
-    "@tanstack/react-query-devtools": "^5.51.11",
     "@iconify-icon/react": "^2.1.0",
+    "@tanstack/react-query-devtools": "^5.51.11",
     "@types/dompurify": "^3.0.5",
     "@types/js-cookie": "^3.0.6",
     "@types/loadable__component": "^5.13.9",

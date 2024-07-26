@@ -1,23 +1,20 @@
 import { ChangeEvent, useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { Link } from 'react-router-dom';
+import { useSearchStore } from '../store/search';
 import { useSearchHistoryStore } from '../store/searchHistory';
 
-interface SearchBoxProps {
-  setSearchQuery: (query: string) => void;
-}
-
-const SearchBox = ({ setSearchQuery }: SearchBoxProps) => {
-  const [query, setQuery] = useState('');
+const SearchBox = () => {
+  const { searchQuery, setSearchQuery } = useSearchStore();
+  const [query, setQuery] = useState(searchQuery);
   const addHistory = useSearchHistoryStore((state) => state.addHistory);
 
-  // 입력값이 변경될 때 호출되는 함수
+  // 입력값이 변경될 때
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     setQuery(e.target.value); // 로컬 상태에 검색어 저장
-    setSearchQuery(e.target.value); // 상위 컴포넌트에 검색어 전달
   };
 
-  // 검색 버튼 클릭 또는 Enter 키 입력 시 호출되는 함수
+  // Enter 키 입력
   const handleSearch = () => {
     if (query.trim()) {
       setSearchQuery(query); // 상위 컴포넌트에 검색어 설정
@@ -28,7 +25,7 @@ const SearchBox = ({ setSearchQuery }: SearchBoxProps) => {
   useEffect(() => {
     const handleEnterKey = (e: KeyboardEvent) => {
       if (e.key === 'Enter') {
-        handleSearch(); // Enter 키 입력 시 검색 실행
+        handleSearch();
       }
     };
 
@@ -38,6 +35,11 @@ const SearchBox = ({ setSearchQuery }: SearchBoxProps) => {
       window.removeEventListener('keydown', handleEnterKey);
     };
   }, [query]);
+  
+  // searchQuery가 변경될 때 로컬 상태 업데이트
+  useEffect(() => {
+    setQuery(searchQuery);
+  }, [searchQuery]);
 
   return (
     <>

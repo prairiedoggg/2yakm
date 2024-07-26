@@ -1,9 +1,9 @@
-import { Icon } from '@iconify-icon/react';
 import { useEffect, useState } from 'react';
 import styled from 'styled-components';
+import { Icon } from '@iconify-icon/react';
 import Header from '../Header';
 import { Alarm, useAlarmStore } from '../../store/alarm';
-import axios from 'axios';
+import { getAlarms, deleteAlarm } from '../../api/alarmApi';
 
 const AlarmPage = () => {
   const { alarms, setCurrentPage, setCurrentAlarm, setAlarms } =
@@ -11,17 +11,15 @@ const AlarmPage = () => {
   const [isToggled, setIsToggled] = useState(Array(alarms.length).fill(true));
   const [isDeleteMode, setIsDeleteMode] = useState(false);
 
-  useEffect(() => {
-    axios
-      .get(`${import.meta.env.VITE_APP_SERVER_BASE_URL}/api/alarms`, {
-        withCredentials: true
-      })
-      .then((res) => {
+  useEffect(() =>  {
+     getAlarms((res) => {
+        console.log('알람페이지:', res);
         setAlarms(res.data);
-        console.log('알람페이지:', res.data);
-        console.log('알람:', alarms)
+
+        console.log('알람:', alarms);
         setIsToggled(Array(res.data.length).fill(true));
       })
+      .then()
       .catch((error) => console.error('에러:', error));
   }, [setAlarms]);
 
@@ -41,15 +39,7 @@ const AlarmPage = () => {
   const handleDelete = (index: number) => {
     const alarmToDelete = alarms[index];
     if (alarmToDelete && alarmToDelete.id) {
-      axios
-        .delete(
-          `${import.meta.env.VITE_APP_SERVER_BASE_URL}/api/alarms/${
-            (alarmToDelete.id,
-            {
-              withCredentials: true
-            })
-          }`
-        )
+      deleteAlarm(alarmToDelete.id)
         .then(() => {
           setAlarms(alarms.filter((_, i) => i !== index));
           setIsToggled(isToggled.filter((_, i) => i !== index));
@@ -77,7 +67,7 @@ const AlarmPage = () => {
               <AlarmItem onClick={() => handleEditAlarm(alarm)}>
                 <AlarmHeader>
                   <AlarmName>{alarm.name}</AlarmName>
-           
+
                   <ToggleSwitch onClick={(event) => event.stopPropagation()}>
                     <input
                       type='checkbox'

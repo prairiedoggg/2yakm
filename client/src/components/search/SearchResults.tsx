@@ -24,7 +24,7 @@ const SearchResults = ({ searchQuery }: SearchResultsProps) => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const data = await fetchPillData(searchQuery);
+        const data = await fetchPillData(searchQuery, 1, 0);
         setPillId(data.id);
         setPillData(data);
         console.log('약데이터', data);

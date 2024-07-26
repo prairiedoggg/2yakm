@@ -3,7 +3,7 @@ import styled from 'styled-components';
 import { Button, Input, DatePicker } from 'antd';
 import { Icon } from '@iconify-icon/react';
 import { useAlarmStore, Alarm } from '../../store/alarm';
-import axios from 'axios';
+import { createAlarm, updateAlarm } from '../../api/alarmApi'
 import dayjs, { Dayjs } from 'dayjs';
 
 const AlarmSettings = () => {
@@ -17,7 +17,7 @@ const AlarmSettings = () => {
     '오후 8:00'
   ]);
   const [startDate, setStartDate] = useState<Dayjs | null>(dayjs());
-  const [endDate, setEndDate] = useState<Dayjs | null>(dayjs().add(3, 'days'));
+  const [endDate, setEndDate] = useState<Dayjs | null>(dayjs());
 
   useEffect(() => {
     if (currentAlarm) {
@@ -58,27 +58,11 @@ const AlarmSettings = () => {
     };
 
     if (currentAlarm) {
-      axios
-        .put(
-          `${import.meta.env.VITE_APP_SERVER_BASE_URL}/api/alarms/${
-            currentAlarm.id
-          }`,
-          alarmData,
-          {
-            withCredentials: true
-          }
-        )
+      updateAlarm(currentAlarm.id!, alarmData)
         .then(() => setCurrentPage('main'))
         .catch((error) => console.error('에러:', error));
     } else {
-      axios
-        .post(
-          `${import.meta.env.VITE_APP_SERVER_BASE_URL}/api/alarms`,
-          alarmData,
-          {
-            withCredentials: true
-          }
-        )
+      createAlarm(alarmData)
         .then(() => setCurrentPage('main'))
         .catch((error) => console.error('에러:', error));
     }
