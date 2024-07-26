@@ -45,6 +45,7 @@ export const getPillById = async (id: number): Promise<any> => {
   return result.rows[0];
 };
 
+/**
 export const updatePill = async (id: number, pillData: any): Promise<any> => {
   const {
     name,
@@ -91,13 +92,15 @@ export const updatePill = async (id: number, pillData: any): Promise<any> => {
   const result = await pool.query(query, values);
   return result.rows[0];
 };
+*/
 
+/**
 export const deletePill = async (id: number): Promise<boolean> => {
   const query = 'DELETE FROM pills WHERE id = $1';
   const result = await pool.query(query, [id]);
   return result.rowCount > 0;
 };
-
+*/
 
 export const searchPillsbyName = async (name: string, limit: number, offset: number) => {
   const query = 'SELECT * FROM pills WHERE name ILIKE $1 ORDER BY created_at DESC LIMIT $2 OFFSET $3';
@@ -120,14 +123,14 @@ export const searchPillsbyName = async (name: string, limit: number, offset: num
   }
 };
 
-export const searchPillsbyEngName = async (drugname: string, limit: number, offset: number) => {
+export const searchPillsbyEngName = async (name: string, limit: number, offset: number) => {
   const query = 'SELECT * FROM pills WHERE engname ILIKE $1 ORDER BY created_at DESC LIMIT $2 OFFSET $3';
-  const values = [`%${drugname}%`, limit, offset];
+  const values = [`%${name}%`, limit, offset];
 
   try {
     const result = await pool.query(query, values);
     return {
-      drugs: result.rows,
+      pills: result.rows,
       total: result.rowCount,
       limit,
       offset,
@@ -154,7 +157,7 @@ export const searchPillsbyEfficacy = async (efficacy: string, limit: number, off
   try {
     const result = await pool.query(query, values);
     return {
-      drugs: result.rows,
+      pills: result.rows,
       total: result.rowCount,
       limit,
       offset,
@@ -180,7 +183,7 @@ const searchPillsByFrontAndBack = async (front: string, back:string, limit: numb
   try {
     const result = await pool.query(query, values);
     return {
-      drugs: result.rows,
+      pills: result.rows,
       total: result.rowCount,
       limit,
       offset,
@@ -223,7 +226,7 @@ export const searchPillsByImage = async (imageBuffer: Buffer, limit: number, off
   try {
     const detectedText = await detectTextInImage(imageBuffer);
     if (!detectedText || detectedText.length === 0) {
-      return { drugs: [], total: 0, limit, offset };
+      return { pills: [], total: 0, limit, offset };
     }
 
     let pills: PillData[] = [];
@@ -234,23 +237,23 @@ export const searchPillsByImage = async (imageBuffer: Buffer, limit: number, off
         const frontText = detectedText[0];
         const backText = detectedText[1];
         const resultByFrontAndBack = await searchPillsByFrontAndBack(frontText, backText, limit, offset);
-        pills.push(...resultByFrontAndBack.drugs);
+        pills.push(...resultByFrontAndBack.pills);
         total += resultByFrontAndBack.total;
       }
     }
 
-    // Remove duplicates based on drugid
-    const uniqueDrugs = Array.from(new Map(pills.map(pill => [pill.id, pill])).values());
+    // Remove duplicates based on id
+    const uniquePills = Array.from(new Map(pills.map(pill => [pill.id, pill])).values());
 
     return {
-      drugs: uniqueDrugs,
-      total: uniqueDrugs.length,
+      pills: uniquePills,
+      total: uniquePills.length,
       limit,
       offset,
     };
   } catch (error) {
-    console.error('Error searching drugs by image:', error);
-    throw new Error('Failed to search drugs by image.');
+    console.error('Error searching pills by image:', error);
+    throw new Error('Failed to search pills by image.');
   }
 };
 
