@@ -104,7 +104,7 @@ export const deletePill = async (id: number): Promise<boolean> => {
 
 export const searchPillsbyName = async (name: string, limit: number, offset: number) => {
   const query = 'SELECT * FROM pills WHERE name ILIKE $1 ORDER BY created_at DESC LIMIT $2 OFFSET $3';
-  const values = [`%${name}%`, limit, offset];
+  const values = [`${name}%`, limit, offset];
 
   try {
     const result = await pool.query(query, values);
@@ -125,7 +125,7 @@ export const searchPillsbyName = async (name: string, limit: number, offset: num
 
 export const searchPillsbyEngName = async (name: string, limit: number, offset: number) => {
   const query = 'SELECT * FROM pills WHERE engname ILIKE $1 ORDER BY created_at DESC LIMIT $2 OFFSET $3';
-  const values = [`%${name}%`, limit, offset];
+  const values = [`${name}%`, limit, offset];
 
   try {
     const result = await pool.query(query, values);

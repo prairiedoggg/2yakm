@@ -21,7 +21,7 @@ export const getPillsHandler = async <T extends PillsQueryParams>(req: Request<u
   try {
     const limit = parseInt(req.query.limit ?? '10', 10);
     const offset = parseInt(req.query.offset ?? '0', 10);
-    const sortedBy = req.query.sortedBy ?? 'created_at';
+    const sortedBy = req.query.sortedBy ?? 'favorite_count';
     const order = (req.query.order?.toUpperCase() as 'ASC' | 'DESC') ?? 'DESC';
 
     const pills = await getPills(limit, offset, sortedBy, order);

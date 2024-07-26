@@ -1,16 +1,13 @@
 const { pool } = require('../db');
-import { v4 as uuidv4 } from 'uuid';
-
 
 export const addPill = async (userId: string, updateData: any): Promise<string> => {
-  const mypillId = uuidv4();
 
   try {
     const query = `
-      INSERT INTO mypills (pillid, userid, pillname, expiredat)
-      VALUES ($1, $2, $3, $4) RETURNING pillname, expiredat`;
+      INSERT INTO mypills (userid, pillname, expiredat)
+      VALUES ($1, $2, $3) RETURNING pillname, expiredat`;
 
-    const values = [mypillId, userId, updateData.name, updateData.expiredat];
+    const values = [userId, updateData.name, updateData.expiredat];
     const result = await pool.query(query, values);
 
     return `Pill added: ${result.rows[0].pillname}, Expires at: ${result.rows[0].expiredat}`;
