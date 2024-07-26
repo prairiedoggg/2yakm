@@ -44,6 +44,7 @@ const App = () => {
         />
         <Route path='/chatbot' element={<ChatBot />} />
         <Route path='/kakao/callback' element={<Redirect sns='kakao' />} />
+        <Route path='/naver/callback' element={<Redirect sns='naver' />} />
         <Route path='/google/callback' element={<Redirect sns='google' />} />
       </Routes>
     </Router>

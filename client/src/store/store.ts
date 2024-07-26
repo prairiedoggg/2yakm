@@ -17,6 +17,7 @@ interface Calendar {
   temp?: number;
   weight?: number;
   photo?: boolean;
+  imgUrl?: string;
   setPillName: (pillName: string[]) => void;
   setTime: (time: string[][]) => void;
   setIsPillTaken: (isPillTaken: boolean[][]) => void;
@@ -24,6 +25,7 @@ interface Calendar {
   setTemp: (temp: number) => void;
   setWeight: (weight: number) => void;
   setPhoto: (photo: boolean) => void;
+  setImgUrl: (imgUrl: string) => void;
 }
 
 export const useDateStore = create<Store>((set) => ({
@@ -43,11 +45,13 @@ export const useCalendar = create<Calendar>((set) => ({
   temp: 0,
   weight: 0,
   photo: false,
+  imgUrl: '',
   setPillName: (pillName) => set({ pillName }),
   setTime: (time) => set({ time }),
   setIsPillTaken: (isPillTaken) => set({ isPillTaken }),
   setBloodSugar: (bloodSugar) => set({ bloodSugar }),
   setTemp: (temp) => set({ temp }),
   setWeight: (weight) => set({ weight }),
-  setPhoto: (photo) => set({ photo })
+  setPhoto: (photo) => set({ photo }),
+  setImgUrl: (imgUrl) => set({ imgUrl })
 }));

@@ -28,16 +28,16 @@ const OpenCalendarDetail: React.FC = () => {
       {/* title을 배열로 관리 -> map */}
       <DetailTextBox
         title='약 복용 여부'
-        pillName={['타이레놀', '처방약']}
-        time={[['11시', '15시', '19시'], ['20시']]}
-        isPillTaken={[[true, false, true], [true]]}
+        pillName={[]}
+        time={[[]]}
+        isPillTaken={[[]]}
       />
       {/* 혈당 null 값은 0으로 바꾸기*/}
       {/* bloodsugarBefore= '100' bloodsugarAfter = '200' */}
-      <DetailTextBox title='혈당' bloodSugar={[100, 200]} />
-      <DetailTextBox title='체온' temp={36.5} />
-      <DetailTextBox title='체중' weight={10} />
-      <DetailTextBox title='사진 기록' photo={true} />
+      <DetailTextBox title='혈당' bloodSugar={[]} />
+      <DetailTextBox title='체온' temp={0} />
+      <DetailTextBox title='체중' weight={0} />
+      <DetailTextBox title='사진 기록' photo={false} />
     </ContentContainer>
   );
 };
