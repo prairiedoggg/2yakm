@@ -1,21 +1,16 @@
 const { pool } = require('../db');
 import { v4 as uuidv4 } from 'uuid';
 
-interface PaginatedResult<T> {
-  totalCount: number;
-  totalPages: number;
-  data: T[];
-}
 
 export const addPill = async (userId: string, updateData: any): Promise<string> => {
-  const mydrugId = uuidv4();
+  const mypillId = uuidv4();
 
   try {
     const query = `
       INSERT INTO mydrug (mydrugid, userid, drugname, expiredat)
       VALUES ($1, $2, $3, $4) RETURNING drugname, expiredat`;
 
-    const values = [mydrugId, userId, updateData.drugname, updateData.expiredat];
+    const values = [mypillId, userId, updateData.name, updateData.expiredat];
     const result = await pool.query(query, values);
 
     return `Pill added: ${result.rows[0].drugname}, Expires at: ${result.rows[0].expiredat}`;
@@ -36,7 +31,7 @@ export const updatePill = async (mypillId: string, updateData: any): Promise<str
       UPDATE mydrug SET drugname = $1, expiredat = $2 WHERE mydrugid = $3 
       RETURNING mydrugid, drugname, expiredat`;
 
-    const values = [updateData.drugname, updateData.expiredat, mypillId];
+    const values = [updateData.name, updateData.expiredat, mypillId];
     const result = await pool.query(query, values);
 
     if (result.rows.length === 0) {
@@ -55,7 +50,7 @@ export const updatePill = async (mypillId: string, updateData: any): Promise<str
   }
 };
 
-export const getPills = async (userId: string, limit: number, offset: number, sortedBy: string, order: string): Promise<PaginatedResult<{ mydrugid: string; drugname: string; expiredat: string }>> => {
+export const getPills = async (userId: string, limit: number, offset: number, sortedBy: string, order: string)=> {
   try {
     const countQuery = `
       SELECT COUNT(*) AS total
@@ -84,10 +79,10 @@ export const getPills = async (userId: string, limit: number, offset: number, so
   } catch (err: unknown) {
     if (err instanceof Error) {
       console.error('Error executing query', err.stack);
-      throw new Error('Failed to get drugs: ' + err.message);
+      throw new Error('Failed to get pills: ' + err.message);
     } else {
       console.error('Unknown error', err);
-      throw new Error('Failed to get drugs due to an unknown error');
+      throw new Error('Failed to get pills due to an unknown error');
     }
   }
 };
@@ -102,7 +97,7 @@ export const deletePill = async (mypillId: string): Promise<string> => {
     const result = await pool.query(query, values);
 
     if (result.rows.length === 0) {
-      throw new Error('Drug not found');
+      throw new Error('Pill not found');
     }
 
     return `Pill deleted: ${result.rows[0].drugname}, Expires at: ${result.rows[0].expiredat}`;
@@ -112,7 +107,7 @@ export const deletePill = async (mypillId: string): Promise<string> => {
       throw new Error('Failed to delete pill: ' + err.message);
     } else {
       console.error('Unknown error', err);
-      throw new Error('Failed to delete drug due to an unknown error');
+      throw new Error('Failed to delete pill due to an unknown error');
     }
   }
 };

@@ -17,10 +17,10 @@ const router = Router();
 
 /**
  * @swagger
- * /pill:
+ * api/pills:
  *   get:
  *     summary: 모든 약 정보 가져오기
- *     tags: [필]
+ *     tags: [pills]
  *     parameters:
  *       - in: query
  *         name: limit
@@ -90,10 +90,10 @@ router.get('/', getPillsHandler);
 
 /**
  * @swagger
- * /pill/{id}:
+ * api/pills/{id}:
  *   get:
  *     summary: ID로 약 정보 가져오기
- *     tags: [필]
+ *     tags: [pills]
  *     parameters:
  *       - in: path
  *         name: id
@@ -146,10 +146,10 @@ router.get('/:id', getPillByIdHandler);
 
 /**
  * @swagger
- * /pill/{id}:
+ * api/pills/{id}:
  *   put:
  *     summary: 약 정보 업데이트
- *     tags: [필]
+ *     tags: [pills]
  *     parameters:
  *       - in: path
  *         name: id
@@ -202,10 +202,10 @@ router.put('/:id', updatePillHandler);
 
 /**
  * @swagger
- * /pill/{id}:
+ * api/pills/{id}:
  *   delete:
  *     summary: 약 정보 삭제
- *     tags: [필]
+ *     tags: [pills]
  *     parameters:
  *       - in: path
  *         name: id
@@ -221,10 +221,10 @@ router.delete('/:id', deletePillHandler);
 
 /**
  * @swagger
- * /pill/{id}/reviewcount:
+ * api/pills/{id}/reviewcount:
  *   get:
  *     summary: 특정 약의 리뷰 수 가져오기
- *     tags: [필]
+ *     tags: [pills]
  *     parameters:
  *       - in: path
  *         name: id
@@ -247,10 +247,10 @@ router.get('/:id/reviewcount', getPillReviewCount);
 
 /**
  * @swagger
- * /pill/{id}/favoritecount:
+ * api/pills/{id}/favoritecount:
  *   get:
  *     summary: 특정 약의 즐겨찾기 수 가져오기
- *     tags: [필]
+ *     tags: [pills]
  *     parameters:
  *       - in: path
  *         name: id
@@ -273,10 +273,10 @@ router.get('/:id/favoritecount', getPillFavoriteCount);
 
 /**
  * @swagger
- * /pill/search/name:
+ * api/pills/search/name:
  *   get:
  *     summary: 이름으로 약 검색
- *     tags: [필]
+ *     tags: [pills]
  *     parameters:
  *       - in: query
  *         name: name
@@ -341,10 +341,10 @@ router.get('/search/name', searchPillsbyNameHandler);
 
 /**
  * @swagger
- * /pill/search/engname:
+ * api/pills/search/engname:
  *   get:
  *     summary: 영어 이름으로 약 검색
- *     tags: [필]
+ *     tags: [pills]
  *     parameters:
  *       - in: query
  *         name: engname
@@ -409,10 +409,10 @@ router.get('/search/engname', searchPillsbyEngNameHandler);
 
 /**
  * @swagger
- * /pill/search/efficacy:
+ * api/pills/search/efficacy:
  *   get:
  *     summary: 효능으로 약 검색
- *     tags: [필]
+ *     tags: [pills]
  *     parameters:
  *       - in: query
  *         name: efficacy
@@ -477,10 +477,10 @@ router.get('/search/efficacy', searchPillsbyEfficacyHandler);
 
 /**
  * @swagger
- * /pill/search/image:
+ * api/pills/search/image:
  *   post:
  *     summary: 이미지로 약 검색
- *     tags: [필]
+ *     tags: [pills]
  *     consumes:
  *       - multipart/form-data
  *     parameters:

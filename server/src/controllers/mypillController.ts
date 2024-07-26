@@ -3,14 +3,14 @@ import Joi from 'joi';
 import  { addPill, updatePill, getPills, deletePill } from '../services/mypillService';
 
 export const createPillSchema = Joi.object({
-  drugname: Joi.string().required(),
+  name: Joi.string().required(),
   expiredat: Joi.date().required(),
   created_at: Joi.date().required()
 });
 
 export const updatePillSchema = Joi.object({
-  mydrugid: Joi.string().required(),
-  drugname: Joi.string().required(),
+  mypillid: Joi.string().required(),
+  name: Joi.string().required(),
   expiredat: Joi.date().required(),
   created_at: Joi.date().required()
 });
@@ -95,7 +95,7 @@ export const deleteMyPill = async (req: any, res: Response, next: NextFunction) 
     if (!user) {
       return res.status(401).json({ message: 'Unauthorized' });
     }
-    const mypillId = req.params.mydrugid;
+    const mypillId = req.params.mypillid;
     if (!mypillId) {
       return res.status(400).json({ message: 'mypillid is required' });
     }
