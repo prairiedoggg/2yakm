@@ -11,11 +11,16 @@ const runningJobs = new Map<string, schedule.Job>();
 export const createAlarm = async (alarm: Omit<Alarm, 'id'>): Promise<Alarm> => {
   try {
     const { userId, name, startDate, endDate, times } = alarm;
+
+    if (new Date(startDate) > new Date(endDate)) {
+      throw createError('InvalidDateRange', '시작 날짜는 종료 날짜보다 늦을 수 없습니다.', 400);
+    }
+
     const query = `
     INSERT INTO alarms (userId, name, startDate, endDate, times)
     VALUES ($1, $2, $3, $4, $5)
     RETURNING       id,
-    userId,
+    userId As "userId",
     name,
     startDate AS "startDate",
     endDate AS "endDate",
@@ -26,12 +31,6 @@ export const createAlarm = async (alarm: Omit<Alarm, 'id'>): Promise<Alarm> => {
     const values = [userId, name, startDate, endDate, JSON.stringify(times)];
     const result = await pool.query(query, values);
     const newAlarm = result.rows[0];
-    
-    console.log('newAlarm', newAlarm)
-    const schedule = {startdate:'',enddate:'',times:0}
-    schedule.startdate = newAlarm.startDate;
-    schedule.enddate = newAlarm.endDate;
-    schedule.times = newAlarm.times;
     scheduleAlarmService(newAlarm);
     
     return newAlarm;
@@ -43,6 +42,11 @@ export const createAlarm = async (alarm: Omit<Alarm, 'id'>): Promise<Alarm> => {
 export const updateAlarm = async (id: string, alarm: Partial<Alarm>): Promise<Alarm | null> => {
   try {
     const { userId, name, startDate, endDate, times } = alarm;
+    if (startDate && endDate) {
+      if (new Date(startDate) > new Date(endDate)) {
+        throw createError('InvalidDateRange', '시작 날짜는 종료 날짜보다 늦을 수 없습니다.', 400);
+      }
+    }
     const text = `
       UPDATE alarms
       SET userId = COALESCE($1, userId),
@@ -52,7 +56,7 @@ export const updateAlarm = async (id: string, alarm: Partial<Alarm>): Promise<Al
           times = COALESCE($5, times::jsonb),
           updated_at = CURRENT_TIMESTAMP
       WHERE id = $6
-      RETURNING *
+      RETURNING userid AS "userId", name, startDate AS "startDate", endDate AS "endDate", times
     `;
     const values = [
       userId,
@@ -95,10 +99,10 @@ const cancelExistingAlarms = (alarmId: string) => {
 };
 export const scheduleAlarmService = (alarm: Alarm) => {
   const { startDate, endDate, times } = alarm;
-  console.log("alarm", alarm);
   const endDateTime = new Date(endDate);
   const startDateTime = new Date(startDate);
   let currentDate = new Date(startDateTime);
+
   while (currentDate <= endDateTime) {
     times.forEach((alarmTime: AlarmTime) => {
       if (alarmTime.status) {
@@ -108,9 +112,11 @@ export const scheduleAlarmService = (alarm: Alarm) => {
 
         if (scheduleDate >= new Date(startDate) && scheduleDate <= endDateTime) {
           const job = schedule.scheduleJob(scheduleDate, async () => {
+            console.log(`알람 실행: ${alarm.id}, 시간: ${scheduleDate.toISOString()}`);
             await sendEmail(alarm.userId);
           });
           
+          console.log(`알람 예약됨: ${alarm.id}, 시간: ${scheduleDate.toISOString()}`);
           runningJobs.set(`${alarm.id}_${alarmTime.time}_${scheduleDate.toISOString()}`, job);
         }
       }
@@ -159,6 +165,8 @@ export const deleteAlarm = async (id: string): Promise<boolean> => {
 
 //메일 발송
 const sendEmail = async (recipientEmail: string) => {
+  console.log(`이메일 전송 시도: ${recipientEmail}`);
+
   const transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {

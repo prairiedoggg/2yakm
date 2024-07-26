@@ -15,10 +15,12 @@ export const createAndScheduleAlarm = async (req: CustomRequest, res: Response, 
       return res.status(400).json({ message: '유효하지 않은 날짜입니다.' });
     }
     
-    if (!Array.isArray(times) || times.length === 0 || !times.every((time: { time: string; }) => /^\d{2}:\d{2}$/.test(time.time))) {
-      return res.status(400).json({ message: '유효하지 않은 시간 형식입니다. {time: "HH:MM", status: boolean} 형식의 배열이어야 합니다.' });
+    if (!Array.isArray(times) || times.length === 0 || !times.every((time: { time: string; }) => {
+      const [hours, minutes] = time.time.split(':').map(Number);
+      return /^\d{2}:\d{2}$/.test(time.time) && hours >= 0 && hours < 24 && minutes >= 0 && minutes < 60;
+    })) {
+      return res.status(400).json({ message: '유효하지 않은 시간 형식입니다. {time: "HH:MM", status: boolean} 형식의 배열이어야 하며, 시간은 00:00에서 23:59 사이여야 합니다.' });
     }
-
     const alarm = await createAlarm({
       userId,
       name,
@@ -50,8 +52,11 @@ export const updateAlarmController = async (req: CustomRequest, res: Response, n
       return res.status(400).json({ message: '유효하지 않은 날짜입니다.' });
     }
 
-    if (times && (!Array.isArray(times) || times.length === 0 || !times.every((time: { time: string; }) => /^\d{2}:\d{2}$/.test(time.time)))) {
-      return res.status(400).json({ message: '유효하지 않은 시간 형식입니다. {time: "HH:MM", status: boolean} 형식의 배열이어야 합니다.' });
+    if (times && (!Array.isArray(times) || times.length === 0 || !times.every((time: { time: string; }) => {
+      const [hours, minutes] = time.time.split(':').map(Number);
+      return /^\d{2}:\d{2}$/.test(time.time) && hours >= 0 && hours < 24 && minutes >= 0 && minutes < 60;
+    }))) {
+      return res.status(400).json({ message: '유효하지 않은 시간 형식입니다. {time: "HH:MM", status: boolean} 형식의 배열이어야 하며, 시간은 00:00에서 23:59 사이여야 합니다.' });
     }
 
     const updatedAlarm = await updateAlarm(id, { name, startDate: alarmStartDate, endDate: alarmEndDate, times, userId });
