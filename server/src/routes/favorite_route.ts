@@ -104,7 +104,7 @@ router.get('/', authByToken, searchFavoritePill);
  *         schema:
  *           type: integer
  *         required: true
- *         description: 좋아요가 추가, 취소될 drug id 값을 입력해 주세요.
+ *         description: 좋아요가 추가, 취소될 pill의 id 값을 입력해 주세요.
  *     responses:
  *       200:
  *         description: 좋아요를 취소했습니다.

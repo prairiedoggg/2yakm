@@ -2,8 +2,6 @@ import { Response, Request, NextFunction } from 'express';
 import {
   getPills,
   getPillById,
-  updatePill,
-  deletePill,
   searchPillsbyName,
   searchPillsbyEfficacy,
   searchPillsByImage,
@@ -19,7 +17,6 @@ interface PillsQueryParams {
   order?: 'ASC' | 'DESC';
 }
 
-// The getPillsHandler function using generics
 export const getPillsHandler = async <T extends PillsQueryParams>(
   req: Request<unknown, unknown, unknown, T>,
   res: Response,
@@ -56,11 +53,8 @@ export const getPillByIdHandler = async (
   }
 };
 
-export const updatePillHandler = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-): Promise<void> => {
+/**
+export const updatePillHandler = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     const updatedPill = await updatePill(parseInt(req.params.id, 10), req.body);
     if (updatedPill) {
@@ -72,12 +66,10 @@ export const updatePillHandler = async (
     next(error);
   }
 };
+*/
 
-export const deletePillHandler = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-): Promise<void> => {
+/*
+export const deletePillHandler = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     const deleted = await deletePill(parseInt(req.params.id, 10));
     if (deleted) {
@@ -89,6 +81,7 @@ export const deletePillHandler = async (
     next(error);
   }
 };
+*/
 
 interface QueryParams {
   name: string;

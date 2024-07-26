@@ -2,8 +2,6 @@ const { uploadToMemory, uploadToS3 } = require('../config/imgUploads');
 import {
     getPillsHandler, 
     getPillByIdHandler, 
-    updatePillHandler, 
-    deletePillHandler, 
     searchPillsbyNameHandler, 
     searchPillsbyEngNameHandler,
     searchPillsbyEfficacyHandler,
@@ -144,80 +142,12 @@ router.get('/', getPillsHandler);
  */
 router.get('/:id', getPillByIdHandler);
 
-/**
- * @swagger
- * api/pills/{id}:
- *   put:
- *     summary: 약 정보 업데이트
- *     tags: [pills]
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: string
- *         description: 업데이트할 약 ID
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               name:
- *                 type: string
- *               engname:
- *                 type: string
- *               companyname:
- *                 type: string
- *               companyengname:
- *                 type: string
- *               ingredientname:
- *                 type: string
- *               ingredientengname:
- *                 type: string
- *               type:
- *                 type: string
- *               shape:
- *                 type: string
- *               efficacy:
- *                 type: string
- *               dosage:
- *                 type: string
- *               caution:
- *                 type: string
- *               cautionwarning:
- *                 type: string
- *               interaction:
- *                 type: string
- *               sideeffect:
- *                 type: string
- *               storagemethod:
- *                 type: string
- *     responses:
- *       200:
- *         description: 성공
- */
-router.put('/:id', updatePillHandler);
 
-/**
- * @swagger
- * api/pills/{id}:
- *   delete:
- *     summary: 약 정보 삭제
- *     tags: [pills]
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: string
- *         description: 삭제할 약 ID
- *     responses:
- *       200:
- *         description: 성공
- */
-router.delete('/:id', deletePillHandler);
+//router.put('/:id', updatePillHandler);
+
+
+ 
+//router.delete('/:id', deletePillHandler);
 
 /**
  * @swagger
