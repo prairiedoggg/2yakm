@@ -1,21 +1,18 @@
 const { pool } = require('../db');
-import { v4 as uuidv4 } from 'uuid';
 
 export const addPill = async (
   userId: string,
   updateData: any
 ): Promise<string> => {
-  const mypillId = uuidv4();
-
   try {
     const query = `
-      INSERT INTO mydrug (mydrugid, userid, drugname, expiredat)
-      VALUES ($1, $2, $3, $4) RETURNING drugname, expiredat`;
+      INSERT INTO mypills (userid, pillname, expiredat)
+      VALUES ($1, $2, $3) RETURNING pillname, expiredat`;
 
-    const values = [mypillId, userId, updateData.name, updateData.expiredat];
+    const values = [userId, updateData.name, updateData.expiredat];
     const result = await pool.query(query, values);
 
-    return `Pill added: ${result.rows[0].drugname}, Expires at: ${result.rows[0].expiredat}`;
+    return `Pill added: ${result.rows[0].pillname}, Expires at: ${result.rows[0].expiredat}`;
   } catch (err: unknown) {
     if (err instanceof Error) {
       console.error('Error executing query', err.stack);
@@ -33,8 +30,8 @@ export const updatePill = async (
 ): Promise<string> => {
   try {
     const query = `
-      UPDATE mydrug SET drugname = $1, expiredat = $2 WHERE mydrugid = $3 
-      RETURNING mydrugid, drugname, expiredat`;
+      UPDATE mypills SET pillname = $1, expiredat = $2 WHERE pillid = $3 
+      RETURNING pillid, pillname, expiredat`;
 
     const values = [updateData.name, updateData.expiredat, mypillId];
     const result = await pool.query(query, values);
@@ -43,7 +40,7 @@ export const updatePill = async (
       throw new Error('Pill not found');
     }
 
-    return `Pill updated: ${result.rows[0].drugname}, Expires at: ${result.rows[0].expiredat}`;
+    return `Pill updated: ${result.rows[0].pillname}, Expires at: ${result.rows[0].expiredat}`;
   } catch (err: unknown) {
     if (err instanceof Error) {
       console.error('Error executing query', err.stack);
@@ -65,7 +62,7 @@ export const getPills = async (
   try {
     const countQuery = `
       SELECT COUNT(*) AS total
-      FROM mydrug
+      FROM mypills
       WHERE userid = $1`;
     const countValues = [userId];
     const countResults = await pool.query(countQuery, countValues);
@@ -73,8 +70,8 @@ export const getPills = async (
     const totalPages = Math.ceil(totalCount / limit);
 
     const query = `
-      SELECT mydrugid, drugname, expiredat, createdAt
-      FROM mydrug
+      SELECT pillid, pillname, expiredat, created_at
+      FROM mypills
       WHERE userid = $1
       ORDER BY ${sortedBy} ${order}
       LIMIT $2 OFFSET $3`;
@@ -101,8 +98,8 @@ export const getPills = async (
 export const deletePill = async (mypillId: string): Promise<string> => {
   try {
     const query = `
-      DELETE FROM mydrug WHERE mydrugid = $1
-      RETURNING mydrugid, drugname, expiredat`;
+      DELETE FROM mypills WHERE pillid = $1
+      RETURNING userid, pillname, expiredat`;
 
     const values = [mypillId];
     const result = await pool.query(query, values);
@@ -111,7 +108,7 @@ export const deletePill = async (mypillId: string): Promise<string> => {
       throw new Error('Pill not found');
     }
 
-    return `Pill deleted: ${result.rows[0].drugname}, Expires at: ${result.rows[0].expiredat}`;
+    return `Pill deleted: ${result.rows[0].pillname}, Expires at: ${result.rows[0].expiredat}`;
   } catch (err: unknown) {
     if (err instanceof Error) {
       console.error('Error executing query', err.stack);

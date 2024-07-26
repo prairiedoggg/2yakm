@@ -16,6 +16,7 @@ interface PillData {
   back: string;
   shape: string;
   imagepath: string;
+  favorite_count: number;
 }
 
 export const getPills = async (
@@ -30,8 +31,16 @@ export const getPills = async (
   const totalPages = Math.ceil(totalCount / limit);
 
   const query = `
-    SELECT * FROM pills
-    ORDER BY ${sortedBy} ${order}
+    SELECT pills.*, COALESCE(favorite_counts.count, 0) as favorite_count
+    FROM pills
+    LEFT JOIN (
+      SELECT id, COUNT(*) AS count
+      FROM favorites
+      GROUP BY id
+    ) AS favorite_counts ON pills.id = favorite_counts.id
+    ORDER BY ${
+      sortedBy === 'favorite_count' ? 'favorite_count' : `pills.${sortedBy}`
+    } ${order}
     LIMIT $1 OFFSET $2`;
 
   const values = [limit, offset];
@@ -114,7 +123,7 @@ export const searchPillsbyName = async (
 ) => {
   const query =
     'SELECT * FROM pills WHERE name ILIKE $1 ORDER BY created_at DESC LIMIT $2 OFFSET $3';
-  const values = [`%${name}%`, limit, offset];
+  const values = [`${name}%`, limit, offset];
 
   try {
     const result = await pool.query(query, values);
@@ -142,7 +151,7 @@ export const searchPillsbyEngName = async (
 ) => {
   const query =
     'SELECT * FROM pills WHERE engname ILIKE $1 ORDER BY created_at DESC LIMIT $2 OFFSET $3';
-  const values = [`%${name}%`, limit, offset];
+  const values = [`${name}%`, limit, offset];
 
   try {
     const result = await pool.query(query, values);
