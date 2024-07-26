@@ -31,7 +31,7 @@ const router = Router();
  *         name: sortedBy
  *         schema:
  *           type: string
- *         description: 정렬할 필드명을 입력해 주세요. (created_at, name,... 기본값은 created_at)
+ *         description: 정렬할 필드명을 입력해 주세요. (createdAt, name,... 기본값은 createdAt)
  *       - in: query
  *         name: order
  *         schema:
@@ -78,7 +78,7 @@ const router = Router();
  *                         type: string
  *                         description: pill efficacy(효능)
  *                         example: "이 약은 네오마이신 감수성 세균에 의해 2차 감염된 코르티코이드 반응성 피부질환의 초기 치료(피부염, 감염된 상처)에 사용합니다."
- *                       created_at:
+ *                       createdAt:
  *                         type: string
  *                         format: date-time
  *       401:

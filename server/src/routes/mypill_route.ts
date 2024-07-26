@@ -1,6 +1,11 @@
 import { Router } from 'express';
 const router = Router();
-import {addMyPill, updateMyPill, getMyPills, deleteMyPill} from '../controllers/mypillController';
+import {
+  addMyPill,
+  updateMyPill,
+  getMyPills,
+  deleteMyPill
+} from '../controllers/mypillController';
 
 /**
  * @swagger
@@ -106,7 +111,7 @@ router.put('/:mypillid', updateMyPill);
  *                   expiredat:
  *                     type: string
  *                     format: date
- *                   created_at:
+ *                   createdAt:
  *                     type: string
  *                     format: date
  */

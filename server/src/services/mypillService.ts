@@ -1,8 +1,10 @@
 const { pool } = require('../db');
 import { v4 as uuidv4 } from 'uuid';
 
-
-export const addPill = async (userId: string, updateData: any): Promise<string> => {
+export const addPill = async (
+  userId: string,
+  updateData: any
+): Promise<string> => {
   const mypillId = uuidv4();
 
   try {
@@ -25,7 +27,10 @@ export const addPill = async (userId: string, updateData: any): Promise<string> 
   }
 };
 
-export const updatePill = async (mypillId: string, updateData: any): Promise<string> => {
+export const updatePill = async (
+  mypillId: string,
+  updateData: any
+): Promise<string> => {
   try {
     const query = `
       UPDATE mydrug SET drugname = $1, expiredat = $2 WHERE mydrugid = $3 
@@ -50,7 +55,13 @@ export const updatePill = async (mypillId: string, updateData: any): Promise<str
   }
 };
 
-export const getPills = async (userId: string, limit: number, offset: number, sortedBy: string, order: string)=> {
+export const getPills = async (
+  userId: string,
+  limit: number,
+  offset: number,
+  sortedBy: string,
+  order: string
+) => {
   try {
     const countQuery = `
       SELECT COUNT(*) AS total
@@ -62,7 +73,7 @@ export const getPills = async (userId: string, limit: number, offset: number, so
     const totalPages = Math.ceil(totalCount / limit);
 
     const query = `
-      SELECT mydrugid, drugname, expiredat, created_at
+      SELECT mydrugid, drugname, expiredat, createdAt
       FROM mydrug
       WHERE userid = $1
       ORDER BY ${sortedBy} ${order}
@@ -111,5 +122,3 @@ export const deletePill = async (mypillId: string): Promise<string> => {
     }
   }
 };
-
-

@@ -50,7 +50,7 @@ const router = Router();
  *                   type: string
  *                 content:
  *                   type: string
- *                 created_at:
+ *                 createdAt:
  *                   type: string
  *                   format: date-time
  *               example:
@@ -58,7 +58,7 @@ const router = Router();
  *                 id: 197000037
  *                 userid: "0190caa1-0c81-7fa2-9e4d-ed3c8ec93d7a"
  *                 content: "전 이거 먹고 힘을 내요! 완전 추천합니다!"
- *                 created_at: "2024-07-16T20:37:08.325Z"
+ *                 createdAt: "2024-07-16T20:37:08.325Z"
  *       400:
  *         description: 리뷰 내용을 입력해 주세요. / 리뷰 생성을 실패했습니다.
  *       401:
@@ -110,7 +110,7 @@ router.post('/', authByToken, createReview);
  *                   type: string
  *                 content:
  *                   type: string
- *                 created_at:
+ *                 createdAt:
  *                   type: string
  *                   format: date-time
  *               example:
@@ -118,7 +118,7 @@ router.post('/', authByToken, createReview);
  *                 id: 197000037
  *                 userid: "0190caa1-0c81-7fa2-9e4d-ed3c8ec93d7a"
  *                 content: "생각해보니까 타이레놀이 가장 좋아요!"
- *                 created_at: "2024-07-16T20:37:08.325Z"
+ *                 createdAt: "2024-07-16T20:37:08.325Z"
  *       400:
  *         description: 수정할 리뷰 내용을 입력해 주세요.
  *       401:
@@ -182,7 +182,7 @@ router.delete('/:reviewid', authByToken, deleteReview);
  *         name: sortedBy
  *         schema:
  *           type: string
- *         description: 정렬할 필드명을 입력해 주세요. (created_at, name,... 기본값은 created_at)
+ *         description: 정렬할 필드명을 입력해 주세요. (createdAt, name,... 기본값은 createdAt)
  *       - in: query
  *         name: order
  *         schema:
@@ -217,7 +217,7 @@ router.delete('/:reviewid', authByToken, deleteReview);
  *                         type: string
  *                       content:
  *                         type: string
- *                       created_at:
+ *                       createdAt:
  *                         type: string
  *                         format: date-time
  *       401:
@@ -287,7 +287,7 @@ router.get('/users/', authByToken, getUserAllReview);
  *                         type: boolean
  *                       content:
  *                         type: string
- *                       created_at:
+ *                       createdAt:
  *                         type: string
  *                         format: date-time
  *                 nextCursor:

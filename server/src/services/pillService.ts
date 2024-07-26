@@ -4,21 +4,26 @@ import vision from '@google-cloud/vision';
 import dotenv from 'dotenv';
 
 const client = new vision.ImageAnnotatorClient({
-  keyFilename: process.env.GOOGLE_APPLICATION_CREDENTIALS,
+  keyFilename: process.env.GOOGLE_APPLICATION_CREDENTIALS
 });
 
 dotenv.config();
 
 interface PillData {
-    id: number;
-    name: string;
-    front: string;
-    back: string;
-    shape: string;
-    imagepath: string;
-  }
+  id: number;
+  name: string;
+  front: string;
+  back: string;
+  shape: string;
+  imagepath: string;
+}
 
-export const getPills = async (limit: number, offset: number, sortedBy: string, order: string): Promise<any> => {
+export const getPills = async (
+  limit: number,
+  offset: number,
+  sortedBy: string,
+  order: string
+): Promise<any> => {
   const countQuery = `SELECT COUNT(*) AS total FROM pills`;
   const countResults = await pool.query(countQuery);
   const totalCount = parseInt(countResults.rows[0].total, 10);
@@ -35,7 +40,7 @@ export const getPills = async (limit: number, offset: number, sortedBy: string, 
   return {
     totalCount,
     totalPages,
-    data: rows,
+    data: rows
   };
 };
 
@@ -61,7 +66,7 @@ export const updatePill = async (id: number, pillData: any): Promise<any> => {
     cautionwarning,
     interaction,
     sideeffect,
-    storagemethod,
+    storagemethod
   } = pillData;
 
   const query = `UPDATE pills SET 
@@ -98,9 +103,13 @@ export const deletePill = async (id: number): Promise<boolean> => {
   return result.rowCount > 0;
 };
 
-
-export const searchPillsbyName = async (name: string, limit: number, offset: number) => {
-  const query = 'SELECT * FROM pills WHERE name ILIKE $1 ORDER BY created_at DESC LIMIT $2 OFFSET $3';
+export const searchPillsbyName = async (
+  name: string,
+  limit: number,
+  offset: number
+) => {
+  const query =
+    'SELECT * FROM pills WHERE name ILIKE $1 ORDER BY createdAt DESC LIMIT $2 OFFSET $3';
   const values = [`%${name}%`, limit, offset];
 
   try {
@@ -109,19 +118,26 @@ export const searchPillsbyName = async (name: string, limit: number, offset: num
       pills: result.rows,
       total: result.rowCount,
       limit,
-      offset,
+      offset
     };
   } catch (error: unknown) {
     if (error instanceof Error) {
       throw new Error(`Failed to search pills by name: ${error.message}`);
     } else {
-      throw new Error('Failed to search pills by name: An unknown error occurred');
+      throw new Error(
+        'Failed to search pills by name: An unknown error occurred'
+      );
     }
   }
 };
 
-export const searchPillsbyEngName = async (drugname: string, limit: number, offset: number) => {
-  const query = 'SELECT * FROM pills WHERE engname ILIKE $1 ORDER BY created_at DESC LIMIT $2 OFFSET $3';
+export const searchPillsbyEngName = async (
+  drugname: string,
+  limit: number,
+  offset: number
+) => {
+  const query =
+    'SELECT * FROM pills WHERE engname ILIKE $1 ORDER BY createdAt DESC LIMIT $2 OFFSET $3';
   const values = [`%${drugname}%`, limit, offset];
 
   try {
@@ -130,24 +146,32 @@ export const searchPillsbyEngName = async (drugname: string, limit: number, offs
       drugs: result.rows,
       total: result.rowCount,
       limit,
-      offset,
+      offset
     };
   } catch (error: unknown) {
     if (error instanceof Error) {
       throw new Error(`Failed to search pills by name: ${error.message}`);
     } else {
-      throw new Error('Failed to search pills by name: An unknown error occurred');
+      throw new Error(
+        'Failed to search pills by name: An unknown error occurred'
+      );
     }
   }
 };
 
-export const searchPillsbyEfficacy = async (efficacy: string, limit: number, offset: number) => {
-  const efficacyArray = efficacy.split(',').map(eff => `%${eff.trim()}%`);
+export const searchPillsbyEfficacy = async (
+  efficacy: string,
+  limit: number,
+  offset: number
+) => {
+  const efficacyArray = efficacy.split(',').map((eff) => `%${eff.trim()}%`);
   const query = `
       SELECT * 
       FROM pills 
-      WHERE ${efficacyArray.map((_, index) => `efficacy ILIKE $${index + 1}`).join(' AND ')} 
-      ORDER BY created_at DESC 
+      WHERE ${efficacyArray
+        .map((_, index) => `efficacy ILIKE $${index + 1}`)
+        .join(' AND ')} 
+      ORDER BY createdAt DESC 
       LIMIT $${efficacyArray.length + 1} OFFSET $${efficacyArray.length + 2}`;
   const values = [...efficacyArray, limit, offset];
 
@@ -157,24 +181,31 @@ export const searchPillsbyEfficacy = async (efficacy: string, limit: number, off
       drugs: result.rows,
       total: result.rowCount,
       limit,
-      offset,
+      offset
     };
   } catch (error: unknown) {
     if (error instanceof Error) {
       throw new Error(`Failed to search pills by efficacy: ${error.message}`);
     } else {
-      throw new Error('Failed to search pills by efficacy: An unknown error occurred');
+      throw new Error(
+        'Failed to search pills by efficacy: An unknown error occurred'
+      );
     }
   }
 };
 
-const searchPillsByFrontAndBack = async (front: string, back:string, limit: number, offset: number) => {
+const searchPillsByFrontAndBack = async (
+  front: string,
+  back: string,
+  limit: number,
+  offset: number
+) => {
   const query = `
   SELECT * 
   FROM pillocr 
   WHERE front = $1 AND back = $2
   LIMIT $3 OFFSET $4`;
-  
+
   const values = [front, back, limit, offset];
 
   try {
@@ -183,7 +214,7 @@ const searchPillsByFrontAndBack = async (front: string, back:string, limit: numb
       drugs: result.rows,
       total: result.rowCount,
       limit,
-      offset,
+      offset
     };
   } catch (error: unknown) {
     if (error instanceof Error) {
@@ -194,19 +225,20 @@ const searchPillsByFrontAndBack = async (front: string, back:string, limit: numb
   }
 };
 
-
 const detectTextInImage = async (imageBuffer: Buffer) => {
   try {
     console.log('Detecting text in image...');
-    const [result] = await client.textDetection({ image: { content: imageBuffer } });
+    const [result] = await client.textDetection({
+      image: { content: imageBuffer }
+    });
     console.log('Vision API result:', result);
 
     const detections = result.textAnnotations;
     if (detections && detections.length >= 0) {
       // Remove numbers, dots, parentheses, square brackets, one-character length elements, and elements containing '밀리그람' or '의약품'
       const filteredText = detections
-        .map(text => text?.description ?? '')
-        .filter(text => !text.match(/[\d\.()]/))
+        .map((text) => text?.description ?? '')
+        .filter((text) => !text.match(/[\d\.()]/));
 
       console.log('Filtered text:', filteredText);
       return filteredText;
@@ -219,7 +251,11 @@ const detectTextInImage = async (imageBuffer: Buffer) => {
   }
 };
 
-export const searchPillsByImage = async (imageBuffer: Buffer, limit: number, offset: number) => {
+export const searchPillsByImage = async (
+  imageBuffer: Buffer,
+  limit: number,
+  offset: number
+) => {
   try {
     const detectedText = await detectTextInImage(imageBuffer);
     if (!detectedText || detectedText.length === 0) {
@@ -230,23 +266,31 @@ export const searchPillsByImage = async (imageBuffer: Buffer, limit: number, off
     let total = 0;
 
     for (const text of detectedText) {
-      if (text) {  // Ensure text is not null or undefined
+      if (text) {
+        // Ensure text is not null or undefined
         const frontText = detectedText[0];
         const backText = detectedText[1];
-        const resultByFrontAndBack = await searchPillsByFrontAndBack(frontText, backText, limit, offset);
+        const resultByFrontAndBack = await searchPillsByFrontAndBack(
+          frontText,
+          backText,
+          limit,
+          offset
+        );
         pills.push(...resultByFrontAndBack.drugs);
         total += resultByFrontAndBack.total;
       }
     }
 
     // Remove duplicates based on drugid
-    const uniqueDrugs = Array.from(new Map(pills.map(pill => [pill.id, pill])).values());
+    const uniqueDrugs = Array.from(
+      new Map(pills.map((pill) => [pill.id, pill])).values()
+    );
 
     return {
       drugs: uniqueDrugs,
       total: uniqueDrugs.length,
       limit,
-      offset,
+      offset
     };
   } catch (error) {
     console.error('Error searching drugs by image:', error);
@@ -255,23 +299,22 @@ export const searchPillsByImage = async (imageBuffer: Buffer, limit: number, off
 };
 
 export const getPillFavoriteCountService = async (
-   id: number
- ): Promise<number> => {
-   try {
-     const query = `
+  id: number
+): Promise<number> => {
+  try {
+    const query = `
    SELECT COUNT(*) AS count
    FROM favorites
    WHERE id = $1
    `;
-     const values = [id];
-     const { rows } = await pool.query(query, values);
+    const values = [id];
+    const { rows } = await pool.query(query, values);
 
-     return parseInt(rows[0].count, 10);
-   } catch (error: any) {
-     throw error;
-   }
- };
-
+    return parseInt(rows[0].count, 10);
+  } catch (error: any) {
+    throw error;
+  }
+};
 
 export const getPillReviewCountService = async (
   id: number
@@ -290,4 +333,3 @@ export const getPillReviewCountService = async (
     throw error;
   }
 };
-

@@ -130,7 +130,7 @@ export const getPillsAllReviewService = async (
         users.username,
         users.role,
         reviews.content,
-        reviews.created_at
+        reviews.createdAt
       FROM 
         reviews
       JOIN 
@@ -205,7 +205,7 @@ export const getUserAllReviewService = async (
         reviews.id,
         pills.name,
         reviews.content,
-        reviews.created_at
+        reviews.createdAt
       FROM 
         reviews
       JOIN 
