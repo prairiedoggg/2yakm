@@ -50,7 +50,7 @@ const EditMyInformation = ({
     const items = [];
     for (let i = 0; i < infos.length; i++) {
       items.push(
-        <div>
+        <div key={i}>
           <div className='information-item' onClick={infos[i].onClick}>
             <div className='info-key'>{infos[i].info}</div>
             <div className='info-value'>

@@ -41,8 +41,9 @@ const ConfirmPassword = ({ onEdit }: { onEdit: () => void }) => {
       formData.email,
       formData.oldPassword,
       formData.newPassword,
-      () => {
-        console.log('비밀번호 변경 완료');
+      (data) => {
+        console.log(`비밀번호 변경 완료`);
+        console.log(data);
       }
     );
   };

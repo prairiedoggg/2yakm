@@ -41,9 +41,9 @@ const FavoriteMedications = () => {
     }
   ];
 
-  const renderItems = (item: MedicationItem) => {
+  const renderItems = (item: MedicationItem, index: number) => {
     return (
-      <Item>
+      <Item key={index}>
         <div className='title'>
           {item.title}
           <Icon
@@ -79,7 +79,9 @@ const FavoriteMedications = () => {
             style={{ color: '#d1d1d1' }}
           />
         </div>
-        <div className='items'>{items.map((item) => renderItems(item))}</div>
+        <div className='items'>
+          {items.map((item, index) => renderItems(item, index))}
+        </div>
       </StyledContent>
     </MyPageContainer>
   );
