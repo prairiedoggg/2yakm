@@ -6,7 +6,7 @@ export interface Alarm {
   name: string;
   startDate: string;
   endDate?: string;
-  times: string[];
+  times: { time: string; status: string }[];
   alarmStatus?: boolean;
 }
 

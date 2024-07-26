@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
 import styled from 'styled-components';
-import { Button, Input, DatePicker } from 'antd';
+import { Button, Input, DatePicker, TimePicker } from 'antd';
 import { Icon } from '@iconify-icon/react';
 import { useAlarmStore, Alarm } from '../../store/alarm';
-import { createAlarm, updateAlarm } from '../../api/alarmApi'
+import { createAlarm, updateAlarm } from '../../api/alarmApi';
 import dayjs, { Dayjs } from 'dayjs';
 
 const AlarmSettings = () => {
@@ -11,10 +11,12 @@ const AlarmSettings = () => {
   const currentAlarm = useAlarmStore((state) => state.currentAlarm);
 
   const [alarmName, setAlarmName] = useState<string>('');
-  const [alarmTimes, setAlarmTimes] = useState<string[]>([
-    '오전 9:00',
-    '오후 1:00',
-    '오후 8:00'
+  const [alarmTimes, setAlarmTimes] = useState<
+    { time: Dayjs; status: string }[]
+  >([
+    { time: dayjs('09:00', 'HH:mm'), status: 'active' },
+    { time: dayjs('13:00', 'HH:mm'), status: 'active' },
+    { time: dayjs('20:00', 'HH:mm'), status: 'active' }
   ]);
   const [startDate, setStartDate] = useState<Dayjs | null>(dayjs());
   const [endDate, setEndDate] = useState<Dayjs | null>(dayjs());
@@ -22,7 +24,12 @@ const AlarmSettings = () => {
   useEffect(() => {
     if (currentAlarm) {
       setAlarmName(currentAlarm.name);
-      setAlarmTimes(currentAlarm.times);
+      setAlarmTimes(
+        currentAlarm.times.map((t) => ({
+          time: dayjs(t.time, 'HH:mm'),
+          status: t.status
+        }))
+      );
       setStartDate(dayjs(currentAlarm.startDate));
       setEndDate(dayjs(currentAlarm.endDate));
     }
@@ -30,7 +37,7 @@ const AlarmSettings = () => {
 
   // 알람 시간 추가
   const handleAddTime = () => {
-    setAlarmTimes([...alarmTimes, '']);
+    setAlarmTimes([...alarmTimes, { time: dayjs(), status: 'active' }]);
   };
 
   // 특정 알람 시간 제거
@@ -40,9 +47,9 @@ const AlarmSettings = () => {
   };
 
   // 특정 알람 시간 변경
-  const handleTimeChange = (value: string, index: number) => {
+  const handleTimeChange = (time: Dayjs, index: number) => {
     const newAlarmTimes = [...alarmTimes];
-    newAlarmTimes[index] = value;
+    newAlarmTimes[index] = { ...newAlarmTimes[index], time };
     setAlarmTimes(newAlarmTimes);
   };
 
@@ -51,7 +58,10 @@ const AlarmSettings = () => {
     const alarmData: Alarm = {
       id: currentAlarm?.id,
       name: alarmName,
-      times: alarmTimes,
+      times: alarmTimes.map((t) => ({
+        time: t.time.format('HH:mm'),
+        status: t.status
+      })),
       startDate: startDate?.toISOString() || '',
       endDate: endDate?.toISOString() || '',
       alarmStatus: true
@@ -94,18 +104,18 @@ const AlarmSettings = () => {
           </AlarmEndDate>
           <AlarmTime>
             <h4>알람 시간</h4>
-            {alarmTimes.map((time, index) => (
+            {alarmTimes.map((timeObj, index) => (
               <div key={index}>
                 <Button
                   icon={
                     <Icon icon='mdi:minus-circle' style={{ color: 'red' }} />
-                  } // 변경된 부분
+                  }
                   onClick={() => handleRemoveTime(index)}
                 />
-                <Input
-                  value={time}
-                  onChange={(e) => handleTimeChange(e.target.value, index)}
-                  placeholder='시간 입력'
+                <TimePicker
+                  value={timeObj.time}
+                  onChange={(time) => handleTimeChange(time!, index)}
+                  format='HH:mm'
                   style={{ width: '100px', margin: '0 10px' }}
                 />
               </div>

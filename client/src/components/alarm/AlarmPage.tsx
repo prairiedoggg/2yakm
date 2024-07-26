@@ -8,20 +8,32 @@ import { getAlarms, deleteAlarm } from '../../api/alarmApi';
 const AlarmPage = () => {
   const { alarms, setCurrentPage, setCurrentAlarm, setAlarms } =
     useAlarmStore();
-  const [isToggled, setIsToggled] = useState(Array(alarms.length).fill(true));
+  const [isToggled, setIsToggled] = useState<boolean[]>([]);
   const [isDeleteMode, setIsDeleteMode] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() =>  {
-     getAlarms((res) => {
-        console.log('알람페이지:', res);
-        setAlarms(res.data);
+  useEffect(() => {
+    const fetchAlarms = async () => {
+      try {
+        const data = await getAlarms();
+        setAlarms(data);
+        setIsToggled(Array(data.length).fill(true));
+      } catch (error) {
+        console.error('알람을 불러오는 도중 에러 발생:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
-        console.log('알람:', alarms);
-        setIsToggled(Array(res.data.length).fill(true));
-      })
-      .then()
-      .catch((error) => console.error('에러:', error));
+    fetchAlarms();
   }, [setAlarms]);
+
+  useEffect(() => {
+    console.log('알람 상태 업데이트:', alarms);
+    if (alarms) {
+      setIsToggled(Array(alarms.length).fill(true));
+    }
+  }, [alarms]);
 
   // 알람 온오프 토글기능
   const handleToggle = (index: number) => {
@@ -54,6 +66,10 @@ const AlarmPage = () => {
     setCurrentPage('settings');
   };
 
+  if (isLoading) {
+    return <p>Loading...</p>;
+  }
+
   return (
     <>
       <Header />
@@ -67,7 +83,6 @@ const AlarmPage = () => {
               <AlarmItem onClick={() => handleEditAlarm(alarm)}>
                 <AlarmHeader>
                   <AlarmName>{alarm.name}</AlarmName>
-
                   <ToggleSwitch onClick={(event) => event.stopPropagation()}>
                     <input
                       type='checkbox'
@@ -78,8 +93,8 @@ const AlarmPage = () => {
                   </ToggleSwitch>
                 </AlarmHeader>
                 <AlarmTimes>
-                  {alarm.times.map((time, i) => (
-                    <AlarmTime key={i}>{time}</AlarmTime>
+                  {alarm.times.map((timeObj, i) => (
+                    <AlarmTime key={i}>{timeObj.time}</AlarmTime>
                   ))}
                 </AlarmTimes>
               </AlarmItem>
@@ -117,7 +132,9 @@ const IconContainer = styled.div`
   cursor: pointer;
 `;
 
-const AlarmList = styled.div``;
+const AlarmList = styled.div`
+  width: 100%;
+`;
 
 const AlarmItemContainer = styled.div`
   display: flex;
