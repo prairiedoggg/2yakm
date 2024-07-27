@@ -1,13 +1,18 @@
+import { useState } from 'react';
 import styled from 'styled-components';
-import { usePillStore }  from '../../store/pill'
-
+import { usePillStore } from '../../store/pill';
 
 const PillExp = () => {
-  const { pillData } = usePillData();
+  const { pillData } = usePillStore();
+  const [isExpanded, setIsExpanded] = useState(false);
 
-    if (!pillData) {
-      return <div>약 정보를 불러오는 중입니다...</div>;
-    }
+  const toggleExpand = () => {
+    setIsExpanded(!isExpanded);
+  };
+
+  if (!pillData) {
+    return <div>약 정보를 불러오는 중입니다...</div>;
+  }
 
   return (
     <PillExpContainer>
@@ -41,10 +46,36 @@ const PillExp = () => {
           </li>
           <li>
             <ListTitle>
-              <img src={`/img/pillexp/pregnant.svg`} alt='임산부' />
-              <span>임산부도 안전하게 복용 가능해요.</span>
+              <img src={`/img/pillexp/star.svg`} alt='별모양' />
+              <span
+                style={{
+                  fontWeight: '500'
+                }}
+              >
+                용량 및 용법
+              </span>
             </ListTitle>
-            <p className='last'>{pillData.caution}</p>
+            <p>{pillData.dosage}</p>
+          </li>
+          <li>
+            <ListTitle>
+              <img src={`/img/pillexp/star.svg`} alt='별모양' />
+              <span
+                style={{
+                  fontWeight: '500'
+                }}
+              >
+                주의사항
+              </span>
+            </ListTitle>
+            {isExpanded ? (
+              <p className='last'>{pillData.caution}</p>
+            ) : (
+              <p className='last'>{pillData.caution.substring(0, 100)}...</p>
+            )}
+            <ToggleExpandButton onClick={toggleExpand}>
+              {isExpanded ? '접기' : '펼치기'}
+            </ToggleExpandButton>
           </li>
         </ul>
       </PillExpBox>
@@ -59,8 +90,6 @@ const PillExp = () => {
 };
 
 export default PillExp;
-
-
 
 const PillExpContainer = styled.div`
   padding: 20px 30px 100px;
@@ -108,4 +137,14 @@ const ListTitle = styled.div`
   & span {
     margin-left: 5px;
   }
+`;
+
+const ToggleExpandButton = styled.button`
+  margin: 5px 0 0 22px;
+  color: red;
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-size: 12px;
+  text-decoration: underline;
 `;
