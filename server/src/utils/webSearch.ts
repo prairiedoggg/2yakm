@@ -1,6 +1,7 @@
-const axios = require('axios');
+import axios from 'axios'
+import { createError } from '../utils/error';
 
-async function webSearch(query: string) {
+export const webSearch = async function webSearch(query: string) {
   try {
     if (!query) {
       throw new Error('검색 쿼리가 제공되지 않았습니다.');
@@ -24,10 +25,10 @@ async function webSearch(query: string) {
   } catch (error) {
     console.error('웹 검색 오류:', error);
     if (axios.isAxiosError(error)) {
-      console.error('API 응답 데이터:', (error as any).response?.data);
+      console.error('API 응답 데이터:', error);
+    } else {
+      console.error('알 수 없는 오류:', error);
     }
-    throw error;
+    throw createError('서치에러', '서치 중 에러가 발생했습니다.', 500);
   }
 }
-
-module.exports = webSearch;

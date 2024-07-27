@@ -1,4 +1,4 @@
-import { Pool } from 'pg';
+import { Pool, QueryResult } from 'pg';
 import fs from 'fs';
 import path from 'path';
 import dotenv from 'dotenv';
@@ -46,4 +46,4 @@ const connectDB = async (): Promise<void> => {
 
 connectDB();
 
-export { pool };
+export { pool, QueryResult };
