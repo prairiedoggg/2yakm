@@ -76,6 +76,6 @@ router.post('/chat', gptController.chat);
  *                   type: string
  *                   description: 오류 메시지
  */
-router.post('/end', gptController.endChat); 
+router.post('/end', gptController.endChat);
 
 export default router;

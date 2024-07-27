@@ -6,7 +6,6 @@ import { createError } from '../utils/error';
 import { pool } from '../db';
 import { isAfter } from 'date-fns';
 import { QueryResult } from 'pg';
-import { zonedTimeToUtc, utcToZonedTime } from 'date-fns-tz';
 
 const runningJobs = new Map<string, schedule.Job>();
 
@@ -24,7 +23,8 @@ export const createAlarm = async (alarm: Omit<Alarm, 'id'>): Promise<Alarm> => {
     const query = `
     INSERT INTO alarms (userId, name, startDate, endDate, times, alarmStatus)
     VALUES ($1, $2, $3, $4, $5, $6)
-    RETURNING id, userId AS "userId", name, startDate AS "startDate", endDate AS "endDate", times, alarmStatus AS "alarmStatus", createdAt, updatedAt
+    RETURNING id, userId AS "userId", name, startDate AS "startDate", 
+    endDate AS "endDate", times, alarmStatus AS "alarmStatus", createdAt, updatedAt
     `;
     const values = [userId, name, startDate, endDate, JSON.stringify(times), alarmStatus];
     const result: QueryResult<Alarm> = await pool.query(query, values);
@@ -77,7 +77,8 @@ export const updateAlarm = async (
           alarmStatus = COALESCE($6, alarmStatus),
           updatedAt = CURRENT_TIMESTAMP
       WHERE id = $7
-      RETURNING id, userId as "userId", name, startDate as "startDate", endDate as "endDate", times, alarmStatus as "alarmStatus"
+      RETURNING id, userId as "userId", name, startDate as "startDate",
+      endDate as "endDate", times, alarmStatus as "alarmStatus"
     `;
     const values = [userId, name, startDate, endDate, JSON.stringify(times), alarmStatus, id];
     const result : QueryResult<Alarm> = await pool.query(text, values);
@@ -124,7 +125,7 @@ export const updateAlarm = async (
 };
 
 export const updateAlarmStatus = async (id: string, alarmStatus: boolean): Promise<Alarm | null> => {
-  const client = await pool.connect();
+  const client = await pool.connect(); 
   try {
     await client.query('BEGIN');
 
@@ -133,7 +134,8 @@ export const updateAlarmStatus = async (id: string, alarmStatus: boolean): Promi
       SET alarmStatus = $1,
           updatedAt = CURRENT_TIMESTAMP
       WHERE id = $2
-      RETURNING id, userId, name, startDate AS "startDate", endDate AS "endDate", times, alarmStatus AS "alarmStatus"
+      RETURNING id, userId, name, startDate AS "startDate", 
+      endDate AS "endDate", times, alarmStatus AS "alarmStatus"
     `;
     const values = [alarmStatus, id];
     const result: QueryResult<Alarm> = await client.query(text, values);
@@ -235,7 +237,8 @@ export const scheduleAlarmService = (alarm: Alarm) => {
 export const getAlarmsByUserId = async (userId: string): Promise<Alarm[]> => {
   try {
     const text = `
-      SELECT id, userId AS "userId", name, startDate AS "startDate", endDate AS "endDate", times, alarmStatus AS "alarmStatus"
+      SELECT id, userId AS "userId", name, startDate AS "startDate", 
+      endDate AS "endDate", times, alarmStatus AS "alarmStatus"
       FROM alarms 
       WHERE userId = $1
     `;    
