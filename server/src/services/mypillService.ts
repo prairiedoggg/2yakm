@@ -2,7 +2,7 @@ import { pool } from '../db';
 
 interface MyPill {
   mypillid: string;
-  pillname: string;
+  name: string;
   expiredat: string;
 }
 
