@@ -29,16 +29,16 @@ export const searchFavoritePillService = async (
 
     const query = `
     SELECT 
-      favorites.favoriteid,
-      favorites.userid,
       favorites.id,
+      favorites.userid,
+      favorites.pillid,
       pills.name,
       pills.efficacy,
       favorites.createdAt
     FROM
       favorites
     JOIN
-      pills ON favorites.id = pills.id
+      pills ON favorites.pillid = pills.id
     WHERE favorites.userid = $1
     ORDER BY ${sortedBy} ${order}
     LIMIT $2 OFFSET $3;
@@ -59,25 +59,25 @@ export const searchFavoritePillService = async (
 
 // 약 좋아요 추가, 취소 서비스
 export const addCancelFavoritePillService = async (
-  id: number,
+  pillid: number,
   userid: string
 ): Promise<{ message: string; data: Favorite | null }> => {
   try {
     // DB에 좋아요 정보가 있는지 먼저 확인함
     const foundQuery = `
-        SELECT favoriteId FROM favorites
-        WHERE id = $1 AND userid = $2
+        SELECT id FROM favorites
+        WHERE pillid = $1 AND userid = $2
         `;
-    const foundValues = [id, userid];
+    const foundValues = [pillid, userid];
     const foundResult = await pool.query(foundQuery, foundValues);
 
     // 좋아요 정보가 있으면 DB에서 삭제
     if (foundResult.rows.length !== 0) {
       const deleteQuery = `
             DELETE FROM favorites
-            WHERE id = $1 AND userid = $2
+            WHERE pillid = $1 AND userid = $2
             `;
-      const deleteValues = [id, userid];
+      const deleteValues = [pillid, userid];
       const deleteResult = await pool.query(deleteQuery, deleteValues);
       return {
         message: 'deleted',
@@ -87,10 +87,10 @@ export const addCancelFavoritePillService = async (
 
     // 좋아요 정보를 DB에 추가
     const addQuery = `
-    INSERT INTO favorites (id, userid)
+    INSERT INTO favorites (pillid, userid)
     VALUES ($1, $2)
     `;
-    const addValues = [id, userid];
+    const addValues = [pillid, userid];
     const addResult = await pool.query(addQuery, addValues);
     return {
       message: 'added',
@@ -103,15 +103,15 @@ export const addCancelFavoritePillService = async (
 
 // 좋아요를 눌렀는지 확인하는 서비스
 export const userFavoriteStatusService = async (
-  id: number,
+  pillid: number,
   userid: string
 ): Promise<boolean> => {
   try {
     const query = `
-    SELECT favoriteId FROM favorites
-    WHERE id = $1 AND userid = $2
+    SELECT id FROM favorites
+    WHERE pillid = $1 AND userid = $2
     `;
-    const values = [id, userid];
+    const values = [pillid, userid];
     const { rows } = await pool.query(query, values);
 
     return rows.length > 0;
@@ -122,15 +122,15 @@ export const userFavoriteStatusService = async (
 
 // // 해당 약의 좋아요 수를 확인하는 서비스
 // export const getPillFavoriteCountService = async (
-//   id: number
+//   pillid: number
 // ): Promise<number> => {
 //   try {
 //     const query = `
 //   SELECT COUNT(*) AS count
 //   FROM favorites
-//   WHERE id = $1
+//   WHERE pillid = $1
 //   `;
-//     const values = [id];
+//     const values = [pillid];
 //     const { rows } = await pool.query(query, values);
 
 //     return parseInt(rows[0].count, 10);

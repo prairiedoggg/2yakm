@@ -15,18 +15,18 @@ interface CursorBasedPaginationResult {
 
 // 리뷰 생성 서비스
 export const createReviewService = async (
-  id: number,
+  pillid: number,
   userid: string,
   content: string
 ): Promise<Review | null> => {
   // 매개변수화된 쿼리 (SQL 인젝션 공격을 방지할 수 있음)
   try {
     const query = `
-    INSERT INTO reviews (id, userid, content)
+    INSERT INTO reviews (pillid, userid, content)
     VALUES ($1, $2, $3)
     RETURNING *
     `;
-    const values = [id, userid, content];
+    const values = [pillid, userid, content];
     const { rows } = await pool.query(query, values);
 
     return rows.length ? rows[0] : null;
@@ -37,7 +37,7 @@ export const createReviewService = async (
 
 // 리뷰 수정 서비스
 export const updateReviewService = async (
-  reviewid: number,
+  id: number,
   userid: string,
   content: string
 ): Promise<Review | null> => {
@@ -45,10 +45,10 @@ export const updateReviewService = async (
     const query = `
         UPDATE reviews
         SET content = $1
-        WHERE reviewid = $2 AND userid = $3
+        WHERE id = $2 AND userid = $3
         RETURNING *
         `;
-    const values = [content, reviewid, userid];
+    const values = [content, id, userid];
     const { rows } = await pool.query(query, values);
 
     if (rows.length === 0) {
@@ -67,16 +67,16 @@ export const updateReviewService = async (
 
 // 리뷰 삭제 서비스
 export const deleteReviewService = async (
-  reviewid: number,
+  id: number,
   userid: string
 ): Promise<Review | null> => {
   try {
     const query = `
         DELETE FROM reviews
-        WHERE reviewid = $1 AND userid = $2
+        WHERE id = $1 AND userid = $2
         RETURNING *
         `;
-    const values = [reviewid, userid];
+    const values = [id, userid];
     const { rows } = await pool.query(query, values);
 
     if (rows.length === 0) {
@@ -95,7 +95,7 @@ export const deleteReviewService = async (
 
 // 해당 약의 모든 리뷰 조회 서비스
 export const getPillsAllReviewService = async (
-  id: number,
+  pillid: number,
   initialLimit?: number,
   cursorLimit?: number,
   cursor?: number
@@ -103,8 +103,8 @@ export const getPillsAllReviewService = async (
   try {
     let query = `
       SELECT 
-        reviews.reviewid,
         reviews.id,
+        reviews.pillid,
         pills.name,
         reviews.userid,
         users.username,
@@ -114,27 +114,27 @@ export const getPillsAllReviewService = async (
       FROM 
         reviews
       JOIN 
-        pills ON reviews.id = pills.id
+        pills ON reviews.pillid = pills.id
       JOIN 
         users ON reviews.userid = users.userid
       WHERE 
-        reviews.id = $1
+        reviews.pillid = $1
         `;
 
-    const values: any[] = [id];
+    const values: any[] = [pillid];
 
     // 첫 번째 자료를 불러올 때는 initialLimit 값 사용, 그 이후 스크롤을 했을 때는 cursorLimit 값을 이용해서 자료를 가져옴
     if (cursor) {
-      query += ` AND (reviews.reviewid < $2)`;
+      query += ` AND (reviews.id < $2)`;
       values.push(cursor);
       query += `
-        ORDER BY reviews.reviewid DESC
+        ORDER BY reviews.id DESC
         LIMIT $3
       `;
       values.push(cursorLimit);
     } else {
       query += `
-        ORDER BY reviews.reviewid DESC
+        ORDER BY reviews.id DESC
         LIMIT $2
       `;
       values.push(initialLimit);
@@ -147,7 +147,7 @@ export const getPillsAllReviewService = async (
     // 배열 index는 0으로 시작하기 때문에, lastReview를 가져오려면 자료의 길이에서 -1을 해주어야함, 예)길이가 10이면 마지막 자료는 rows[9]
     if (rows.length === (cursor ? cursorLimit : initialLimit)) {
       const lastReview = rows[rows.length - 1];
-      nextCursor = lastReview.reviewid;
+      nextCursor = lastReview.id;
     }
 
     return {
@@ -181,15 +181,15 @@ export const getUserAllReviewService = async (
 
     const query = `
       SELECT 
-        reviews.reviewid,
         reviews.id,
+        reviews.pillid,
         pills.name,
         reviews.content,
         reviews.createdAt
       FROM 
         reviews
       JOIN 
-        pills ON reviews.id = pills.id
+        pills ON reviews.pillid = pills.id
       WHERE 
         reviews.userid = $1
       ORDER BY ${sortedBy} ${order}

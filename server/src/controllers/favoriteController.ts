@@ -45,15 +45,15 @@ export const searchFavoritePill = async (
 
 // 약 좋아요 추가, 취소 컨트롤러
 export const addCancelFavoritePill = async (
-  req: Request<{ id: string }, unknown, unknown, unknown> & CustomRequest,
+  req: Request<{ pillid: string }, unknown, unknown, unknown> & CustomRequest,
   res: Response,
   next: NextFunction
 ): Promise<void> => {
-  const id = parseInt(req.params.id, 10);
+  const pillid = parseInt(req.params.pillid, 10);
   const userid = req.user.id;
 
   try {
-    const favorite = await addCancelFavoritePillService(id, userid);
+    const favorite = await addCancelFavoritePillService(pillid, userid);
 
     if (favorite.message === 'deleted') {
       res.status(200).send('좋아요를 취소했습니다.');
@@ -68,15 +68,15 @@ export const addCancelFavoritePill = async (
 
 // 좋아요를 눌렀는지 확인하는 컨트롤러
 export const userFavoriteStatus = async (
-  req: Request<{ id: string }, unknown, unknown, unknown> & CustomRequest,
+  req: Request<{ pillid: string }, unknown, unknown, unknown> & CustomRequest,
   res: Response,
   next: NextFunction
 ): Promise<void> => {
-  const id = parseInt(req.params.id, 10);
+  const pillid = parseInt(req.params.pillid, 10);
   const userid = req.user.id;
 
   try {
-    const status = await userFavoriteStatusService(id, userid);
+    const status = await userFavoriteStatusService(pillid, userid);
 
     res.status(200).send({ status });
   } catch (error: any) {
@@ -86,14 +86,14 @@ export const userFavoriteStatus = async (
 
 // // 해당 약의 좋아요 수를 확인하는 컨트롤러
 // export const getPillFavoriteCount = async (
-//   req: Request<{ id: string }, unknown, unknown, unknown>,
+//   req: Request<{ pillid: string }, unknown, unknown, unknown>,
 //   res: Response,
 //   next: NextFunction
 // ): Promise<void> => {
-//   const id = parseInt(req.params.id, 10);
+//   const pillid = parseInt(req.params.pillid, 10);
 
 //   try {
-//     const count = await getPillFavoriteCountService(id);
+//     const count = await getPillFavoriteCountService(pillid);
 
 //     res.status(200).send({ count });
 //   } catch (error: any) {
