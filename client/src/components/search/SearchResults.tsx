@@ -10,12 +10,11 @@ import {
   toggleFavoriteApi,
   fetchFavoriteStatusApi
 } from '../../api/favoriteApi';
+import { useSearchStore} from '../../store/search'
+import { usePillStore } from '../../store/pill';
 
-interface SearchResultsProps {
-  searchQuery: string;
-}
-
-const SearchResults = ({ searchQuery }: SearchResultsProps) => {
+const SearchResults = () => {
+   const { searchQuery } = useSearchStore();
   const [activeTab, setActiveTab] = useState<string>('effectiveness');
   const { isFavorite, setIsFavorite } = useFavoriteStore();
   const [pillId, setPillId] = useState<string | null>(null);
@@ -51,6 +50,10 @@ const SearchResults = ({ searchQuery }: SearchResultsProps) => {
     { key: 'effectiveness', label: '효능•용법' },
     { key: 'review', label: '리뷰' }
   ];
+
+    if (!pillData) {
+      return <div>검색 결과가 없습니다.</div>;
+    }
 
   return (
     <SearchResultsContainer>

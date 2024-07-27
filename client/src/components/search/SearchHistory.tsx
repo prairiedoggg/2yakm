@@ -4,6 +4,7 @@ import { useSearchStore } from '../../store/search';
 import { useSearchHistoryStore } from '../../store/searchHistory';
 
 const SearchHistory = () => {
+  const { searchQuery } = useSearchStore();
   const { history, clearHistory, setHistory } = useSearchHistoryStore(
     (state) => ({
       history: state.history,
@@ -11,8 +12,6 @@ const SearchHistory = () => {
       setHistory: state.setHistory
     })
   );
-
-  const { searchQuery } = useSearchStore();
 
   useEffect(() => {
     const storedHistory = localStorage.getItem('searchHistory');
@@ -23,12 +22,12 @@ const SearchHistory = () => {
         setHistory(parsedHistory);
       }
     }
-  }, [history, setHistory]);
+  }, [setHistory]);
 
   return (
     <>
-      <div>{searchQuery}</div>
       <HistoryContainer>
+        <div>{searchQuery}</div>
         <HistoryInner>
           <HistoryTitle>
             <span>최근 검색어</span>

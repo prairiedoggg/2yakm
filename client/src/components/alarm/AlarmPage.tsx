@@ -67,7 +67,7 @@ const AlarmPage = () => {
   };
 
   if (isLoading) {
-    return <p>Loading...</p>;
+    return <p>잠시만 기다려주세요..!</p>;
   }
 
   return (

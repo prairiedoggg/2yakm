@@ -15,7 +15,7 @@ const Search = () => {
         <SearchBox />
       </BackgroundHeader>
       {searchQuery ? (
-        <SearchResults searchQuery={searchQuery} />
+        <SearchResults/>
       ) : (
         <SearchHistory />
       )}

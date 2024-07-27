@@ -1,18 +1,21 @@
-
 import styled from 'styled-components';
+import { usePillStore }  from '../../store/pill'
 
 
 const PillExp = () => {
+  const { pillData } = usePillData();
+
+    if (!pillData) {
+      return <div>약 정보를 불러오는 중입니다...</div>;
+    }
+
   return (
     <PillExpContainer>
       <PillExpBox>
         <ul>
           <li>
             <ListTitle>
-              <img
-                src={`/img/pillexp/pill.svg`}
-                alt='약'
-              />
+              <img src={`/img/pillexp/pill.svg`} alt='약' />
               <span
                 style={{
                   fontWeight: '500'
@@ -21,14 +24,11 @@ const PillExp = () => {
                 성분
               </span>
             </ListTitle>
-            <p>아세트아미노펜</p>
+            <p>{pillData.ingredientname}</p>
           </li>
           <li>
             <ListTitle>
-              <img
-                src={`/img/pillexp/star.svg`}
-                alt='별모양'
-              />
+              <img src={`/img/pillexp/star.svg`} alt='별모양' />
               <span
                 style={{
                   fontWeight: '500'
@@ -37,21 +37,14 @@ const PillExp = () => {
                 효과 및 효능
               </span>
             </ListTitle>
-            <p>발열, 두통, 근육통, 관절통 등</p>
+            <p>{pillData.efficacy}</p>
           </li>
           <li>
             <ListTitle>
-              <img
-                src={`/img/pillexp/pregnant.svg`}
-                alt='임산부'
-              />
+              <img src={`/img/pillexp/pregnant.svg`} alt='임산부' />
               <span>임산부도 안전하게 복용 가능해요.</span>
             </ListTitle>
-            <p className='last'>
-              장기 복용시에는 자폐증 등의 위험을 높일 수 있다는 연구 결과가
-              있어요. <br />
-              과도한 복용은 하지 말아야 해요.
-            </p>
+            <p className='last'>{pillData.caution}</p>
           </li>
         </ul>
       </PillExpBox>

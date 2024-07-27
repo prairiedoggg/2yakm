@@ -12,6 +12,7 @@ const SearchBox = () => {
   // 입력값이 변경될 때
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     setQuery(e.target.value); // 로컬 상태에 검색어 저장
+    setSearchQuery(e.target.value); // Zustand 상태에 검색어 저장
   };
 
   // Enter 키 입력
@@ -35,7 +36,7 @@ const SearchBox = () => {
       window.removeEventListener('keydown', handleEnterKey);
     };
   }, [query]);
-  
+
   // searchQuery가 변경될 때 로컬 상태 업데이트
   useEffect(() => {
     setQuery(searchQuery);
