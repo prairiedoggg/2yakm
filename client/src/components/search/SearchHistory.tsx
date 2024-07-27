@@ -1,41 +1,28 @@
-import { useEffect } from 'react';
 import styled from 'styled-components';
-import { useSearchHistoryStore } from '../../store/search';
+import { useSearchStore } from '../../store/search';
+import { useSearchHistoryStore } from '../../store/searchHistory';
 
 const SearchHistory = () => {
-  const { history, clearHistory, setHistory } = useSearchHistoryStore(
-    (state) => ({
-      history: state.history,
-      clearHistory: state.clearHistory,
-      setHistory: state.setHistory
-    })
-  );
-
-  useEffect(() => {
-    const storedHistory = localStorage.getItem('searchHistory');
-    if (storedHistory) {
-      const parsedHistory = JSON.parse(storedHistory);
-      // 중복 방지를 위해 조건 추가
-      if (history.length === 0) {
-        setHistory(parsedHistory);
-      }
-    }
-  }, [history, setHistory]);
+  const { searchQuery } = useSearchStore();
+  const { history, clearHistory } = useSearchHistoryStore();
 
   return (
-    <HistoryContainer>
-      <HistoryInner>
-        <HistoryTitle>
-          <span>최근 검색어</span>
-          <span onClick={clearHistory}>전체삭제</span>
-        </HistoryTitle>
-        <HistoryList>
-          {history.map((item, index) => (
-            <HistoryItem key={index}>{item}</HistoryItem>
-          ))}
-        </HistoryList>
-      </HistoryInner>
-    </HistoryContainer>
+    <>
+      <HistoryContainer>
+        <div>{searchQuery}</div>
+        <HistoryInner>
+          <HistoryTitle>
+            <span>최근 검색어</span>
+            <span onClick={clearHistory}>전체삭제</span>
+          </HistoryTitle>
+          <HistoryList>
+            {history.map((item, index) => (
+              <HistoryItem key={index}>{item}</HistoryItem>
+            ))}
+          </HistoryList>
+        </HistoryInner>
+      </HistoryContainer>
+    </>
   );
 };
 

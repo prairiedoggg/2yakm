@@ -3,10 +3,10 @@ import { Icon } from '@iconify-icon/react';
 import BottomSheet from '../BottomSheet';
 import { ChangeEvent, useState } from 'react';
 
-type MedicationItem = {
+interface MedicationItem {
   title: string;
   expiration: string;
-};
+}
 
 const MyMedications = () => {
   const [bottomSheet, setBottomSheet] = useState(false);
@@ -39,9 +39,9 @@ const MyMedications = () => {
     }
   ];
 
-  const renderItems = (item: MedicationItem) => {
+  const renderItems = (item: MedicationItem, key: number) => {
     return (
-      <Item>
+      <Item key={key}>
         <div className='title'>
           {item.title}
           <Icon
@@ -69,7 +69,9 @@ const MyMedications = () => {
             style={{ color: '#ffbb25' }}
           />
         </div>
-        <div className='items'>{items.map((item) => renderItems(item))}</div>
+        <div className='items'>
+          {items.map((item, index) => renderItems(item, index))}
+        </div>
 
         <Sheet>
           <BottomSheet
