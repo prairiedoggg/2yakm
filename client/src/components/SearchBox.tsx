@@ -1,4 +1,4 @@
-import { ChangeEvent, useState } from 'react';
+import { ChangeEvent, useState, KeyboardEvent } from 'react';
 import styled from 'styled-components';
 import { Link } from 'react-router-dom';
 import { useSearchStore } from '../store/search';
@@ -6,23 +6,25 @@ import { useSearchHistoryStore } from '../store/searchHistory';
 
 const SearchBox = () => {
   const { searchQuery, setSearchQuery } = useSearchStore();
-  const [query, setQuery] = useState(searchQuery);
+  const [query, setQuery] = useState<string>('');
   const addHistory = useSearchHistoryStore((state) => state.addHistory);
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const newQuery = e.target.value;
     setQuery(newQuery);
-    setSearchQuery(newQuery);
   };
 
   const handleSearch = () => {
     if (query.trim()) {
       setSearchQuery(query);
       addHistory(query);
+    } else {
+      setSearchQuery('');
+      setQuery('');
     }
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+  const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
       handleSearch();
     }

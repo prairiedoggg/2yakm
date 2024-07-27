@@ -10,26 +10,32 @@ import {
   toggleFavoriteApi,
   fetchFavoriteStatusApi
 } from '../../api/favoriteApi';
-import { useSearchStore} from '../../store/search'
+import { useSearchStore } from '../../store/search';
 import { usePillStore } from '../../store/pill';
 
 const SearchResults = () => {
-   const { searchQuery } = useSearchStore();
+  const { searchQuery } = useSearchStore();
   const [activeTab, setActiveTab] = useState<string>('effectiveness');
   const { isFavorite, setIsFavorite } = useFavoriteStore();
+  const { pillData, setPillData } = usePillStore();
   const [pillId, setPillId] = useState<string | null>(null);
-  const [pillData, setPillData] = useState<any>(null);
-   const [loading, setLoading] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(false);
 
   useEffect(() => {
     const fetchData = async () => {
+      setLoading(true);
       try {
         const data = await fetchPillData(searchQuery, 1, 0);
-        setPillId(data.id);
-        setPillData(data);
-        console.log('약데이터', data);
-        const status = await fetchFavoriteStatusApi(data.id);
-        setIsFavorite(status);
+        if (data) {
+          setPillId(data.id);
+          setPillData(data);
+          console.log('약데이터', data);
+          const status = await fetchFavoriteStatusApi(data.id);
+          setIsFavorite(status);
+        } else {
+          setPillData(null);
+          setPillId(null);
+        }
       } catch (error) {
         console.error('검색결과페이지 실패:', error);
       } finally {
@@ -37,7 +43,7 @@ const SearchResults = () => {
       }
     };
     fetchData();
-  }, [searchQuery, setIsFavorite]);
+  }, [searchQuery, setIsFavorite, setPillData]);
 
   const handleToggleFavorite = async () => {
     if (!pillId) return;
@@ -53,13 +59,13 @@ const SearchResults = () => {
     { key: 'effectiveness', label: '효능•용법' },
     { key: 'review', label: '리뷰' }
   ];
-    if (loading) {
-      return <div>데이터 검색중입니다.</div>;
-    }
+  if (loading) {
+    return <div>데이터 검색중입니다.</div>;
+  }
 
-    if (!pillData) {
-      return <div>검색 결과가 없습니다.</div>;
-    }
+  if (!pillData) {
+    return <div>검색 결과가 없습니다.</div>;
+  }
 
   return (
     <SearchResultsContainer>
