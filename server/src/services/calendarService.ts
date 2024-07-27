@@ -63,6 +63,11 @@ export const createCalendar = async (
   calendar: Omit<Calendar, 'id'>
 ): Promise<Calendar> => {
   try {
+
+    const existingCalendar = await getCalendarById(calendar.userId, calendar.date);
+    if (existingCalendar) {
+      throw createError('DuplicateCalendar', '해당 날짜에 이미 일정이 존재합니다.', 409);
+    }
     const text = `
       INSERT INTO calendar 
       (userid, date, calimg, condition, weight, temperature, 
@@ -85,6 +90,9 @@ export const createCalendar = async (
     const result = await pool.query(text, values);
     return convertCalendarToKoreanTime(result.rows[0]);
   } catch (error) {
+    if (error instanceof Error && error.name === 'DuplicateCalendar') {
+      throw error;
+    }
     throw createError('DBError', '캘린더 생성 중 데이터베이스 오류가 발생했습니다.', 500);
   }
 };

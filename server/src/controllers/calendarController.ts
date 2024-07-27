@@ -70,7 +70,11 @@ export const createCalendar = [
       res.status(201).json(newCalendar);
     } catch (error) {
       console.error("Error in createCalendar:", error);
-      next(error);
+      if (error instanceof Error && error.name === 'DuplicateCalendar') {
+        res.status(409).json({ message: error.message });
+      } else {
+        next(error);
+      }
     }
   } 
 ];
@@ -82,17 +86,17 @@ export const updateCalendar = [
       const userId = req.user?.email;
       const date = new Date(req.params.date);
       const calImgUrl = req.file ? (req.file as any).location : null;
-      
+
+      const { date: _, ...bodyWithoutDate } = req.body;
 
       const medications = JSON.parse(req.body.medications ?? '[]');
       if (!Array.isArray(medications) ?? !validateMedications(medications)) {
         return res.status(400).json({ message: '유효하지 않은 약물 시간 형식입니다. 시간은 HH:MM 형식이어야 하며, 00:00에서 23:59 사이여야 합니다.' });
       }
       const calendarData: Partial<Calendar> = {
-        ...req.body,
+        ...bodyWithoutDate,
         calImg: calImgUrl,
         condition: req.body.condition,
-        date: req.body.date ? new Date(req.body.date) : undefined,
         weight: req.body.weight ? parseFloat(req.body.weight) : undefined,
         temperature: req.body.temperature ? parseFloat(req.body.temperature) : undefined,
         bloodsugarBefore: req.body.bloodsugarBefore ? parseFloat(req.body.bloodsugarBefore) : undefined,
