@@ -10,14 +10,14 @@ import {
 export const createPillSchema = Joi.object({
   name: Joi.string().required(),
   expiredat: Joi.date().required(),
-  createdAt: Joi.date().required()
+  createdat: Joi.date().required()
 });
 
 export const updatePillSchema = Joi.object({
   mypillid: Joi.string().required(),
   name: Joi.string().required(),
   expiredat: Joi.date().required(),
-  createdAt: Joi.date().required()
+  createdat: Joi.date().required()
 });
 
 export const addMyPill = async (
@@ -95,7 +95,7 @@ export const getMyPills = async (
     const userId = user.id;
     const limit = parseInt((req.query.limit as string) ?? '10', 10);
     const offset = parseInt((req.query.offset as string) ?? '0', 10);
-    const sortedBy = (req.query.sortedBy as string) ?? 'createdAt';
+    const sortedBy = (req.query.sortedBy as string) ?? 'createdat';
     const order =
       ((req.query.order as string)?.toUpperCase() as 'ASC' | 'DESC') ?? 'DESC';
 
