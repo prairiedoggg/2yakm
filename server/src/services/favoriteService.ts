@@ -65,7 +65,7 @@ export const addCancelFavoritePillService = async (
   try {
     // DB에 좋아요 정보가 있는지 먼저 확인함
     const foundQuery = `
-        SELECT * FROM favorites
+        SELECT favoriteId FROM favorites
         WHERE id = $1 AND userid = $2
         `;
     const foundValues = [id, userid];
@@ -108,7 +108,7 @@ export const userFavoriteStatusService = async (
 ): Promise<boolean> => {
   try {
     const query = `
-    SELECT * FROM favorites
+    SELECT favoriteId FROM favorites
     WHERE id = $1 AND userid = $2
     `;
     const values = [id, userid];

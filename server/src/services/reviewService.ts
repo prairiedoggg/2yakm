@@ -42,32 +42,22 @@ export const updateReviewService = async (
   content: string
 ): Promise<Review | null> => {
   try {
-    const validationQuery = `
-    SELECT userid FROM reviews
-    WHERE reviewid = $1
-    `;
-    const validationValues = [reviewid];
-    const validationResult = await pool.query(
-      validationQuery,
-      validationValues
-    );
-
-    if (validationResult.rows.length === 0) {
-      throw createError('NotFound', '수정할 리뷰를 찾을 수 없습니다.', 404);
-    }
-
-    if (userid !== validationResult.rows[0].userid) {
-      throw createError('unAuthorized', '수정 권한이 없습니다.', 401);
-    }
-
     const query = `
         UPDATE reviews
         SET content = $1
-        WHERE reviewid = $2
+        WHERE reviewid = $2 AND userid = $3
         RETURNING *
         `;
-    const values = [content, reviewid];
+    const values = [content, reviewid, userid];
     const { rows } = await pool.query(query, values);
+
+    if (rows.length === 0) {
+      throw createError(
+        'NotFound',
+        '수정할 리뷰가 없거나 본인의 리뷰가 아닙니다.',
+        400
+      );
+    }
 
     return rows.length ? rows[0] : null;
   } catch (error: any) {
@@ -81,31 +71,21 @@ export const deleteReviewService = async (
   userid: string
 ): Promise<Review | null> => {
   try {
-    const validationQuery = `
-    SELECT userid FROM reviews
-    WHERE reviewid = $1
-    `;
-    const validationValues = [reviewid];
-    const validationResult = await pool.query(
-      validationQuery,
-      validationValues
-    );
-
-    if (validationResult.rows.length === 0) {
-      throw createError('NotFound', '삭제할 리뷰를 찾을 수 없습니다.', 404);
-    }
-
-    if (userid !== validationResult.rows[0].userid) {
-      throw createError('unAuthorized', '수정 권한이 없습니다.', 401);
-    }
-
     const query = `
         DELETE FROM reviews
-        WHERE reviewid = $1
+        WHERE reviewid = $1 AND userid = $2
         RETURNING *
         `;
-    const values = [reviewid];
+    const values = [reviewid, userid];
     const { rows } = await pool.query(query, values);
+
+    if (rows.length === 0) {
+      throw createError(
+        'NotFound',
+        '삭제할 리뷰가 없거나 본인의 리뷰가 아닙니다.',
+        400
+      );
+    }
 
     return rows.length ? rows[0] : null;
   } catch (error: any) {
