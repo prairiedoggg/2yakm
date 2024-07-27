@@ -5,6 +5,7 @@ import { AlarmTime, Alarm } from '../entity/alarm';
 import { createError } from '../utils/error';
 import { pool } from '../db';
 import { isAfter } from 'date-fns';
+import { QueryResult } from 'pg';
 
 const runningJobs = new Map<string, schedule.Job>();
 
@@ -25,7 +26,7 @@ export const createAlarm = async (alarm: Omit<Alarm, 'id'>): Promise<Alarm> => {
     RETURNING id, userId, name, startDate AS "startDate", endDate AS "endDate", times, alarmStatus AS "alarmStatus", createdAt, updatedAt
     `;
     const values = [userId, name, startDate, endDate, JSON.stringify(times), alarmStatus];
-    const result = await pool.query(query, values);
+    const result: QueryResult<Alarm> = await pool.query(query, values);
     const row = result.rows[0];
     const newAlarm: Alarm = {
       id: row.id,
@@ -78,7 +79,7 @@ export const updateAlarm = async (
       RETURNING id, userId, name, startDate as "startDate", endDate as "endDate", times, alarmStatus as "alarmStatus"
     `;
     const values = [userId, name, startDate, endDate, JSON.stringify(times), alarmStatus, id];
-    const result = await pool.query(text, values);
+    const result : QueryResult<Alarm> = await pool.query(text, values);
     
     if (result.rows.length === 0) {
       throw createError('AlarmNotFound', '해당 알람을 찾을 수 없습니다.', 404);
@@ -134,7 +135,7 @@ export const updateAlarmStatus = async (id: string, alarmStatus: boolean): Promi
       RETURNING id, userId, name, startDate AS "startDate", endDate AS "endDate", times, alarmStatus AS "alarmStatus"
     `;
     const values = [alarmStatus, id];
-    const result = await client.query(text, values);
+    const result: QueryResult<Alarm> = await client.query(text, values);
     
     if (result.rows.length === 0) {
       await client.query('ROLLBACK');
@@ -222,19 +223,19 @@ export const scheduleAlarmService = (alarm: Alarm) => {
 export const getAlarmsByUserId = async (userId: string): Promise<Alarm[]> => {
   try {
     const text = `
-      SELECT id, userId, name, startDate, endDate, times, alarmStatus
+      SELECT id, userId AS "userId", name, startDate AS "startDate", endDate AS "endDate", times, alarmStatus AS "alarmStatus"
       FROM alarms 
       WHERE userId = $1
     `;    
-    const result = await pool.query(text, [userId]);
+    const result : QueryResult<Alarm> = await pool.query(text, [userId]);
     return result.rows.map(row => ({
       id: row.id,
-      userId: row.userid,
+      userId: row.userId,
       name: row.name,
-      startDate: row.startdate,
-      endDate: row.enddate,
+      startDate: row.startDate,
+      endDate: row.endDate,
       times: typeof row.times === 'string' ? JSON.parse(row.times) : row.times,
-      alarmStatus: row.alarmstatus
+      alarmStatus: row.alarmStatus
     }));
   } catch (error) {
     throw createError(
@@ -254,7 +255,7 @@ export const deleteAlarm = async (id: string): Promise<boolean> => {
     }
 
     const query = 'DELETE FROM alarms WHERE id = $1';
-    const result = await pool.query(query, [id]);
+    const result : QueryResult<Alarm> = await pool.query(query, [id]);
 
     if (result.rowCount === 0) {
       throw createError('AlarmNotFound', '해당 알람을 찾을 수 없습니다.', 404);

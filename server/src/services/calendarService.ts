@@ -2,6 +2,7 @@ import { Calendar, Medication } from '../entity/calendar';
 import { pool } from '../db';
 import { createError } from '../utils/error';
 import { zonedTimeToUtc, utcToZonedTime, format } from 'date-fns-tz';
+import { QueryResult } from 'pg';
 
 const TIMEZONE = 'Asia/Seoul';
 
@@ -27,7 +28,7 @@ export const getAllCalendars = async (userId: string): Promise<Calendar[]> => {
       WHERE userId = $1
     `;    
     const values = [userId];
-    const result = await pool.query(text, values);
+    const result: QueryResult<Calendar> = await pool.query(text, values);
     return result.rows.map(row => ({
       id: row.id,
       userId: row.userId,
@@ -55,7 +56,7 @@ export const getCalendarById = async (userId: string, date: Date): Promise<Calen
       WHERE userId = $1 AND date = $2
     `;    
     const values = [userId, dateString];
-    const result = await pool.query(text, values);
+    const result: QueryResult<Calendar>  = await pool.query(text, values);
     
     if (result.rows.length === 0) {
       return null;
@@ -105,7 +106,7 @@ export const createCalendar = async (calendar: Omit<Calendar, 'id'>): Promise<Ca
       calendar.bloodsugarAfter,
       JSON.stringify(calendar.medications)
     ];
-    const result = await pool.query(text, values);
+    const result: QueryResult<Calendar>  = await pool.query(text, values);
     const row = result.rows[0];
     return {
       id: row.id,
@@ -162,7 +163,7 @@ export const updateCalendar = async (
       dateString
     ];
 
-    const result = await pool.query(text, values);
+    const result: QueryResult<Calendar>  = await pool.query(text, values);
     if (result.rows.length === 0) {
       return null;
     }
@@ -191,7 +192,7 @@ export const deleteCalendar = async (userId: string, date: Date): Promise<boolea
     const dateString = format(zonedTimeToUtc(date, TIMEZONE), 'yyyy-MM-dd');
     const text = 'DELETE FROM calendar WHERE userId = $1 AND date = $2';
     const values = [userId, dateString];
-    const result = await pool.query(text, values);
+    const result: QueryResult<Calendar>  = await pool.query(text, values);
     const deletedCount = result.rowCount ?? 0;
     
     if (deletedCount === 0) {
