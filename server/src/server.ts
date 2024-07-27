@@ -20,6 +20,8 @@ import favoriteRouter from './routes/favorite_route';
 import mypillRouter from './routes/mypill_route';
 import pillRouter from './routes/pill_route';
 
+import { rescheduleAllAlarms } from './services/alarmService';
+
 dotenv.config();
 
 const app = express();
@@ -56,4 +58,6 @@ app.use(notFoundHandler);
 app.use(errorHandler);
 app.listen(port, () => {
   console.log(`Server is running http://localhost:${port}`);
+  rescheduleAllAlarms();
 });
+
