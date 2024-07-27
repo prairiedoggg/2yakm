@@ -66,8 +66,6 @@ export const createCalendar = [
         medications: medications
       };
 
-      console.log("Processed calendarData:", calendarData);
-
       const newCalendar: Calendar = await calendarService.createCalendar(calendarData as Omit<Calendar, 'id'>);
       res.status(201).json(newCalendar);
     } catch (error) {
@@ -107,6 +105,7 @@ export const updateCalendar = [
       } else {
         res.status(404).json({ message: '해당 날짜의 캘린더를 찾을 수 없습니다.' });
       }
+
     } catch (error) {
       next(error);
     }
