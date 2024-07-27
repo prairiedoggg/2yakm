@@ -6,6 +6,7 @@ import { createError } from '../utils/error';
 import { pool } from '../db';
 import { isAfter } from 'date-fns';
 import { QueryResult } from 'pg';
+import { zonedTimeToUtc, utcToZonedTime } from 'date-fns-tz';
 
 const runningJobs = new Map<string, schedule.Job>();
 
@@ -23,7 +24,7 @@ export const createAlarm = async (alarm: Omit<Alarm, 'id'>): Promise<Alarm> => {
     const query = `
     INSERT INTO alarms (userId, name, startDate, endDate, times, alarmStatus)
     VALUES ($1, $2, $3, $4, $5, $6)
-    RETURNING id, userId, name, startDate AS "startDate", endDate AS "endDate", times, alarmStatus AS "alarmStatus", createdAt, updatedAt
+    RETURNING id, userId AS "userId", name, startDate AS "startDate", endDate AS "endDate", times, alarmStatus AS "alarmStatus", createdAt, updatedAt
     `;
     const values = [userId, name, startDate, endDate, JSON.stringify(times), alarmStatus];
     const result: QueryResult<Alarm> = await pool.query(query, values);
@@ -76,7 +77,7 @@ export const updateAlarm = async (
           alarmStatus = COALESCE($6, alarmStatus),
           updatedAt = CURRENT_TIMESTAMP
       WHERE id = $7
-      RETURNING id, userId, name, startDate as "startDate", endDate as "endDate", times, alarmStatus as "alarmStatus"
+      RETURNING id, userId as "userId", name, startDate as "startDate", endDate as "endDate", times, alarmStatus as "alarmStatus"
     `;
     const values = [userId, name, startDate, endDate, JSON.stringify(times), alarmStatus, id];
     const result : QueryResult<Alarm> = await pool.query(text, values);
@@ -189,29 +190,39 @@ const cancelExistingAlarms = (alarmId: string) => {
 };
 
 export const scheduleAlarmService = (alarm: Alarm) => {
-  const { id, startDate, endDate, times, alarmStatus } = alarm;
+  const { id, startDate, endDate, times, alarmStatus, userId } = alarm;
   if (!alarmStatus) {
-    console.log(`알람 ${id}는 비활성화 상태입니다. 스케줄링을 건너뜁니다.`);
     return; 
   }
 
+  const timeZone = 'Asia/Seoul';
   const endDateTime = new Date(endDate);
-  const startDateTime = new Date(startDate);
-  let currentDate = new Date(startDateTime);
+  let currentDate = new Date();
 
   if (currentDate.getTime() <= endDateTime.getTime()) {
     times.forEach((alarmTime: AlarmTime) => {
       const [hours, minutes] = alarmTime.time.split(':');
-      const scheduleDate = new Date(startDateTime);
+      let scheduleDate = new Date(currentDate);
       scheduleDate.setHours(parseInt(hours), parseInt(minutes), 0, 0);
 
-      while (scheduleDate <= endDateTime) {
-        if (scheduleDate >= startDateTime) {
+      if (scheduleDate.getTime() <= endDateTime.getTime()) {
+        if (scheduleDate.getTime() >= currentDate.getTime()) {
           const job = schedule.scheduleJob(scheduleDate, async () => {
-            await sendEmail(alarm.userId);
+            try {
+              const emailSent = await sendEmail(userId);
+              if (!emailSent) {
+                console.error(`알람 ${id}의 이메일 전송 실패`);
+              }
+            } catch (error) {
+              console.error(`알람 ${id}의 이메일 전송 중 오류 발생:`, error);
+            }
           });
 
-          runningJobs.set(`${id}_${alarmTime.time}_${scheduleDate.toISOString()}`, job);
+          if (!job) {
+            console.error(`작업 스케줄링 실패: ${scheduleDate.toLocaleString('ko-KR', { timeZone })}`);
+          } else {
+            runningJobs.set(`${id}_${alarmTime.time}_${scheduleDate.toISOString()}`, job);
+          }
         }
 
         scheduleDate.setDate(scheduleDate.getDate() + 1);
@@ -219,6 +230,7 @@ export const scheduleAlarmService = (alarm: Alarm) => {
     });
   }
 };
+
 
 export const getAlarmsByUserId = async (userId: string): Promise<Alarm[]> => {
   try {
@@ -273,7 +285,6 @@ export const deleteAlarm = async (id: string): Promise<boolean> => {
 };
 
 const sendEmail = async (recipientEmail: string) => {
-  console.log(`이메일 전송 시도: ${recipientEmail}`);
 
   const transporter = nodemailer.createTransport({
     service: 'gmail',
@@ -291,9 +302,23 @@ const sendEmail = async (recipientEmail: string) => {
   };
 
   try {
-    const info = await transporter.sendMail(mailOptions);
-    console.log('이메일 발송 완료:', info.response);
+    await transporter.sendMail(mailOptions);
+    return true;
   } catch (error) {
     console.error('이메일 발송 실패:', error);
+    return false;
   }
 };
+
+export const rescheduleAllAlarms = async () => {
+  try {
+    const query = 'SELECT * FROM alarms WHERE alarmStatus = true';
+    const result: QueryResult<Alarm> = await pool.query(query);
+    
+    result.rows.forEach(alarm => {
+      scheduleAlarmService(alarm);
+    });
+  } catch (error) {
+    console.error('알람 재스케줄링 중 오류 발생:', error);
+  }
+};  
