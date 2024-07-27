@@ -35,51 +35,48 @@ const AlarmSettings = () => {
     }
   }, [currentAlarm]);
 
-  // 알람 시간 추가
   const handleAddTime = () => {
     setAlarmTimes([...alarmTimes, { time: dayjs(), status: 'active' }]);
   };
 
-  // 특정 알람 시간 제거
   const handleRemoveTime = (index: number) => {
     const newAlarmTimes = alarmTimes.filter((_, i) => i !== index);
     setAlarmTimes(newAlarmTimes);
   };
 
-  // 특정 알람 시간 변경
   const handleTimeChange = (time: Dayjs, index: number) => {
     const newAlarmTimes = [...alarmTimes];
     newAlarmTimes[index] = { ...newAlarmTimes[index], time };
     setAlarmTimes(newAlarmTimes);
   };
 
-  // 알람 저장후 메인 알람 페이지로 이동
-  const handleSave = () => {
-    const alarmData: Alarm = {
-      id: currentAlarm?.id,
-      name: alarmName,
-      times: alarmTimes.map((t) => ({
-        time: t.time.format('HH:mm'),
-        status: t.status
-      })),
-      startDate: startDate?.toISOString() || '',
-      endDate: endDate?.toISOString() || '',
-      alarmStatus: true
-    };
-
-    if (currentAlarm) {
-      updateAlarm(currentAlarm.id!, alarmData)
-        .then(() => {
-          setCurrentPage('main');
-          setCurrentAlarm(null);
-        })
-        .catch((error) => console.error('에러:', error));
-    } else {
-      createAlarm(alarmData)
-        .then(() => setCurrentPage('main'))
-        .catch((error) => console.error('에러:', error));
-    }
+const handleSave = async () => {
+  const alarmData: Alarm = {
+    id: currentAlarm?.id || '',
+    name: alarmName,
+    times: alarmTimes.map((t) => ({
+      time: t.time.format('HH:mm'),
+      status: t.status
+    })),
+    startDate: startDate?.toISOString() || '',
+    endDate: endDate?.toISOString() || '',
+    alarmStatus: true
   };
+
+ try {
+   if (currentAlarm && currentAlarm.id) {
+     await updateAlarm(currentAlarm.id, alarmData);
+   } else {
+     await createAlarm(alarmData);
+   }
+   setCurrentPage('main');
+   setCurrentAlarm(null);
+ } catch (error) {
+   console.error('에러:', error);
+ }
+};
+
+
 
   return (
     <>

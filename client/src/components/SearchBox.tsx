@@ -1,4 +1,4 @@
-import { ChangeEvent, useState, useEffect } from 'react';
+import { ChangeEvent, useState } from 'react';
 import styled from 'styled-components';
 import { Link } from 'react-router-dom';
 import { useSearchStore } from '../store/search';
@@ -9,38 +9,24 @@ const SearchBox = () => {
   const [query, setQuery] = useState(searchQuery);
   const addHistory = useSearchHistoryStore((state) => state.addHistory);
 
-  // 입력값이 변경될 때
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
-    setQuery(e.target.value); // 로컬 상태에 검색어 저장
-    setSearchQuery(e.target.value); // Zustand 상태에 검색어 저장
+    const newQuery = e.target.value;
+    setQuery(newQuery);
+    setSearchQuery(newQuery);
   };
 
-  // Enter 키 입력
   const handleSearch = () => {
     if (query.trim()) {
-      setSearchQuery(query); // 상위 컴포넌트에 검색어 설정
-      addHistory(query); // 검색 히스토리에 검색어 추가
+      setSearchQuery(query);
+      addHistory(query);
     }
   };
 
-  useEffect(() => {
-    const handleEnterKey = (e: KeyboardEvent) => {
-      if (e.key === 'Enter') {
-        handleSearch();
-      }
-    };
-
-    window.addEventListener('keydown', handleEnterKey);
-
-    return () => {
-      window.removeEventListener('keydown', handleEnterKey);
-    };
-  }, [query]);
-
-  // searchQuery가 변경될 때 로컬 상태 업데이트
-  useEffect(() => {
-    setQuery(searchQuery);
-  }, [searchQuery]);
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      handleSearch();
+    }
+  };
 
   return (
     <>
@@ -56,6 +42,7 @@ const SearchBox = () => {
             placeholder='이미지 또는 이름으로 검색'
             value={query}
             onChange={handleChange}
+            onKeyDown={handleKeyDown}
           />
           <SearchIcon src={`/img/camera.png`} alt='camera' />
         </SearchContainer>

@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 
 export interface Alarm {
-  id?: string;
+  id: string;
   userId?: string;
   name: string;
   startDate: string;

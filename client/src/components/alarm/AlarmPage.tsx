@@ -28,39 +28,26 @@ const AlarmPage = () => {
     fetchAlarms();
   }, [setAlarms]);
 
-  useEffect(() => {
-    console.log('알람 상태 업데이트:', alarms);
-    if (alarms) {
-      setIsToggled(Array(alarms.length).fill(true));
-    }
-  }, [alarms]);
-
-  // 알람 온오프 토글기능
   const handleToggle = (index: number) => {
     const newToggledState = [...isToggled];
     newToggledState[index] = !newToggledState[index];
     setIsToggled(newToggledState);
   };
 
-  // 삭제 버튼 토글기능
   const handleDeleteMode = () => {
     setIsDeleteMode(!isDeleteMode);
   };
 
-  // 특정 알람 삭제
-  const handleDelete = (index: number) => {
-    const alarmToDelete = alarms[index];
-    if (alarmToDelete && alarmToDelete.id) {
-      deleteAlarm(alarmToDelete.id)
-        .then(() => {
-          setAlarms(alarms.filter((_, i) => i !== index));
-          setIsToggled(isToggled.filter((_, i) => i !== index));
-        })
-        .catch((error) => console.error('에러:', error));
-    }
-  };
+const handleDelete = async (id: string) => {
+  try {
+    await deleteAlarm(id);
+    setAlarms(alarms.filter((alarm) => alarm.id !== id));
+    setIsToggled(isToggled.filter((_, i) => alarms[i].id !== id));
+  } catch (error) {
+    console.error('에러:', error);
+  }
+};
 
-  // 알람 수정 모드로 전환
   const handleEditAlarm = (alarm: Alarm) => {
     setCurrentAlarm(alarm);
     setCurrentPage('settings');
@@ -99,7 +86,7 @@ const AlarmPage = () => {
                 </AlarmTimes>
               </AlarmItem>
               {isDeleteMode && (
-                <DeleteButton onClick={() => handleDelete(index)}>
+                <DeleteButton onClick={() => handleDelete(alarm.id)}>
                   삭제
                 </DeleteButton>
               )}
@@ -107,10 +94,13 @@ const AlarmPage = () => {
           ))}
         </AlarmList>
         <AddAlarm
-          src={`/img/plus.svg`}
-          alt='알람추가'
-          onClick={() => setCurrentPage('settings')}
-        />
+          onClick={() => {
+            setCurrentAlarm(null);
+            setCurrentPage('settings');
+          }}
+        >
+          <img src={`/img/plus.svg`} alt='알람추가' />
+        </AddAlarm>
       </AlarmContainer>
     </>
   );
@@ -236,8 +226,17 @@ const DeleteButton = styled.button`
   }
 `;
 
-const AddAlarm = styled.img`
+const AddAlarm = styled.button`
   width: 60px;
-  cursor: pointer;
+  height: 60px;
+  padding: 0;
   margin-top: 20px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+
+  & img {
+    width: 100%;
+    height: 100%;
+  }
 `;

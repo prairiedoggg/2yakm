@@ -19,6 +19,7 @@ const SearchResults = () => {
   const { isFavorite, setIsFavorite } = useFavoriteStore();
   const [pillId, setPillId] = useState<string | null>(null);
   const [pillData, setPillData] = useState<any>(null);
+   const [loading, setLoading] = useState<boolean>(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -31,6 +32,8 @@ const SearchResults = () => {
         setIsFavorite(status);
       } catch (error) {
         console.error('검색결과페이지 실패:', error);
+      } finally {
+        setLoading(false);
       }
     };
     fetchData();
@@ -50,6 +53,9 @@ const SearchResults = () => {
     { key: 'effectiveness', label: '효능•용법' },
     { key: 'review', label: '리뷰' }
   ];
+    if (loading) {
+      return <div>데이터 검색중입니다.</div>;
+    }
 
     if (!pillData) {
       return <div>검색 결과가 없습니다.</div>;

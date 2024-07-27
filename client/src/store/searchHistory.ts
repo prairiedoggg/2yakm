@@ -1,26 +1,30 @@
 import create from 'zustand';
+import { persist } from 'zustand/middleware';
 
 interface SearchHistoryState {
   history: string[];
   addHistory: (query: string) => void;
   clearHistory: () => void;
-  setHistory: (history: string[]) => void;
 }
 
-const useSearchHistoryStore = create<SearchHistoryState>((set) => ({
-  history: [],
-  addHistory: (query) =>
-    set((state) => {
-      const updatedHistory = [...state.history, query];
-      localStorage.setItem('searchHistory', JSON.stringify(updatedHistory));
-      return { history: updatedHistory };
+const useSearchHistoryStore = create<SearchHistoryState>(
+  persist(
+    (set) => ({
+      history: [],
+      addHistory: (query) =>
+        set((state) => ({
+          history: [...state.history, query]
+        })),
+      clearHistory: () =>
+        set({
+          history: []
+        })
     }),
-  clearHistory: () => {
-    localStorage.removeItem('searchHistory');
-    return set({ history: [] });
-  },
-  setHistory: (history) => set({ history }) 
-}));
+    {
+      name: 'searchHistory',
+      getStorage: () => localStorage 
+    }
+  )
+);
 
 export { useSearchHistoryStore };
-
