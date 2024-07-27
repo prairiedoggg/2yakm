@@ -155,17 +155,14 @@ export const updateAlarmStatus = async (id: string, alarmStatus: boolean): Promi
 };
 
 const cancelExistingAlarms = (alarmId: string) => {
-  console.log(`캔슬 알람: ${alarmId}`);
   for (const [key, job] of runningJobs.entries()) {
     if (key.startsWith(`${alarmId}_`)) {
-      console.log(`캔슬 스케쥴 : ${key}`);
       if (job && typeof job.cancel === 'function') {
         job.cancel();
         runningJobs.delete(key);
       }
     }
   }
-  console.log(`알람 캔슬 완료: ${alarmId}`);
 };
 export const scheduleAlarmService = (alarm: Alarm) => {
   const { id, startDate, endDate, times, alarmStatus } = alarm;
@@ -186,21 +183,15 @@ export const scheduleAlarmService = (alarm: Alarm) => {
 
       if (scheduleDate >= new Date(startDate) && scheduleDate <= endDateTime) {
         const job = schedule.scheduleJob(scheduleDate, async () => {
-          console.log(`알람 실행: ${id}, 시간: ${scheduleDate.toISOString()}`);
           await sendEmail(alarm.userId);
         });
 
-        console.log(`알람 예약됨: ${id}, 시간: ${scheduleDate.toISOString()}`);
         runningJobs.set(`${id}_${alarmTime.time}_${scheduleDate.toISOString()}`, job);
       }
     });
 
     currentDate.setDate(currentDate.getDate() + 1);
   }
-
-  console.log(
-    `알람 예약 완료: ${startDate}부터 ${endDate}까지 ${times.map((t: AlarmTime) => t.time).join(', ')}에 알림`
-  );
 };
 
 //read
