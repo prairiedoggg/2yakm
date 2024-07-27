@@ -36,15 +36,28 @@ export const processQuery = async(userId: string, message: string) => {
         const queryEmbedding = await getEmbedding(message);
 
         // Pinecone에서 관련 약물 정보 검색
+        const startTime = Date.now();
         const queryResponse = await index.query({
           vector: queryEmbedding,
-          topK: 3,
+          topK: 30,
           includeMetadata: true
         });
-    // const searchResults = await webSearch(message);
-    const relevantDrugs = queryResponse.matches.map((match: any) => 
+        const endTime = Date.now();
+        console.log(`Query time: ${endTime - startTime}ms`);
+
+      // 가중치를 고려하여 결과 재정렬
+    const weightedResults = queryResponse.matches
+      .map((match: any) => ({
+        ...match,
+        weightedScore: match.score * (match.metadata.weight ?? 1)
+      }))
+      .sort((a, b) => b.weightedScore - a.weightedScore)
+      .slice(0, 5); 
+
+    const relevantDrugs = weightedResults.map((match: any) => 
       (match.metadata as CustomRecordMetadata) ?? {}
     );
+
     // 사용자 메시지 추가
     const prompt = `사용자 질문: ${message}\n\n관련 약물 정보: ${JSON.stringify(relevantDrugs)}`;
     conversation.push({ role: "user", content: prompt });

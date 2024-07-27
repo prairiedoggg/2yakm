@@ -10,7 +10,7 @@ const runningJobs = new Map<string, schedule.Job>();
 
 export const createAlarm = async (alarm: Omit<Alarm, 'id'>): Promise<Alarm> => {
   try {
-    const { userId, name, startDate, endDate, times } = alarm;
+    const { userId, name, startDate, endDate, times, alarmStatus } = alarm;
 
     if (new Date(startDate) > new Date(endDate)) {
       throw createError(
@@ -21,29 +21,20 @@ export const createAlarm = async (alarm: Omit<Alarm, 'id'>): Promise<Alarm> => {
     }
 
     const query = `
-    INSERT INTO alarms (userId, name, startDate, endDate, times)
-    VALUES ($1, $2, $3, $4, $5)
-    RETURNING       id,
-    userId As "userId",
-    name,
-    startDate AS "startDate",
-    endDate AS "endDate",
-    times,
-    createdAt AS "createdAt",
-    updatedAt AS "updatedAt"
+    INSERT INTO alarms (userId, name, startDate, endDate, times, alarmStatus)
+    VALUES ($1, $2, $3, $4, $5, $6)
+    RETURNING id, userId AS "userId", name, startDate AS "startDate", endDate AS "endDate", times, alarmStatus AS "alarmStatus", createdAt AS "createdAt", updatedAt AS "updatedAt"
     `;
-    const values = [userId, name, startDate, endDate, JSON.stringify(times)];
+    const values = [userId, name, startDate, endDate, JSON.stringify(times), alarmStatus];
     const result = await pool.query(query, values);
     const newAlarm = result.rows[0];
-    scheduleAlarmService(newAlarm);
+    if (newAlarm.alarmStatus) {
+      scheduleAlarmService(newAlarm);
+    }
 
     return newAlarm;
   } catch (error) {
-    throw createError(
-      'DBError',
-      '알람 생성 중 데이터베이스 오류가 발생했습니다.',
-      500
-    );
+    throw createError('DBError', '알람 생성 중 데이터베이스 오류가 발생했습니다.', 500);
   }
 };
 
@@ -52,7 +43,7 @@ export const updateAlarm = async (
   alarm: Partial<Alarm>
 ): Promise<Alarm | null> => {
   try {
-    const { userId, name, startDate, endDate, times } = alarm;
+    const { userId, name, startDate, endDate, times, alarmStatus } = alarm;
     if (startDate && endDate) {
       if (new Date(startDate) > new Date(endDate)) {
         throw createError(
@@ -69,18 +60,12 @@ export const updateAlarm = async (
           startDate = COALESCE($3, startDate),
           endDate = COALESCE($4, endDate),
           times = COALESCE($5, times::jsonb),
+          alarmStatus = COALESCE($6, alarmStatus),
           updatedAt = CURRENT_TIMESTAMP
-      WHERE id = $6
-      RETURNING userid AS "userId", name, startDate AS "startDate", endDate AS "endDate", times
+      WHERE id = $7
+      RETURNING id, userId AS "userId", name, startDate AS "startDate", endDate AS "endDate", times, alarmStatus
     `;
-    const values = [
-      userId,
-      name,
-      startDate,
-      endDate,
-      JSON.stringify(times),
-      id
-    ];
+    const values = [userId, name, startDate, endDate, JSON.stringify(times), alarmStatus, id];
     const result = await pool.query(text, values);
     const updatedAlarm = result.rows[0];
 
@@ -102,55 +87,111 @@ export const updateAlarm = async (
 
     return updatedAlarm;
   } catch (error) {
+    console.error('알람 업데이트 오류:', error);
     if (error instanceof Error && error.name === 'AlarmNotFound') throw error;
-    throw createError(
-      'DBError',
-      '알람 업데이트 중 데이터베이스 오류가 발생했습니다.',
-      500
-    );
+    if (error instanceof Error) {
+      throw createError(
+        'DBError',
+        `알람 업데이트 중 데이터베이스 오류가 발생했습니다: ${error.message}`,
+        500
+      );
+    } else {
+      throw createError(
+        'DBError',
+        '알람 업데이트 중 알 수 없는 오류가 발생했습니다.',
+        500
+      );
+    }
+  }
+};
+
+export const updateAlarmStatus = async (id: string, alarmStatus: boolean): Promise<Alarm | null> => {
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+
+    const text = `
+      UPDATE alarms
+      SET alarmStatus = $1,
+          updatedAt = CURRENT_TIMESTAMP
+      WHERE id = $2
+      RETURNING id, userId AS "userId", name, startDate AS "startDate", endDate AS "endDate", times, alarmStatus AS "alarmStatus"
+    `;
+    const values = [alarmStatus, id];
+    const result = await client.query(text, values);
+    const updatedAlarm = result.rows[0];
+
+    if (!updatedAlarm) {
+      await client.query('ROLLBACK');
+      throw createError('AlarmNotFound', '해당 알람을 찾을 수 없습니다.', 404);
+    }
+
+    // JSON 문자열을 배열로 변환
+    updatedAlarm.times = typeof updatedAlarm.times === 'string' ? JSON.parse(updatedAlarm.times) : updatedAlarm.times;
+
+    await client.query('COMMIT');
+
+    // 기존 스케줄 취소
+    cancelExistingAlarms(id);
+
+    // 새로운 스케줄 설정 (알람이 활성화된 경우에만)
+    if (updatedAlarm.alarmStatus) {
+      scheduleAlarmService(updatedAlarm);
+    }
+
+    return updatedAlarm;
+  } catch (error) {
+    await client.query('ROLLBACK');
+    console.error('알람 상태 업데이트 오류:', error);
+    if (error instanceof Error && error.name === 'AlarmNotFound') throw error;
+    if (error instanceof Error) {
+      throw createError('DBError', `알람 상태 업데이트 중 데이터베이스 오류가 발생했습니다: ${error.message}`, 500);
+    } else {
+      throw createError('DBError', '알람 상태 업데이트 중 알 수 없는 오류가 발생했습니다.', 500);
+    }
+  } finally {
+    client.release();
   }
 };
 
 const cancelExistingAlarms = (alarmId: string) => {
+  console.log(`캔슬 알람: ${alarmId}`);
   for (const [key, job] of runningJobs.entries()) {
     if (key.startsWith(`${alarmId}_`)) {
-      job.cancel();
-      runningJobs.delete(key);
+      console.log(`캔슬 스케쥴 : ${key}`);
+      if (job && typeof job.cancel === 'function') {
+        job.cancel();
+        runningJobs.delete(key);
+      }
     }
   }
+  console.log(`알람 캔슬 완료: ${alarmId}`);
 };
 export const scheduleAlarmService = (alarm: Alarm) => {
-  const { startDate, endDate, times } = alarm;
+  const { id, startDate, endDate, times, alarmStatus } = alarm;
+  if (!alarmStatus) {
+    console.log(`알람 ${id}는 비활성화 상태입니다. 스케줄링을 건너뜁니다.`);
+    return; 
+  }
+
   const endDateTime = new Date(endDate);
   const startDateTime = new Date(startDate);
   let currentDate = new Date(startDateTime);
 
   while (currentDate <= endDateTime) {
     times.forEach((alarmTime: AlarmTime) => {
-      if (alarmTime.status) {
-        const [hours, minutes] = alarmTime.time.split(':');
-        const scheduleDate = new Date(currentDate);
-        scheduleDate.setHours(parseInt(hours), parseInt(minutes), 0, 0);
+      const [hours, minutes] = alarmTime.time.split(':');
+      const scheduleDate = new Date(currentDate);
+      scheduleDate.setHours(parseInt(hours), parseInt(minutes), 0, 0);
 
-        if (
-          scheduleDate >= new Date(startDate) &&
-          scheduleDate <= endDateTime
-        ) {
-          const job = schedule.scheduleJob(scheduleDate, async () => {
-            console.log(
-              `알람 실행: ${alarm.id}, 시간: ${scheduleDate.toISOString()}`
-            );
-            await sendEmail(alarm.userId);
-          });
+      if (scheduleDate >= new Date(startDate) && scheduleDate <= endDateTime) {
+        const job = schedule.scheduleJob(scheduleDate, async () => {
+          console.log(`알람 실행: ${id}, 시간: ${scheduleDate.toISOString()}`);
+          await sendEmail(alarm.userId);
+        });
 
-          console.log(
-            `알람 예약됨: ${alarm.id}, 시간: ${scheduleDate.toISOString()}`
-          );
-          runningJobs.set(
-            `${alarm.id}_${alarmTime.time}_${scheduleDate.toISOString()}`,
-            job
-          );
-        }
+        console.log(`알람 예약됨: ${id}, 시간: ${scheduleDate.toISOString()}`);
+        runningJobs.set(`${id}_${alarmTime.time}_${scheduleDate.toISOString()}`, job);
       }
     });
 
@@ -158,9 +199,7 @@ export const scheduleAlarmService = (alarm: Alarm) => {
   }
 
   console.log(
-    `알람 예약 완료: ${startDate}부터 ${endDate}까지 ${times
-      .map((t: { time: any }) => t.time)
-      .join(', ')}에 알림`
+    `알람 예약 완료: ${startDate}부터 ${endDate}까지 ${times.map((t: AlarmTime) => t.time).join(', ')}에 알림`
   );
 };
 
