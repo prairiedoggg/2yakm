@@ -9,7 +9,7 @@ import dayjs, { Dayjs } from 'dayjs';
 const AlarmSettings = () => {
   const setCurrentPage = useAlarmStore((state) => state.setCurrentPage);
   const currentAlarm = useAlarmStore((state) => state.currentAlarm);
-
+  const setCurrentAlarm = useAlarmStore((state) => state.setCurrentAlarm);
   const [alarmName, setAlarmName] = useState<string>('');
   const [alarmTimes, setAlarmTimes] = useState<
     { time: Dayjs; status: string }[]
@@ -69,7 +69,10 @@ const AlarmSettings = () => {
 
     if (currentAlarm) {
       updateAlarm(currentAlarm.id!, alarmData)
-        .then(() => setCurrentPage('main'))
+        .then(() => {
+          setCurrentPage('main');
+          setCurrentAlarm(null);
+        })
         .catch((error) => console.error('에러:', error));
     } else {
       createAlarm(alarmData)
@@ -123,7 +126,7 @@ const AlarmSettings = () => {
             <Button
               type='dashed'
               onClick={handleAddTime}
-              icon={<Icon icon='mdi:plus-circle' style={{ color: 'green' }} />} // 변경된 부분
+              icon={<Icon icon='mdi:plus-circle' style={{ color: 'green' }} />}
               style={{ marginTop: '10px' }}
             >
               시간 추가
