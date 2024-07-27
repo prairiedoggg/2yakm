@@ -5,6 +5,46 @@ const router = Router();
 
 /**
  * @swagger
+ * components:
+ *   schemas:
+ *     AlarmTime:
+ *       type: object
+ *       properties:
+ *         time:
+ *           type: string
+ *           pattern: ^\d{2}:\d{2}$
+ *     Alarm:
+ *       type: object
+ *       properties:
+ *         id:
+ *           type: string
+ *         userId:
+ *           type: string
+ *         name:
+ *           type: string
+ *         startDate:
+ *           type: string
+ *           format: date-time
+ *         endDate:
+ *           type: string
+ *           format: date-time
+ *         times:
+ *           type: array
+ *           items:
+ *             $ref: '#/components/schemas/AlarmTime'
+ *         alarmStatus:
+ *           type: boolean
+ */
+
+/**
+ * @swagger
+ * tags:
+ *   name: Alarms
+ *   description: 알람 관리 API
+ */
+
+/**
+ * @swagger
  * /api/alarms:
  *   post:
  *     summary: 알람 생성 및 스케줄링
@@ -27,13 +67,7 @@ const router = Router();
  *               times:
  *                 type: array
  *                 items:
- *                   type: object
- *                   properties:
- *                     time:
- *                       type: string
- *                       pattern: ^\d{2}:\d{2}$
- *                     status:
- *                       type: boolean
+ *                   $ref: '#/components/schemas/AlarmTime'
  *     responses:
  *       201:
  *         description: 알람 생성 성공
@@ -65,6 +99,8 @@ router.post('/', alarmController.createAndScheduleAlarm);
  *               type: array
  *               items:
  *                 $ref: '#/components/schemas/Alarm'
+ *       401:
+ *         description: 인증되지 않은 사용자
  *       500:
  *         description: 서버 오류
  */
@@ -100,13 +136,9 @@ router.get('/', alarmController.getUserAlarmsController);
  *               times:
  *                 type: array
  *                 items:
- *                   type: object
- *                   properties:
- *                     time:
- *                       type: string
- *                       pattern: ^\d{2}:\d{2}$
- *                     status:
- *                       type: boolean
+ *                   $ref: '#/components/schemas/AlarmTime'
+ *               alarmStatus:
+ *                 type: boolean
  *     responses:
  *       200:
  *         description: 알람 업데이트 성공
@@ -147,6 +179,8 @@ router.put('/:id', alarmController.updateAlarmController);
  *               properties:
  *                 message:
  *                   type: string
+ *       401:
+ *         description: 인증되지 않은 사용자
  *       404:
  *         description: 알람을 찾을 수 없음
  *       500:
@@ -156,33 +190,41 @@ router.delete('/:id', alarmController.deleteAlarmController);
 
 /**
  * @swagger
- * components:
- *   schemas:
- *     Alarm:
- *       type: object
- *       properties:
- *         id:
+ * /api/alarms/{id}/status:
+ *   patch:
+ *     summary: 알람 상태 업데이트
+ *     tags: [Alarms]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
  *           type: string
- *         userId:
- *           type: string
- *         name:
- *           type: string
- *         startDate:
- *           type: string
- *           format: date-time
- *         endDate:
- *           type: string
- *           format: date-time
- *         times:
- *           type: array
- *           items:
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
  *             type: object
  *             properties:
- *               time:
- *                 type: string
- *                 pattern: ^\d{2}:\d{2}$
- *               status:
+ *               alarmStatus:
  *                 type: boolean
+ *     responses:
+ *       200:
+ *         description: 알람 상태 업데이트 성공
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Alarm'
+ *       400:
+ *         description: 잘못된 요청
+ *       401:
+ *         description: 인증되지 않은 사용자
+ *       404:
+ *         description: 알람을 찾을 수 없음
+ *       500:
+ *         description: 서버 오류
  */
+router.patch('/:id/status', alarmController.updateAlarmStatusController);
 
 export default router;

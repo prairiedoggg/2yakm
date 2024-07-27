@@ -10,4 +10,5 @@ export interface Alarm {
     startDate: Date;
     endDate: Date;
     times: AlarmTime[];
+    alarmStatus: boolean;
 }

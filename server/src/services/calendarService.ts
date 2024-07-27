@@ -1,6 +1,22 @@
 import { Calendar, Medication } from '../entity/calendar';
 import { pool } from '../db';
 import { createError } from '../utils/error';
+import { zonedTimeToUtc, utcToZonedTime, format } from 'date-fns-tz';
+
+const TIMEZONE = 'Asia/Seoul';
+
+// 날짜를 한국 시간으로 변환하는 함수
+const convertToKoreanTime = (date: Date): Date => {
+  return utcToZonedTime(date, TIMEZONE);
+};
+
+// Calendar 객체의 날짜를 한국 시간으로 변환하는 함수
+const convertCalendarToKoreanTime = (calendar: Calendar): Calendar => {
+  return {
+    ...calendar,
+    date: convertToKoreanTime(calendar.date)
+  };
+};
 
 export const getAllCalendars = async (
   userId: string
@@ -9,18 +25,20 @@ export const getAllCalendars = async (
     const text = 'SELECT * FROM calendar WHERE userId = $1';
     const values = [userId];
     const result = await pool.query(text, values);
-    return result.rows;
+    return result.rows.map(convertCalendarToKoreanTime);
   } catch (error) {
     throw createError('DBError', '캘린더 조회 중 데이터베이스 오류가 발생했습니다.', 500);
   }
 };
 
 export const getCalendarById = async (
-  id: string
+  userId: string,
+  date: Date
 ): Promise<Calendar | null> => {
   try {
-    const text = 'SELECT * FROM calendar WHERE id = $1';
-    const values = [id];
+    const dateString = format(zonedTimeToUtc(date, TIMEZONE), 'yyyy-MM-dd');
+    const text = 'SELECT * FROM calendar WHERE userId = $1 AND date = $2';
+    const values = [userId, dateString];
     const result = await pool.query(text, values);
     
     if (result.rows.length === 0) {
@@ -34,19 +52,22 @@ export const getCalendarById = async (
       calendar.medications = JSON.parse(calendar.medications);
     }
     
-    // 날짜 필드를 Date 객체로 변환
-    calendar.date = new Date(calendar.date);
-    
-    return calendar;
+    return convertCalendarToKoreanTime(calendar);
   } catch (error) {
-    console.error('getCalendarById 오류:', error);
+    console.error('getCalendarByDate 오류:', error);
     throw createError('DBError', '캘린더 조회 중 데이터베이스 오류가 발생했습니다.', 500);
   }
 };
+
 export const createCalendar = async (
   calendar: Omit<Calendar, 'id'>
 ): Promise<Calendar> => {
   try {
+
+    const existingCalendar = await getCalendarById(calendar.userId, calendar.date);
+    if (existingCalendar) {
+      throw createError('DuplicateCalendar', '해당 날짜에 이미 일정이 존재합니다.', 409);
+    }
     const text = `
       INSERT INTO calendar 
       (userid, date, calimg, condition, weight, temperature, 
@@ -57,7 +78,7 @@ export const createCalendar = async (
     `;
     const values = [
       calendar.userId,
-      calendar.date,
+      format(zonedTimeToUtc(calendar.date, TIMEZONE), 'yyyy-MM-dd'),
       calendar.calImg,
       calendar.condition,
       calendar.weight,
@@ -67,20 +88,25 @@ export const createCalendar = async (
       JSON.stringify(calendar.medications)
     ];
     const result = await pool.query(text, values);
-    return result.rows[0];
+    return convertCalendarToKoreanTime(result.rows[0]);
   } catch (error) {
+    if (error instanceof Error && error.name === 'DuplicateCalendar') {
+      throw error;
+    }
     throw createError('DBError', '캘린더 생성 중 데이터베이스 오류가 발생했습니다.', 500);
   }
 };
 
 export const updateCalendar = async (
-  id: string,
+  userId: string,
+  date: Date,
   calendar: Partial<Calendar>
 ): Promise<Calendar | null> => {
   try {
-    const existingCalendar = await getCalendarById(id);
+    const dateString = format(zonedTimeToUtc(date, TIMEZONE), 'yyyy-MM-dd');
+    const existingCalendar = await getCalendarById(userId, date);
     if (!existingCalendar) {
-      throw createError('CalendarNotFound', '해당 캘린더를 찾을 수 없습니다.', 404);
+      throw createError('CalendarNotFound', '해당 날짜의 캘린더를 찾을 수 없습니다.', 404);
     }
 
     const updatedMedications = calendar.medications ?? existingCalendar.medications;
@@ -89,8 +115,8 @@ export const updateCalendar = async (
       UPDATE calendar 
       SET calimg = $1, condition = $2, weight = $3, temperature = $4, 
           bloodsugarBefore = $5, bloodsugarAfter = $6,
-          medications = $7, date = $8
-      WHERE id = $9 
+          medications = $7
+      WHERE userId = $8 AND date = $9
       RETURNING userid AS "userId", date, calimg, condition, weight, temperature, 
       bloodsugarBefore, bloodsugarAfter, medications
     `;
@@ -102,27 +128,29 @@ export const updateCalendar = async (
       calendar.bloodsugarBefore ?? existingCalendar.bloodsugarBefore,
       calendar.bloodsugarAfter ?? existingCalendar.bloodsugarAfter,
       JSON.stringify(updatedMedications),
-      calendar.date ?? existingCalendar.date,
-      id
+      userId,
+      dateString
     ];
 
     const result = await pool.query(text, values);
-    return result.rows[0] || null;
+    return result.rows[0] ? convertCalendarToKoreanTime(result.rows[0]) : null;
   } catch (error) {
+    console.error('updateCalendar 오류:', error);
     if (error instanceof Error && error.name === 'CalendarNotFound') throw error;
     throw createError('DBError', '캘린더 업데이트 중 데이터베이스 오류가 발생했습니다.', 500);
   }
 };
 
-export const deleteCalendar = async (id: string): Promise<boolean> => {
+export const deleteCalendar = async (userId: string, date: Date): Promise<boolean> => {
   try {
-    const text = 'DELETE FROM calendar WHERE id = $1';
-    const values = [id];
+    const dateString = format(zonedTimeToUtc(date, TIMEZONE), 'yyyy-MM-dd');
+    const text = 'DELETE FROM calendar WHERE userId = $1 AND date = $2';
+    const values = [userId, dateString];
     const result = await pool.query(text, values);
     const deletedCount = result.rowCount ?? 0;
     
     if (deletedCount === 0) {
-      throw createError('CalendarNotFound', '해당 캘린더를 찾을 수 없습니다.', 404);
+      throw createError('CalendarNotFound', '해당 날짜의 캘린더를 찾을 수 없습니다.', 404);
     }
     
     return true;
