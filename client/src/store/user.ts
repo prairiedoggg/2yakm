@@ -1,20 +1,37 @@
-import create from 'zustand';
+import { create } from 'zustand'
 
 interface User {
-  name: string;
-  email: string;
-}
-
-interface UserState {
-  user: User | null;
-  setUser: (user: User) => void;
+  user: {
+    userName: string;
+    email: string;
+  } | null;
+  setUser: (userName: string, email: string) => void;
+  setUserName: (userName: string) => void;
+  setEmail: (email: string) => void;
   clearUser: () => void;
 }
 
-const useUserStore = create<UserState>((set) => ({
-  user: null,
-  setUser: (user) => set({ user }),
-  clearUser: () => set({ user: null }),
+const useUserStore = create<User>((set) => ({
+  user: JSON.parse(localStorage.getItem('user') || 'null'),
+  setUser: (userName, email) => {
+    const user = { userName, email };
+    localStorage.setItem('user', JSON.stringify(user));
+    set({ user });
+  },
+  setUserName: (userName) => set((state) => {
+    const updatedUser = state.user ? { ...state.user, userName } : null;
+    if (updatedUser) localStorage.setItem('user', JSON.stringify(updatedUser));
+    return { user: updatedUser };
+  }),
+  setEmail: (email) => set((state) => {
+    const updatedUser = state.user ? { ...state.user, email } : null;
+    if (updatedUser) localStorage.setItem('user', JSON.stringify(updatedUser));
+    return { user: updatedUser };
+  }),
+  clearUser: () => {
+    localStorage.removeItem('user');
+    set({ user: null });
+  },
 }));
 
 export default useUserStore;
