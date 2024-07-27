@@ -10,7 +10,7 @@ Date        Author   Status    Description
 
 import styled from 'styled-components';
 import { Icon } from '@iconify-icon/react';
-import { KAKAO_AUTH_URL, GOOGLE_AUTH_URL } from '../../oAuth';
+import { KAKAO_AUTH_URL, GOOGLE_AUTH_URL, NAVER_AUTH_URL } from '../../oAuth';
 
 const SnsLogin = ({
   onClose,
@@ -25,35 +25,40 @@ const SnsLogin = ({
     <Content>
       <Logo src='/img/logo_not_chicken.svg' alt='이약뭐약' />
       <div className='bubble'>⚡ 3초만에 빠른 회원가입</div>
-      <a className='kakao' onClick={onClose} href={KAKAO_AUTH_URL}>
-        <div>
+      <a className='login kakao' onClick={onClose} href={KAKAO_AUTH_URL}>
+        <div className='snsBox'>
           <Icon
             icon='ri:kakao-talk-fill'
             width='1.5rem'
             height='1.5rem'
             style={{ color: '#3A1D1F', marginRight: '10px' }}
           />
-          카카오톡으로 계속하기
+          카카오톡 로그인
         </div>
       </a>
-      <div className='other'>
-        <div className='naver' onClick={onClose}>
+      <a className='login naver' onClick={onClose} href={NAVER_AUTH_URL}>
+        <div className='snsBox'>
           <Icon
             icon='simple-icons:naver'
             width='1rem'
             height='1rem'
-            style={{ color: 'white' }}
+            style={{ color: 'white', marginRight: '10px', padding: '5px' }}
           />
+          네이버 로그인
         </div>
-        <a className='google' onClick={onClose} href={GOOGLE_AUTH_URL}>
+      </a>
+      <a className='login google' onClick={onClose} href={GOOGLE_AUTH_URL}>
+        <div className='snsBox'>
           <Icon
             onClick={onClose}
             icon='logos:google-icon'
-            width='30px'
-            height='30px'
+            width='1.4rem'
+            height='1.4rem'
+            style={{ marginRight: '10px', padding: '2px' }}
           />
-        </a>
-      </div>
+          구글 로그인
+        </div>
+      </a>
       <div className='other'>
         <div onClick={onEmailLoginClick}>이메일로 로그인</div>
         <div onClick={onEmailRegisterClick}>이메일로 회원가입</div>
@@ -75,7 +80,7 @@ const Content = styled.div`
   display: flex;
   flex-direction: column;
   align-content: center;
-  gap: 20px;
+  gap: 10px;
 
   .bubble {
     position: relative;
@@ -87,6 +92,7 @@ const Content = styled.div`
     padding: 10px 20px 10px 20px;
     font-size: 0.8em;
     font-weight: bold;
+    margin-bottom: 10px;
     border: 1px solid rgba(0, 0, 0, 0.1);
   }
 
@@ -102,8 +108,7 @@ const Content = styled.div`
     border-top-color: white;
   }
 
-  .kakao {
-    background-color: #fae100;
+  .login {
     padding: 10px;
     width: 80%;
     border-radius: 5px;
@@ -112,35 +117,39 @@ const Content = styled.div`
     align-items: center;
     display: flex;
     justify-content: center;
-    gap: 5px;
     text-decoration: none;
+  }
+
+  .login.kakao {
+    background-color: #fae100;
     color: #2f3438;
   }
 
-  .kakao div {
+  .snsBox {
     display: flex;
     align-items: center;
     justify-content: center;
     height: 100%;
   }
 
+  .login.naver {
+    background-color: #00c73c;
+    color: white;
+  }
+
+  .login.google {
+    background-color: #f2f2f2;
+    color: #2f3438;
+  }
+
   .other {
     display: flex;
     gap: 20px;
     align-items: center;
-    margin-bottom: 30px;
+    margin-top: 40px;
+    margin-bottom: 80px;
     text-decoration: underline;
     font-size: 0.9em;
-  }
-
-  .naver {
-    background-color: #00c73c;
-    border-radius: 50%;
-    width: 35px;
-    height: 35px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
   }
 `;
 

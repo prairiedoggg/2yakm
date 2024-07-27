@@ -1,18 +1,26 @@
-
+import { useState } from 'react';
 import styled from 'styled-components';
-
+import { usePillStore } from '../../store/pill';
 
 const PillExp = () => {
+  const { pillData } = usePillStore();
+  const [isExpanded, setIsExpanded] = useState(false);
+
+  const toggleExpand = () => {
+    setIsExpanded(!isExpanded);
+  };
+
+  if (!pillData) {
+    return <div>약 정보를 불러오는 중입니다...</div>;
+  }
+
   return (
     <PillExpContainer>
       <PillExpBox>
         <ul>
           <li>
             <ListTitle>
-              <img
-                src={`/img/pillexp/pill.svg`}
-                alt='약'
-              />
+              <img src={`/img/pillexp/pill.svg`} alt='약' />
               <span
                 style={{
                   fontWeight: '500'
@@ -21,14 +29,11 @@ const PillExp = () => {
                 성분
               </span>
             </ListTitle>
-            <p>아세트아미노펜</p>
+            <p>{pillData.ingredientname}</p>
           </li>
           <li>
             <ListTitle>
-              <img
-                src={`/img/pillexp/star.svg`}
-                alt='별모양'
-              />
+              <img src={`/img/pillexp/star.svg`} alt='별모양' />
               <span
                 style={{
                   fontWeight: '500'
@@ -37,21 +42,40 @@ const PillExp = () => {
                 효과 및 효능
               </span>
             </ListTitle>
-            <p>발열, 두통, 근육통, 관절통 등</p>
+            <p>{pillData.efficacy}</p>
           </li>
           <li>
             <ListTitle>
-              <img
-                src={`/img/pillexp/pregnant.svg`}
-                alt='임산부'
-              />
-              <span>임산부도 안전하게 복용 가능해요.</span>
+              <img src={`/img/pillexp/star.svg`} alt='별모양' />
+              <span
+                style={{
+                  fontWeight: '500'
+                }}
+              >
+                용량 및 용법
+              </span>
             </ListTitle>
-            <p className='last'>
-              장기 복용시에는 자폐증 등의 위험을 높일 수 있다는 연구 결과가
-              있어요. <br />
-              과도한 복용은 하지 말아야 해요.
-            </p>
+            <p>{pillData.dosage}</p>
+          </li>
+          <li>
+            <ListTitle>
+              <img src={`/img/pillexp/star.svg`} alt='별모양' />
+              <span
+                style={{
+                  fontWeight: '500'
+                }}
+              >
+                주의사항
+              </span>
+            </ListTitle>
+            {isExpanded ? (
+              <p className='last'>{pillData.caution}</p>
+            ) : (
+              <p className='last'>{pillData.caution.substring(0, 100)}...</p>
+            )}
+            <ToggleExpandButton onClick={toggleExpand}>
+              {isExpanded ? '접기' : '펼치기'}
+            </ToggleExpandButton>
           </li>
         </ul>
       </PillExpBox>
@@ -66,8 +90,6 @@ const PillExp = () => {
 };
 
 export default PillExp;
-
-
 
 const PillExpContainer = styled.div`
   padding: 20px 30px 100px;
@@ -115,4 +137,14 @@ const ListTitle = styled.div`
   & span {
     margin-left: 5px;
   }
+`;
+
+const ToggleExpandButton = styled.button`
+  margin: 5px 0 0 22px;
+  color: red;
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-size: 12px;
+  text-decoration: underline;
 `;

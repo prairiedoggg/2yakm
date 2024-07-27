@@ -1,22 +1,21 @@
-import { useState } from 'react';
+import styled from 'styled-components';
 import SearchBox from '../SearchBox';
 import SearchHistory from './SearchHistory';
 import SearchResults from './SearchResults';
 import Nav from '../Nav';
-import styled from 'styled-components';
+import { useSearchStore } from '../../store/search'
+
 
 const Search = () => {
-  const [searchQuery, setSearchQuery] = useState<string>('');
-
-  console.log(searchQuery)
+  const { searchQuery } = useSearchStore();
 
   return (
     <>
       <BackgroundHeader>
-        <SearchBox setSearchQuery={setSearchQuery} />
+        <SearchBox />
       </BackgroundHeader>
       {searchQuery ? (
-        <SearchResults searchQuery={searchQuery} />
+        <SearchResults/>
       ) : (
         <SearchHistory />
       )}

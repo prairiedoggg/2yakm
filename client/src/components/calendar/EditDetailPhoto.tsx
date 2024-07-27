@@ -3,6 +3,7 @@ import React, { useEffect, useState, useRef } from 'react';
 const EditDetailPhoto: React.FC = () => {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const [isCameraOn, setIsCameraOn] = useState(false);
+  const [uploadedImage, setUploadedImage] = useState<string | null>(null);
 
   useEffect(() => {
     const initCamera = async () => {
@@ -43,6 +44,14 @@ const EditDetailPhoto: React.FC = () => {
     setIsCameraOn((prevState) => !prevState);
   };
 
+  const onChangeImage = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const imageUrl = URL.createObjectURL(file);
+      setUploadedImage(imageUrl);
+    }
+  };
+  console.log('사진', uploadedImage);
   return (
     <div>
       <button onClick={toggleCamera}>
@@ -58,7 +67,14 @@ const EditDetailPhoto: React.FC = () => {
         autoPlay
         playsInline
       />
-      <input type='file' accept='image/*' capture='camera' />
+      <input type='file' accept='image/*' onChange={onChangeImage} />
+      {uploadedImage && (
+        <img
+          src={uploadedImage}
+          alt='Uploaded preview'
+          style={{ width: '100%', height: 'auto' }}
+        />
+      )}
     </div>
   );
 };

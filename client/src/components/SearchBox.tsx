@@ -1,43 +1,34 @@
-import { ChangeEvent, useState, useEffect } from 'react';
+import { ChangeEvent, useState, KeyboardEvent } from 'react';
 import styled from 'styled-components';
 import { Link } from 'react-router-dom';
-import { useSearchHistoryStore } from '../store/search';
+import { useSearchStore } from '../store/search';
+import { useSearchHistoryStore } from '../store/searchHistory';
 
-interface SearchBoxProps {
-  setSearchQuery: (query: string) => void;
-}
-
-const SearchBox = ({ setSearchQuery }: SearchBoxProps) => {
-  const [query, setQuery] = useState('');
+const SearchBox = () => {
+  const { searchQuery, setSearchQuery } = useSearchStore();
+  const [query, setQuery] = useState<string>('');
   const addHistory = useSearchHistoryStore((state) => state.addHistory);
 
-  // 입력값이 변경될 때 호출되는 함수
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
-    setQuery(e.target.value); // 로컬 상태에 검색어 저장
-    setSearchQuery(e.target.value); // 상위 컴포넌트에 검색어 전달
+    const newQuery = e.target.value;
+    setQuery(newQuery);
   };
 
-  // 검색 버튼 클릭 또는 Enter 키 입력 시 호출되는 함수
   const handleSearch = () => {
     if (query.trim()) {
-      setSearchQuery(query); // 상위 컴포넌트에 검색어 설정
-      addHistory(query); // 검색 히스토리에 검색어 추가
+      setSearchQuery(query);
+      addHistory(query);
+    } else {
+      setSearchQuery('');
+      setQuery('');
     }
   };
 
-  useEffect(() => {
-    const handleEnterKey = (e: KeyboardEvent) => {
-      if (e.key === 'Enter') {
-        handleSearch(); // Enter 키 입력 시 검색 실행
-      }
-    };
-
-    window.addEventListener('keydown', handleEnterKey);
-
-    return () => {
-      window.removeEventListener('keydown', handleEnterKey);
-    };
-  }, [query]);
+  const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      handleSearch();
+    }
+  };
 
   return (
     <>
@@ -53,6 +44,7 @@ const SearchBox = ({ setSearchQuery }: SearchBoxProps) => {
             placeholder='이미지 또는 이름으로 검색'
             value={query}
             onChange={handleChange}
+            onKeyDown={handleKeyDown}
           />
           <SearchIcon src={`/img/camera.png`} alt='camera' />
         </SearchContainer>

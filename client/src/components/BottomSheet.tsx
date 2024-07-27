@@ -23,10 +23,18 @@ const BottomSheet = ({
   children: React.ReactNode;
 }) => {
   return (
-    <Overlay isVisible={isVisible} onClick={onClose}>
+    <Overlay
+      onClick={onClose}
+      style={{
+        opacity: isVisible ? 1 : 0,
+        visibility: isVisible ? 'visible' : 'hidden'
+      }}
+    >
       <SheetContainer
-        isVisible={isVisible}
         onClick={(e) => e.stopPropagation()}
+        style={{
+          transform: `translateY(${isVisible ? '0' : '100%'})`
+        }}
       >
         {!hideTopClose && (
           <Icon
@@ -45,7 +53,7 @@ const BottomSheet = ({
   );
 };
 
-const Overlay = styled.div<{ isVisible: boolean }>`
+const Overlay = styled.div`
   position: fixed;
   top: 0;
   left: 0;
@@ -53,12 +61,10 @@ const Overlay = styled.div<{ isVisible: boolean }>`
   height: 100%;
   background: rgba(0, 0, 0, 0.3);
   transition: opacity 0.3s ease;
-  opacity: ${({ isVisible }) => (isVisible ? 1 : 0)};
-  visibility: ${({ isVisible }) => (isVisible ? 'visible' : 'hidden')};
   z-index: 999;
 `;
 
-const SheetContainer = styled.div<{ isVisible: boolean }>`
+const SheetContainer = styled.div`
   position: fixed;
   bottom: 0;
   left: 0;
@@ -66,7 +72,6 @@ const SheetContainer = styled.div<{ isVisible: boolean }>`
   max-height: 80%;
   background: #fff;
   border-radius: 20px 20px 0 0;
-  transform: translateY(${({ isVisible }) => (isVisible ? '0' : '100%')});
   transition: transform 0.3s ease;
   padding: 20px;
   z-index: 1000;
