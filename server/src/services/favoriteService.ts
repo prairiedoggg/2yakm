@@ -1,5 +1,6 @@
 import { pool } from '../db';
 import { Favorite } from '../entity/favorite';
+import { QueryResult } from 'pg';
 
 interface TotalCountAndData {
   totalCount: number;
@@ -45,12 +46,12 @@ export const searchFavoritePillService = async (
     `;
 
     const values = [userid, limit, offset];
-    const { rows } = await pool.query(query, values);
+    const result: QueryResult<Favorite> = await pool.query(query, values);
 
     return {
       totalCount,
       totalPages,
-      data: rows
+      data: result.rows
     };
   } catch (error: any) {
     throw error;
@@ -91,7 +92,10 @@ export const addCancelFavoritePillService = async (
     VALUES ($1, $2)
     `;
     const addValues = [pillid, userid];
-    const addResult = await pool.query(addQuery, addValues);
+    const addResult: QueryResult<Favorite> = await pool.query(
+      addQuery,
+      addValues
+    );
     return {
       message: 'added',
       data: addResult.rows[0]
@@ -112,9 +116,9 @@ export const userFavoriteStatusService = async (
     WHERE pillid = $1 AND userid = $2
     `;
     const values = [pillid, userid];
-    const { rows } = await pool.query(query, values);
+    const result: QueryResult<Favorite> = await pool.query(query, values);
 
-    return rows.length > 0;
+    return result.rows.length > 0;
   } catch (error: any) {
     throw error;
   }
