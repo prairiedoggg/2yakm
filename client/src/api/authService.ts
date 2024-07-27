@@ -4,18 +4,37 @@ import Cookies from 'js-cookie';
 
 export const login = async (email: string, password: string) => {
   try {
-    const data = await post('/api/auth/login', { username: email, password });
+    const data = await post('/api/auth/login', { email: email, password });
     storeLoginData(data);
   } catch (error) {
     console.error('Login failed', error);
   }
 };
 
-export const logout = async (callback?: () => void) => {
+export const signup = async (email: string, username:string, password: string, confirmPassword:string, callback:()=>void) => {
+  try {
+    const data = await post('/api/auth/signup', { email: email, username:username, password: password, confirmPassword:confirmPassword });
+    storeLoginData(data);
+
+    if (callback) callback();
+  } catch (error) {
+    console.error('signup failed', error);
+  }
+};
+
+export const requestEmailVerification = async (email: string, callback?:(arg0:any)=>void) => {
+  try {
+    const data = await post('/api/auth/request-email-verification', { email: email });
+    if (callback) callback(data);
+  } catch (error) {
+    console.error('request Email Verification failed', error);
+  }
+};
+
+export const logout = async (callback?:()=>void) => {
   try {
     await post('/api/auth/logout', {});
     useUserStore.getState().clearUser();
-    Cookies.remove('jwt');
     Cookies.remove('token');
     Cookies.remove('refreshToken');
 
@@ -65,6 +84,5 @@ export const changePassword = async (
 
 const storeLoginData = (data: any) => {
   if (data.user) useUserStore.getState().setUser(data.user);
-
-  if (data.token) Cookies.set('jwt', `${data.token}`, { path: '/' });
+  if (data.token) Cookies.set('token', `${data.token}`, { path: '/' });
 };

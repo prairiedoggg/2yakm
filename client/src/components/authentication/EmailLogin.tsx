@@ -1,16 +1,7 @@
-/**
-File Name : EmailLogin
-Description : 이메일 로그인
-Author : 오선아
-
-History
-Date        Author   Status    Description
-2024.07.21  오선아   Created
-*/
-
 import styled from 'styled-components';
 import { Icon } from '@iconify-icon/react';
 import { ChangeEvent, useEffect, useState } from 'react';
+import { login } from '../../api/authService';
 
 const EmailLogin = ({
   onRegisterClick,
@@ -111,7 +102,9 @@ const EmailLogin = ({
       <button
         className='submitButton'
         disabled={!isEmailButtonEnabled || !isPasswordButtonEnabled}
-        onClick={() => {}}
+        onClick={() => {
+          login(email, password);
+        }}
       >
         시작하기
       </button>
