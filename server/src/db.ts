@@ -2,8 +2,19 @@ import { Pool } from 'pg';
 import fs from 'fs';
 import path from 'path';
 import dotenv from 'dotenv';
+import { createError } from './utils/error';
 
 dotenv.config();
+
+// 인증서가 있는지 확인하는 함수
+const isCertFiles = (certPath: string): string => {
+  const filePath = path.join(__dirname, certPath);
+
+  if (!fs.existsSync(filePath)) {
+    throw createError('NotFound', `DB 인증서를 찾을 수 없습니다.`, 404);
+  }
+  return fs.readFileSync(filePath).toString();
+};
 
 const pool = new Pool({
   user: process.env.DB_USER,
@@ -13,18 +24,26 @@ const pool = new Pool({
   port: Number(process.env.DB_PORT),
   ssl: {
     rejectUnauthorized: false,
-    ca: fs.readFileSync(path.join(__dirname, '../certs/server-ca.pem')).toString(),
-    key: fs.readFileSync(path.join(__dirname, '../certs/client-key.pem')).toString(),
-    cert: fs.readFileSync(path.join(__dirname, '../certs/client-cert.pem')).toString()
+    ca: isCertFiles('../certs/server-ca.pem'),
+    key: isCertFiles('../certs/client-key.pem'),
+    cert: isCertFiles('../certs/client-cert.pem')
   }
 });
 
-pool.connect((err: any) => {
-  if (err) {
-    console.log('PostgreSQL 연결에 실패했습니다.', err);
-  } else {
+const connectDB = async (): Promise<void> => {
+  try {
+    const client = await pool.connect();
     console.log('PostgreSQL 연결 성공');
+    client.release(); // pool을 반납함
+  } catch (error: any) {
+    throw createError(
+      'Connection Failed',
+      'PostgreSQL 연결에 실패했습니다.',
+      500
+    );
   }
-});
+};
+
+connectDB();
 
 export { pool };

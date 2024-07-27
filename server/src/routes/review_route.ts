@@ -120,11 +120,9 @@ router.post('/', authByToken, createReview);
  *                 content: "생각해보니까 타이레놀이 가장 좋아요!"
  *                 createdAt: "2024-07-16T20:37:08.325Z"
  *       400:
- *         description: 수정할 리뷰 내용을 입력해 주세요.
+ *         description: 수정할 리뷰가 없거나 본인의 리뷰가 아닙니다.
  *       401:
- *         description: 토큰이 없습니다 / 수정 권한이 없습니다.
- *       404:
- *         description: 수정할 리뷰를 찾을 수 없습니다.
+ *         description: 토큰이 없습니다.
  *       500:
  *         description: Internal Server Error
  */
@@ -149,10 +147,10 @@ router.put('/:reviewid', authByToken, updateReview);
  *     responses:
  *       200:
  *         description: 리뷰 삭제 성공
+ *       400:
+ *         description: 삭제할 리뷰가 없거나 본인의 리뷰가 아닙니다.
  *       401:
- *         description: 토큰이 없습니다 / 수정 권한이 없습니다.
- *       404:
- *         description: 삭제할 리뷰를 찾을 수 없습니다.
+ *         description: 토큰이 없습니다.
  *       500:
  *         description: Internal Server Error
  */
