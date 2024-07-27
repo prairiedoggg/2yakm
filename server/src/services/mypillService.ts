@@ -4,7 +4,6 @@ interface MyPill {
   mypillid: string;
   pillname: string;
   expiredat: string;
-  createdat?: string;
 }
 
 interface UpdateData {
