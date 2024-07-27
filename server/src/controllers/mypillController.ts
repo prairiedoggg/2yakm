@@ -9,15 +9,15 @@ import {
 
 export const createPillSchema = Joi.object({
   name: Joi.string().required(),
-  expiredat: Joi.date().required(),
-  createdat: Joi.date().required()
+  expiredat: Joi.string().required(),
+  createdat: Joi.string().required()
 });
 
 export const updatePillSchema = Joi.object({
   mypillid: Joi.string().required(),
   name: Joi.string().required(),
-  expiredat: Joi.date().required(),
-  createdat: Joi.date().required()
+  expiredat: Joi.string().required(),
+  createdat: Joi.string().required()
 });
 
 export const addMyPill = async (
