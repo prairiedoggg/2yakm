@@ -1,18 +1,17 @@
 import schedule from 'node-schedule';
 import axios from 'axios';
 import nodemailer from 'nodemailer';
-import { AlarmTime } from '../entity/alarm';
+import { AlarmTime, Alarm } from '../entity/alarm';
 import { createError } from '../utils/error';
-import { Alarm } from '../entity/alarm';
 import { pool } from '../db';
+import { isAfter } from 'date-fns';
 
 const runningJobs = new Map<string, schedule.Job>();
 
 export const createAlarm = async (alarm: Omit<Alarm, 'id'>): Promise<Alarm> => {
   try {
     const { userId, name, startDate, endDate, times, alarmStatus } = alarm;
-
-    if (new Date(startDate) > new Date(endDate)) {
+    if (isAfter(startDate, endDate)) {
       throw createError(
         'InvalidDateRange',
         '시작 날짜는 종료 날짜보다 늦을 수 없습니다.',
@@ -23,17 +22,30 @@ export const createAlarm = async (alarm: Omit<Alarm, 'id'>): Promise<Alarm> => {
     const query = `
     INSERT INTO alarms (userId, name, startDate, endDate, times, alarmStatus)
     VALUES ($1, $2, $3, $4, $5, $6)
-    RETURNING id, userId AS "userId", name, startDate AS "startDate", endDate AS "endDate", times, alarmStatus AS "alarmStatus", createdAt AS "createdAt", updatedAt AS "updatedAt"
+    RETURNING id, userId, name, startDate AS "startDate", endDate AS "endDate", times, alarmStatus AS "alarmStatus", createdAt, updatedAt
     `;
     const values = [userId, name, startDate, endDate, JSON.stringify(times), alarmStatus];
     const result = await pool.query(query, values);
-    const newAlarm = result.rows[0];
+    const row = result.rows[0];
+    const newAlarm: Alarm = {
+      id: row.id,
+      userId: row.userId,
+      name: row.name,
+      startDate: row.startDate,
+      endDate: row.endDate,
+      times: typeof row.times === 'string' ? JSON.parse(row.times) : row.times,
+      alarmStatus: row.alarmStatus
+    };
     if (newAlarm.alarmStatus) {
       scheduleAlarmService(newAlarm);
     }
 
     return newAlarm;
   } catch (error) {
+    if (error instanceof Error && error.name === 'InvalidDateRange') {
+      throw error;
+    }
+    console.error('알람 생성 오류:', error);
     throw createError('DBError', '알람 생성 중 데이터베이스 오류가 발생했습니다.', 500);
   }
 };
@@ -45,7 +57,7 @@ export const updateAlarm = async (
   try {
     const { userId, name, startDate, endDate, times, alarmStatus } = alarm;
     if (startDate && endDate) {
-      if (new Date(startDate) > new Date(endDate)) {
+      if (new Date(startDate).getTime() > new Date(endDate).getTime()) {
         throw createError(
           'InvalidDateRange',
           '시작 날짜는 종료 날짜보다 늦을 수 없습니다.',
@@ -63,21 +75,25 @@ export const updateAlarm = async (
           alarmStatus = COALESCE($6, alarmStatus),
           updatedAt = CURRENT_TIMESTAMP
       WHERE id = $7
-      RETURNING id, userId AS "userId", name, startDate AS "startDate", endDate AS "endDate", times, alarmStatus
+      RETURNING id, userId, name, startDate as "startDate", endDate as "endDate", times, alarmStatus as "alarmStatus"
     `;
     const values = [userId, name, startDate, endDate, JSON.stringify(times), alarmStatus, id];
     const result = await pool.query(text, values);
-    const updatedAlarm = result.rows[0];
-
-    if (!updatedAlarm) {
+    
+    if (result.rows.length === 0) {
       throw createError('AlarmNotFound', '해당 알람을 찾을 수 없습니다.', 404);
     }
 
-    // JSON 문자열을 배열로 변환
-    updatedAlarm.times =
-      typeof updatedAlarm.times === 'string'
-        ? JSON.parse(updatedAlarm.times)
-        : updatedAlarm.times;
+    const row = result.rows[0];
+    const updatedAlarm: Alarm = {
+      id: row.id,
+      userId: row.userId,
+      name: row.name,
+      startDate: row.startDate,
+      endDate: row.endDate,
+      times: typeof row.times === 'string' ? JSON.parse(row.times) : row.times,
+      alarmStatus: row.alarmStatus
+    };
 
     // 기존 스케줄 취소
     cancelExistingAlarms(id);
@@ -115,20 +131,26 @@ export const updateAlarmStatus = async (id: string, alarmStatus: boolean): Promi
       SET alarmStatus = $1,
           updatedAt = CURRENT_TIMESTAMP
       WHERE id = $2
-      RETURNING id, userId AS "userId", name, startDate AS "startDate", endDate AS "endDate", times, alarmStatus AS "alarmStatus"
+      RETURNING id, userId, name, startDate AS "startDate", endDate AS "endDate", times, alarmStatus AS "alarmStatus"
     `;
     const values = [alarmStatus, id];
     const result = await client.query(text, values);
-    const updatedAlarm = result.rows[0];
-
-    if (!updatedAlarm) {
+    
+    if (result.rows.length === 0) {
       await client.query('ROLLBACK');
       throw createError('AlarmNotFound', '해당 알람을 찾을 수 없습니다.', 404);
     }
 
-    // JSON 문자열을 배열로 변환
-    updatedAlarm.times = typeof updatedAlarm.times === 'string' ? JSON.parse(updatedAlarm.times) : updatedAlarm.times;
-
+    const row = result.rows[0];
+    const updatedAlarm: Alarm = {
+      id: row.id,
+      userId: row.userId,
+      name: row.name,
+      startDate: row.startDate,
+      endDate: row.endDate,
+      times: typeof row.times === 'string' ? JSON.parse(row.times) : row.times,
+      alarmStatus: row.alarmStatus
+    };
     await client.query('COMMIT');
 
     // 기존 스케줄 취소
@@ -164,6 +186,7 @@ const cancelExistingAlarms = (alarmId: string) => {
     }
   }
 };
+
 export const scheduleAlarmService = (alarm: Alarm) => {
   const { id, startDate, endDate, times, alarmStatus } = alarm;
   if (!alarmStatus) {
@@ -175,31 +198,44 @@ export const scheduleAlarmService = (alarm: Alarm) => {
   const startDateTime = new Date(startDate);
   let currentDate = new Date(startDateTime);
 
-  while (currentDate <= endDateTime) {
+  if (currentDate.getTime() <= endDateTime.getTime()) {
     times.forEach((alarmTime: AlarmTime) => {
       const [hours, minutes] = alarmTime.time.split(':');
-      const scheduleDate = new Date(currentDate);
+      const scheduleDate = new Date(startDateTime);
       scheduleDate.setHours(parseInt(hours), parseInt(minutes), 0, 0);
 
-      if (scheduleDate >= new Date(startDate) && scheduleDate <= endDateTime) {
-        const job = schedule.scheduleJob(scheduleDate, async () => {
-          await sendEmail(alarm.userId);
-        });
+      while (scheduleDate <= endDateTime) {
+        if (scheduleDate >= startDateTime) {
+          const job = schedule.scheduleJob(scheduleDate, async () => {
+            await sendEmail(alarm.userId);
+          });
 
-        runningJobs.set(`${id}_${alarmTime.time}_${scheduleDate.toISOString()}`, job);
+          runningJobs.set(`${id}_${alarmTime.time}_${scheduleDate.toISOString()}`, job);
+        }
+
+        scheduleDate.setDate(scheduleDate.getDate() + 1);
       }
     });
-
-    currentDate.setDate(currentDate.getDate() + 1);
   }
 };
 
-//read
 export const getAlarmsByUserId = async (userId: string): Promise<Alarm[]> => {
   try {
-    const text = 'SELECT * FROM alarms WHERE userId = $1';
+    const text = `
+      SELECT id, userId, name, startDate, endDate, times, alarmStatus
+      FROM alarms 
+      WHERE userId = $1
+    `;    
     const result = await pool.query(text, [userId]);
-    return result.rows;
+    return result.rows.map(row => ({
+      id: row.id,
+      userId: row.userid,
+      name: row.name,
+      startDate: row.startdate,
+      endDate: row.enddate,
+      times: typeof row.times === 'string' ? JSON.parse(row.times) : row.times,
+      alarmStatus: row.alarmstatus
+    }));
   } catch (error) {
     throw createError(
       'DBError',
@@ -209,7 +245,6 @@ export const getAlarmsByUserId = async (userId: string): Promise<Alarm[]> => {
   }
 };
 
-//delete
 export const deleteAlarm = async (id: string): Promise<boolean> => {
   try {
     const job = runningJobs.get(id);
@@ -236,7 +271,6 @@ export const deleteAlarm = async (id: string): Promise<boolean> => {
   }
 };
 
-//메일 발송
 const sendEmail = async (recipientEmail: string) => {
   console.log(`이메일 전송 시도: ${recipientEmail}`);
 

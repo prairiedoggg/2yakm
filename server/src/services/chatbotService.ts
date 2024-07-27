@@ -1,6 +1,7 @@
-const webSearch = require('../utils/webSearch');
+import { webSearch } from "../utils/webSearch"
 import { Pinecone } from "@pinecone-database/pinecone";
 import OpenAI from "openai";
+import { createError } from '../utils/error';
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -13,10 +14,14 @@ interface CustomRecordMetadata {
 }
 
 //파인콘 연결
-const pinecone = new Pinecone({
-  apiKey: process.env.PINECONE_API_KEY as string,
-});
+const pineconeApiKey = process.env.PINECONE_API_KEY;
+if (!pineconeApiKey) {
+  throw createError('PINECONE_API_KEY 올바르지 않음', 'PINECONE 연결 실패',500);
+}
 
+const pinecone = new Pinecone({
+  apiKey: pineconeApiKey,
+});
 const index = pinecone.Index("eyakmoyak");
 
 // 대화 기록을 저장할 객체
@@ -27,24 +32,22 @@ export const processQuery = async(userId: string, message: string) => {
     // 사용자의 대화 기록 가져오기 또는 새로 생성
     if (!conversations.has(userId)) {
       conversations.set(userId, [
-        { role: "system", content: "당신은 고객에게 효능과 성분에 기반하여 적절한 약을 추천하는 약사입니다. 고객의 증상 혹은 상담 내용에 따라 적절한 약을 상품명, 성분과 주의사항을 포함해서, 환자의 증상과의 연관성을 위주로 가장 권장할만한 것을 판단해서 추천해줘야 합니다. 예를 들어 고객이 머리가 아파요. 라고 했다면 머리가 아프시군요, 두통에 좋은 약을 추천해드리겠습니다. ~후 효능에 해당 통증을 다루는 효능이 있는 약을 선정해, 설명 하는 방식으로 추천해야 합니다, 그리고 가장 대중적인 약의 순서로 설명해줘. 친근감 있는 대화 방식으로 추천해야 합니다." }
+        { role: "system", content: "당신은 고객에게 효능과 성분, 병용하면 안되는 약 등의 약 정보에 기반하여 적절한 약을 추천하는 약사입니다. 고객의 증상 혹은 상담 내용에 따라 적절한 약을 상품명, 성분과 주의사항을 포함해서, 환자의 증상과의 연관성을 위주로 가장 권장할만한 것을 판단해서 추천해줘야 합니다. 예를 들어 고객이 머리가 아파요. 라고 했다면 머리가 아프시군요, 두통에 좋은 약을 추천해드리겠습니다. ~후 효능에 해당 통증을 다루는 효능이 있는 약을 선정해, 설명 하는 방식으로 추천해야 합니다, 그리고 가장 대중적인 약의 순서로 설명해줘. 친근감 있는 대화 방식으로 추천해야 합니다." }
       ]);
     }
     const conversation = conversations.get(userId);
 
-        // 사용자 질문에 대한 임베딩 생성
-        const queryEmbedding = await getEmbedding(message);
-
-        // Pinecone에서 관련 약물 정보 검색
-        const startTime = Date.now();
-        const queryResponse = await index.query({
-          vector: queryEmbedding,
-          topK: 30,
-          includeMetadata: true
-        });
-        const endTime = Date.now();
-        console.log(`Query time: ${endTime - startTime}ms`);
-
+    // 사용자 질문에 대한 임베딩 생성
+    const queryEmbedding = await getEmbedding(message)
+    // Pinecone에서 관련 약물 정보 검색
+    const startTime = Date.now();
+    const queryResponse = await index.query({
+      vector: queryEmbedding,
+      topK: 30,
+      includeMetadata: true
+    });
+    const endTime = Date.now();
+    console.log(`Query time: ${endTime - startTime}ms`)
       // 가중치를 고려하여 결과 재정렬
     const weightedResults = queryResponse.matches
       .map((match: any) => ({
@@ -77,7 +80,6 @@ export const processQuery = async(userId: string, message: string) => {
     conversation.push({ role: "assistant", content: assistantResponse });
     // 대화 기록 업데이트
     conversations.set(userId, conversation);
-    console.log('현재 대화 기록:', conversation);
     return assistantResponse;
   } catch (error: any) {
     console.error('GPT API 오류:', error);
@@ -99,5 +101,8 @@ async function getEmbedding(text: string) {
     model: "text-embedding-3-small",
     input: text,
   });
+  if (!response.data ?? response.data.length === 0) {
+    throw new Error('임베딩 데이터를 가져오지 못했습니다.');
+  }
   return response.data[0].embedding;
 }

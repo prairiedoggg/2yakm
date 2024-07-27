@@ -1,4 +1,4 @@
-import { Pool } from 'pg';
+import { Pool, QueryResult } from 'pg';
 import fs from 'fs';
 import path from 'path';
 import dotenv from 'dotenv';
@@ -27,4 +27,4 @@ pool.connect((err: any) => {
   }
 });
 
-export { pool };
+export { pool, QueryResult };
