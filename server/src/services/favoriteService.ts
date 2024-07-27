@@ -1,5 +1,6 @@
 import { pool } from '../db';
 import { Favorite } from '../entity/favorite';
+import { createError } from '../utils/error';
 import { QueryResult } from 'pg';
 
 interface TotalCountAndData {
@@ -54,7 +55,11 @@ export const searchFavoritePillService = async (
       data: result.rows
     };
   } catch (error: any) {
-    throw error;
+    throw createError(
+      'DBError',
+      '즐겨찾는 약 검색 중 데이터베이스 오류가 발생했습니다.',
+      500
+    );
   }
 };
 
@@ -101,7 +106,11 @@ export const addCancelFavoritePillService = async (
       data: addResult.rows[0]
     };
   } catch (error: any) {
-    throw error;
+    throw createError(
+      'DBError',
+      '좋아요를 추가, 삭제 중 데이터베이스 오류가 발생했습니다.',
+      500
+    );
   }
 };
 
@@ -120,7 +129,11 @@ export const userFavoriteStatusService = async (
 
     return result.rows.length > 0;
   } catch (error: any) {
-    throw error;
+    throw createError(
+      'DBError',
+      '좋아요 상태를 확인 중 데이터베이스 오류가 발생했습니다.',
+      500
+    );
   }
 };
 

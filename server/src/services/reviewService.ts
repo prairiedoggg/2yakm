@@ -32,7 +32,11 @@ export const createReviewService = async (
 
     return result.rows.length ? result.rows[0] : null;
   } catch (error: any) {
-    throw error;
+    throw createError(
+      'DBError',
+      '리뷰 생성 중 데이터베이스 오류가 발생했습니다.',
+      500
+    );
   }
 };
 
@@ -62,7 +66,11 @@ export const updateReviewService = async (
 
     return result.rows.length ? result.rows[0] : null;
   } catch (error: any) {
-    throw error;
+    throw createError(
+      'DBError',
+      '리뷰 수정 중 데이터베이스 오류가 발생했습니다.',
+      500
+    );
   }
 };
 
@@ -90,7 +98,11 @@ export const deleteReviewService = async (
 
     return result.rows.length ? result.rows[0] : null;
   } catch (error: any) {
-    throw error;
+    throw createError(
+      'DBError',
+      '리뷰 삭제 중 데이터베이스 오류가 발생했습니다.',
+      500
+    );
   }
 };
 
@@ -156,7 +168,11 @@ export const getPillsAllReviewService = async (
       nextCursor
     };
   } catch (error: any) {
-    throw error;
+    throw createError(
+      'DBError',
+      '해당 약의 리뷰 조회 중 데이터베이스 오류가 발생했습니다.',
+      500
+    );
   }
 };
 
@@ -206,6 +222,10 @@ export const getUserAllReviewService = async (
       data: result.rows
     };
   } catch (error: any) {
-    throw error;
+    throw createError(
+      'DBError',
+      '해당 유저의 리뷰 조회 중 데이터베이스 오류가 발생했습니다.',
+      500
+    );
   }
 };
