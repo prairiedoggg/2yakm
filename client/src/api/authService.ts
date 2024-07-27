@@ -2,12 +2,14 @@ import { post } from './api';
 import useUserStore from '../store/user';
 import Cookies from 'js-cookie';
 
-export const login = async (email: string, password: string) => {
+export const login = async (email: string, password: string, onSuccess?:()=>void, onFailure?:(arg0:any)=>void) => {
   try {
     const data = await post('/api/auth/login', { email: email, password });
     storeLoginData(data);
+    if (onSuccess) onSuccess();
   } catch (error) {
     console.error('Login failed', error);
+    if (onFailure) onFailure(error);
   }
 };
 

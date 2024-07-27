@@ -2,6 +2,9 @@ import styled from 'styled-components';
 import { Icon } from '@iconify-icon/react';
 import { ChangeEvent, useEffect, useState } from 'react';
 import { login } from '../../api/authService';
+import { useNavigate } from 'react-router-dom';
+import Popup from '../Popup';
+import Loading from '../Loading';
 
 const EmailLogin = ({
   onRegisterClick,
@@ -10,6 +13,8 @@ const EmailLogin = ({
   onRegisterClick: () => void;
   onResetPasswordClick: () => void;
 }) => {
+  const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState('');
   const [isEmailButtonEnabled, setIsEmailButtonEnabled] =
     useState<boolean>(false);
@@ -17,6 +22,7 @@ const EmailLogin = ({
   const [isPasswordButtonEnabled, setIsPasswordButtonEnabled] =
     useState<boolean>(false);
   const [showPassword, setShowPassword] = useState<boolean>(false);
+  const [popupMessage, setPopupMessage] = useState('');
 
   const handleEmailChange = (e: ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
@@ -103,11 +109,31 @@ const EmailLogin = ({
         className='submitButton'
         disabled={!isEmailButtonEnabled || !isPasswordButtonEnabled}
         onClick={() => {
-          login(email, password);
+          setLoading(true);
+          login(
+            email,
+            password,
+            () => {
+              setLoading(false);
+              navigate('/', { replace: true });
+              window.location.reload();
+            },
+            (error) => {
+              setLoading(false);
+              setPopupMessage(
+                '로그인에 실패했습니다. 이메일 또는 비밀번호를 확인해주세요.'
+              );
+            }
+          );
         }}
       >
         시작하기
       </button>
+
+      {popupMessage !== '' && (
+        <Popup onClose={() => setPopupMessage('')}>{popupMessage}</Popup>
+      )}
+      {loading && <Loading />}
     </Content>
   );
 };
