@@ -1,45 +1,42 @@
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuthentication } from '../../store/authentication';
-// import { useQuery } from '@tanstack/react-query';
-import axios from 'axios';
+import { get } from '../../api/api';
+import Cookies from 'js-cookie';
 
-interface RedirectProps {
-  sns: string;
-}
-
-let url: string = '';
-
-const handleUrl = (sns: string) => {
-  switch (sns) {
-    case 'kakao':
-      return (url = 'http://localhost:3000/api/auth/kakao/callback');
-    case 'google':
-      return (url = 'http://localhost:3000/api/auth/google/callback');
-    default:
-      break;
-  }
-};
-
-const Redirect = ({ sns }: RedirectProps) => {
+const Redirect = ({ sns }: { sns: string }) => {
   const navigate = useNavigate();
-  const { checkAuthentication } = useAuthentication();
 
   useEffect(() => {
-    handleUrl(sns);
+    let url = '';
+    switch (sns) {
+      case 'kakao':
+        url = 'api/auth/kakao/callback';
+        break;
+      case 'naver':
+        url = 'api/auth/naver/callback';
+        break;
+      case 'google':
+        url = 'api/auth/google/callback';
+        break;
+      default:
+        console.error('알 수 없는 SNS');
+        return;
+    }
 
-    console.log(window.location.href);
     const code = new URL(window.location.href).searchParams.get('code');
 
     if (code) {
-      axios
-        .get(url, {
-          params: { code: code }
-        })
+      get(url, {
+        code: code
+      })
         .then((res) => {
-          if (res.data.token) {
-            localStorage.setItem('token', res.data.token);
-            checkAuthentication();
+          if (res.token) {
+            // 쿠키에 토큰 저장
+            console.log(res);
+            Cookies.set('token', res.token, { path: '/' });
+            Cookies.set('refreshToken', res.refreshToken, {
+              path: '/'
+            });
             navigate('/');
           }
         })
@@ -52,7 +49,7 @@ const Redirect = ({ sns }: RedirectProps) => {
       console.error('인증 코드 없음');
       navigate('/login');
     }
-  }, []);
+  }, [sns, , navigate]);
 
   return null;
 };
