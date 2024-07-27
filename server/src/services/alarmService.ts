@@ -13,7 +13,11 @@ export const createAlarm = async (alarm: Omit<Alarm, 'id'>): Promise<Alarm> => {
     const { userId, name, startDate, endDate, times } = alarm;
 
     if (new Date(startDate) > new Date(endDate)) {
-      throw createError('InvalidDateRange', '시작 날짜는 종료 날짜보다 늦을 수 없습니다.', 400);
+      throw createError(
+        'InvalidDateRange',
+        '시작 날짜는 종료 날짜보다 늦을 수 없습니다.',
+        400
+      );
     }
 
     const query = `
@@ -25,26 +29,37 @@ export const createAlarm = async (alarm: Omit<Alarm, 'id'>): Promise<Alarm> => {
     startDate AS "startDate",
     endDate AS "endDate",
     times,
-    created_at AS "createdAt",
-    updated_at AS "updatedAt"
+    createdAt AS "createdAt",
+    updatedAt AS "updatedAt"
     `;
     const values = [userId, name, startDate, endDate, JSON.stringify(times)];
     const result = await pool.query(query, values);
     const newAlarm = result.rows[0];
     scheduleAlarmService(newAlarm);
-    
+
     return newAlarm;
   } catch (error) {
-    throw createError('DBError', '알람 생성 중 데이터베이스 오류가 발생했습니다.', 500);
+    throw createError(
+      'DBError',
+      '알람 생성 중 데이터베이스 오류가 발생했습니다.',
+      500
+    );
   }
 };
 
-export const updateAlarm = async (id: string, alarm: Partial<Alarm>): Promise<Alarm | null> => {
+export const updateAlarm = async (
+  id: string,
+  alarm: Partial<Alarm>
+): Promise<Alarm | null> => {
   try {
     const { userId, name, startDate, endDate, times } = alarm;
     if (startDate && endDate) {
       if (new Date(startDate) > new Date(endDate)) {
-        throw createError('InvalidDateRange', '시작 날짜는 종료 날짜보다 늦을 수 없습니다.', 400);
+        throw createError(
+          'InvalidDateRange',
+          '시작 날짜는 종료 날짜보다 늦을 수 없습니다.',
+          400
+        );
       }
     }
     const text = `
@@ -54,7 +69,7 @@ export const updateAlarm = async (id: string, alarm: Partial<Alarm>): Promise<Al
           startDate = COALESCE($3, startDate),
           endDate = COALESCE($4, endDate),
           times = COALESCE($5, times::jsonb),
-          updated_at = CURRENT_TIMESTAMP
+          updatedAt = CURRENT_TIMESTAMP
       WHERE id = $6
       RETURNING userid AS "userId", name, startDate AS "startDate", endDate AS "endDate", times
     `;
@@ -74,7 +89,10 @@ export const updateAlarm = async (id: string, alarm: Partial<Alarm>): Promise<Al
     }
 
     // JSON 문자열을 배열로 변환
-    updatedAlarm.times = typeof updatedAlarm.times === 'string' ? JSON.parse(updatedAlarm.times) : updatedAlarm.times;
+    updatedAlarm.times =
+      typeof updatedAlarm.times === 'string'
+        ? JSON.parse(updatedAlarm.times)
+        : updatedAlarm.times;
 
     // 기존 스케줄 취소
     cancelExistingAlarms(id);
@@ -85,7 +103,11 @@ export const updateAlarm = async (id: string, alarm: Partial<Alarm>): Promise<Al
     return updatedAlarm;
   } catch (error) {
     if (error instanceof Error && error.name === 'AlarmNotFound') throw error;
-    throw createError('DBError', '알람 업데이트 중 데이터베이스 오류가 발생했습니다.', 500);
+    throw createError(
+      'DBError',
+      '알람 업데이트 중 데이터베이스 오류가 발생했습니다.',
+      500
+    );
   }
 };
 
@@ -110,29 +132,50 @@ export const scheduleAlarmService = (alarm: Alarm) => {
         const scheduleDate = new Date(currentDate);
         scheduleDate.setHours(parseInt(hours), parseInt(minutes), 0, 0);
 
-        if (scheduleDate >= new Date(startDate) && scheduleDate <= endDateTime) {
+        if (
+          scheduleDate >= new Date(startDate) &&
+          scheduleDate <= endDateTime
+        ) {
           const job = schedule.scheduleJob(scheduleDate, async () => {
+            console.log(
+              `알람 실행: ${alarm.id}, 시간: ${scheduleDate.toISOString()}`
+            );
             await sendEmail(alarm.userId);
           });
-          
-          runningJobs.set(`${alarm.id}_${alarmTime.time}_${scheduleDate.toISOString()}`, job);
+
+          console.log(
+            `알람 예약됨: ${alarm.id}, 시간: ${scheduleDate.toISOString()}`
+          );
+          runningJobs.set(
+            `${alarm.id}_${alarmTime.time}_${scheduleDate.toISOString()}`,
+            job
+          );
         }
       }
     });
 
     currentDate.setDate(currentDate.getDate() + 1);
   }
+
+  console.log(
+    `알람 예약 완료: ${startDate}부터 ${endDate}까지 ${times
+      .map((t: { time: any }) => t.time)
+      .join(', ')}에 알림`
+  );
 };
 
-
-//read  
+//read
 export const getAlarmsByUserId = async (userId: string): Promise<Alarm[]> => {
   try {
     const text = 'SELECT * FROM alarms WHERE userId = $1';
     const result = await pool.query(text, [userId]);
     return result.rows;
   } catch (error) {
-    throw createError('DBError', '알람 조회 중 데이터베이스 오류가 발생했습니다.', 500);
+    throw createError(
+      'DBError',
+      '알람 조회 중 데이터베이스 오류가 발생했습니다.',
+      500
+    );
   }
 };
 
@@ -147,15 +190,19 @@ export const deleteAlarm = async (id: string): Promise<boolean> => {
 
     const query = 'DELETE FROM alarms WHERE id = $1';
     const result = await pool.query(query, [id]);
-    
+
     if (result.rowCount === 0) {
       throw createError('AlarmNotFound', '해당 알람을 찾을 수 없습니다.', 404);
     }
-    
+
     return true;
   } catch (error: any) {
     if (error.name === 'AlarmNotFound') throw error;
-    throw createError('DBError', '알람 삭제 중 데이터베이스 오류가 발생했습니다.', 500);
+    throw createError(
+      'DBError',
+      '알람 삭제 중 데이터베이스 오류가 발생했습니다.',
+      500
+    );
   }
 };
 

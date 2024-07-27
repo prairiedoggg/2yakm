@@ -78,7 +78,7 @@ export const login = async (
 };
 
 // 이메일 인증 요청 인증 전
-export const requestEmailVerification = async (email: string, username: string, password: string): Promise<void> => {
+export const requestEmailVerification = async (email: string): Promise<void> => {
   try {
     const checkUserQuery = 'SELECT * FROM users WHERE email = $1';
     const checkUserValues = [email];
@@ -88,7 +88,7 @@ export const requestEmailVerification = async (email: string, username: string, 
       throw createError('UserExists', '해당 이메일로 이미 사용자가 존재합니다.', 409);
     }
 
-    const emailToken = jwt.sign({ email, username, password }, SECRET_KEY, { expiresIn: '5m' });
+    const emailToken = jwt.sign({ email}, SECRET_KEY, { expiresIn: '5m' });
     const url = `http://localhost:3000/api/auth/verify-email?token=${emailToken}`;
 
     const mailOptions = {
@@ -98,7 +98,13 @@ export const requestEmailVerification = async (email: string, username: string, 
       text: `이메일 인증을 완료하려면 링크를 클릭하세요: ${url}`,
     };
     await transporter.sendMail(mailOptions);
-  } catch (error) {
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      if (error.message === 'UserExists') {
+        throw createError('UserExists', '해당 이메일로 이미 사용자가 존재합니다.', 409);
+      }
+      throw createError('DBError', error.message, 500);
+    }
     throw createError('DBError', '데이터베이스 오류가 발생했습니다.', 500);
   }
 };
@@ -115,19 +121,24 @@ export const signupService = async (
     const checkUserValues = [email];
     const existingUserResult = await pool.query(checkUserQuery, checkUserValues);
 
-    if (existingUserResult.rows.length > 0) {
-      const user = existingUserResult.rows[0];
-      if (!user.isVerified) {
-        throw createError('EmailNotVerified', '이메일 인증이 완료되지 않았습니다.', 400);
-      }
-      throw createError('UserExists', '해당 이메일로 이미 사용자가 존재합니다.', 409);
+    if (existingUserResult.rows.length === 0) {
+      throw createError('UserNotFound', '사용자를 찾을 수 없습니다.', 404);
+    }
+
+    const user = existingUserResult.rows[0];
+    if (!user.isverified) {
+      throw createError('EmailNotVerified', '이메일 인증이 완료되지 않았습니다.', 400);
     }
 
     if (password !== confirmPassword) {
       throw createError('PasswordMismatch', '비밀번호가 일치하지 않습니다.', 400);
     }
 
-    await requestEmailVerification(email, username, password);
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const updateUserQuery = 'UPDATE users SET username = $1, password = $2 WHERE email = $3';
+    const updateUserValues = [username, hashedPassword, email];
+    await pool.query(updateUserQuery, updateUserValues);
   } catch (error: unknown) {
     if (error instanceof Error) {
       throw createError('DBError', error.message, 400);
@@ -150,17 +161,21 @@ export const verifyEmailService = async (token: string): Promise<void> => {
       if (user.isVerified) {
         throw createError('AlreadyVerified', '이미 이메일 인증이 완료되었습니다.', 400);
       }
+      // 존재하는 사용자의 이메일 인증 업데이트
+      const updateUserQuery = `
+        UPDATE users SET isVerified = $1 WHERE email = $2
+      `;
+      const updateUserValues = [true, decoded.email];
+      await pool.query(updateUserQuery, updateUserValues);
+    } else {
+      const insertUserQuery = `
+        INSERT INTO users (email, isVerified) VALUES ($1, $2)
+      `;
+      const insertUserValues = [decoded.email, true];
+      await pool.query(insertUserQuery, insertUserValues);
     }
-
-    const hashedPassword = await bcrypt.hash(decoded.password, 10);
-
-    const insertUserQuery = `
-      INSERT INTO users (email, username, password, role, isVerified) VALUES ($1, $2, $3, $4, $5)
-      RETURNING email
-    `;
-    const insertUserValues = [decoded.email, decoded.username, hashedPassword, false, true];
-    const result = await pool.query(insertUserQuery, insertUserValues);
   } catch (error) {
+    console.error('Error in verifyEmailService:', error);
     if (error instanceof jwt.TokenExpiredError) {
       throw createError('TokenExpired', '토큰이 만료됨', 400);
     }

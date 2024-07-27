@@ -34,7 +34,7 @@ export const searchFavoritePillService = async (
       favorites.id,
       pills.name,
       pills.efficacy,
-      favorites.created_at
+      favorites.createdAt
     FROM
       favorites
     JOIN

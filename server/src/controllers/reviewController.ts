@@ -135,7 +135,7 @@ export const getUserAllReview = async (
   const userid = req.user.id;
   const limit = parseInt(req.query.limit ?? '10');
   const offset = parseInt(req.query.offset ?? '0');
-  const sortedBy = req.query.sortedBy ?? 'created_at';
+  const sortedBy = req.query.sortedBy ?? 'createdAt';
   const order = req.query.order?.toUpperCase() ?? 'DESC';
 
   try {

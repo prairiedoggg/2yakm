@@ -33,11 +33,14 @@ export const loginController = async (req: Request, res: Response, next: NextFun
 // 이메일 인증 요청
 export const requestEmailVerificationController = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const { email, username, password } = req.body;
-    await requestEmailVerification(email, username, password);
+    const { email } = req.body;
+    if (!email) {
+      throw createError('InvalidInput', '이메일을 입력해야 합니다.', 400);
+    }
+    await requestEmailVerification(email);
     res.status(200).json({ message: '이메일 인증 링크가 전송되었습니다.' });
   } catch (error) {
-    next(error);
+    next(error)
   }
 };
 
@@ -53,15 +56,9 @@ export const signupController = async (req: Request, res: Response, next: NextFu
       );
     }
     await signupService(email, username, password, confirmPassword);
-    res.status(200).json({ message: '이메일 인증을 완료하세요.' });
-  } catch (error: unknown) {
-    if (error instanceof Error) {
-      if (error.message === 'EmailNotVerified') {
-        res.status(400).json({ message: '이메일 인증이 완료되지 않았습니다.' });
-      }
-    } else {
-      next(error);
-    }
+    res.status(200).json({ message: '회원가입이 완료되었습니다' });
+  } catch (error) {
+    next(error)
   }
 };
 
@@ -72,7 +69,6 @@ export const verifyEmailController = async (req: Request, res: Response, next: N
     await verifyEmailService(token as string);
     res.status(200).json({ message: '이메일 인증 완료되었습니다. 회원가입을 계속해주세요.' });
   } catch (error) {
-    console.error('Error in verifyEmailController:', error);
     next(error);
   }
 };

@@ -1,13 +1,18 @@
 import { Router } from 'express';
 const router = Router();
-import {addMyPill, updateMyPill, getMyPills, deleteMyPill} from '../controllers/mypillController';
+import {
+  addMyPill,
+  updateMyPill,
+  getMyPills,
+  deleteMyPill
+} from '../controllers/mypillController';
 
 /**
  * @swagger
- * /mypill:
+ * api/mypills:
  *   post:
  *     summary: 새로운 약 추가
- *     tags: [마이필]
+ *     tags: [mypills]
  *     requestBody:
  *       required: true
  *       content:
@@ -15,7 +20,7 @@ import {addMyPill, updateMyPill, getMyPills, deleteMyPill} from '../controllers/
  *           schema:
  *             type: object
  *             properties:
- *               drugname:
+ *               name:
  *                 type: string
  *                 example: 감기약
  *               expiredat:
@@ -30,10 +35,10 @@ router.post('/', addMyPill);
 
 /**
  * @swagger
- * /mypill/{mypillid}:
+ * api/mypills/{mypillid}:
  *   put:
  *     summary: 약 정보 업데이트
- *     tags: [마이필]
+ *     tags: [mypills]
  *     parameters:
  *       - in: path
  *         name: mypillid
@@ -48,7 +53,7 @@ router.post('/', addMyPill);
  *           schema:
  *             type: object
  *             properties:
- *               drugname:
+ *               name:
  *                 type: string
  *                 example: 감기약
  *               expiredat:
@@ -63,10 +68,10 @@ router.put('/:mypillid', updateMyPill);
 
 /**
  * @swagger
- * /mypill:
+ * api/mypills:
  *   get:
  *     summary: 모든 약 정보 가져오기
- *     tags: [마이필]
+ *     tags: [mypills]
  *     parameters:
  *       - in: query
  *         name: limit
@@ -101,12 +106,12 @@ router.put('/:mypillid', updateMyPill);
  *                 properties:
  *                   id:
  *                     type: string
- *                   drugname:
+ *                   name:
  *                     type: string
  *                   expiredat:
  *                     type: string
  *                     format: date
- *                   created_at:
+ *                   createdAt:
  *                     type: string
  *                     format: date
  */
@@ -114,10 +119,10 @@ router.get('/', getMyPills);
 
 /**
  * @swagger
- * /mypill/{mypillid}:
+ * api/mypills/{mypillid}:
  *   delete:
  *     summary: 약 정보 삭제
- *     tags: [마이필]
+ *     tags: [mypills]
  *     parameters:
  *       - in: path
  *         name: mypillid

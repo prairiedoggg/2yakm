@@ -1,13 +1,11 @@
 import { Response, Request, NextFunction } from 'express';
-import { 
+import {
   getPills,
   getPillById,
-  updatePill,
-  deletePill,
   searchPillsbyName,
   searchPillsbyEfficacy,
   searchPillsByImage,
-  searchPillsbyEngName, 
+  searchPillsbyEngName,
   getPillFavoriteCountService,
   getPillReviewCountService
 } from '../services/pillService';
@@ -19,12 +17,15 @@ interface PillsQueryParams {
   order?: 'ASC' | 'DESC';
 }
 
-// The getPillsHandler function using generics
-export const getPillsHandler = async <T extends PillsQueryParams>(req: Request<unknown, unknown, unknown, T>, res: Response, next: NextFunction): Promise<void> => {
+export const getPillsHandler = async <T extends PillsQueryParams>(
+  req: Request<unknown, unknown, unknown, T>,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
   try {
     const limit = parseInt(req.query.limit ?? '10', 10);
     const offset = parseInt(req.query.offset ?? '0', 10);
-    const sortedBy = req.query.sortedBy ?? 'created_at';
+    const sortedBy = req.query.sortedBy ?? 'favorite_count';
     const order = (req.query.order?.toUpperCase() as 'ASC' | 'DESC') ?? 'DESC';
 
     const pills = await getPills(limit, offset, sortedBy, order);
@@ -34,7 +35,11 @@ export const getPillsHandler = async <T extends PillsQueryParams>(req: Request<u
   }
 };
 
-export const getPillByIdHandler = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+export const getPillByIdHandler = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
   try {
     const id = parseInt(req.params.id as string, 10);
     const pill = await getPillById(id);
@@ -48,6 +53,7 @@ export const getPillByIdHandler = async (req: Request, res: Response, next: Next
   }
 };
 
+/**
 export const updatePillHandler = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     const updatedPill = await updatePill(parseInt(req.params.id, 10), req.body);
@@ -60,7 +66,9 @@ export const updatePillHandler = async (req: Request, res: Response, next: NextF
     next(error);
   }
 };
+*/
 
+/*
 export const deletePillHandler = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     const deleted = await deletePill(parseInt(req.params.id, 10));
@@ -73,13 +81,14 @@ export const deletePillHandler = async (req: Request, res: Response, next: NextF
     next(error);
   }
 };
+*/
 
 interface QueryParams {
   name: string;
   limit?: string;
   offset?: string;
   sortedBy?: string;
-  order?: "ASC" | "DESC";
+  order?: 'ASC' | 'DESC';
 }
 
 interface RequestParams {
@@ -151,7 +160,7 @@ export const searchPillsByImageHandler = async (
   req: Request<unknown, unknown, unknown, ImageQueryParams>,
   res: Response,
   next: NextFunction
-)=> {
+) => {
   try {
     if (!req.file) {
       return res.status(400).json({ message: 'No file uploaded' });
@@ -167,22 +176,22 @@ export const searchPillsByImageHandler = async (
 };
 
 export const getPillFavoriteCount = async (
-   req: Request<{ id: any }, unknown, unknown, unknown>,
-   res: Response,
-   next: NextFunction
- ): Promise<void> => {
-   const id = parseInt(req.params.id, 10);
+  req: Request<{ id: any }, unknown, unknown, unknown>,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  const id = parseInt(req.params.id, 10);
 
-   try {
-     const count = await getPillFavoriteCountService(id);
+  try {
+    const count = await getPillFavoriteCountService(id);
 
-     res.status(200).send({ count });
-   } catch (error: any) {
-     next(error);
-   }
- };
+    res.status(200).send({ count });
+  } catch (error: any) {
+    next(error);
+  }
+};
 
- export const getPillReviewCount = async (
+export const getPillReviewCount = async (
   req: Request<{ id: any }, unknown, unknown, unknown>,
   res: Response,
   next: NextFunction
@@ -197,5 +206,3 @@ export const getPillFavoriteCount = async (
     next(error);
   }
 };
-
-

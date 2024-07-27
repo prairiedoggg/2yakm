@@ -6,10 +6,10 @@ const { uploadToMemory, uploadToS3 } = require('../config/imgUploads');
 
 /**
  * @swagger
- * /mypage:
+ * api/mypage:
  *   get:
  *     summary: 사용자 프로필 가져오기
- *     tags: [마이페이지]
+ *     tags: [mypage]
  *     responses:
  *       200:
  *         description: 성공
@@ -29,10 +29,10 @@ router.get('/', getUserprofile);
 
 /**
  * @swagger
- * /mypage:
+ * api/mypage:
  *   put:
  *     summary: 사용자 이름 업데이트
- *     tags: [마이페이지]
+ *     tags: [mypage]
  *     requestBody:
  *       required: true
  *       content:
@@ -51,10 +51,10 @@ router.put('/', updateName);
 
 /**
  * @swagger
- * /mypage/profile-picture/memory:
+ * api/mypage/profile-picture/memory:
  *   put:
  *     summary: 메모리에 프로필 사진 업데이트
- *     tags: [마이페이지]
+ *     tags: [mypage]
  *     consumes:
  *       - multipart/form-data
  *     parameters:
@@ -77,10 +77,10 @@ router.put('/profile-picture/memory', uploadToMemory.single('profilePicture'), u
 
 /**
  * @swagger
- * /mypage/profile-picture/s3:
+ * api/mypage/profile-picture/s3:
  *   put:
  *     summary: S3에 프로필 사진 업데이트
- *     tags: [마이페이지]
+ *     tags: [mypage]
  *     consumes:
  *       - multipart/form-data
  *     parameters:
