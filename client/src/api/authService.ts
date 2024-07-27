@@ -11,23 +11,25 @@ export const login = async (email: string, password: string) => {
   }
 };
 
-export const signup = async (email: string, username:string, password: string, confirmPassword:string, callback:()=>void) => {
+export const signup = async (email: string, username:string, password: string, confirmPassword:string, onSuccess:()=>void, onFailure?:(arg0:any)=>void) => {
   try {
     const data = await post('/api/auth/signup', { email: email, username:username, password: password, confirmPassword:confirmPassword });
     storeLoginData(data);
 
-    if (callback) callback();
+    if (onSuccess) onSuccess();
   } catch (error) {
     console.error('signup failed', error);
+    if (onFailure) onFailure(error);
   }
 };
 
-export const requestEmailVerification = async (email: string, callback?:(arg0:any)=>void) => {
+export const requestEmailVerification = async (email: string, onSuccess?:(arg0:any)=>void, onFailure?:(arg0:any)=>void) => {
   try {
     const data = await post('/api/auth/request-email-verification', { email: email });
-    if (callback) callback(data);
+    if (onSuccess) onSuccess(data);
   } catch (error) {
     console.error('request Email Verification failed', error);
+    if (onFailure) onFailure(error);
   }
 };
 

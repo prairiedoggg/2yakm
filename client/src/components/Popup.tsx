@@ -1,32 +1,17 @@
 import styled from 'styled-components';
 import { Icon } from '@iconify-icon/react';
 
-const BottomSheet = ({
-  isVisible,
+const Popup = ({
   onClose,
-  hideTopClose,
   children
 }: {
-  isVisible: boolean;
   onClose: () => void;
-  hideTopClose?: boolean;
-  children: React.ReactNode;
+  children?: React.ReactNode;
 }) => {
   return (
-    <Overlay
-      onClick={onClose}
-      style={{
-        opacity: isVisible ? 1 : 0,
-        visibility: isVisible ? 'visible' : 'hidden'
-      }}
-    >
-      <SheetContainer
-        onClick={(e) => e.stopPropagation()}
-        style={{
-          transform: `translateY(${isVisible ? '0' : '100%'})`
-        }}
-      >
-        {!hideTopClose && (
+    <Overlay onClick={onClose}>
+      <SheetContainer>
+        <div className='header'>
           <Icon
             className='topClose'
             onClick={onClose}
@@ -35,9 +20,8 @@ const BottomSheet = ({
             height='1.7rem'
             style={{ color: 'black' }}
           />
-        )}
-
-        {children}
+        </div>
+        <div className='contents'>{children}</div>
       </SheetContainer>
     </Overlay>
   );
@@ -55,21 +39,25 @@ const Overlay = styled.div`
 `;
 
 const SheetContainer = styled.div`
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  width: 100%;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 90%;
+  max-width: 600px;
   max-height: 80%;
+  min-height: 150px;
   background: #fff;
-  border-radius: 20px 20px 0 0;
+  border-radius: 20px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   transition: transform 0.3s ease;
-  padding: 20px;
+  padding: 0px 20px 20px 20px;
   z-index: 1000;
 
   display: flex;
   flex-direction: column;
   font-size: 1.1em;
-  gap: 20px;
+  gap: 10px;
 
   button {
     font-size: 1em;
@@ -78,18 +66,31 @@ const SheetContainer = styled.div`
     background-color: white;
     border: 1px solid #ccc;
     border-radius: 5px;
+    margin-top: 20px;
   }
 
-  .topClose {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    background: none;
-    border: none;
-    font-size: 24px;
-    cursor: pointer;
-    color: #333;
+  .header {
+    position: flex;
+    width: 100%;
+
+    display: flex;
+    justify-content: right;
+    align-items: right;
+    align-content: right;
+    margin: 0px 10px 0px 10px;
+  }
+
+  .contents {
+    min-height: 60px;
+
+    div {
+      justify-content: center;
+      align-items: center;
+      display: flex;
+      align-content: center;
+      flex-direction: column;
+    }
   }
 `;
 
-export default BottomSheet;
+export default Popup;
