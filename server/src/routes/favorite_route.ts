@@ -31,7 +31,7 @@ const router = Router();
  *         name: sortedBy
  *         schema:
  *           type: string
- *         description: 정렬할 필드명을 입력해 주세요. (createdAt, name,... 기본값은 createdAt)
+ *         description: 정렬할 필드명을 입력해 주세요. (createdat, name,... 기본값은 createdat)
  *       - in: query
  *         name: order
  *         schema:
@@ -58,7 +58,7 @@ const router = Router();
  *                   items:
  *                     type: object
  *                     properties:
- *                       favoriteid:
+ *                       id:
  *                         type: integer
  *                         description: favorite id
  *                         example: 5
@@ -66,7 +66,7 @@ const router = Router();
  *                         type: string
  *                         description: user id
  *                         example: 0190caa1-0c81-7fa2-9e4d-ed3c8ec93d7a
- *                       id:
+ *                       pillid:
  *                         type: integer
  *                         description: pill id
  *                         example: 199800355
@@ -78,7 +78,7 @@ const router = Router();
  *                         type: string
  *                         description: pill efficacy(효능)
  *                         example: "이 약은 네오마이신 감수성 세균에 의해 2차 감염된 코르티코이드 반응성 피부질환의 초기 치료(피부염, 감염된 상처)에 사용합니다."
- *                       createdAt:
+ *                       createdat:
  *                         type: string
  *                         format: date-time
  *       401:
@@ -91,7 +91,7 @@ router.get('/', authByToken, searchFavoritePill);
 
 /**
  * @swagger
- * /api/favorites/{id}:
+ * /api/favorites/{pillid}:
  *   post:
  *     summary: 좋아요 추가, 취소 API
  *     description: API를 요청 할 때 좋아요가 없으면 좋아요가 추가되고, 좋아요가 있으면 좋아요가 취소됩니다.
@@ -100,11 +100,11 @@ router.get('/', authByToken, searchFavoritePill);
  *       - bearerAuth: []
  *     parameters:
  *       - in: path
- *         name: id
+ *         name: pillid
  *         schema:
  *           type: integer
  *         required: true
- *         description: 좋아요가 추가, 취소될 pill의 id 값을 입력해 주세요.
+ *         description: 좋아요가 추가, 취소될 pill id 값을 입력해 주세요.
  *     responses:
  *       200:
  *         description: 좋아요를 취소했습니다.
@@ -116,11 +116,11 @@ router.get('/', authByToken, searchFavoritePill);
  *         description: Internal Server Error
  */
 // 좋아요 추가, 취소
-router.post('/:id', authByToken, addCancelFavoritePill);
+router.post('/:pillid', authByToken, addCancelFavoritePill);
 
 /**
  * @swagger
- * /api/favorites/{id}/status:
+ * /api/favorites/{pillid}/status:
  *   get:
  *     summary: 접속한 유저가 좋아요를 눌렀는지 확인하는 API
  *     tags: [Favorites]
@@ -128,7 +128,7 @@ router.post('/:id', authByToken, addCancelFavoritePill);
  *       - bearerAuth: []
  *     parameters:
  *       - in: path
- *         name: id
+ *         name: pillid
  *         schema:
  *           type: integer
  *         required: true
@@ -151,17 +151,17 @@ router.post('/:id', authByToken, addCancelFavoritePill);
  *         description: Internal Server Error
  */
 // 좋아요를 눌렀는지 확인
-router.get('/:id/status', authByToken, userFavoriteStatus);
+router.get('/:pillid/status', authByToken, userFavoriteStatus);
 
 // /**
 //  * @swagger
-//  * /api/favorites/{id}/count:
+//  * /api/favorites/{pillid}/count:
 //  *   get:
 //  *     summary: 해당 약의 좋아요 수 조회 API
 //  *     tags: [Favorites]
 //  *     parameters:
 //  *       - in: path
-//  *         name: id
+//  *         name: pillid
 //  *         schema:
 //  *           type: integer
 //  *         required: true
@@ -182,7 +182,7 @@ router.get('/:id/status', authByToken, userFavoriteStatus);
 //  *         description: Internal Server Error
 //  */
 // // 해당 약의 좋아요 수를 확인
-// router.get('/:id/count', getPillFavoriteCount);
+// router.get('/:pillid/count', getPillFavoriteCount);
 
 /**
  * @swagger
@@ -191,18 +191,18 @@ router.get('/:id/status', authByToken, userFavoriteStatus);
  *     Favorite:
  *       type: object
  *       properties:
- *         favoriteId:
- *           type: integer
- *           format: int64
- *           description: favorite id입니다.
  *         id:
  *           type: integer
  *           format: int64
+ *           description: favorite id입니다.
+ *         pillid:
+ *           type: integer
+ *           format: int64
  *           description: pill id입니다.
- *         userId:
+ *         userid:
  *           type: string
  *           description: user id입니다.
- *         createdAt:
+ *         createdat:
  *           type: string
  *           format: date-time
  *           description: 리뷰가 생성된 시간이 저장됩니다.

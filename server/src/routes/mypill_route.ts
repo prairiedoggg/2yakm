@@ -111,7 +111,7 @@ router.put('/:mypillid', updateMyPill);
  *                   expiredat:
  *                     type: string
  *                     format: date
- *                   createdAt:
+ *                   createdat:
  *                     type: string
  *                     format: date
  */

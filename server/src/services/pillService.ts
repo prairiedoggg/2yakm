@@ -122,7 +122,7 @@ export const searchPillsbyName = async (
   offset: number
 ) => {
   const query =
-    'SELECT * FROM pills WHERE name ILIKE $1 ORDER BY created_at DESC LIMIT $2 OFFSET $3';
+    'SELECT * FROM pills WHERE name ILIKE $1 LIMIT $2 OFFSET $3';
   const values = [`${name}%`, limit, offset];
 
   try {
@@ -150,7 +150,7 @@ export const searchPillsbyEngName = async (
   offset: number
 ) => {
   const query =
-    'SELECT * FROM pills WHERE engname ILIKE $1 ORDER BY created_at DESC LIMIT $2 OFFSET $3';
+    'SELECT * FROM pills WHERE engname ILIKE $1 LIMIT $2 OFFSET $3';
   const values = [`${name}%`, limit, offset];
 
   try {
@@ -183,8 +183,7 @@ export const searchPillsbyEfficacy = async (
       FROM pills 
       WHERE ${efficacyArray
         .map((_, index) => `efficacy ILIKE $${index + 1}`)
-        .join(' AND ')} 
-      ORDER BY createdAt DESC 
+        .join(' AND ')}  
       LIMIT $${efficacyArray.length + 1} OFFSET $${efficacyArray.length + 2}`;
   const values = [...efficacyArray, limit, offset];
 
