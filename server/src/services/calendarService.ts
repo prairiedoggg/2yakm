@@ -6,6 +6,7 @@ export const getAllCalendars = async (
   userId: string
 ): Promise<Calendar[]> => {
   try {
+    
     const text = 'SELECT * FROM calendar WHERE userId = $1';
     const values = [userId];
     const result = await pool.query(text, values);
@@ -16,11 +17,13 @@ export const getAllCalendars = async (
 };
 
 export const getCalendarById = async (
-  id: string
+  userId: string,
+  date: Date
 ): Promise<Calendar | null> => {
   try {
-    const text = 'SELECT * FROM calendar WHERE id = $1';
-    const values = [id];
+    const dateString = date.toISOString().split('T')[0];
+    const text = 'SELECT * FROM calendar WHERE userId = $1 AND date = $2';
+    const values = [userId, dateString];
     const result = await pool.query(text, values);
     
     if (result.rows.length === 0) {
@@ -39,10 +42,11 @@ export const getCalendarById = async (
     
     return calendar;
   } catch (error) {
-    console.error('getCalendarById 오류:', error);
+    console.error('getCalendarByDate 오류:', error);
     throw createError('DBError', '캘린더 조회 중 데이터베이스 오류가 발생했습니다.', 500);
   }
 };
+
 export const createCalendar = async (
   calendar: Omit<Calendar, 'id'>
 ): Promise<Calendar> => {
@@ -74,13 +78,15 @@ export const createCalendar = async (
 };
 
 export const updateCalendar = async (
-  id: string,
+  userId: string,
+  date: Date,
   calendar: Partial<Calendar>
 ): Promise<Calendar | null> => {
   try {
-    const existingCalendar = await getCalendarById(id);
+    const dateString = date.toISOString().split('T')[0];
+    const existingCalendar = await getCalendarById(userId, date);
     if (!existingCalendar) {
-      throw createError('CalendarNotFound', '해당 캘린더를 찾을 수 없습니다.', 404);
+      throw createError('CalendarNotFound', '해당 날짜의 캘린더를 찾을 수 없습니다.', 404);
     }
 
     const updatedMedications = calendar.medications ?? existingCalendar.medications;
@@ -89,8 +95,8 @@ export const updateCalendar = async (
       UPDATE calendar 
       SET calimg = $1, condition = $2, weight = $3, temperature = $4, 
           bloodsugarBefore = $5, bloodsugarAfter = $6,
-          medications = $7, date = $8
-      WHERE id = $9 
+          medications = $7
+      WHERE userId = $8 AND date = $9
       RETURNING userid AS "userId", date, calimg, condition, weight, temperature, 
       bloodsugarBefore, bloodsugarAfter, medications
     `;
@@ -102,27 +108,28 @@ export const updateCalendar = async (
       calendar.bloodsugarBefore ?? existingCalendar.bloodsugarBefore,
       calendar.bloodsugarAfter ?? existingCalendar.bloodsugarAfter,
       JSON.stringify(updatedMedications),
-      calendar.date ?? existingCalendar.date,
-      id
+      userId,
+      dateString
     ];
 
     const result = await pool.query(text, values);
     return result.rows[0] || null;
   } catch (error) {
+    console.error('updateCalendar 오류:', error);
     if (error instanceof Error && error.name === 'CalendarNotFound') throw error;
     throw createError('DBError', '캘린더 업데이트 중 데이터베이스 오류가 발생했습니다.', 500);
   }
 };
 
-export const deleteCalendar = async (id: string): Promise<boolean> => {
+export const deleteCalendar = async (userId: string, date: Date): Promise<boolean> => {
   try {
-    const text = 'DELETE FROM calendar WHERE id = $1';
-    const values = [id];
+    const text = 'DELETE FROM calendar WHERE userId = $1 AND date = $2';
+    const values = [userId, date];
     const result = await pool.query(text, values);
     const deletedCount = result.rowCount ?? 0;
     
     if (deletedCount === 0) {
-      throw createError('CalendarNotFound', '해당 캘린더를 찾을 수 없습니다.', 404);
+      throw createError('CalendarNotFound', '해당 날짜의 캘린더를 찾을 수 없습니다.', 404);
     }
     
     return true;
@@ -130,4 +137,4 @@ export const deleteCalendar = async (id: string): Promise<boolean> => {
     if (error instanceof Error && error.name === 'CalendarNotFound') throw error;
     throw createError('DBError', '캘린더 삭제 중 데이터베이스 오류가 발생했습니다.', 500);
   }
-};
+};  
