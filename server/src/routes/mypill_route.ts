@@ -9,7 +9,7 @@ import {
 
 /**
  * @swagger
- * api/mypills:
+ * /api/mypills:
  *   post:
  *     summary: 새로운 약 추가
  *     tags: [mypills]
@@ -35,7 +35,7 @@ router.post('/', addMyPill);
 
 /**
  * @swagger
- * api/mypills/{mypillid}:
+ * /api/mypills/{mypillid}:
  *   put:
  *     summary: 약 정보 업데이트
  *     tags: [mypills]
@@ -68,7 +68,7 @@ router.put('/:mypillid', updateMyPill);
 
 /**
  * @swagger
- * api/mypills:
+ * /api/mypills:
  *   get:
  *     summary: 모든 약 정보 가져오기
  *     tags: [mypills]
@@ -119,7 +119,7 @@ router.get('/', getMyPills);
 
 /**
  * @swagger
- * api/mypills/{mypillid}:
+ * /api/mypills/{mypillid}:
  *   delete:
  *     summary: 약 정보 삭제
  *     tags: [mypills]
