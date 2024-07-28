@@ -102,6 +102,6 @@ export const changePassword = async (
 };
 
 const storeLoginData = (data: any) => {
-  if (data) useUserStore.getState().setUser(data.userName, data.email);
+  if (data) useUserStore.getState().setUser(data.userName, data.email, data.profileimg);
   if (data.token) Cookies.set('token', `${data.token}`, { path: '/' });
 };

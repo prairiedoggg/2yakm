@@ -38,7 +38,8 @@ export const fetchMyFavorites = async (
   limit?: number,
   sortedBy?: string,
   order?: string,
-  callback?: (arg0: any) => void
+  onSuccess?: (arg0: any) => void,
+  onFailure?: (arg0: any) => void
 ) => {
   try {
     const data = await get('/api/favorites', {
@@ -48,8 +49,10 @@ export const fetchMyFavorites = async (
       order: order
     });
 
-    if (callback) callback(data);
+    if (onSuccess) onSuccess(data);
   } catch (error) {
-    console.error('Login failed', error);
+    console.error('fetchMyFavorites failed', error);
+    if (onFailure) onFailure(error);
+
   }
 };

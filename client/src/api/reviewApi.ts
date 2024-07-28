@@ -43,3 +43,13 @@ export const createReview = async (review: {
     throw error;
   }
 };
+
+export const fetchUserAllReview = async (limit: number, offset:number, sortedBy:string, order:string, onSuccess?:(arg0:any)=>void, onFailure?:(arg0:any)=>void) => {
+  try {
+    const data = await get('/api/reviews/users', { limit: limit, offset:offset, sortedBy:sortedBy, order:order });
+    if (onSuccess) onSuccess(data);
+  } catch (error) {
+    console.error('change ProfileImage failed', error);
+    if (onFailure) onFailure(error);
+  }
+};

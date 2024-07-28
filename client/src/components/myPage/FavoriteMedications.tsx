@@ -1,17 +1,9 @@
-/**
-File Name : EditMyInformation
-Description : 내 정보 수정 페이지
-Author : 오선아
-
-History
-Date        Author   Status    Description
-2024.07.19  오선아   Created
-*/
-
 import styled from 'styled-components';
 import { Icon } from '@iconify-icon/react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { fetchMyFavorites } from '../../api/favoriteApi';
+import Loading from '../Loading';
 
 interface MedicationItem {
   title: string;
@@ -21,25 +13,51 @@ interface MedicationItem {
 
 const FavoriteMedications = () => {
   const [deleteItem, setDeleteItem] = useState(false);
+  const [itemCount, setItemCount] = useState(0);
+  const [loading, setLoading] = useState(false);
 
-  const items: MedicationItem[] = [
-    // test
-    {
-      title: '타이레놀',
-      registrationDate: '2023.05.14',
-      tags: ['두통', '신경통', '근육통']
-    },
-    {
-      title: '타이레놀',
-      registrationDate: '2023.06.01',
-      tags: ['두통', '발열']
-    },
-    {
-      title: '타이레놀',
-      registrationDate: '2023.06.15',
-      tags: ['감기', '두통']
-    }
-  ];
+  const items: MedicationItem[] = [];
+  // = [
+  //   // test
+  //   {
+  //     title: '타이레놀',
+  //     registrationDate: '2023.05.14',
+  //     tags: ['두통', '신경통', '근육통']
+  //   },
+  //   {
+  //     title: '타이레놀',
+  //     registrationDate: '2023.06.01',
+  //     tags: ['두통', '발열']
+  //   },
+  //   {
+  //     title: '타이레놀',
+  //     registrationDate: '2023.06.15',
+  //     tags: ['감기', '두통']
+  //   }
+  // ];
+
+  useEffect(() => {
+    setLoading(true);
+    const data = fetchMyFavorites(
+      10,
+      0,
+      'createdAt',
+      'DESC',
+      (data) => {
+        // items = data.data.map(({ name, createdAt, content }) => ({
+        //   title: name,
+        //   titleEn: createdAt,
+        //   desc: content
+        // }));
+        setLoading(false);
+
+        setItemCount(data.totalCount);
+      },
+      () => {
+        setLoading(false);
+      }
+    );
+  }, []);
 
   const renderItems = (item: MedicationItem, index: number) => {
     return (
@@ -70,7 +88,7 @@ const FavoriteMedications = () => {
     <MyPageContainer>
       <StyledContent>
         <div className='totalCount'>
-          총 {items.length}개{' '}
+          총 {itemCount}개{' '}
           <Icon
             onClick={() => setDeleteItem(!deleteItem)}
             icon='ic:baseline-edit'
@@ -83,6 +101,7 @@ const FavoriteMedications = () => {
           {items.map((item, index) => renderItems(item, index))}
         </div>
       </StyledContent>
+      {loading && <Loading />}
     </MyPageContainer>
   );
 };
