@@ -2,11 +2,8 @@ import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { createError } from '../utils/error';
 import { pool } from '../db';
-import dotenv from 'dotenv';
-import axios from 'axios';
+import axios, { AxiosResponse } from 'axios';
 import nodemailer from 'nodemailer';
-
-dotenv.config();
 
 const transporter = nodemailer.createTransport({
   service: 'Gmail',
@@ -23,6 +20,7 @@ interface User {
   password: string;
   kakaoid?: string;
   googleid?: string;
+  naverid?: string;
 }
 
 interface UserResponse {
@@ -30,8 +28,60 @@ interface UserResponse {
   username: string;
 }
 
+interface Decoded {
+  id: number;
+  email: string;
+}
+
+interface KakaoTokenResponse {
+  access_token: string;
+}
+
+interface NaverTokenResponse {
+  access_token: string;
+}
+
+interface GoogleTokenResponse {
+  access_token: string;
+}
+
+interface NaverUserInfoResponse {
+  response: {
+    id: string;
+    email: string;
+    nickname: string;
+  };
+}
+interface KakaoTokenParams {
+  grant_type: string;
+  client_id: string | undefined;
+  redirect_uri: string;
+  code: string;
+}
+
+interface KakaoUserInfoResponse {
+  id: string;
+  kakao_account: {
+    email: string | null;
+    profile: {
+      nickname: string;
+    };
+  };
+  properties: {
+    nickname: string;
+  };
+}
+
+interface GoogleUserInfoResponse {
+  id: string;
+  email: string;
+  name: string;
+}
+
 const SECRET_KEY = process.env.SECRET_KEY;
 const REFRESH_TOKEN_SECRET_KEY = process.env.REFRESH_TOKEN_SECRET_KEY;
+const DOMAIN = process.env.DOMAIN || 'http://localhost:3000';
+const FRONTEND_URL = process.env.DOMAIN || 'http://localhost:5173';
 
 if (!SECRET_KEY || !REFRESH_TOKEN_SECRET_KEY) {
   throw new Error('SECRET_KEY 또는 REFRESH_TOKEN_SECRET_KEY 확인바람.');
@@ -43,7 +93,7 @@ export const login = async (
   password: string
 ): Promise<{ token: string, refreshToken: string, userName: string, email: string }> => {
   try {
-    const query = 'SELECT * FROM users WHERE email = $1';
+    const query = 'SELECT userid, email, password, username, kakaoid, googleid, naverid FROM users WHERE email = $1';
     const values = [email];
     const result = await pool.query(query, values);
     const user = result.rows[0];
@@ -51,7 +101,7 @@ export const login = async (
     if (!user) {
       throw createError('UserNotFound', '사용자를 찾을 수 없습니다.', 404);
     }
-    if (user.kakaoid ?? user.googleid) {
+    if (user.kakaoid || user.googleid || user.naverid) {
       throw createError('SocialUser', '해당 이메일은 소셜 계정 가입자입니다.', 400);
     }
 
@@ -80,7 +130,7 @@ export const login = async (
 // 이메일 인증 요청 인증 전
 export const requestEmailVerification = async (email: string): Promise<void> => {
   try {
-    const checkUserQuery = 'SELECT * FROM users WHERE email = $1';
+    const checkUserQuery = 'SELECT email FROM users WHERE email = $1';
     const checkUserValues = [email];
     const existingUserResult = await pool.query(checkUserQuery, checkUserValues);
 
@@ -89,7 +139,7 @@ export const requestEmailVerification = async (email: string): Promise<void> => 
     }
 
     const emailToken = jwt.sign({ email}, SECRET_KEY, { expiresIn: '5m' });
-    const url = `http://localhost:3000/api/auth/verify-email?token=${emailToken}`;
+    const url = `${DOMAIN}/api/auth/verify-email?token=${emailToken}`;
 
     const mailOptions = {
       from: process.env.EMAIL_USER,
@@ -117,7 +167,7 @@ export const signupService = async (
   confirmPassword: string
 ): Promise<void> => {
   try {
-    const checkUserQuery = 'SELECT * FROM users WHERE email = $1';
+    const checkUserQuery = 'SELECT isverified FROM users WHERE email = $1';
     const checkUserValues = [email];
     const existingUserResult = await pool.query(checkUserQuery, checkUserValues);
 
@@ -150,9 +200,9 @@ export const signupService = async (
 // 이메일 인증 완료
 export const verifyEmailService = async (token: string): Promise<void> => {
   try {
-    const decoded: any = jwt.verify(token, SECRET_KEY);
+    const decoded = jwt.verify(token, SECRET_KEY) as Decoded;
 
-    const checkUserQuery = 'SELECT * FROM users WHERE email = $1';
+    const checkUserQuery = 'SELECT email, isVerified FROM users WHERE email = $1';
     const checkUserValues = [decoded.email];
     const existingUserResult = await pool.query(checkUserQuery, checkUserValues);
 
@@ -194,20 +244,20 @@ export const refreshTokenService = async (
     throw createError('NoRefreshToken', '토큰이 없습니다.', 401);
   }
 
-  let payload;
+  let payload: Decoded;
   try {
-    payload = jwt.verify(refreshToken, REFRESH_TOKEN_SECRET_KEY);
+    payload = jwt.verify(refreshToken, REFRESH_TOKEN_SECRET_KEY) as Decoded;
   } catch (error) {
     throw createError('InvalidRefreshToken', '유효하지 않은 토큰입니다.', 403);
   }
 
   const newToken = jwt.sign(
-    { id: (payload as any).id, email: (payload as any).email },
+    { id: payload.id, email: payload.email },
     SECRET_KEY,
     { expiresIn: '30m' }
   );
   const newRefreshToken = jwt.sign(
-    { id: (payload as any).id },
+    { id: payload.id },
     REFRESH_TOKEN_SECRET_KEY,
     { expiresIn: '7d' }
   );
@@ -218,8 +268,8 @@ export const refreshTokenService = async (
 // 카카오 소셜
 export const kakaoAuthService = async (
   code: string
-): Promise<{ token?: string, refreshToken?: string, message?: string, userName?:string, email?: string }> => {
-  const redirectUri = 'http://localhost:5173/kakao/callback';
+): Promise<{ token?: string, refreshToken?: string, message?: string, userName?: string, email?: string }> => {
+  const redirectUri = `${FRONTEND_URL}/kakao/callback`;
   const kakaoTokenUrl = `https://kauth.kakao.com/oauth/token`;
 
   try {
@@ -259,7 +309,7 @@ export const kakaoAuthService = async (
     }
 
     try {
-      const checkEmailQuery = 'SELECT * FROM users WHERE email = $1';
+      const checkEmailQuery = 'SELECT email, kakaoid FROM users WHERE email = $1';
       const checkEmailValues = [email];
       const existingEmailResult = await pool.query(checkEmailQuery, checkEmailValues);
 
@@ -270,7 +320,7 @@ export const kakaoAuthService = async (
         }
       }
 
-      const checkUserQuery = 'SELECT * FROM users WHERE kakaoid = $1';
+      const checkUserQuery = 'SELECT userid, email, username, kakaoid FROM users WHERE kakaoid = $1';
       const checkUserValues = [id];
       const existingUserResult = await pool.query(checkUserQuery, checkUserValues);
 
@@ -280,7 +330,7 @@ export const kakaoAuthService = async (
       } else {
         const insertUserQuery = `
           INSERT INTO users (email, username, password, role, kakaoid) VALUES ($1, $2, $3, $4, $5)
-          RETURNING *
+          RETURNING userid, email, username
         `;
         const insertUserValues = [
           email,
@@ -293,7 +343,7 @@ export const kakaoAuthService = async (
         user = newUserResult.rows[0];
       }
 
-      const payload = { id: user.userid, email: user.email, kakoid: user.kakoid };
+      const payload = { id: user.userid, email: user.email, kakaoid: user.kakaoid };
       const token = jwt.sign(payload, SECRET_KEY, {
         expiresIn: '30m',
       });
@@ -303,11 +353,13 @@ export const kakaoAuthService = async (
         { expiresIn: '7d' }
       );
 
-      return { token, refreshToken, userName: user.name, email: user.email };
+      return { token, refreshToken, userName: user.username, email: user.email };
     } catch (error) {
+      console.error('DB error:', error);
       throw createError('DBError', '데이터베이스 오류가 발생했습니다.', 500);
     }
   } catch (error) {
+    console.error('kakao athentication error:', error );
     throw createError('KakaoAuthError', '카카오 인증 실패', 500);
   }
 };
@@ -317,7 +369,7 @@ export const naverAuthService = async (
   code: string,
   state: string
 ): Promise<{ token?: string, refreshToken?: string, message?: string, userName?: string, email?: string }> => {
-  const redirectUri = 'http://localhost:5173/naver/callback';
+  const redirectUri = `${FRONTEND_URL}/naver/callback`;
   const naverTokenUrl = `https://nid.naver.com/oauth2.0/token`;
   const naverUserInfoUrl = `https://openapi.naver.com/v1/nid/me`;
 
@@ -354,7 +406,7 @@ export const naverAuthService = async (
     }
 
     try {
-      const checkEmailQuery = 'SELECT * FROM users WHERE email = $1';
+      const checkEmailQuery = 'SELECT email, naverid FROM users WHERE email = $1';
       const checkEmailValues = [email];
       const existingEmailResult = await pool.query(checkEmailQuery, checkEmailValues);
 
@@ -365,7 +417,7 @@ export const naverAuthService = async (
         }
       }
 
-      const checkUserQuery = 'SELECT * FROM users WHERE naverid = $1';
+      const checkUserQuery = 'SELECT userid, email, username, naverid FROM users WHERE naverid = $1';
       const checkUserValues = [id];
       const existingUserResult = await pool.query(checkUserQuery, checkUserValues);
 
@@ -375,7 +427,7 @@ export const naverAuthService = async (
       } else {
         const insertUserQuery = `
           INSERT INTO users (email, username, password, role, naverid) VALUES ($1, $2, $3, $4, $5)
-          RETURNING *
+          RETURNING userid, email, username
         `;
         const insertUserValues = [
           email,
@@ -400,9 +452,11 @@ export const naverAuthService = async (
 
       return { token, refreshToken, userName: user.username, email: user.email };
     } catch (error) {
+      console.error('DBError:', error);
       throw createError('DBError', '데이터베이스 오류가 발생했습니다.', 500);
     }
   } catch (error) {
+    console.error('naver authentication error:', error);
     throw createError('NaverAuthError', '네이버 인증 실패', 500);
   }
 };
@@ -420,7 +474,7 @@ export const googleAuthService = async (
         code,
         client_id: process.env.GOOGLE_CLIENT_ID,
         client_secret: process.env.GOOGLE_CLIENT_SECRET,
-        redirect_uri: 'http://localhost:5173/google/callback',
+        redirect_uri: `${FRONTEND_URL}/google/callback`,
         grant_type: 'authorization_code',
       },
       headers: {
@@ -446,7 +500,7 @@ export const googleAuthService = async (
     }
 
     try {
-      const checkEmailQuery = 'SELECT * FROM users WHERE email = $1';
+      const checkEmailQuery = 'SELECT email, googleid FROM users WHERE email = $1';
       const checkEmailValues = [email];
       const existingEmailResult = await pool.query(checkEmailQuery, checkEmailValues);
 
@@ -457,7 +511,7 @@ export const googleAuthService = async (
         }
       }
 
-      const checkUserQuery = 'SELECT * FROM users WHERE googleid = $1';
+      const checkUserQuery = 'SELECT userid, email, username, googleid FROM users WHERE googleid = $1';
       const checkUserValues = [id];
       const existingUserResult = await pool.query(checkUserQuery, checkUserValues);
 
@@ -467,7 +521,7 @@ export const googleAuthService = async (
       } else {
         const insertUserQuery = `
           INSERT INTO users (email, username, password, role, googleid) VALUES ($1, $2, $3, $4, $5)
-          RETURNING *
+          RETURNING userid, email, username
         `;
         const insertUserValues = [
           email,
@@ -492,9 +546,11 @@ export const googleAuthService = async (
 
       return { token, refreshToken, userName: user.name, email: user.email };
     } catch (error) {
+      console.error('DBError:', error);
       throw createError('DBError', '데이터베이스 오류가 발생했습니다.', 500);
     }
   } catch (error) {
+    console.error('google athentication error:', error);
     throw createError('GoogleAuthError', '구글 인증 실패', 500);
   }
 };
@@ -506,7 +562,7 @@ export const changePasswordService = async (
   newPassword: string
 ): Promise<void> => {
   try {
-    const query = 'SELECT * FROM users WHERE email = $1';
+    const query = 'SELECT password, kakaoid, naverid, googleid FROM users WHERE email = $1';
     const values = [email];
     const result = await pool.query(query, values);
     const user = result.rows[0];
@@ -514,7 +570,7 @@ export const changePasswordService = async (
     if (!user) {
       throw createError('UserNotFound', '사용자를 찾을 수 없습니다.', 404);
     }
-    if (user.kakaoid ?? user.googleid) {
+    if (user.kakaoid ?? user.googleid ?? user.naverid) {
       throw createError(
         'SocialUserError',
         '소셜 로그인 사용자는 비밀번호를 변경할 수 없습니다.',
@@ -545,7 +601,7 @@ export const changePasswordService = async (
 // 비번 재설정 요청
 export const requestPasswordService = async (email: string): Promise<void> => {
   try {
-    const query = 'SELECT * FROM users WHERE email = $1';
+    const query = 'SELECT userid, kakaoid, naverid, googleid FROM users WHERE email = $1';
     const values = [email];
     const result = await pool.query(query, values);
     const user = result.rows[0];
@@ -553,7 +609,7 @@ export const requestPasswordService = async (email: string): Promise<void> => {
     if (!user) {
       throw createError('User Not Found', '사용자를 찾을 수 없습니다', 404);
     }
-    if (user.kakaoid ?? user.goolgeid) {
+    if (user.kakaoid ?? user.goolgeid ?? user.naverid) {
       throw createError('Social User Error', '소셜 회원은 비밀번호를 재설정할 수 없습니다.', 400);
     }
 
@@ -566,7 +622,7 @@ export const requestPasswordService = async (email: string): Promise<void> => {
       from: process.env.EMAIL_USER,
       to: email,
       subject: '비밀번호 재설정',
-      text: `비밀번호를 재설정하려면 링크를 클릭하세요 (유효시간: 3분): http://localhost:3000/reset-password?token=${token}`,
+      text: `비밀번호를 재설정하려면 링크를 클릭하세요 (유효시간: 3분): ${DOMAIN}/reset-password?token=${token}`,
     };
     await transporter.sendMail(mailOptions);
   } catch (error) {
@@ -580,9 +636,9 @@ export const resetPasswordService = async (
   newPassword: string
 ): Promise<void> => {
   try {
-    const decoded: any = jwt.verify(token, SECRET_KEY);
+    const decoded = jwt.verify(token, SECRET_KEY) as Decoded;
     try {
-      const query = 'SELECT * FROM users WHERE userid = $1';
+      const query = 'SELECT userid FROM users WHERE userid = $1';
       const values = [decoded.id];
       const result = await pool.query(query, values);
 
@@ -614,7 +670,7 @@ export const resetPasswordService = async (
 // 소셜 연동
 export const linkSocialAccountService = async (userId: number, socialId: string, provider: 'kakao' | 'google'): Promise<void> => {
   try {
-    const query = 'SELECT * FROM users WHERE userid = $1';
+    const query = 'SELECT kakoid, naverid, googleid FROM users WHERE userid = $1';
     const values = [userId];
     const result = await pool.query(query, values);
     const user = result.rows[0];
@@ -623,7 +679,7 @@ export const linkSocialAccountService = async (userId: number, socialId: string,
       throw createError('UserNotFound', '사용자를 찾을 수 없습니다.', 404);
     }
 
-    const defaultPassword = provider === 'kakao' ? 'kakao_auth_password' : 'google_auth_password';
+    const defaultPassword = provider === 'kakao' ? 'kakao_auth_password' : provider === 'google' ? 'google_auth_password': 'naver_auth_password';
 
     if (provider === 'kakao') {
       if (user.kakaoid) {
@@ -639,6 +695,14 @@ export const linkSocialAccountService = async (userId: number, socialId: string,
       }
 
       const updateQuery = 'UPDATE users SET googleid = $1, password = $2 WHERE userid = $3';
+      const updateValues = [socialId, defaultPassword, userId];
+      await pool.query(updateQuery, updateValues);
+    } else if (provider === 'naver') {
+      if (user.naverid) {
+        throw createError('AlreadyLinked', '이미 네이버 계정과 연동되어 있습니다.', 400);
+      }
+
+      const updateQuery = 'UPDATE users SET naverid = $1, password = $2 WHERE userid = $3';
       const updateValues = [socialId, defaultPassword, userId];
       await pool.query(updateQuery, updateValues);
     }
@@ -662,7 +726,7 @@ export const changeUsernameService = async (email: string, newUsername: string):
 // 회원 탈퇴
 export const deleteAccountService = async (userId: string): Promise<void> => {
   try {
-    const query = 'SELECT * FROM users WHERE userid = $1';
+    const query = 'SELECT kakaoid, naverid, googleid FROM users WHERE userid = $1';
     const values = [userId];
     const result = await pool.query(query, values);
     const user = result.rows[0];
@@ -676,6 +740,8 @@ export const deleteAccountService = async (userId: string): Promise<void> => {
       await unlinkKakaoAccount(user.kakaoid);
     } else if (user.googleid) {
       await unlinkGoogleAccount(user.googleid);
+    } else if (user.naverid) {
+      await unlinkNaverAccount(user.naverid)
     }
 
     const deleteQuery = 'DELETE FROM users WHERE userid = $1';
@@ -706,5 +772,15 @@ const unlinkGoogleAccount = async (googleId: string): Promise<void> => {
     await axios.post(unlinkUrl, null);
   } catch (error) {
     throw createError('GoogleUnlinkError', '구글 계정 연동 해제 실패', 500);
+  }
+};
+
+// 네이버 계정 연동 해제
+const unlinkNaverAccount = async (naverId: string): Promise<void> => {
+  try {
+    const unlinkUrl = `https://nid.naver.com/oauth2.0/token?grant_type=delete&client_id=${process.env.NAVER_CLIENT_ID}&client_secret=${process.env.NAVER_CLIENT_SECRET}&access_token=${naverId}&service_provider=NAVER`;
+    await axios.post(unlinkUrl, null);
+  } catch (error) {
+    throw createError('NaverUnlinkError', '네이버 계정 연동 해제 실패', 500);
   }
 };
