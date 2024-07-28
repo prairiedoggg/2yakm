@@ -143,12 +143,6 @@ router.get('/', getPillsHandler);
 router.get('/:id', getPillByIdHandler);
 
 
-//router.put('/:id', updatePillHandler);
-
-
- 
-//router.delete('/:id', deletePillHandler);
-
 /**
  * @swagger
  * api/pills/{id}/reviewcount:

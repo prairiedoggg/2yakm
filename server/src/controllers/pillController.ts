@@ -9,6 +9,7 @@ import {
   getPillFavoriteCountService,
   getPillReviewCountService
 } from '../services/pillService';
+import { createError } from '../utils/error'; // Assuming a custom error handler is defined here
 
 interface PillsQueryParams {
   limit?: string;
@@ -26,62 +27,32 @@ export const getPillsHandler = async <T extends PillsQueryParams>(
     const limit = parseInt(req.query.limit ?? '10', 10);
     const offset = parseInt(req.query.offset ?? '0', 10);
     const sortedBy = req.query.sortedBy ?? 'favorite_count';
-    const order = (req.query.order?.toUpperCase() as 'ASC' | 'DESC') ?? 'DESC';
+    const order = req.query.order?.toUpperCase() === 'ASC' ? 'ASC' : 'DESC';
 
     const pills = await getPills(limit, offset, sortedBy, order);
     res.status(200).json(pills);
-  } catch (error) {
-    next(error);
+  } catch (error: unknown) {
+    next(createError('DatabaseError', (error as Error).message, 500));
   }
 };
 
 export const getPillByIdHandler = async (
-  req: Request,
+  req: Request<{ id: string }>,
   res: Response,
   next: NextFunction
 ): Promise<void> => {
   try {
-    const id = parseInt(req.params.id as string, 10);
+    const id = parseInt(req.params.id, 10);
     const pill = await getPillById(id);
     if (pill) {
       res.status(200).json(pill);
     } else {
       res.status(404).json({ message: 'Pill not found' });
     }
-  } catch (error) {
-    next(error);
+  } catch (error: unknown) {
+    next(createError('DatabaseError', (error as Error).message, 500));
   }
 };
-
-/**
-export const updatePillHandler = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-  try {
-    const updatedPill = await updatePill(parseInt(req.params.id, 10), req.body);
-    if (updatedPill) {
-      res.status(200).json(updatedPill);
-    } else {
-      res.status(404).json({ message: 'Pill not found' });
-    }
-  } catch (error) {
-    next(error);
-  }
-};
-*/
-
-/*
-export const deletePillHandler = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-  try {
-    const deleted = await deletePill(parseInt(req.params.id, 10));
-    if (deleted) {
-      res.status(204).end();
-    } else {
-      res.status(404).json({ message: 'Pill not found' });
-    }
-  } catch (error) {
-    next(error);
-  }
-};
-*/
 
 interface QueryParams {
   name: string;
@@ -96,36 +67,36 @@ interface RequestParams {
 }
 
 export const searchPillsbyNameHandler = async (
-  req: Request<unknown, unknown, RequestParams, QueryParams>,
+  req: Request<unknown, unknown, unknown, QueryParams>,
   res: Response,
   next: NextFunction
 ): Promise<void> => {
-  const name = req.query.name as string;
+  const name = req.query.name;
   const offset = parseInt(req.query.offset ?? '0', 10);
   const limit = parseInt(req.query.limit ?? '10', 10);
 
   try {
     const pills = await searchPillsbyName(name, limit, offset);
     res.status(200).json(pills);
-  } catch (error) {
-    next(error);
+  } catch (error: unknown) {
+    next(createError('DatabaseError', (error as Error).message, 500));
   }
 };
 
 export const searchPillsbyEngNameHandler = async (
-  req: Request<unknown, unknown, RequestParams, QueryParams>,
+  req: Request<unknown, unknown, unknown, QueryParams>,
   res: Response,
   next: NextFunction
 ): Promise<void> => {
-  const name = req.query.name as string;
+  const name = req.query.name;
   const offset = parseInt(req.query.offset ?? '0', 10);
   const limit = parseInt(req.query.limit ?? '10', 10);
 
   try {
     const pills = await searchPillsbyEngName(name, limit, offset);
     res.status(200).json(pills);
-  } catch (error) {
-    next(error);
+  } catch (error: unknown) {
+    next(createError('DatabaseError', (error as Error).message, 500));
   }
 };
 
@@ -141,13 +112,13 @@ export const searchPillsbyEfficacyHandler = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const efficacy = req.query.efficacy as string;
+    const efficacy = req.query.efficacy;
     const offset = parseInt(req.query.offset ?? '0', 10);
     const limit = parseInt(req.query.limit ?? '10', 10);
     const pills = await searchPillsbyEfficacy(efficacy, limit, offset);
     res.status(200).json(pills);
-  } catch (error) {
-    next(error);
+  } catch (error: unknown) {
+    next(createError('DatabaseError', (error as Error).message, 500));
   }
 };
 
@@ -160,7 +131,7 @@ export const searchPillsByImageHandler = async (
   req: Request<unknown, unknown, unknown, ImageQueryParams>,
   res: Response,
   next: NextFunction
-) => {
+)=> {
   try {
     if (!req.file) {
       return res.status(400).json({ message: 'No file uploaded' });
@@ -170,13 +141,13 @@ export const searchPillsByImageHandler = async (
     const offset = parseInt(req.query.offset ?? '0', 10);
     const result = await searchPillsByImage(imageBuffer, limit, offset);
     res.status(200).json(result);
-  } catch (error) {
-    next(error);
+  } catch (error: unknown) {
+    next(createError('DatabaseError', (error as Error).message, 500));
   }
 };
 
 export const getPillFavoriteCount = async (
-  req: Request<{ id: any }, unknown, unknown, unknown>,
+  req: Request<{ id: string }>,
   res: Response,
   next: NextFunction
 ): Promise<void> => {
@@ -184,15 +155,14 @@ export const getPillFavoriteCount = async (
 
   try {
     const count = await getPillFavoriteCountService(id);
-
     res.status(200).send({ count });
-  } catch (error: any) {
-    next(error);
+  } catch (error: unknown) {
+    next(createError('DatabaseError', (error as Error).message, 500));
   }
 };
 
 export const getPillReviewCount = async (
-  req: Request<{ id: any }, unknown, unknown, unknown>,
+  req: Request<{ id: string }>,
   res: Response,
   next: NextFunction
 ): Promise<void> => {
@@ -200,9 +170,9 @@ export const getPillReviewCount = async (
 
   try {
     const count = await getPillReviewCountService(id);
-
     res.status(200).send({ count });
-  } catch (error: any) {
-    next(error);
+  } catch (error: unknown) {
+    next(createError('DatabaseError', (error as Error).message, 500));
   }
 };
+
