@@ -11,14 +11,6 @@ const convertToKoreanTime = (date: Date): Date => {
   return utcToZonedTime(date, TIMEZONE);
 };
 
-// Calendar 객체의 날짜를 한국 시간으로 변환하는 함수
-const convertCalendarToKoreanTime = (calendar: Calendar): Calendar => {
-  return {
-    ...calendar,
-    date: convertToKoreanTime(calendar.date)
-  };
-};
-
 export const getAllCalendars = async (userId: string): Promise<Calendar[]> => {
   try {
     const text = `

@@ -40,7 +40,7 @@ const router = Router();
  *                 type: string
  *               taken:
  *                 type: boolean
- * 
+ *
  */
 
 /**
