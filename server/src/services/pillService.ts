@@ -247,7 +247,7 @@ const detectTextInImage = async (imageBuffer: Buffer) => {
 
     const detections = result.textAnnotations;
     if (detections && detections.length >= 0) {
-      // Remove numbers, dots, parentheses, square brackets, one-character length elements, and elements containing '밀리그람' or '의약품'
+      // Remove numbers, dots, parentheses, square brackets
       const filteredText = detections
         .map((text) => text?.description ?? '')
         .filter((text) => !text.match(/[\d\.()]/));
