@@ -48,7 +48,7 @@ export const requestEmailVerificationController = async (req: Request, res: Resp
 export const signupController = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { email, username, password, confirmPassword } = req.body;
-    if (email == null ?? username == null ?? password == null ?? confirmPassword == null) {
+    if (!email || !username || !password || !confirmPassword) {
       throw createError(
         'InvalidInput',
         '이메일, 유저네임, 비밀번호를 모두 입력해야 합니다.',
@@ -63,10 +63,13 @@ export const signupController = async (req: Request, res: Response, next: NextFu
 };
 
 // 이메일 인증
-export const verifyEmailController = async (req: Request, res: Response, next: NextFunction) => {
+export const verifyEmailController = async (req: Request<{ query: { token: string } }>, res: Response, next: NextFunction) => {
   try {
     const { token } = req.query;
-    await verifyEmailService(token as string);
+    if (!token || typeof token !== 'string') {
+      throw createError('Invalid Token', '유효하지 않은 토큰입니다.', 400);
+    }
+    await verifyEmailService(token);
     res.status(200).json({ message: '이메일 인증 완료되었습니다. 회원가입을 계속해주세요.' });
   } catch (error) {
     next(error);
@@ -85,11 +88,13 @@ export const refreshTokenController = async (req: Request, res: Response, next: 
 };
 
 // 카카오 인증 (로그인 및 회원가입)
-export const kakaoAuthController = async (req: Request, res: Response, next: NextFunction) => {
+export const kakaoAuthController = async (req: Request<{ query: { code: string } }>, res: Response, next: NextFunction) => {
   try {
     const { code } = req.query;
-    console.log({code});
-    const result = await kakaoAuthService(code as string);
+    if (!code || typeof code !== 'string') {
+      throw createError('Invalid Code', '유효하지 않은 코드입니다.', 400);
+    }
+    const result = await kakaoAuthService(code);
     if (result.message) {
       res.status(400).json({ message: result.message });
     } else {
@@ -103,10 +108,13 @@ export const kakaoAuthController = async (req: Request, res: Response, next: Nex
 };
 
 // 네이버 로그인
-export const naverAuthController = async (req: Request, res: Response, next: NextFunction) => {
+export const naverAuthController = async (req: Request<{ query: { code: string, state: string } }>, res: Response, next: NextFunction) => {
   try {
     const { code, state } = req.query;
-    const result = await naverAuthService(code as string, state as string);
+    if (!code || typeof code !== 'string' || !state || typeof state !== 'string') {
+      throw createError('Invalid Code or State', '유효하지 않은 코드 또는 상태입니다.', 400);
+    }
+    const result = await naverAuthService(code, state);
     
     if (result.message) {
       res.status(400).json({ message: result.message });
@@ -122,10 +130,13 @@ export const naverAuthController = async (req: Request, res: Response, next: Nex
 
 
 // 구글 로그인
-export const googleAuthController = async (req: Request, res: Response, next: NextFunction) => {
+export const googleAuthController = async (req: Request<{ query: { code: string } }>, res: Response, next: NextFunction) => {
   try {
     const { code } = req.query;
-    const result = await googleAuthService(code as string);
+    if (!code || typeof code !== 'string') {
+      throw createError('Invalid Code', '유효하지 않은 코드입니다.', 400);
+    }
+    const result = await googleAuthService(code);
     
     if (result.message) {
       res.status(400).json({ message: result.message });
