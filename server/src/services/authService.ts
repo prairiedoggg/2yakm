@@ -2,11 +2,8 @@ import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { createError } from '../utils/error';
 import { pool } from '../db';
-import dotenv from 'dotenv';
 import axios, { AxiosResponse } from 'axios';
 import nodemailer from 'nodemailer';
-
-dotenv.config();
 
 const transporter = nodemailer.createTransport({
   service: 'Gmail',
@@ -84,6 +81,7 @@ interface GoogleUserInfoResponse {
 const SECRET_KEY = process.env.SECRET_KEY;
 const REFRESH_TOKEN_SECRET_KEY = process.env.REFRESH_TOKEN_SECRET_KEY;
 const DOMAIN = process.env.DOMAIN || 'http://localhost:3000';
+const FRONTEND_URL = process.env.DOMAIN || 'http://localhost:5173';
 
 if (!SECRET_KEY || !REFRESH_TOKEN_SECRET_KEY) {
   throw new Error('SECRET_KEY 또는 REFRESH_TOKEN_SECRET_KEY 확인바람.');
@@ -271,7 +269,7 @@ export const refreshTokenService = async (
 export const kakaoAuthService = async (
   code: string
 ): Promise<{ token?: string, refreshToken?: string, message?: string, userName?: string, email?: string }> => {
-  const redirectUri = `http://localhost:5173/kakao/callback`;
+  const redirectUri = `${FRONTEND_URL}/kakao/callback`;
   const kakaoTokenUrl = `https://kauth.kakao.com/oauth/token`;
 
   try {
@@ -371,7 +369,7 @@ export const naverAuthService = async (
   code: string,
   state: string
 ): Promise<{ token?: string, refreshToken?: string, message?: string, userName?: string, email?: string }> => {
-  const redirectUri = `${DOMAIN}/naver/callback`;
+  const redirectUri = `${FRONTEND_URL}/naver/callback`;
   const naverTokenUrl = `https://nid.naver.com/oauth2.0/token`;
   const naverUserInfoUrl = `https://openapi.naver.com/v1/nid/me`;
 
@@ -476,7 +474,7 @@ export const googleAuthService = async (
         code,
         client_id: process.env.GOOGLE_CLIENT_ID,
         client_secret: process.env.GOOGLE_CLIENT_SECRET,
-        redirect_uri: `${DOMAIN}/google/callback`,
+        redirect_uri: `${FRONTEND_URL}/google/callback`,
         grant_type: 'authorization_code',
       },
       headers: {
