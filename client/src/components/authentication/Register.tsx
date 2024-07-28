@@ -4,7 +4,8 @@ import { Icon } from '@iconify-icon/react';
 import { ChangeEvent, FormEvent, useState } from 'react';
 import { requestEmailVerification, signup } from '../../api/authService';
 import Loading from '../Loading';
-import Popup from '../Popup';
+import Popup from '../popup/Popup';
+import PopupContent, { PopupType } from '../popup/PopupMessages';
 
 interface FormData {
   email: string;
@@ -18,14 +19,6 @@ enum InputType {
   Name = 'name',
   Password = 'password',
   ConfirmPassword = 'confirmPassword'
-}
-
-enum PopupType {
-  RegistrationSuccess,
-  RegistrationFailure,
-  VerificationEmailSentSuccess,
-  VerificationEmailSentFailure,
-  None
 }
 
 const Register = () => {
@@ -76,32 +69,6 @@ const Register = () => {
       ...prevState,
       [name]: ''
     }));
-  };
-
-  const getPopupContent = (type: PopupType) => {
-    switch (type) {
-      case PopupType.RegistrationSuccess:
-        return (
-          <div>
-            회원가입에 성공했습니다.
-            <button className='bottomClose' onClick={() => navigate('/')}>
-              홈으로
-            </button>
-          </div>
-        );
-      case PopupType.RegistrationFailure:
-        return <div>회원가입에 실패했습니다.</div>;
-
-      case PopupType.VerificationEmailSentSuccess:
-        return (
-          <div>
-            이메일 인증 링크가 전송되었습니다. 이메일 인증 완료 후 회원가입을
-            계속 진행해 주세요.
-          </div>
-        );
-      case PopupType.VerificationEmailSentFailure:
-        return <div>인증메일 전송에 실패했습니다.</div>;
-    }
   };
 
   const getPlaceholder = (type: InputType) => {
@@ -269,7 +236,7 @@ const Register = () => {
       {loading && <Loading />}
       {popupType !== PopupType.None && (
         <Popup onClose={() => setPopupType(PopupType.None)}>
-          {getPopupContent(popupType)}
+          {PopupContent(popupType, navigate)}
         </Popup>
       )}
     </Overlay>

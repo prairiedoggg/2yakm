@@ -77,7 +77,7 @@ const SheetContainer = styled.div`
     justify-content: right;
     align-items: right;
     align-content: right;
-    margin: 0px 10px 0px 10px;
+    margin: 10px 10px 0px 10px;
   }
 
   .contents {

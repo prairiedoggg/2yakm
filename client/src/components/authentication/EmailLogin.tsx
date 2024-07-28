@@ -3,7 +3,7 @@ import { Icon } from '@iconify-icon/react';
 import { ChangeEvent, useEffect, useState } from 'react';
 import { login } from '../../api/authService';
 import { useNavigate } from 'react-router-dom';
-import Popup from '../Popup';
+import Popup from '../popup/Popup';
 import Loading from '../Loading';
 
 const EmailLogin = ({

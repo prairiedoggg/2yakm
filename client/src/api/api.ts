@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { IoBodySharp } from 'react-icons/io5';
 
 
 const api = axios.create({
@@ -28,7 +29,6 @@ export const post = async (
 ) => {
   try {
     const response = await api.post(url, data, { withCredentials });
-    console.log(response);
     return response.data;
   } catch (error) {
     console.error(`POST request to ${url} failed`, error);
@@ -50,12 +50,26 @@ export const put = async (
   }
 };
 
-export const del = async (url: string, withCredentials?: boolean) => {
+export const del = async (url: string, body: any, withCredentials?: boolean) => {
   try {
-    const response = await api.delete(url, { withCredentials });
+    const response = await api.delete(url, { data:body, withCredentials });
     return response.data;
   } catch (error) {
     console.error(`DELETE request to ${url} failed`, error);
+    throw error;
+  }
+};
+
+export const patch = async (
+  url: string,
+  data: any,
+  withCredentials?: boolean
+) => {
+  try {
+    const response = await api.patch(url, data, { withCredentials });
+    return response.data;
+  } catch (error) {
+    console.error(`PATCH request to ${url} failed`, error);
     throw error;
   }
 };
