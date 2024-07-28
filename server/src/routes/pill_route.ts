@@ -1,13 +1,13 @@
 const { uploadToMemory, uploadToS3 } = require('../config/imgUploads');
 import {
-    getPillsHandler, 
-    getPillByIdHandler, 
-    searchPillsbyNameHandler, 
-    searchPillsbyEngNameHandler,
-    searchPillsbyEfficacyHandler,
-    searchPillsByImageHandler,
-    getPillFavoriteCount,
-    getPillReviewCount
+  getPillsHandler, 
+  getPillByIdHandler, 
+  searchPillsbyNameHandler, 
+  searchPillsbyEngNameHandler,
+  searchPillsbyEfficacyHandler,
+  searchPillsByImageHandler,
+  getPillFavoriteCount,
+  getPillReviewCount
 } from "../controllers/pillController"
 
 import { Router } from 'express';
@@ -52,7 +52,7 @@ const router = Router();
  *                 type: object
  *                 properties:
  *                   id:
- *                     type: number
+ *                     type: integer
  *                   name:
  *                     type: string
  *                   engname:
@@ -108,40 +108,39 @@ router.get('/', getPillsHandler);
  *               type: object
  *               properties:
  *                 id:
- *                     type: number
- *                   name:
- *                     type: string
- *                   engname:
- *                     type: string
- *                   companyname:
- *                     type: string
- *                   companyengname:
- *                     type: string
- *                   ingredientname:
- *                     type: string
- *                   ingredientengname:
- *                     type: string
- *                   type:
- *                     type: string
- *                   shape:
- *                     type: string
- *                   efficacy:
- *                     type: string
- *                   dosage:
- *                     type: string
- *                   caution:
- *                     type: string
- *                   storagemethod:
- *                     type: string
- *                   expdate:
- *                      type: string
- *                   source:
- *                      type: string
- *                   imgurl:
- *                      type: string
+ *                   type: integer
+ *                 name:
+ *                   type: string
+ *                 engname:
+ *                   type: string
+ *                 companyname:
+ *                   type: string
+ *                 companyengname:
+ *                   type: string
+ *                 ingredientname:
+ *                   type: string
+ *                 ingredientengname:
+ *                   type: string
+ *                 type:
+ *                   type: string
+ *                 shape:
+ *                   type: string
+ *                 efficacy:
+ *                   type: string
+ *                 dosage:
+ *                   type: string
+ *                 caution:
+ *                   type: string
+ *                 storagemethod:
+ *                   type: string
+ *                 expdate:
+ *                   type: string
+ *                 source:
+ *                   type: string
+ *                 imgurl:
+ *                   type: string
  */
 router.get('/:id', getPillByIdHandler);
-
 
 /**
  * @swagger
@@ -229,7 +228,7 @@ router.get('/:id/favoritecount', getPillFavoriteCount);
  *                 type: object
  *                 properties:
  *                   id:
- *                     type: number
+ *                     type: integer
  *                   name:
  *                     type: string
  *                   engname:
@@ -297,7 +296,7 @@ router.get('/search/name', searchPillsbyNameHandler);
  *                 type: object
  *                 properties:
  *                   id:
- *                     type: number
+ *                     type: integer
  *                   name:
  *                     type: string
  *                   engname:
@@ -365,7 +364,7 @@ router.get('/search/engname', searchPillsbyEngNameHandler);
  *                 type: object
  *                 properties:
  *                   id:
- *                     type: number
+ *                     type: integer
  *                   name:
  *                     type: string
  *                   engname:
@@ -396,7 +395,7 @@ router.get('/search/engname', searchPillsbyEngNameHandler);
  *                      type: string
  *                   imgurl:
  *                      type: string
- */ 
+ */
 router.get('/search/efficacy', searchPillsbyEfficacyHandler);
 
 /**
@@ -434,7 +433,7 @@ router.get('/search/efficacy', searchPillsbyEfficacyHandler);
  *                 type: object
  *                 properties:
  *                   id:
- *                     type: number
+ *                     type: integer
  *                   name:
  *                     type: string
  *                   engname:
