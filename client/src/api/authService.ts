@@ -1,14 +1,28 @@
-import { post } from './api';
+import { post, del } from './api';
 import useUserStore from '../store/user';
 import Cookies from 'js-cookie';
 
 export const login = async (email: string, password: string, onSuccess?:()=>void, onFailure?:(arg0:any)=>void) => {
   try {
     const data = await post('/api/auth/login', { email: email, password });
+    console.log(data);
     storeLoginData(data);
     if (onSuccess) onSuccess();
   } catch (error) {
     console.error('Login failed', error);
+    if (onFailure) onFailure(error);
+  }
+};
+
+export const deleteAccount = async (userId: string, onSuccess?:(arg0:any)=>void, onFailure?:(arg0:any)=>void) => {
+  try {
+    const data = await del('/api/auth/delete-account', { userId: userId });
+    useUserStore.getState().clearUser();
+    Cookies.remove('token');
+    Cookies.remove('refreshToken');
+    if (onSuccess) onSuccess(data);
+  } catch (error) {
+    console.error('delete Account failed', error);
     if (onFailure) onFailure(error);
   }
 };

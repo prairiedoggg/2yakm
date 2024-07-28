@@ -2,12 +2,22 @@ import styled from 'styled-components';
 import BottomPictureSheet from './BottomPictureSheet';
 import { Icon } from '@iconify-icon/react';
 import { useState } from 'react';
-import { logout } from '../../api/authService';
+import { logout, deleteAccount } from '../../api/authService';
 import { useNavigate } from 'react-router-dom';
+import useUserStore from '../../store/user';
+import Popup from '../Popup';
+import Loading from '../Loading';
 
 interface Info {
   info: string;
   onClick?: () => void;
+}
+
+enum PopupType {
+  DeleteAccount,
+  DeleteAccountSuccess,
+  DeleteAccountFailure,
+  None
 }
 
 const EditMyInformation = ({
@@ -19,7 +29,10 @@ const EditMyInformation = ({
   onEditPasswordClick: () => void;
   onEditPharmacistClick: () => void;
 }) => {
+  const { user } = useUserStore.getState();
   const [bottomSheet, setBottomSheet] = useState(false);
+  const [popupType, setPopupType] = useState(PopupType.None);
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   const infos1: Info[] = [
@@ -29,20 +42,68 @@ const EditMyInformation = ({
   ];
 
   const infos2: Info[] = [
-    { info: '약사 인증', onClick: onEditPharmacistClick },
-    { info: '연동된 소셜계정', onClick: undefined }
+    { info: '약사 인증', onClick: onEditPharmacistClick }
   ];
 
   const getInfoValue = (type: string) => {
     switch (type) {
       case '이름':
-        return '홍길동';
+        return user?.userName;
       case '이메일':
-        return 'gildong@naver.com';
+        return user?.email;
       case '연동된 소셜계정':
         return <Icon icon='devicon:google' width='1.1rem' height='1.1rem' />;
       default:
         return '';
+    }
+  };
+
+  const getPopupContent = (type: PopupType) => {
+    switch (type) {
+      case PopupType.DeleteAccount:
+        return (
+          <div>
+            이약뭐약 서비스 회원탈퇴를 하시겠어요?
+            <button
+              className='bottomClose'
+              onClick={() => {
+                setLoading(true);
+                deleteAccount(
+                  '',
+                  () => {
+                    setLoading(false);
+                    setPopupType(PopupType.DeleteAccountSuccess);
+                  },
+                  () => {
+                    setLoading(false);
+                    setPopupType(PopupType.DeleteAccountFailure);
+                  }
+                );
+              }}
+            >
+              회원탈퇴
+            </button>
+          </div>
+        );
+
+      case PopupType.DeleteAccountSuccess:
+        return (
+          <div>
+            회원탈퇴가 정상적으로 처리되었습니다.
+            <button
+              className='bottomClose'
+              onClick={() => {
+                navigate('/', { replace: true });
+                window.location.reload();
+              }}
+            >
+              홈으로
+            </button>
+          </div>
+        );
+
+      case PopupType.DeleteAccountFailure:
+        return <div>회원탈퇴에 실패했습니다. 잠시 후 다시 시도해주세요.</div>;
     }
   };
 
@@ -97,7 +158,10 @@ const EditMyInformation = ({
           >
             로그아웃
           </div>{' '}
-          | <div>회원탈퇴</div>
+          |{' '}
+          <div onClick={() => setPopupType(PopupType.DeleteAccount)}>
+            회원탈퇴
+          </div>
         </div>
       </StyledContent>
 
@@ -108,6 +172,13 @@ const EditMyInformation = ({
           setBottomSheet(false);
         }}
       />
+
+      {popupType !== PopupType.None && (
+        <Popup onClose={() => setPopupType(PopupType.None)}>
+          {getPopupContent(popupType)}
+        </Popup>
+      )}
+      {loading && <Loading />}
     </MyPageContainer>
   );
 };
