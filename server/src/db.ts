@@ -1,10 +1,7 @@
 import { Pool, QueryResult } from 'pg';
 import fs from 'fs';
 import path from 'path';
-import dotenv from 'dotenv';
 import { createError } from './utils/error';
-
-dotenv.config();
 
 // 인증서가 있는지 확인하는 함수
 const isCertFiles = (certPath: string): string => {

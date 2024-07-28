@@ -50,7 +50,7 @@ const router = Router();
  *                   type: string
  *                 content:
  *                   type: string
- *                 createdAt:
+ *                 createdat:
  *                   type: string
  *                   format: date-time
  *               example:
@@ -110,7 +110,7 @@ router.post('/', authByToken, createReview);
  *                   type: string
  *                 content:
  *                   type: string
- *                 createdAt:
+ *                 createdat:
  *                   type: string
  *                   format: date-time
  *               example:
@@ -180,7 +180,7 @@ router.delete('/:id', authByToken, deleteReview);
  *         name: sortedBy
  *         schema:
  *           type: string
- *         description: 정렬할 필드명을 입력해 주세요. (createdAt, name,... 기본값은 createdAt)
+ *         description: 정렬할 필드명을 입력해 주세요. (createdat, name,... 기본값은 createdat)
  *       - in: query
  *         name: order
  *         schema:
@@ -215,7 +215,7 @@ router.delete('/:id', authByToken, deleteReview);
  *                         type: string
  *                       content:
  *                         type: string
- *                       createdAt:
+ *                       createdat:
  *                         type: string
  *                         format: date-time
  *       401:
@@ -285,7 +285,7 @@ router.get('/users/', authByToken, getUserAllReview);
  *                         type: boolean
  *                       content:
  *                         type: string
- *                       createdAt:
+ *                       createdat:
  *                         type: string
  *                         format: date-time
  *                 nextCursor:
@@ -318,7 +318,7 @@ router.get('/pills/:pillid', getPillsAllReview);
  *         content:
  *           type: string
  *           description: 리뷰 내용입니다.
- *         createdAt:
+ *         createdat:
  *           type: string
  *           format: date-time
  *           description: 리뷰가 생성된 시간이 저장됩니다.

@@ -1,5 +1,7 @@
 import { pool } from '../db';
 import { Favorite } from '../entity/favorite';
+import { createError } from '../utils/error';
+import { QueryResult } from 'pg';
 
 interface TotalCountAndData {
   totalCount: number;
@@ -45,15 +47,19 @@ export const searchFavoritePillService = async (
     `;
 
     const values = [userid, limit, offset];
-    const { rows } = await pool.query(query, values);
+    const result: QueryResult<Favorite> = await pool.query(query, values);
 
     return {
       totalCount,
       totalPages,
-      data: rows
+      data: result.rows
     };
   } catch (error: any) {
-    throw error;
+    throw createError(
+      'DBError',
+      '즐겨찾는 약 검색 중 데이터베이스 오류가 발생했습니다.',
+      500
+    );
   }
 };
 
@@ -91,13 +97,20 @@ export const addCancelFavoritePillService = async (
     VALUES ($1, $2)
     `;
     const addValues = [pillid, userid];
-    const addResult = await pool.query(addQuery, addValues);
+    const addResult: QueryResult<Favorite> = await pool.query(
+      addQuery,
+      addValues
+    );
     return {
       message: 'added',
       data: addResult.rows[0]
     };
   } catch (error: any) {
-    throw error;
+    throw createError(
+      'DBError',
+      '좋아요를 추가, 삭제 중 데이터베이스 오류가 발생했습니다.',
+      500
+    );
   }
 };
 
@@ -112,11 +125,15 @@ export const userFavoriteStatusService = async (
     WHERE pillid = $1 AND userid = $2
     `;
     const values = [pillid, userid];
-    const { rows } = await pool.query(query, values);
+    const result: QueryResult<Favorite> = await pool.query(query, values);
 
-    return rows.length > 0;
+    return result.rows.length > 0;
   } catch (error: any) {
-    throw error;
+    throw createError(
+      'DBError',
+      '좋아요 상태를 확인 중 데이터베이스 오류가 발생했습니다.',
+      500
+    );
   }
 };
 

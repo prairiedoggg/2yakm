@@ -26,8 +26,8 @@ export const searchFavoritePill = async (
   const userid = req.user.id;
   const limit = parseInt(req.query.limit ?? '10');
   const offset = parseInt(req.query.offset ?? '0');
-  const sortedBy = (req.query.sortedBy as string) ?? 'createdAt';
-  const order = (req.query.order as string)?.toUpperCase() ?? 'DESC';
+  const sortedBy = req.query.sortedBy ?? 'createdAt';
+  const order = req.query.order?.toUpperCase() ?? 'DESC';
 
   try {
     const favorite = await searchFavoritePillService(

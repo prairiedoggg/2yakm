@@ -7,6 +7,9 @@ import {
   deletePill
 } from '../services/mypillService';
 
+import { createError } from '../utils/error'; // Assuming a custom error handler is defined here
+import { ParsedQs } from 'qs';
+
 export const createPillSchema = Joi.object({
   name: Joi.string().required(),
   expiredat: Joi.string().required(),
@@ -18,15 +21,33 @@ export const updatePillSchema = Joi.object({
   expiredat: Joi.string().required(),
 });
 
+// Define the request user interface
+interface RequestUser {
+  id: string;
+}
+
+// Extend the Request interface to include the user and query types
+interface AuthenticatedRequest<QueryType extends ParsedQs = ParsedQs> extends Request {
+  user?: RequestUser;
+  query: QueryType;
+}
+
+interface GetMyPillsQuery extends ParsedQs {
+  limit?: string;
+  offset?: string;
+  sortedBy?: string;
+  order?: string;
+}
+
 export const addMyPill = async (
-  req: any,
+  req: AuthenticatedRequest,
   res: Response,
   next: NextFunction
 ) => {
   try {
     const user = req.user;
     if (!user) {
-      return res.status(401).json({ message: 'Unauthorized' });
+      return next(createError('UnauthorizedError', 'Unauthorized', 401));
     }
     const userId = user.id;
     const { error, value } = createPillSchema.validate(req.body);
@@ -37,20 +58,20 @@ export const addMyPill = async (
 
     const newPill = await addPill(userId, value);
     res.status(200).json(newPill);
-  } catch (error) {
-    next(error);
+  } catch (error: unknown) {
+    next(createError('DatabaseError', (error as Error).message, 500));
   }
 };
 
 export const updateMyPill = async (
-  req: any,
+  req: AuthenticatedRequest,
   res: Response,
   next: NextFunction
 ) => {
   try {
     const user = req.user;
     if (!user) {
-      return res.status(401).json({ message: 'Unauthorized' });
+      return next(createError('UnauthorizedError', 'Unauthorized', 401));
     }
     const mypillId = req.params.mypillid;
     const { error, value } = updatePillSchema.validate({
@@ -64,23 +85,35 @@ export const updateMyPill = async (
 
     const updatedPill = await updatePill(mypillId, value);
     res.status(200).json(updatedPill);
-  } catch (error) {
-    next(error);
+  } catch (error: unknown) {
+    next(createError('DatabaseError', (error as Error).message, 500));
   }
 };
 
-// Define the request user interface
-interface RequestUser {
-  id: string;
-}
-
-// Extend the Request interface to include the user
-interface AuthenticatedRequest extends Request {
-  user?: RequestUser;
-}
-
-// The getMyPills function
 export const getMyPills = async (
+  req: AuthenticatedRequest<GetMyPillsQuery>,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const user = req.user;
+    if (!user) {
+      return next(createError('UnauthorizedError', 'Unauthorized', 401));
+    }
+    const userId = user.id;
+    const limit = parseInt(req.query.limit ?? '10', 10);
+    const offset = parseInt(req.query.offset ?? '0', 10);
+    const sortedBy = req.query.sortedBy ?? 'createdat';
+    const order = (req.query.order?.toUpperCase() as 'ASC' | 'DESC') ?? 'DESC';
+
+    const pills = await getPills(userId, limit, offset, sortedBy, order);
+    res.status(200).json(pills);
+  } catch (error: unknown) {
+    next(createError('DatabaseError', (error as Error).message, 500));
+  }
+};
+
+export const deleteMyPill = async (
   req: AuthenticatedRequest,
   res: Response,
   next: NextFunction
@@ -88,31 +121,7 @@ export const getMyPills = async (
   try {
     const user = req.user;
     if (!user) {
-      return res.status(401).json({ message: 'Unauthorized' });
-    }
-    const userId = user.id;
-    const limit = parseInt((req.query.limit as string) ?? '10', 10);
-    const offset = parseInt((req.query.offset as string) ?? '0', 10);
-    const sortedBy = (req.query.sortedBy as string) ?? 'createdat';
-    const order =
-      ((req.query.order as string)?.toUpperCase() as 'ASC' | 'DESC') ?? 'DESC';
-
-    const pills = await getPills(userId, limit, offset, sortedBy, order);
-    res.status(200).json(pills);
-  } catch (error) {
-    next(error);
-  }
-};
-
-export const deleteMyPill = async (
-  req: any,
-  res: Response,
-  next: NextFunction
-) => {
-  try {
-    const user = req.user;
-    if (!user) {
-      return res.status(401).json({ message: 'Unauthorized' });
+      return next(createError('UnauthorizedError', 'Unauthorized', 401));
     }
     const mypillId = req.params.mypillid;
     if (!mypillId) {
@@ -120,7 +129,7 @@ export const deleteMyPill = async (
     }
     const result = await deletePill(mypillId);
     res.status(200).json(result);
-  } catch (error) {
-    next(error);
+  } catch (error: unknown) {
+    next(createError('DatabaseError', (error as Error).message, 500));
   }
 };

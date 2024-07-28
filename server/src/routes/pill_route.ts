@@ -1,13 +1,13 @@
 const { uploadToMemory, uploadToS3 } = require('../config/imgUploads');
 import {
-    getPillsHandler, 
-    getPillByIdHandler, 
-    searchPillsbyNameHandler, 
-    searchPillsbyEngNameHandler,
-    searchPillsbyEfficacyHandler,
-    searchPillsByImageHandler,
-    getPillFavoriteCount,
-    getPillReviewCount
+  getPillsHandler, 
+  getPillByIdHandler, 
+  searchPillsbyNameHandler, 
+  searchPillsbyEngNameHandler,
+  searchPillsbyEfficacyHandler,
+  searchPillsByImageHandler,
+  getPillFavoriteCount,
+  getPillReviewCount
 } from "../controllers/pillController"
 
 import { Router } from 'express';
@@ -15,7 +15,7 @@ const router = Router();
 
 /**
  * @swagger
- * api/pills:
+ * /api/pills:
  *   get:
  *     summary: 모든 약 정보 가져오기
  *     tags: [pills]
@@ -52,7 +52,7 @@ const router = Router();
  *                 type: object
  *                 properties:
  *                   id:
- *                     type: string
+ *                     type: integer
  *                   name:
  *                     type: string
  *                   engname:
@@ -75,20 +75,20 @@ const router = Router();
  *                     type: string
  *                   caution:
  *                     type: string
- *                   cautionwarning:
- *                     type: string
- *                   interaction:
- *                     type: string
- *                   sideeffect:
- *                     type: string
  *                   storagemethod:
  *                     type: string
+ *                   expdate:
+ *                      type: string
+ *                   source:
+ *                      type: string
+ *                   imgurl:
+ *                      type: string
  */
 router.get('/', getPillsHandler);
 
 /**
  * @swagger
- * api/pills/{id}:
+ * /api/pills/{id}:
  *   get:
  *     summary: ID로 약 정보 가져오기
  *     tags: [pills]
@@ -108,7 +108,7 @@ router.get('/', getPillsHandler);
  *               type: object
  *               properties:
  *                 id:
- *                   type: string
+ *                   type: integer
  *                 name:
  *                   type: string
  *                 engname:
@@ -131,27 +131,20 @@ router.get('/', getPillsHandler);
  *                   type: string
  *                 caution:
  *                   type: string
- *                 cautionwarning:
- *                   type: string
- *                 interaction:
- *                   type: string
- *                 sideeffect:
- *                   type: string
  *                 storagemethod:
+ *                   type: string
+ *                 expdate:
+ *                   type: string
+ *                 source:
+ *                   type: string
+ *                 imgurl:
  *                   type: string
  */
 router.get('/:id', getPillByIdHandler);
 
-
-//router.put('/:id', updatePillHandler);
-
-
- 
-//router.delete('/:id', deletePillHandler);
-
 /**
  * @swagger
- * api/pills/{id}/reviewcount:
+ * /api/pills/{id}/reviewcount:
  *   get:
  *     summary: 특정 약의 리뷰 수 가져오기
  *     tags: [pills]
@@ -177,7 +170,7 @@ router.get('/:id/reviewcount', getPillReviewCount);
 
 /**
  * @swagger
- * api/pills/{id}/favoritecount:
+ * /api/pills/{id}/favoritecount:
  *   get:
  *     summary: 특정 약의 즐겨찾기 수 가져오기
  *     tags: [pills]
@@ -203,7 +196,7 @@ router.get('/:id/favoritecount', getPillFavoriteCount);
 
 /**
  * @swagger
- * api/pills/search/name:
+ * /api/pills/search/name:
  *   get:
  *     summary: 이름으로 약 검색
  *     tags: [pills]
@@ -235,7 +228,7 @@ router.get('/:id/favoritecount', getPillFavoriteCount);
  *                 type: object
  *                 properties:
  *                   id:
- *                     type: string
+ *                     type: integer
  *                   name:
  *                     type: string
  *                   engname:
@@ -258,20 +251,20 @@ router.get('/:id/favoritecount', getPillFavoriteCount);
  *                     type: string
  *                   caution:
  *                     type: string
- *                   cautionwarning:
- *                     type: string
- *                   interaction:
- *                     type: string
- *                   sideeffect:
- *                     type: string
  *                   storagemethod:
  *                     type: string
+ *                   expdate:
+ *                      type: string
+ *                   source:
+ *                      type: string
+ *                   imgurl:
+ *                      type: string
  */
 router.get('/search/name', searchPillsbyNameHandler);
 
 /**
  * @swagger
- * api/pills/search/engname:
+ * /api/pills/search/engname:
  *   get:
  *     summary: 영어 이름으로 약 검색
  *     tags: [pills]
@@ -303,7 +296,7 @@ router.get('/search/name', searchPillsbyNameHandler);
  *                 type: object
  *                 properties:
  *                   id:
- *                     type: string
+ *                     type: integer
  *                   name:
  *                     type: string
  *                   engname:
@@ -326,20 +319,20 @@ router.get('/search/name', searchPillsbyNameHandler);
  *                     type: string
  *                   caution:
  *                     type: string
- *                   cautionwarning:
- *                     type: string
- *                   interaction:
- *                     type: string
- *                   sideeffect:
- *                     type: string
  *                   storagemethod:
  *                     type: string
+ *                   expdate:
+ *                      type: string
+ *                   source:
+ *                      type: string
+ *                   imgurl:
+ *                      type: string
  */
 router.get('/search/engname', searchPillsbyEngNameHandler);
 
 /**
  * @swagger
- * api/pills/search/efficacy:
+ * /api/pills/search/efficacy:
  *   get:
  *     summary: 효능으로 약 검색
  *     tags: [pills]
@@ -371,7 +364,7 @@ router.get('/search/engname', searchPillsbyEngNameHandler);
  *                 type: object
  *                 properties:
  *                   id:
- *                     type: string
+ *                     type: integer
  *                   name:
  *                     type: string
  *                   engname:
@@ -394,21 +387,21 @@ router.get('/search/engname', searchPillsbyEngNameHandler);
  *                     type: string
  *                   caution:
  *                     type: string
- *                   cautionwarning:
- *                     type: string
- *                   interaction:
- *                     type: string
- *                   sideeffect:
- *                     type: string
  *                   storagemethod:
  *                     type: string
+ *                   expdate:
+ *                      type: string
+ *                   source:
+ *                      type: string
+ *                   imgurl:
+ *                      type: string
  */
 router.get('/search/efficacy', searchPillsbyEfficacyHandler);
 
 /**
  * @swagger
- * api/pills/search/image:
- *   post:
+ * /api/pills/search/image:
+ *   get:
  *     summary: 이미지로 약 검색
  *     tags: [pills]
  *     consumes:
@@ -440,7 +433,7 @@ router.get('/search/efficacy', searchPillsbyEfficacyHandler);
  *                 type: object
  *                 properties:
  *                   id:
- *                     type: string
+ *                     type: integer
  *                   name:
  *                     type: string
  *                   engname:
@@ -463,14 +456,14 @@ router.get('/search/efficacy', searchPillsbyEfficacyHandler);
  *                     type: string
  *                   caution:
  *                     type: string
- *                   cautionwarning:
- *                     type: string
- *                   interaction:
- *                     type: string
- *                   sideeffect:
- *                     type: string
  *                   storagemethod:
  *                     type: string
+ *                   expdate:
+ *                      type: string
+ *                   source:
+ *                      type: string
+ *                   imgurl:
+ *                      type: string
  */
 router.get('/search/image', uploadToMemory.single('image'), searchPillsByImageHandler);
 

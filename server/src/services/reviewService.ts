@@ -1,6 +1,7 @@
 import { pool } from '../db';
 import { Review } from '../entity/review';
 import { createError } from '../utils/error';
+import { QueryResult } from 'pg';
 
 interface TotalCountAndData {
   totalCount: number;
@@ -27,11 +28,15 @@ export const createReviewService = async (
     RETURNING *
     `;
     const values = [pillid, userid, content];
-    const { rows } = await pool.query(query, values);
+    const result: QueryResult<Review> = await pool.query(query, values);
 
-    return rows.length ? rows[0] : null;
+    return result.rows.length ? result.rows[0] : null;
   } catch (error: any) {
-    throw error;
+    throw createError(
+      'DBError',
+      '리뷰 생성 중 데이터베이스 오류가 발생했습니다.',
+      500
+    );
   }
 };
 
@@ -49,9 +54,9 @@ export const updateReviewService = async (
         RETURNING *
         `;
     const values = [content, id, userid];
-    const { rows } = await pool.query(query, values);
+    const result: QueryResult<Review> = await pool.query(query, values);
 
-    if (rows.length === 0) {
+    if (result.rows.length === 0) {
       throw createError(
         'NotFound',
         '수정할 리뷰가 없거나 본인의 리뷰가 아닙니다.',
@@ -59,9 +64,13 @@ export const updateReviewService = async (
       );
     }
 
-    return rows.length ? rows[0] : null;
+    return result.rows.length ? result.rows[0] : null;
   } catch (error: any) {
-    throw error;
+    throw createError(
+      'DBError',
+      '리뷰 수정 중 데이터베이스 오류가 발생했습니다.',
+      500
+    );
   }
 };
 
@@ -77,9 +86,9 @@ export const deleteReviewService = async (
         RETURNING *
         `;
     const values = [id, userid];
-    const { rows } = await pool.query(query, values);
+    const result: QueryResult<Review> = await pool.query(query, values);
 
-    if (rows.length === 0) {
+    if (result.rows.length === 0) {
       throw createError(
         'NotFound',
         '삭제할 리뷰가 없거나 본인의 리뷰가 아닙니다.',
@@ -87,9 +96,13 @@ export const deleteReviewService = async (
       );
     }
 
-    return rows.length ? rows[0] : null;
+    return result.rows.length ? result.rows[0] : null;
   } catch (error: any) {
-    throw error;
+    throw createError(
+      'DBError',
+      '리뷰 삭제 중 데이터베이스 오류가 발생했습니다.',
+      500
+    );
   }
 };
 
@@ -140,22 +153,26 @@ export const getPillsAllReviewService = async (
       values.push(initialLimit);
     }
 
-    const { rows } = await pool.query(query, values);
+    const result: QueryResult<Review> = await pool.query(query, values);
 
-    let nextCursor = null;
+    let nextCursor: number | null = null;
 
     // 배열 index는 0으로 시작하기 때문에, lastReview를 가져오려면 자료의 길이에서 -1을 해주어야함, 예)길이가 10이면 마지막 자료는 rows[9]
-    if (rows.length === (cursor ? cursorLimit : initialLimit)) {
-      const lastReview = rows[rows.length - 1];
-      nextCursor = lastReview.id;
+    if (result.rows.length === (cursor ? cursorLimit : initialLimit)) {
+      const lastReview = result.rows[result.rows.length - 1];
+      nextCursor = lastReview.id !== undefined ? lastReview.id : null;
     }
 
     return {
-      reviews: rows,
+      reviews: result.rows,
       nextCursor
     };
   } catch (error: any) {
-    throw error;
+    throw createError(
+      'DBError',
+      '해당 약의 리뷰 조회 중 데이터베이스 오류가 발생했습니다.',
+      500
+    );
   }
 };
 
@@ -197,14 +214,18 @@ export const getUserAllReviewService = async (
         `;
 
     const values = [userid, limit, offset];
-    const { rows } = await pool.query(query, values);
+    const result: QueryResult<Review> = await pool.query(query, values);
 
     return {
       totalCount,
       totalPages,
-      data: rows
+      data: result.rows
     };
   } catch (error: any) {
-    throw error;
+    throw createError(
+      'DBError',
+      '해당 유저의 리뷰 조회 중 데이터베이스 오류가 발생했습니다.',
+      500
+    );
   }
 };
