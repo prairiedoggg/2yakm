@@ -15,6 +15,10 @@ export enum PopupType {
   DeleteAccountSuccess,
   DeleteAccountFailure,
 
+  ChangeUserName, // src\components\myPage\EditName.tsx
+  ChangeUserNameSuccess,
+  ChangeUserNameFailure,
+
   None
 }
 
@@ -61,6 +65,11 @@ const PopupContent = (
 
       case PopupType.DeleteAccountFailure:
         return <div>회원탈퇴에 실패했습니다. 잠시 후 다시 시도해주세요.</div>;
+
+      case PopupType.ChangeUserNameSuccess:
+        return <div>이름을 변경했습니다. </div>;
+      case PopupType.ChangeUserNameFailure:
+        return <div>이름변경에 실패했습니다. 잠시 후 다시 시도해주세요.</div>;
     }
   };
 
