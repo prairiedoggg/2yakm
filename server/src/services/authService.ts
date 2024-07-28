@@ -289,7 +289,6 @@ export const kakaoAuthService = async (
     });
 
     const { access_token } = tokenResponse;
-    console.log({ access_token });
     const userInfoResponse = await axiosRequest<KakaoUserInfoResponse>({
       method: 'get',
       url: 'https://kapi.kakao.com/v2/user/me',
