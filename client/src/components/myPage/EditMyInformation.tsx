@@ -151,7 +151,6 @@ const EditMyInformation = ({
         title={'사진 등록'}
         isVisible={bottomSheet}
         onClose={(pic) => {
-          console.log(pic);
           if (pic !== null) {
             setLoading(true);
             const formData = new FormData();

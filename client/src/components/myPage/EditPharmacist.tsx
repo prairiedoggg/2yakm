@@ -1,27 +1,17 @@
-/**
-File Name : EditMyInformation
-Description : 내 정보 수정 페이지
-Author : 오선아
-
-History
-Date        Author   Status    Description
-2024.07.19  오선아   Created
-*/
-
 import styled from 'styled-components';
 import { Icon } from '@iconify-icon/react';
 import { useEffect, useState } from 'react';
 import BottomPictureSheet from './BottomPictureSheet';
 
 const EditPharmacist = ({ onEdit }: { onEdit: () => void }) => {
-  const [image, setImage] = useState('');
+  const [imageSrc, setImageSrc] = useState<string | ArrayBuffer | null>(null);
   const [bottomSheet, setBottomSheet] = useState(false);
   const [isButtonEnabled, setIsButtonEnabled] = useState<boolean>(false);
 
   useEffect(() => {
     setIsButtonEnabled(true);
     return () => {};
-  }, [image]);
+  }, [imageSrc]);
 
   return (
     <MyPageContainer>
@@ -44,6 +34,16 @@ const EditPharmacist = ({ onEdit }: { onEdit: () => void }) => {
               />{' '}
             </div>
           </div>
+
+          {imageSrc && (
+            <div className='selected-img'>
+              <img
+                src={imageSrc as string}
+                alt='Selected'
+                style={{ width: '100%', height: 'auto', marginTop: '20px' }}
+              />
+            </div>
+          )}
         </div>
         <button
           className='submitButton'
@@ -56,7 +56,16 @@ const EditPharmacist = ({ onEdit }: { onEdit: () => void }) => {
       <BottomPictureSheet
         title={'사업자 등록증 등록'}
         isVisible={bottomSheet}
-        onClose={() => {
+        onClose={(pic) => {
+          if (pic !== null) {
+            if (pic) {
+              const reader = new FileReader();
+              reader.onloadend = () => {
+                setImageSrc(reader.result);
+              };
+              reader.readAsDataURL(pic);
+            }
+          }
           setBottomSheet(false);
         }}
       />
@@ -83,6 +92,9 @@ const StyledContent = styled.div`
 
   .title {
     font-weight: bold;
+  }
+
+  .selected-img {
   }
 
   .submitButton {
