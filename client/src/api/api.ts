@@ -59,3 +59,17 @@ export const del = async (url: string, body: any, withCredentials?: boolean) => 
     throw error;
   }
 };
+
+export const patch = async (
+  url: string,
+  data: any,
+  withCredentials?: boolean
+) => {
+  try {
+    const response = await api.patch(url, data, { withCredentials });
+    return response.data;
+  } catch (error) {
+    console.error(`PATCH request to ${url} failed`, error);
+    throw error;
+  }
+};

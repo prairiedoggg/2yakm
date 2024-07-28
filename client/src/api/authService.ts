@@ -1,4 +1,4 @@
-import { post, del } from './api';
+import { post, del,patch } from './api';
 import useUserStore from '../store/user';
 import Cookies from 'js-cookie';
 
@@ -84,19 +84,20 @@ export const changePassword = async (
   email: string,
   oldPassword: string,
   newPassword: string,
-  callback?: (arg0: any) => void
+  onSuccess?:(arg0:any)=>void, onFailure?:(arg0:any)=>void
 ) => {
   try {
-    const data = await post('/api/auth/change-password', {
+    const data = await patch('/api/auth/change-password', {
       email: email,
       oldPassword: oldPassword,
       newPassword: newPassword
     });
-    if (callback) {
-      callback(data);
-    }
+
+    if (onSuccess) onSuccess(data);
+    
   } catch (error) {
-    console.error('Login failed', error);
+    if (onFailure) onFailure(error);
+    console.error('changePassword failed', error);
   }
 };
 

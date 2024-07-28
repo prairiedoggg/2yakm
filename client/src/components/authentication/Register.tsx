@@ -4,7 +4,7 @@ import { Icon } from '@iconify-icon/react';
 import { ChangeEvent, FormEvent, useState } from 'react';
 import { requestEmailVerification, signup } from '../../api/authService';
 import Loading from '../Loading';
-import Popup from '../Popup';
+import Popup from '../popup/Popup';
 
 interface FormData {
   email: string;

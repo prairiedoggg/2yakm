@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { logout, deleteAccount } from '../../api/authService';
 import { useNavigate } from 'react-router-dom';
 import useUserStore from '../../store/user';
-import Popup from '../Popup';
+import Popup from '../popup/Popup';
 import Loading from '../Loading';
 
 interface Info {
