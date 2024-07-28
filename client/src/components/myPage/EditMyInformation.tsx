@@ -7,17 +7,11 @@ import { useNavigate } from 'react-router-dom';
 import useUserStore from '../../store/user';
 import Popup from '../popup/Popup';
 import Loading from '../Loading';
+import PopupContent, { PopupType } from '../popup/PopupMessages';
 
 interface Info {
   info: string;
   onClick?: () => void;
-}
-
-enum PopupType {
-  DeleteAccount,
-  DeleteAccountSuccess,
-  DeleteAccountFailure,
-  None
 }
 
 const EditMyInformation = ({
@@ -87,23 +81,10 @@ const EditMyInformation = ({
         );
 
       case PopupType.DeleteAccountSuccess:
-        return (
-          <div>
-            회원탈퇴가 정상적으로 처리되었습니다.
-            <button
-              className='bottomClose'
-              onClick={() => {
-                navigate('/', { replace: true });
-                window.location.reload();
-              }}
-            >
-              홈으로
-            </button>
-          </div>
-        );
+        return PopupContent(PopupType.DeleteAccountSuccess, navigate);
 
       case PopupType.DeleteAccountFailure:
-        return <div>회원탈퇴에 실패했습니다. 잠시 후 다시 시도해주세요.</div>;
+        return PopupContent(PopupType.DeleteAccountFailure, navigate);
     }
   };
 

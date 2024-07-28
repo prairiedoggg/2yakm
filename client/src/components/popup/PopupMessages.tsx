@@ -11,6 +11,10 @@ export enum PopupType {
   changePasswordSuccess,
   changePasswordFailure,
 
+  DeleteAccount, // src\components\myPage\EditMyInformation.tsx
+  DeleteAccountSuccess,
+  DeleteAccountFailure,
+
   None
 }
 
@@ -24,9 +28,7 @@ const PopupContent = (
         return (
           <div>
             회원가입에 성공했습니다.
-            <button className='bottomClose' onClick={() => navigate('/')}>
-              홈으로
-            </button>
+            {getHomeButton()}
           </div>
         );
       case PopupType.RegistrationFailure:
@@ -48,7 +50,32 @@ const PopupContent = (
         return (
           <div>비밀번호 변경에 실패했습니다. 잠시 후 다시 시도해주세요.</div>
         );
+
+      case PopupType.DeleteAccountSuccess:
+        return (
+          <div>
+            회원탈퇴가 정상적으로 처리되었습니다.
+            {getHomeButton()}
+          </div>
+        );
+
+      case PopupType.DeleteAccountFailure:
+        return <div>회원탈퇴에 실패했습니다. 잠시 후 다시 시도해주세요.</div>;
     }
+  };
+
+  const getHomeButton = () => {
+    return (
+      <button
+        className='bottomClose'
+        onClick={() => {
+          navigate('/', { replace: true });
+          window.location.reload();
+        }}
+      >
+        홈으로
+      </button>
+    );
   };
 
   return getPopupContent(type);
