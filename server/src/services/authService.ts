@@ -2,8 +2,9 @@ import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { createError } from '../utils/error';
 import { pool } from '../db';
-import axios, { AxiosResponse } from 'axios';
+import axios from 'axios';
 import nodemailer from 'nodemailer';
+import axiosRequest from '../types/axios';
 
 const transporter = nodemailer.createTransport({
   service: 'Gmail',
@@ -273,7 +274,9 @@ export const kakaoAuthService = async (
   const kakaoTokenUrl = `https://kauth.kakao.com/oauth/token`;
 
   try {
-    const tokenResponse = await axios.post(kakaoTokenUrl, null, {
+    const tokenResponse = await axiosRequest<KakaoTokenResponse>({
+      method: 'post',
+      url: kakaoTokenUrl,
       params: {
         grant_type: 'authorization_code',
         client_id: process.env.VITE_APP_KAKAO_CLIENT_ID,
@@ -285,17 +288,17 @@ export const kakaoAuthService = async (
       },
     });
 
-    const { access_token } = tokenResponse.data;
+    const { access_token } = tokenResponse;
     console.log({ access_token });
-    const userInfoResponse = await axios.get(
-      'https://kapi.kakao.com/v2/user/me',
-      {
-        headers: {
-          Authorization: `Bearer ${access_token}`,
-        },
-      }
-    );
-    const { id, kakao_account, properties } = userInfoResponse.data;
+    const userInfoResponse = await axiosRequest<KakaoUserInfoResponse>({
+      method: 'get',
+      url: 'https://kapi.kakao.com/v2/user/me',
+      headers: {
+        Authorization: `Bearer ${access_token}`,
+      },
+    });
+
+    const { id, kakao_account, properties } = userInfoResponse;
     const email = kakao_account.email ?? null;
     const username =
       properties.nickname ?? kakao_account.profile.nickname ?? null;
@@ -374,7 +377,9 @@ export const naverAuthService = async (
   const naverUserInfoUrl = `https://openapi.naver.com/v1/nid/me`;
 
   try {
-    const tokenResponse = await axios.post(naverTokenUrl, null, {
+    const tokenResponse = await axiosRequest<NaverTokenResponse>({
+      method: 'post',
+      url: naverTokenUrl,
       params: {
         grant_type: 'authorization_code',
         client_id: process.env.NAVER_CLIENT_ID,
@@ -388,14 +393,16 @@ export const naverAuthService = async (
       },
     });
 
-    const { access_token } = tokenResponse.data;
-    const userInfoResponse = await axios.get(naverUserInfoUrl, {
+    const { access_token } = tokenResponse;
+    const userInfoResponse = await axiosRequest<NaverUserInfoResponse>({
+      method: 'get',
+      url: naverUserInfoUrl,
       headers: {
         Authorization: `Bearer ${access_token}`,
       },
     });
 
-    const { id, email, nickname } = userInfoResponse.data.response;
+    const { id, email, nickname } = userInfoResponse.response;
 
     if (!email) {
       throw createError(
@@ -469,7 +476,9 @@ export const googleAuthService = async (
   const userInfoUrl = 'https://www.googleapis.com/oauth2/v2/userinfo';
 
   try {
-    const tokenResponse = await axios.post(tokenUrl, null, {
+    const tokenResponse = await axiosRequest<GoogleTokenResponse>({
+      method: 'post',
+      url: tokenUrl,
       params: {
         code,
         client_id: process.env.GOOGLE_CLIENT_ID,
@@ -482,14 +491,16 @@ export const googleAuthService = async (
       },
     });
 
-    const { access_token } = tokenResponse.data;
-    const userInfoResponse = await axios.get(userInfoUrl, {
+    const { access_token } = tokenResponse;
+    const userInfoResponse = await axiosRequest<GoogleUserInfoResponse>({
+      method: 'get',
+      url: userInfoUrl,
       headers: {
         Authorization: `Bearer ${access_token}`,
       },
     });
 
-    const { id, email, name } = userInfoResponse.data;
+    const { id, email, name } = userInfoResponse;
 
     if (!email) {
       throw createError(
@@ -755,7 +766,9 @@ export const deleteAccountService = async (userId: string): Promise<void> => {
 const unlinkKakaoAccount = async (kakaoId: string): Promise<void> => {
   try {
     const unlinkUrl = `https://kapi.kakao.com/v1/user/unlink`;
-    await axios.post(unlinkUrl, null, {
+    await axiosRequest<void>({
+      method: 'post',
+      url: unlinkUrl,
       headers: {
         'Authorization': `Bearer ${kakaoId}`
       }
@@ -769,7 +782,10 @@ const unlinkKakaoAccount = async (kakaoId: string): Promise<void> => {
 const unlinkGoogleAccount = async (googleId: string): Promise<void> => {
   try {
     const unlinkUrl = `https://accounts.google.com/o/oauth2/revoke?token=${googleId}`;
-    await axios.post(unlinkUrl, null);
+    await axiosRequest<void>({
+      method: 'post',
+      url: unlinkUrl
+    });
   } catch (error) {
     throw createError('GoogleUnlinkError', '구글 계정 연동 해제 실패', 500);
   }
@@ -779,7 +795,10 @@ const unlinkGoogleAccount = async (googleId: string): Promise<void> => {
 const unlinkNaverAccount = async (naverId: string): Promise<void> => {
   try {
     const unlinkUrl = `https://nid.naver.com/oauth2.0/token?grant_type=delete&client_id=${process.env.NAVER_CLIENT_ID}&client_secret=${process.env.NAVER_CLIENT_SECRET}&access_token=${naverId}&service_provider=NAVER`;
-    await axios.post(unlinkUrl, null);
+    await axiosRequest({
+      method: 'post',
+      url: unlinkUrl
+    });
   } catch (error) {
     throw createError('NaverUnlinkError', '네이버 계정 연동 해제 실패', 500);
   }
