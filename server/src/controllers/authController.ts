@@ -200,7 +200,6 @@ export const resetPasswordController = async (req: Request, res: Response, next:
 export const linkKakaoAccountController = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { userId, socialId } = req.body;
-    console.log('linkKakaoAccountController:', { userId, socialId });
     await linkSocialAccountService(userId, socialId, 'kakao');
     res.status(200).json({ message: '카카오 계정 연동 성공' });
   } catch (error) {
@@ -212,7 +211,6 @@ export const linkKakaoAccountController = async (req: Request, res: Response, ne
 export const linkGoogleAccountController = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { userId, socialId } = req.body;
-    console.log('Google',{ userId, socialId });
     await linkSocialAccountService(userId, socialId, 'google');
     res.status(200).json({ message: '구글 계정 연동 성공' });
   } catch (error) {
