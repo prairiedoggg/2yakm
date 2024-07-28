@@ -6,7 +6,7 @@ const { uploadToMemory, uploadToS3 } = require('../config/imgUploads');
 
 /**
  * @swagger
- * api/mypage:
+ * /api/mypage:
  *   get:
  *     summary: 사용자 프로필 가져오기
  *     tags: [mypage]
@@ -29,7 +29,7 @@ router.get('/', getUserprofile);
 
 /**
  * @swagger
- * api/mypage:
+ * /api/mypage:
  *   put:
  *     summary: 사용자 이름 업데이트
  *     tags: [mypage]
@@ -51,7 +51,7 @@ router.put('/', updateName);
 
 /**
  * @swagger
- * api/mypage/profile-picture/memory:
+ * /api/mypage/profile-picture/memory:
  *   put:
  *     summary: 메모리에 프로필 사진 업데이트
  *     tags: [mypage]
@@ -77,7 +77,7 @@ router.put('/profile-picture/memory', uploadToMemory.single('profilePicture'), u
 
 /**
  * @swagger
- * api/mypage/profile-picture/s3:
+ * /api/mypage/profile-picture/s3:
  *   put:
  *     summary: S3에 프로필 사진 업데이트
  *     tags: [mypage]
