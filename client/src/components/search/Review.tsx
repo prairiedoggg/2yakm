@@ -1,35 +1,42 @@
 import { useState } from 'react';
 import styled from 'styled-components';
-import { useReviewStore } from '../../store/review.ts';
+import create from 'zustand';
+import { useInfiniteQuery, useMutation, useQueryClient } from 'react-query';
+import { fetchReviews, createReview } from '../../api/reviewApi';
+
+interface ReviewState {
+  isWritingReview: boolean;
+  toggleReviewForm: () => void;
+}
+
+export const useReviewStore = create<ReviewState>((set) => ({
+  isWritingReview: false,
+  toggleReviewForm: () =>
+    set((state) => ({ isWritingReview: !state.isWritingReview }))
+}));
 
 const Review = () => {
-  const { isWritingReview, toggleReviewForm } = useReviewStore();
-   const [reviews, setReviews] = useState([
-     {
-       id: 1,
-       user: '약사약사',
-       content: '종합 감기약으로 타이레놀이 좋습니다.',
-       bgColor: 'rgba(114,191,68, 0.1)'
-     },
-     {
-       id: 2,
-       user: '리뷰리뷰',
-       content: '감기 걸렸을 땐 항상 타이레놀 먹어요.',
-       bgColor: 'white'
-     }
-   ]);
+  const queryClient = useQueryClient();
   const [newReview, setNewReview] = useState('');
-    const handleReviewSubmit = () => {
-      const newReviewItem = {
-        id: reviews.length + 1,
-        user: '홍길동',
-        content: newReview,
-        bgColor: 'white'
-      };
-      setReviews([...reviews, newReviewItem]);
-      setNewReview('');
-      toggleReviewForm();
+  const { isWritingReview, toggleReviewForm } = useReviewStore();
+  const { data, fetchNextPage, hasNextPage, isFetchingNextPage } =
+    useInfiniteQuery('reviews', fetchReviews, {
+      getNextPageParam: (lastPage) => lastPage.nextCursor
+    });
+  const mutation = useMutation(createReview, {
+    onSuccess: () => {
+      queryClient.invalidateQueries('reviews');
+    }
+  });
+
+  const handleReviewSubmit = async () => {
+    const newReviewItem = {
+      content: newReview
     };
+    await mutation.mutateAsync(newReviewItem);
+    setNewReview('');
+    toggleReviewForm();
+  };
 
   return (
     <ReviewContainer>
@@ -37,7 +44,7 @@ const Review = () => {
       {isWritingReview && (
         <ReviewForm>
           <textarea
-            placeholder='리뷰를 작성해 주세요. 욕설, 비방, 명예훼손성 표현은 사용하지 말아주세요.'
+            placeholder='리뷰를 작성해 주세요.&#10;욕설, 비방, 명예훼손성 표현은 사용하지 말아주세요.'
             value={newReview}
             onChange={(e) => setNewReview(e.target.value)}
           />
@@ -45,19 +52,31 @@ const Review = () => {
         </ReviewForm>
       )}
       <ReviewList>
-        {reviews.map((review) => (
-          <ReviewItem
-            key={review.id}
-            style={{ backgroundColor: review.bgColor }}
-          >
-            <User>
-              <Profile src={`/img/user.svg`} alt='유저' />
-              <span>{review.user}</span>
-            </User>
-            <p>{review.content}</p>
-          </ReviewItem>
-        ))}
+        {data?.pages.map((page) =>
+          page.reviews.map((review) => (
+            <ReviewItem
+              key={review.id}
+              style={{
+                backgroundColor: review.role ? 'rgba(114,191,68, 0.1)' : 'white'
+              }}
+            >
+              <User>
+                <Profile src={`/img/user.svg`} alt='유저' />
+                <span>{review.name}</span>
+              </User>
+              <p>{review.content}</p>
+            </ReviewItem>
+          ))
+        )}
       </ReviewList>
+      {hasNextPage && (
+        <button
+          onClick={() => fetchNextPage()}
+          disabled={!hasNextPage || isFetchingNextPage}
+        >
+          {isFetchingNextPage ? '로딩 중...' : '더 불러오기'}
+        </button>
+      )}
     </ReviewContainer>
   );
 };
