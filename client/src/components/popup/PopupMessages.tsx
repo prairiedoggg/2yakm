@@ -19,6 +19,10 @@ export enum PopupType {
   ChangeUserNameSuccess,
   ChangeUserNameFailure,
 
+  ChangeUserProfileImage, // src\components\myPage\EditMyInformation.tsx
+  ChangeUserProfileImageSuccess,
+  ChangeUserProfileImageFailure,
+
   None
 }
 
@@ -68,8 +72,14 @@ const PopupContent = (
 
       case PopupType.ChangeUserNameSuccess:
         return <div>이름을 변경했습니다. </div>;
+
       case PopupType.ChangeUserNameFailure:
         return <div>이름변경에 실패했습니다. 잠시 후 다시 시도해주세요.</div>;
+
+      case PopupType.ChangeUserProfileImageFailure:
+        return (
+          <div>프로필사진 변경에 실패했습니다. 잠시 후 다시 시도해주세요.</div>
+        );
     }
   };
 

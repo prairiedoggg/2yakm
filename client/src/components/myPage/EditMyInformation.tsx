@@ -8,6 +8,8 @@ import useUserStore from '../../store/user';
 import Popup from '../popup/Popup';
 import Loading from '../Loading';
 import PopupContent, { PopupType } from '../popup/PopupMessages';
+import { PiCactus } from 'react-icons/pi';
+import { changeProfileImage, fetchUserProfile } from '../../api/myPageService';
 
 interface Info {
   info: string;
@@ -45,6 +47,8 @@ const EditMyInformation = ({
         return user?.userName;
       case '이메일':
         return user?.email;
+      case '프로필 이미지':
+        return user?.profileimg;
       case '연동된 소셜계정':
         return <Icon icon='devicon:google' width='1.1rem' height='1.1rem' />;
       default:
@@ -80,11 +84,8 @@ const EditMyInformation = ({
           </div>
         );
 
-      case PopupType.DeleteAccountSuccess:
-        return PopupContent(PopupType.DeleteAccountSuccess, navigate);
-
-      case PopupType.DeleteAccountFailure:
-        return PopupContent(PopupType.DeleteAccountFailure, navigate);
+      default:
+        return PopupContent(type, navigate);
     }
   };
 
@@ -117,7 +118,7 @@ const EditMyInformation = ({
         <div className='thumbnail'>
           <img
             className='thumbnailImage'
-            src={`img/user.svg`}
+            src={user?.profileimg ?? `img/user.svg`}
             alt='프로필 이미지'
           />
           <div className='edit-thumb' onClick={() => setBottomSheet(true)}>
@@ -149,7 +150,24 @@ const EditMyInformation = ({
       <BottomPictureSheet
         title={'사진 등록'}
         isVisible={bottomSheet}
-        onClose={() => {
+        onClose={(pic) => {
+          console.log(pic);
+          if (pic !== null) {
+            setLoading(true);
+            const formData = new FormData();
+            formData.append('image', pic);
+            changeProfileImage(
+              formData,
+              () => {
+                setLoading(false);
+                window.location.reload();
+              },
+              () => {
+                setLoading(false);
+                setPopupType(PopupType.ChangeUserProfileImageFailure);
+              }
+            );
+          }
           setBottomSheet(false);
         }}
       />
