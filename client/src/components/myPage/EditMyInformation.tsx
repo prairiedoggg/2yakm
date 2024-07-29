@@ -67,7 +67,7 @@ const EditMyInformation = ({
               onClick={() => {
                 setLoading(true);
                 deleteAccount(
-                  '',
+                  user?.id ?? '',
                   () => {
                     setLoading(false);
                     setPopupType(PopupType.DeleteAccountSuccess);
