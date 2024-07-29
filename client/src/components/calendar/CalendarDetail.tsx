@@ -1,10 +1,30 @@
 import styled from 'styled-components';
-import { useDateStore } from '../../store/store';
+import { useDateStore, useCalendar } from '../../store/store';
 import OpenCalendarDetail from './OpenCalendarDetail';
 import EditCalendarDatail from './EditCalendarDetail';
+import { useEffect } from 'react';
 
 const CalendarDetail: React.FC = () => {
-  const { edit } = useDateStore();
+  const { value, edit, setEdit, setNeverPost } = useDateStore();
+  const {
+    setPillData,
+    setBloodSugarAfter,
+    setBloodSugarBefore,
+    setTemp,
+    setWeight,
+    setPhoto
+  } = useCalendar();
+
+  useEffect(() => {
+    setEdit(false);
+    setPillData([]);
+    setBloodSugarAfter(null);
+    setBloodSugarBefore(null);
+    setTemp(null);
+    setWeight(null);
+    setPhoto(null);
+    setNeverPost(true);
+  }, [value]);
 
   return (
     <CalandarDatailContainer>

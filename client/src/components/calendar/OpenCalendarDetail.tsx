@@ -1,6 +1,6 @@
 import styled from 'styled-components';
 import DetailTextBox from './DetailTextBox';
-import { calendarGet } from '../../api/calendarApi';
+import { calendarGet, calendarPost } from '../../api/calendarApi';
 import { useState, useEffect } from 'react';
 import dayjs from 'dayjs';
 import { useDateStore, useCalendar } from '../../store/store';
@@ -22,7 +22,7 @@ interface CalendarData {
 const OpenCalendarDetail: React.FC = () => {
   const { pillData, bloodsugarbefore, bloodsugarafter, temp, weight, photo } =
     useCalendar();
-  const { value, edit } = useDateStore();
+  const { value, edit, neverPost, setNeverPost } = useDateStore();
   const formattedDate = dayjs(value).format('YYYY-MM-DD');
 
   const [data, setData] = useState<CalendarData | null>(null);
@@ -32,8 +32,12 @@ const OpenCalendarDetail: React.FC = () => {
       const fetchPillData = async () => {
         try {
           const data = await calendarGet(formattedDate);
-          console.log(data);
           setData(data);
+          setNeverPost(false);
+
+          if (data === undefined) {
+            setNeverPost(true);
+          }
         } catch (err) {
           console.log('해당하는 약복용여부 정보 없음', err);
         }
@@ -54,14 +58,24 @@ const OpenCalendarDetail: React.FC = () => {
       calimg: photo
     };
     console.log('put', data);
+
     const putData = async () => {
-      if (!edit) {
+      if (!edit && !neverPost) {
         try {
           const res = await calendarPut(formattedDate, data);
           setData(res);
           console.log('일정 수정 성공:', res);
         } catch (err) {
           console.error('일정 수정 오류:', err);
+        }
+      } else if (!edit && neverPost) {
+        try {
+          const res = await calendarPost(data);
+          setData(res);
+          console.log('일정 등록 성공', res);
+          setNeverPost(false);
+        } catch (err) {
+          console.log('일정 등록 실패', err);
         }
       }
     };

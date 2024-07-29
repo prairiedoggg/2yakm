@@ -9,6 +9,7 @@ interface TemperatureProps {
 
 const Temperature = ({ temp }: TemperatureProps) => {
   const { setTemp } = useCalendar();
+
   useEffect(() => {
     if (temp !== undefined) {
       setTemp(temp);

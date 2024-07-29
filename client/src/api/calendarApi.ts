@@ -34,7 +34,6 @@ export const calendarPost = async (requestBody: object) => {
 
 export const calendarPut = async (date: string, requestBody: any) => {
   try {
-    console.log('PUT 요청 데이터:', requestBody);
     const res = await put(`/api/calendars/${date}`, requestBody);
     console.log(`${date} 캘린더 put`, res);
     return res;

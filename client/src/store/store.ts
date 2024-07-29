@@ -4,18 +4,22 @@ interface Store {
   value: Date;
   onChange: (date: Date) => void;
   edit: boolean;
-  setEdit: () => void;
+  setEdit: (edit: boolean) => void;
   arrow: boolean;
   setArrow: () => void;
+  neverPost: boolean;
+  setNeverPost: (neverPost: boolean) => void;
 }
 
 export const useDateStore = create<Store>((set) => ({
   value: new Date(),
   onChange: (date: Date) => set({ value: date }),
   edit: false,
-  setEdit: () => set((state) => ({ edit: !state.edit })),
+  setEdit: (edit) => set({ edit }),
   arrow: false,
-  setArrow: () => set((state) => ({ arrow: !state.arrow }))
+  setArrow: () => set((state) => ({ arrow: !state.arrow })),
+  neverPost: true,
+  setNeverPost: (neverPost) => set({ neverPost })
 }));
 
 interface PillData {

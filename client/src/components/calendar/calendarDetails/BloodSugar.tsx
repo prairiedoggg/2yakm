@@ -36,15 +36,11 @@ const BloodSugar = ({ bloodsugarbefore, bloodsugarafter }: BloodSugarProps) => {
     if (isAfter && bloodsugarafter !== undefined) {
       const color = getBloodSugarColor(bloodsugarafter, false);
       return <ChangeTextColor color={color} afterMeals={bloodsugarafter} />;
-    } else if (bloodsugarafter === null) {
-      return null;
     }
 
     if (!isAfter && bloodsugarbefore !== undefined) {
       const color = getBloodSugarColor(bloodsugarbefore, true);
       return <ChangeTextColor color={color} fasted={bloodsugarbefore} />;
-    } else if (bloodsugarbefore === null) {
-      return null;
     }
 
     return null;
@@ -52,8 +48,8 @@ const BloodSugar = ({ bloodsugarbefore, bloodsugarafter }: BloodSugarProps) => {
 
   return (
     <div>
-      {bloodsugarbefore !== undefined && handleBloodSugar(false)}
-      {bloodsugarafter !== undefined && handleBloodSugar(true)}
+      {bloodsugarbefore !== null && handleBloodSugar(false)}
+      {bloodsugarafter !== null && handleBloodSugar(true)}
     </div>
   );
 };

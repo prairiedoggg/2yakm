@@ -21,7 +21,7 @@ const CalendarPage: React.FC = () => {
   };
 
   const handleEdit = async () => {
-    setEdit();
+    setEdit(!edit);
   };
 
   return (
