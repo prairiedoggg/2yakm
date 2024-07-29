@@ -17,25 +17,28 @@ const Temperature = ({ temp }: TemperatureProps) => {
   }, [temp, setTemp]);
 
   const handleTemperature = () => {
-    if (!temp) return <ChangeTextColor color='#000000' />;
-    const color =
-      temp >= 39
-        ? '#C20000'
-        : temp >= 38
-        ? '#F69999'
-        : temp >= 37.2
-        ? '#D8C100'
-        : temp >= 35.8
-        ? '#72BF44'
-        : '#000000';
-    return <ChangeTextColor temp={temp} color={color} />;
+    if (temp !== undefined) {
+      const color =
+        temp >= 39
+          ? '#C20000'
+          : temp >= 38
+          ? '#F69999'
+          : temp >= 37.2
+          ? '#D8C100'
+          : temp >= 35.8
+          ? '#72BF44'
+          : '#000000';
+      return <ChangeTextColor temp={temp} color={color} />;
+    }
   };
 
   return (
-    <>
-      {handleTemperature()}
-      <Unit>&nbsp;°C</Unit>
-    </>
+    temp !== null && (
+      <>
+        {handleTemperature()}
+        <Unit>&nbsp;°C</Unit>
+      </>
+    )
   );
 };
 

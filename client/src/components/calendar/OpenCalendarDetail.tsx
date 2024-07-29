@@ -24,42 +24,21 @@ const OpenCalendarDetail: React.FC = () => {
     useCalendar();
   const { value, edit, neverPost, setNeverPost } = useDateStore();
   const formattedDate = dayjs(value).format('YYYY-MM-DD');
-
   const [data, setData] = useState<CalendarData | null>(null);
-
-  useEffect(() => {
-    if (formattedDate !== undefined || edit) {
-      const fetchPillData = async () => {
-        try {
-          const data = await calendarGet(formattedDate);
-          setData(data);
-          setNeverPost(false);
-
-          if (data === undefined) {
-            setNeverPost(true);
-          }
-        } catch (err) {
-          console.log('해당하는 약복용여부 정보 없음', err);
-        }
-      };
-
-      fetchPillData();
-    }
-  }, [formattedDate]);
 
   useEffect(() => {
     const data = {
       date: formattedDate,
-      weight: weight,
-      temperature: temp,
       bloodsugarBefore: bloodsugarbefore,
       bloodsugarAfter: bloodsugarafter,
       medications: JSON.stringify(pillData),
+      temperature: temp,
+      weight: weight,
       calimg: photo
     };
-    console.log('put', data);
 
     const putData = async () => {
+      // 기존 데이터 있을 때
       if (!edit && !neverPost) {
         try {
           const res = await calendarPut(formattedDate, data);
@@ -68,7 +47,8 @@ const OpenCalendarDetail: React.FC = () => {
         } catch (err) {
           console.error('일정 수정 오류:', err);
         }
-      } else if (!edit && neverPost) {
+      } // 없을 때
+      else if (!edit && neverPost) {
         try {
           const res = await calendarPost(data);
           setData(res);
@@ -82,6 +62,27 @@ const OpenCalendarDetail: React.FC = () => {
 
     putData();
   }, [edit]);
+
+  useEffect(() => {
+    if (formattedDate !== undefined) {
+      const fetchPillData = async () => {
+        try {
+          const data = await calendarGet(formattedDate);
+          console.log(data);
+          setData(data);
+          setNeverPost(false);
+
+          if (data === undefined) {
+            setNeverPost(true);
+          }
+        } catch (err) {
+          console.log('해당하는 약복용여부 정보 없음', err);
+        }
+      };
+
+      fetchPillData();
+    }
+  }, [formattedDate, edit]);
 
   return (
     <ContentContainer>
