@@ -216,6 +216,12 @@ router.get('/:id/favoritecount', getPillFavoriteCount);
  *         schema:
  *           type: integer
  *         description: 가져올 약의 시작 위치
+ *       - in: query
+ *         name: searchBy
+ *         schema:
+ *           type: string
+ *         description: 영어로 검색 시 'engname' 입력, 초기값은 'name'(한국어)
+ * 
  *     responses:
  *       200:
  *         description: 성공
