@@ -3,7 +3,6 @@ import {
   getPillsHandler, 
   getPillByIdHandler, 
   searchPillsbyNameHandler, 
-  searchPillsbyEngNameHandler,
   searchPillsbyEfficacyHandler,
   searchPillsByImageHandler,
   getPillFavoriteCount,
@@ -262,73 +261,6 @@ router.get('/:id/favoritecount', getPillFavoriteCount);
  */
 router.get('/search/name', searchPillsbyNameHandler);
 
-/**
- * @swagger
- * /api/pills/search/engname:
- *   get:
- *     summary: 영어 이름으로 약 검색
- *     tags: [pills]
- *     parameters:
- *       - in: query
- *         name: engname
- *         required: true
- *         schema:
- *           type: string
- *         description: 약 영어 이름
- *       - in: query
- *         name: limit
- *         schema:
- *           type: integer
- *         description: 가져올 약의 수
- *       - in: query
- *         name: offset
- *         schema:
- *           type: integer
- *         description: 가져올 약의 시작 위치
- *     responses:
- *       200:
- *         description: 성공
- *         content:
- *           application/json:
- *             schema:
- *               type: array
- *               items:
- *                 type: object
- *                 properties:
- *                   id:
- *                     type: integer
- *                   name:
- *                     type: string
- *                   engname:
- *                     type: string
- *                   companyname:
- *                     type: string
- *                   companyengname:
- *                     type: string
- *                   ingredientname:
- *                     type: string
- *                   ingredientengname:
- *                     type: string
- *                   type:
- *                     type: string
- *                   shape:
- *                     type: string
- *                   efficacy:
- *                     type: string
- *                   dosage:
- *                     type: string
- *                   caution:
- *                     type: string
- *                   storagemethod:
- *                     type: string
- *                   expdate:
- *                      type: string
- *                   source:
- *                      type: string
- *                   imgurl:
- *                      type: string
- */
-router.get('/search/engname', searchPillsbyEngNameHandler);
 
 /**
  * @swagger

@@ -1,4 +1,4 @@
-const { pool } = require('../db');
+import { pool } from '../db';
 import { createError } from '../utils/error';
 import vision from '@google-cloud/vision';
 
@@ -72,49 +72,25 @@ export const getPillById = async (id: number): Promise<PillData | null> => {
 export const searchPillsbyName = async (
   name: string,
   limit: number,
-  offset: number
+  offset: number,
+  searchBy: 'name' | 'engname'
 ): Promise<SearchResult> => {
-  const query = 'SELECT * FROM pills WHERE name ILIKE $1 LIMIT $2 OFFSET $3';
+  const query = `SELECT * FROM pills WHERE ${searchBy} ILIKE $1 LIMIT $2 OFFSET $3`;
   const values = [`${name}%`, limit, offset];
 
   try {
     const result = await pool.query(query, values);
     return {
       pills: result.rows,
-      total: result.rowCount,
+      total: result.rowCount ?? 0,
       limit,
       offset,
     };
   } catch (error: unknown) {
     if (error instanceof Error) {
-      throw createError('DatabaseError', `Failed to search pills by name: ${error.message}`, 500);
+      throw createError('DatabaseError', `Failed to search pills by ${searchBy}: ${error.message}`, 500);
     } else {
-      throw createError('UnknownError', 'Failed to search pills by name: An unknown error occurred', 500);
-    }
-  }
-};
-
-export const searchPillsbyEngName = async (
-  name: string,
-  limit: number,
-  offset: number
-): Promise<SearchResult> => {
-  const query = 'SELECT * FROM pills WHERE engname ILIKE $1 LIMIT $2 OFFSET $3';
-  const values = [`${name}%`, limit, offset];
-
-  try {
-    const result = await pool.query(query, values);
-    return {
-      pills: result.rows,
-      total: result.rowCount,
-      limit,
-      offset,
-    };
-  } catch (error: unknown) {
-    if (error instanceof Error) {
-      throw createError('DatabaseError', `Failed to search pills by name: ${error.message}`, 500);
-    } else {
-      throw createError('UnknownError', 'Failed to search pills by name: An unknown error occurred', 500);
+      throw createError('UnknownError', `Failed to search pills by ${searchBy}: An unknown error occurred`, 500);
     }
   }
 };
@@ -138,7 +114,7 @@ export const searchPillsbyEfficacy = async (
     const result = await pool.query(query, values);
     return {
       pills: result.rows,
-      total: result.rowCount,
+      total: result.rowCount ?? 0,
       limit,
       offset,
     };
@@ -169,7 +145,7 @@ const searchPillsByFrontAndBack = async (
     const result = await pool.query(query, values);
     return {
       pills: result.rows,
-      total: result.rowCount,
+      total: result.rowCount ?? 0,
       limit,
       offset,
     };
@@ -182,7 +158,37 @@ const searchPillsByFrontAndBack = async (
   }
 };
 
-const detectTextInImage = async (imageBuffer: Buffer): Promise<string[] | null> => {
+const searchPillsByNameFromText = async (
+  text: string,
+  limit: number,
+  offset: number
+): Promise<SearchResult> => {
+  const query = `
+    SELECT * 
+    FROM pills 
+    WHERE engname ILIKE $1
+    LIMIT $2 OFFSET $3`;
+
+  const values = [`%${text}%`, limit, offset];
+
+  try {
+    const result = await pool.query(query, values);
+    return {
+      pills: result.rows,
+      total: result.rowCount ?? 0,
+      limit,
+      offset,
+    };
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      throw createError('DatabaseError', `${error.message}`, 500);
+    } else {
+      throw createError('UnknownError', 'An unknown error occurred', 500);
+    }
+  }
+};
+
+const detectTextInImage = async (imageBuffer: Buffer): Promise<string[]> => {
   try {
     console.log('Detecting text in image...');
     const [result] = await client.textDetection({
@@ -195,13 +201,13 @@ const detectTextInImage = async (imageBuffer: Buffer): Promise<string[] | null> 
       // Remove numbers, dots, parentheses, square brackets
       const filteredText = detections
         .map((text) => text?.description ?? '')
-        .filter((text) => !text.match(/[\d\.()]/));
+        .filter((text) => !text.match(/[\.()]/))
 
       console.log('Filtered text:', filteredText);
       return filteredText;
     }
     console.log('No text detected');
-    return null;
+    return [];
   } catch (error) {
     console.error('Error detecting text in image:', error);
     throw createError('VisionAPIError', 'Failed to detect text in the image.', 500);
@@ -222,6 +228,7 @@ export const searchPillsByImage = async (
     let pills: PillData[] = [];
     let total = 0;
 
+    // Search by front and back text in pillocr table
     for (const text of detectedText) {
       if (text) {
         const frontText = detectedText[0];
@@ -234,6 +241,21 @@ export const searchPillsByImage = async (
         );
         pills.push(...resultByFrontAndBack.pills);
         total += resultByFrontAndBack.total;
+      }
+    }
+
+    // If no results from pillocr, search in pills table by name
+    if (total === 0) {
+      for (const text of detectedText) {
+        if (text) {
+          const resultByName = await searchPillsByNameFromText(
+            text,
+            limit,
+            offset
+          );
+          pills.push(...resultByName.pills);
+          total += resultByName.total;
+        }
       }
     }
 
