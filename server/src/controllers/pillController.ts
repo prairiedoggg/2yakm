@@ -74,18 +74,13 @@ export const searchPillsbyNameHandler = async (
   const name = req.query.name;
   const offset = parseInt(req.query.offset ?? '0', 10);
   const limit = parseInt(req.query.limit ?? '10', 10);
-  const searchBy = req.query.searchBy ?? 'name'; // Default to 'name'
-
+ 
   if (!name) {
     return res.status(400).json({ message: 'name query parameter is required' });
   }
 
-  if (searchBy !== 'name' && searchBy !== 'engname') {
-    return res.status(400).json({ message: 'searchBy query parameter must be either "name" or "engname"' });
-  }
-
   try {
-    const pills = await searchPillsbyName(name, limit, offset, searchBy as 'name' | 'engname');
+    const pills = await searchPillsbyName(name, limit, offset);
     res.status(200).json(pills);
   } catch (error: unknown) {
     next(createError('DatabaseError', (error as Error).message, 500));

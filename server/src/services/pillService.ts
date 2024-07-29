@@ -77,10 +77,9 @@ export const getPillById = async (id: number): Promise<PillData | null> => {
 export const searchPillsbyName = async (
   name: string,
   limit: number,
-  offset: number,
-  searchBy: 'name' | 'engname'
+  offset: number
 ): Promise<SearchResult> => {
-  const query = `SELECT * FROM pills WHERE ${searchBy} ILIKE $1 LIMIT $2 OFFSET $3`;
+  const query = `SELECT * FROM pills WHERE name LIKE $1 OR engname LIKE $1`;
   const values = [`${name}%`, limit, offset];
 
   try {
@@ -89,13 +88,13 @@ export const searchPillsbyName = async (
       pills: result.rows,
       total: result.rowCount ?? 0,
       limit,
-      offset
+      offset,
     };
   } catch (error: unknown) {
     if (error instanceof Error) {
-      throw createError('DatabaseError', `Failed to search pills by ${searchBy}: ${error.message}`, 500);
+      throw createError('DatabaseError', `Failed to search pills by name: ${error.message}`, 500);
     } else {
-      throw createError('UnknownError', `Failed to search pills by ${searchBy}: An unknown error occurred`, 500);
+      throw createError('UnknownError', `Failed to search pills by name: An unknown error occurred`, 500);
     }
   }
 };
