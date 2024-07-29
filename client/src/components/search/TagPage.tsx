@@ -1,11 +1,38 @@
-
+import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import styled from 'styled-components'; 
 import Layout from '../Layout'
+import { fetchPillDataByEfficacy } from '../../api/pillApi';
 
 
 const TagPage = () => {
   const { tag } = useParams<{ tag: string }>();
+  const [pillData, setPillData] = useState(null)
+  const [loading, setLoading] = useState<boolean>(false)
+
+  useEffect(() => { 
+    const fetchData = async () => { 
+      setLoading(true)
+      try {
+        const data = await fetchPillDataByEfficacy(tag, 10, 0)
+        console.log('효능 데이터:', data)
+        setPillData(data)
+      } catch (error) {
+        console.log('효능 데이터 가져오기 실패:', error)
+      } finally { 
+        setLoading(false)
+      }
+    }
+    fetchData()
+  }, [tag])
+
+  if (loading) { 
+    return <div>데이터 검색중입니다.</div>
+  }
+
+  if (!pillData) {
+    return <div>검색 결과가 없습니다.</div>
+  }
 
   return (
     <>
