@@ -6,7 +6,13 @@ import {
   useMutation,
   useQueryClient
 } from '@tanstack/react-query';
-import { fetchReviews, createReview } from '../../api/reviewApi';
+import {
+  fetchReviews,
+  createReview,
+  type Review
+} from '../../api/reviewApi';
+
+
 
 interface ReviewState {
   isWritingReview: boolean;
@@ -23,16 +29,19 @@ const Review = () => {
   const queryClient = useQueryClient();
   const [newReview, setNewReview] = useState('');
   const { isWritingReview, toggleReviewForm } = useReviewStore();
+
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage } =
     useInfiniteQuery({
-      queryFn:() => fetchReviews(),
+      queryKey: ['reviews'],
+      queryFn: fetchReviews,
       getNextPageParam: (lastPage) => lastPage.nextCursor,
-      queryKey:['reviews'],
+      initialPageParam: 0
     });
   
-  const mutation = useMutation(createReview, {
+  const mutation = useMutation({
+    mutationFn: createReview,
     onSuccess: () => {
-      queryClient.invalidateQueries('reviews');
+      queryClient.invalidateQueries({ queryKey: ['reviews'] });
     }
   });
 
