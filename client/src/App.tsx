@@ -1,6 +1,5 @@
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import loadable from '@loadable/component';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import AuthenticatedRoute from './AuthenticatedRoute';
 import 'dayjs/locale/ko';
 
@@ -22,11 +21,8 @@ const ResetPassword = loadable(
 const ChatBot = loadable(() => import('./components/chatBot/ChatBot'));
 const Redirect = loadable(() => import('./components/authentication/Redirect'));
 
-const queryClient = new QueryClient();
-
 const App = () => {
   return (
-    <QueryClientProvider client={queryClient}>
       <Router>
         <Routes>
           <Route path='/' element={<Home />} />
@@ -58,7 +54,6 @@ const App = () => {
           <Route path='/google/callback' element={<Redirect sns='google' />} />
         </Routes>
       </Router>
-    </QueryClientProvider>
   );
 };
 

@@ -3,27 +3,30 @@ import styled from 'styled-components';
 import SearchBox from '../SearchBox';
 import SearchHistory from './SearchHistory';
 import SearchResults from './SearchResults';
-import TagPage from './TagPage'
+import TagPage from './TagPage';
 import Nav from '../Nav';
-import { useSearchStore } from '../../store/search'
-
+import { useSearchStore } from '../../store/search';
 
 const Search = () => {
-  const { searchQuery, searchType, setSearchType } = useSearchStore();
+  const { searchQuery, setSearchQuery, searchType, setSearchType } =
+    useSearchStore();
 
   const handleTypeChange = (e: ChangeEvent<HTMLSelectElement>) => {
     setSearchType(e.target.value);
+    setSearchQuery('')
   };
 
   return (
     <>
-      <BackgroundHeader>
-        <SearchTypeSelect onChange={handleTypeChange}>
-          <option value='name'>이름</option>
-          <option value='efficacy'>효능</option>
-        </SearchTypeSelect>
-        <SearchBox />
-      </BackgroundHeader>
+      {/* {!(searchQuery && searchType === 'efficacy') && ( */}
+        <BackgroundHeader>
+          <SearchTypeSelect onChange={handleTypeChange} value={searchType}>
+            <option value='name'>이름</option>
+            <option value='efficacy'>효능</option>
+          </SearchTypeSelect>
+          <SearchBox />
+        </BackgroundHeader>
+      {/* )} */}
       {searchQuery ? (
         searchType === 'name' ? (
           <SearchResults />
