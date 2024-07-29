@@ -139,16 +139,16 @@ export const updateCalendar = [
         ...bodyWithoutDate,
         calImg: calImgUrl,
         condition: req.body.condition,
-        weight: req.body.weight ? parseFloat(req.body.weight) : undefined,
+        weight: req.body.weight ? parseFloat(req.body.weight) : null,
         temperature: req.body.temperature
           ? parseFloat(req.body.temperature)
-          : undefined,
+          : null,
         bloodsugarBefore: req.body.bloodsugarBefore
           ? parseFloat(req.body.bloodsugarBefore)
-          : undefined,
+          : null,
         bloodsugarAfter: req.body.bloodsugarAfter
           ? parseFloat(req.body.bloodsugarAfter)
-          : undefined,
+          : null,
         medications: medications
       };
       const updatedCalendar: Calendar | null =

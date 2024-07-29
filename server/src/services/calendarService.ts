@@ -141,7 +141,7 @@ export const updateCalendar = async (
           medications = $7
       WHERE userId = $8 AND date = $9
       RETURNING id, userId, date, calImg, condition, weight, temperature, 
-      bloodsugarBefore, bloodsugarAfter, medications
+      bloodsugarBefore AS "bloodsugarBefore", bloodsugarAfter AS "bloodsugarAfter", medications
     `;
     const values = [
       calendar.calImg ?? existingCalendar.calImg,
