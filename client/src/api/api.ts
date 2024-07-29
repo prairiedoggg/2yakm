@@ -1,7 +1,6 @@
 import axios from 'axios';
 import { IoBodySharp } from 'react-icons/io5';
 
-
 const api = axios.create({
   baseURL: 'http://localhost:3000/', //import.meta.env.SERVER_BASE_URL,
   timeout: 10000,
@@ -26,10 +25,12 @@ export const get = async (
 export const post = async (
   url: string,
   data: any,
+  params?: any,
   withCredentials?: boolean
 ) => {
   try {
-    const response = await api.post(url, data, { withCredentials });
+    const response = await api.post(url, data, { params, withCredentials });
+    console.log(response);
     return response.data;
   } catch (error) {
     console.error(`POST request to ${url} failed`, error);
@@ -40,10 +41,11 @@ export const post = async (
 export const put = async (
   url: string,
   data: any,
+  params?: any,
   withCredentials?: boolean
 ) => {
   try {
-    const response = await api.put(url, data, { withCredentials });
+    const response = await api.put(url, data, { params, withCredentials });
     return response.data;
   } catch (error) {
     console.error(`PUT request to ${url} failed`, error);
@@ -51,9 +53,13 @@ export const put = async (
   }
 };
 
-export const del = async (url: string, body: any, withCredentials?: boolean) => {
+export const del = async (
+  url: string,
+  params?: any,
+  withCredentials?: boolean
+) => {
   try {
-    const response = await api.delete(url, { data:body, withCredentials });
+    const response = await api.delete(url, { params, withCredentials });
     return response.data;
   } catch (error) {
     console.error(`DELETE request to ${url} failed`, error);

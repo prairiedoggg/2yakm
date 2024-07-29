@@ -5,7 +5,7 @@ import { useSearchStore } from '../store/search';
 import { useSearchHistoryStore } from '../store/searchHistory';
 
 const SearchBox = () => {
-  const { searchQuery, setSearchQuery } = useSearchStore();
+  const { setSearchQuery } = useSearchStore();
   const [query, setQuery] = useState<string>('');
   const addHistory = useSearchHistoryStore((state) => state.addHistory);
 

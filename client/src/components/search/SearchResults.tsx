@@ -4,7 +4,7 @@ import { Icon } from '@iconify-icon/react';
 import styled from 'styled-components';
 import PillExp from './PillExp';
 import Review from './Review';
-import { fetchPillData } from '../../api/pillApi';
+import { fetchPillDataByName } from '../../api/pillApi';
 import {
   toggleFavoriteApi,
   fetchFavoriteStatusApi,
@@ -27,16 +27,16 @@ const SearchResults = () => {
     const fetchData = async () => {
       setLoading(true);
       try {
-        const data = await fetchPillData(searchQuery, 1, 0);
+        const data = await fetchPillDataByName(searchQuery, 1, 0);
         if (data) {
           setPillId(data.id);
           setPillData(data);
           console.log('약데이터', data);
+          const count = await fetchFavoriteCount(data.id);
+          console.log('좋아요 수',count);
+          setFavoriteCount(count); 
           const status = await fetchFavoriteStatusApi(data.id);
           setIsFavorite(!status);
-          const count = await fetchFavoriteCount(data.id);
-          console.log(count);
-          setFavoriteCount(count); 
         } else {
           setPillData(null);
           setPillId(null);

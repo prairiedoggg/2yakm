@@ -4,54 +4,56 @@ interface Store {
   value: Date;
   onChange: (date: Date) => void;
   edit: boolean;
-  setEdit: () => void;
+  setEdit: (edit: boolean) => void;
   arrow: boolean;
   setArrow: () => void;
-}
-
-interface Calendar {
-  pillName?: string[];
-  time?: string[][];
-  isPillTaken?: boolean[][];
-  bloodSugar?: number[];
-  temp?: number;
-  weight?: number;
-  photo?: boolean;
-  imgUrl?: string;
-  setPillName: (pillName: string[]) => void;
-  setTime: (time: string[][]) => void;
-  setIsPillTaken: (isPillTaken: boolean[][]) => void;
-  setBloodSugar: (bloodSugar: number[]) => void;
-  setTemp: (temp: number) => void;
-  setWeight: (weight: number) => void;
-  setPhoto: (photo: boolean) => void;
-  setImgUrl: (imgUrl: string) => void;
+  neverPost: boolean;
+  setNeverPost: (neverPost: boolean) => void;
 }
 
 export const useDateStore = create<Store>((set) => ({
   value: new Date(),
   onChange: (date: Date) => set({ value: date }),
   edit: false,
-  setEdit: () => set((state) => ({ edit: !state.edit })),
+  setEdit: (edit) => set({ edit }),
   arrow: false,
-  setArrow: () => set((state) => ({ arrow: !state.arrow }))
+  setArrow: () => set((state) => ({ arrow: !state.arrow })),
+  neverPost: true,
+  setNeverPost: (neverPost) => set({ neverPost })
 }));
 
+interface PillData {
+  name?: string;
+  time?: string | string[];
+  taken?: boolean | boolean[];
+}
+
+interface Calendar {
+  pillData?: PillData[];
+  bloodsugarbefore?: number | null;
+  bloodsugarafter?: number | null;
+  temp?: number | null;
+  weight?: number | null;
+  photo?: string | null;
+  setPillData: (pillData: PillData[]) => void;
+  setBloodSugarBefore: (bloodsugarbefore: number | null) => void;
+  setBloodSugarAfter: (bloodsugarafter: number | null) => void;
+  setTemp: (temp: number | null) => void;
+  setWeight: (weight: number | null) => void;
+  setPhoto: (photo: string | null) => void;
+}
+
 export const useCalendar = create<Calendar>((set) => ({
-  pillName: [],
-  time: [],
-  isPillTaken: [],
-  bloodSugar: [0, 0],
-  temp: 0,
-  weight: 0,
-  photo: false,
-  imgUrl: '',
-  setPillName: (pillName) => set({ pillName }),
-  setTime: (time) => set({ time }),
-  setIsPillTaken: (isPillTaken) => set({ isPillTaken }),
-  setBloodSugar: (bloodSugar) => set({ bloodSugar }),
+  pillData: [],
+  bloodsugarbefore: null,
+  bloodsugarafter: null,
+  temp: null,
+  weight: null,
+  photo: null,
+  setPillData: (pillData) => set({ pillData }),
+  setBloodSugarBefore: (bloodsugarbefore) => set({ bloodsugarbefore }),
+  setBloodSugarAfter: (bloodsugarafter) => set({ bloodsugarafter }),
   setTemp: (temp) => set({ temp }),
   setWeight: (weight) => set({ weight }),
-  setPhoto: (photo) => set({ photo }),
-  setImgUrl: (imgUrl) => set({ imgUrl })
+  setPhoto: (photo) => set({ photo })
 }));

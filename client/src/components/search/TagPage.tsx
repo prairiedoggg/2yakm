@@ -1,37 +1,66 @@
-
+import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import styled from 'styled-components'; 
 import Layout from '../Layout'
+import { fetchPillListByEfficacy } from '../../api/pillApi';
 
 
 const TagPage = () => {
   const { tag } = useParams<{ tag: string }>();
+  const [pillData, setPillData] = useState<any[]>([]);
+  const [loading, setLoading] = useState<boolean>(false)
+
+  useEffect(() => { 
+    const fetchData = async () => { 
+      setLoading(true)
+      try {
+        const data = await fetchPillListByEfficacy(tag);
+        console.log('효능 데이터:', data)
+        setPillData(data)
+      } catch (error) {
+        console.log('효능 데이터 가져오기 실패:', error)
+      } finally { 
+        setLoading(false)
+      }
+    }
+    fetchData()
+  }, [tag])
+
+  if (loading) { 
+    return <div>데이터 검색중입니다.</div>
+  }
+
+  if (!pillData || pillData.length === 0) {
+    return <div>검색 결과가 없습니다.</div>;
+  }
 
   return (
     <>
-      <Layout/>
+      <Layout />
       <TagTitle>{tag}</TagTitle>
       <ListContainer>
-        <p>즐겨찾기 개수로 정렬되었습니다.</p>
+        <p>좋아요 개수로 정렬되었습니다.</p>
         <PillList>
-          <PillItem>
-            <PillImg src={`/img/pill.png`} alt='유저'></PillImg>
-            <PillText>
-              <PillTitle>
-                <h3>타이레놀정500밀리그람 (아세트아미노펜)</h3>
-                <img src='/img/arrow.svg' alt='더보기' />
-              </PillTitle>
-              <FavoritesCount>
-                <p>즐겨찾기 1024</p>
-                <p>리뷰 512</p>
-              </FavoritesCount>
-              <TagContainer>
-                <Tag>두통</Tag>
-                <Tag>신경통</Tag>
-                <Tag>근육통</Tag>
-              </TagContainer>
-            </PillText>
-          </PillItem>
+          {pillData.map((pill) => (
+            <PillItem key={pill.id}>
+              <PillImg src={`/img/pill.png`} alt={pill.name}></PillImg>
+              <PillText>
+                <PillTitle>
+                  <h3>{pill.name}</h3>
+                  <img src='/img/arrow.svg' alt='더보기' />
+                </PillTitle>
+                <FavoritesCount>
+                  <p>즐겨찾기 1024</p>
+                  <p>리뷰 512</p>
+                </FavoritesCount>
+                <TagContainer>
+                  <Tag>두통</Tag>
+                  <Tag>신경통</Tag>
+                  <Tag>근육통</Tag>
+                </TagContainer>
+              </PillText>
+            </PillItem>
+          ))}
         </PillList>
       </ListContainer>
     </>

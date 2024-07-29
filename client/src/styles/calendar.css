@@ -39,9 +39,6 @@ abbr[title] {
 .react-calendar__month-view {
   background-color: #f8f8f8;
   padding-bottom: 20px;
-  abbr {
-    font-size: 14px;
-  }
 }
 
 .react-calendar__tile.saturday {
@@ -52,15 +49,17 @@ abbr[title] {
   color: #fd3131;
 }
 
+.react-calendar__month-view__days__day {
+  justify-content: end;
+  position: relative;
+}
+
 .react-calendar__month-view__days__day--weekend {
   color: #000000;
 }
 
 .react-calendar__month-view__weekdays {
   height: 32px;
-  abbr {
-    font-weight: 500;
-  }
 }
 
 .react-calendar__tile {
@@ -180,4 +179,11 @@ abbr[title] {
   background: #f8f8fa;
   color: #ffbb25;
   border-radius: 0;
+}
+
+.pill-icon {
+  position: absolute;
+  bottom: -0.5px;
+  width: 15px;
+  height: auto;
 }

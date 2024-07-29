@@ -32,8 +32,9 @@ const Redirect = ({ sns }: { sns: string }) => {
         .then((res) => {
           if (res.token) {
             // 쿠키에 토큰 저장
-            console.log(res);
+            console.log(res.token);
             Cookies.set('token', res.token, { path: '/' });
+            console.log(Cookies.get('jwt'));
             Cookies.set('refreshToken', res.refreshToken, {
               path: '/'
             });
