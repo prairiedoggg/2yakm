@@ -1,7 +1,11 @@
 import { useState } from 'react';
 import styled from 'styled-components';
 import create from 'zustand';
-import { useInfiniteQuery, useMutation, useQueryClient } from 'react-query';
+import {
+  useInfiniteQuery,
+  useMutation,
+  useQueryClient
+} from '@tanstack/react-query';
 import { fetchReviews, createReview } from '../../api/reviewApi';
 
 interface ReviewState {
@@ -20,9 +24,12 @@ const Review = () => {
   const [newReview, setNewReview] = useState('');
   const { isWritingReview, toggleReviewForm } = useReviewStore();
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage } =
-    useInfiniteQuery('reviews', fetchReviews, {
-      getNextPageParam: (lastPage) => lastPage.nextCursor
+    useInfiniteQuery({
+      queryFn:() => fetchReviews(),
+      getNextPageParam: (lastPage) => lastPage.nextCursor,
+      queryKey:['reviews'],
     });
+  
   const mutation = useMutation(createReview, {
     onSuccess: () => {
       queryClient.invalidateQueries('reviews');

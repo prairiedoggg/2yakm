@@ -32,9 +32,17 @@ export const listPillDataByName = async (
   }
 };
 
-export const fetchPillListByEfficacy = async (efficacy: string) => {
+export const fetchPillListByEfficacy = async (
+  efficacy: string,
+  limit: number = 10,
+  offset: number = 0
+) => {
   try {
-    const data = await get(`/api/pills/search/efficacy/?efficacy=${efficacy}`);
+    const data = await get(`/api/pills/search/efficacy`, {
+      efficacy,
+      limit,
+      offset
+    });
     console.log('효능으로 검색 Get:', data);
     if (data.pills && data.pills.length > 0) {
       return data.pills;

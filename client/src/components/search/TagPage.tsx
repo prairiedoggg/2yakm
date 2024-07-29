@@ -1,20 +1,31 @@
 import { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
 import styled from 'styled-components'; 
 import Layout from '../Layout'
 import { fetchPillListByEfficacy } from '../../api/pillApi';
+import { useSearchStore } from '../../store/search'
+import { usePillStore } from '../../store/pill'
+
+interface Pill {
+  id: string;
+  name: string;
+  engname: string;
+  companyname: string;
+  efficacy: string;
+  dosage: string;
+}
+
 
 
 const TagPage = () => {
-  const { tag } = useParams<{ tag: string }>();
-  const [pillData, setPillData] = useState<any[]>([]);
+  const { searchQuery } = useSearchStore();
+  const { pillData, setPillData } = usePillStore()
   const [loading, setLoading] = useState<boolean>(false)
 
   useEffect(() => { 
     const fetchData = async () => { 
       setLoading(true)
       try {
-        const data = await fetchPillListByEfficacy(tag);
+        const data: Pill[] = await fetchPillListByEfficacy(searchQuery, 10, 0);
         console.log('효능 데이터:', data)
         setPillData(data)
       } catch (error) {
@@ -24,7 +35,7 @@ const TagPage = () => {
       }
     }
     fetchData()
-  }, [tag])
+  }, [searchQuery])
 
   if (loading) { 
     return <div>데이터 검색중입니다.</div>
@@ -37,11 +48,11 @@ const TagPage = () => {
   return (
     <>
       <Layout />
-      <TagTitle>{tag}</TagTitle>
+      <TagTitle>{searchQuery}</TagTitle>
       <ListContainer>
         <p>좋아요 개수로 정렬되었습니다.</p>
         <PillList>
-          {pillData.map((pill) => (
+          {pillData.map((pill: Pill) => (
             <PillItem key={pill.id}>
               <PillImg src={`/img/pill.png`} alt={pill.name}></PillImg>
               <PillText>
