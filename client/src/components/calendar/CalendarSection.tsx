@@ -4,23 +4,49 @@ import 'react-calendar/dist/Calendar.css';
 import '../../styles/calendar.css';
 import styled from 'styled-components';
 import { useDateStore } from '../../store/store';
+import { calendarAllGet } from '../../api/calendarApi';
+import { useEffect, useState } from 'react';
+
+interface CalendarDate {
+  date: string;
+  medications?: [];
+}
+
+interface TileContent {
+  date: Date;
+  view: string;
+}
 
 const CalendarSection: React.FC = () => {
-  const { value, onChange } = useDateStore();
+  const { value, onChange, edit } = useDateStore();
+  const [postArray, setPostArray] = useState<Set<string>>(new Set());
 
-  // const addContent = (/*{
-  //   date,
-  //   view
-  // }: {
-  //   date: Date;
-  //   view: string;
-  // }*/): JSX.Element => {
-  //   return (
-  //     <>
-  //       <Pill />
-  //     </>
-  //   );
-  // };
+  useEffect(() => {
+    const fetchData = async () => {
+      const data: CalendarDate[] = await calendarAllGet();
+      const datesWithMedications = new Set(
+        data
+          .filter((post) => post.medications && post.medications.length > 0)
+          .map((post) => new Date(post.date).toDateString())
+      );
+      setPostArray(datesWithMedications);
+    };
+
+    fetchData();
+  }, [edit]);
+
+  const addContent = ({ date, view }: TileContent) => {
+    if (view === 'month' && postArray.has(date.toDateString())) {
+      return (
+        <Pill
+          src='/img/calendarPill.png'
+          alt='pill icon'
+          className='pill-icon'
+        />
+      );
+    }
+    return null;
+  };
 
   const getDayClassName = ({ date }: { date: Date }) => {
     const SUNDAY = 0;
@@ -37,21 +63,20 @@ const CalendarSection: React.FC = () => {
   };
 
   return (
-    <>
-      <CalendarContainer>
-        <Calendar
-          onChange={onChange}
-          value={value}
-          calendarType='gregory'
-          formatDay={(locale, date) => dayjs(date).format('D')}
-          // 날짜 칸에 보여지는 컨텐츠 (우리는 알약)
-          // tileContent={addContent}
-          // 앞뒤 달의 이어지는 날짜 보여주기 여부
-          showNeighboringMonth={true}
-          tileClassName={getDayClassName}
-        />
-      </CalendarContainer>
-    </>
+    <CalendarContainer>
+      <Calendar
+        onChange={onChange}
+        value={value}
+        calendarType='gregory'
+        formatDay={(locale, date) => dayjs(date).format('D')}
+        tileContent={addContent}
+        showNeighboringMonth={true}
+        tileClassName={getDayClassName}
+        className={`react-calendar ${
+          (value as any).view === 'decade' ? 'react-calendar--decade-view' : ''
+        } ${(value as any).view === 'year' ? 'react-calendar--year-view' : ''}`}
+      />
+    </CalendarContainer>
   );
 };
 
@@ -61,12 +86,9 @@ const CalendarContainer = styled.div`
   align-items: center;
 `;
 
-// const Pill = styled.img.attrs({
-//   src: '/img/pharm.png',
-//   alt: 'pill icon'
-// })`
-//   width: 15px;
-//   height: auto;
-// `;
+const Pill = styled.img`
+  width: 14px;
+  height: auto;
+`;
 
 export default CalendarSection;

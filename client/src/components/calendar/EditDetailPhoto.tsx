@@ -1,9 +1,10 @@
-import React, { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef } from 'react';
+import { useCalendar } from '../../store/store';
 
 const EditDetailPhoto: React.FC = () => {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const [isCameraOn, setIsCameraOn] = useState(false);
-  const [uploadedImage, setUploadedImage] = useState<string | null>(null);
+  const { photo, setPhoto } = useCalendar();
 
   useEffect(() => {
     const initCamera = async () => {
@@ -48,12 +49,13 @@ const EditDetailPhoto: React.FC = () => {
     const file = e.target.files?.[0];
     if (file) {
       const imageUrl = URL.createObjectURL(file);
-      setUploadedImage(imageUrl);
+      setPhoto(imageUrl);
+      console.log('사진', photo);
     }
   };
-  console.log('사진', uploadedImage);
+
   return (
-    <div>
+    <div style={{ width: '150px' }}>
       <button onClick={toggleCamera}>
         {isCameraOn ? 'Turn Off Camera' : 'Turn On Camera'}
       </button>
@@ -68,9 +70,9 @@ const EditDetailPhoto: React.FC = () => {
         playsInline
       />
       <input type='file' accept='image/*' onChange={onChangeImage} />
-      {uploadedImage && (
+      {photo && (
         <img
-          src={uploadedImage}
+          src={photo}
           alt='Uploaded preview'
           style={{ width: '100%', height: 'auto' }}
         />
