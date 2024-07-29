@@ -22,13 +22,15 @@ export const fetchFavoriteCount = async (pillId: string) => {
   }
 };
 
-export const toggleFavoriteApi = async (pillId: string) => {
+export const toggleFavoriteApi = async (pillId: string, onSuccess?: (arg0: any) => void, onFailure?: (arg0: any) => void) => {
   try {
     const data = await post(`/api/favorites/${pillId}`, pillId);
     console.log('좋아요 post:', data);
+    if (onSuccess) onSuccess(data);
     return data;
   } catch (error) {
     console.error('좋아요토글 실패:', error);
+    if (onFailure) onFailure(error);
     throw error;
   }
 };
