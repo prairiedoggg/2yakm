@@ -1,4 +1,4 @@
-import { get, post } from './api';
+import { get, post, del } from './api';
 
 export interface Review {
   id: string;
@@ -41,6 +41,16 @@ export const createReview = async (review: {
   } catch (error) {
     console.error('리뷰생성 에러:', error);
     throw error;
+  }
+};
+
+export const deleteReview = async (id:number, onSuccess?:(arg0:any)=>void, onFailure?:(arg0:any)=>void) =>{
+  try {
+    const data = await del('/api/reviews', { id:id });
+    if (onSuccess) onSuccess(data);
+  } catch (error) {
+    console.error('change ProfileImage failed', error);
+    if (onFailure) onFailure(error);
   }
 };
 
