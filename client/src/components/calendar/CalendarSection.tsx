@@ -10,20 +10,28 @@ import { useEffect, useState } from 'react';
 interface CalendarDate {
   date: string;
   medications?: [];
+  bloodsugarbefore: number;
+  bloodsugarafter: number;
+  temp: number;
+  weight: number;
+  photo: string;
 }
 
-interface TileContent {
+interface TileContentProps {
   date: Date;
   view: string;
+  calendarData: CalendarDate;
 }
 
 const CalendarSection: React.FC = () => {
   const { value, onChange, edit } = useDateStore();
   const [postArray, setPostArray] = useState<Set<string>>(new Set());
+  const [calendarData, setData] = useState<CalendarDate[]>([]);
 
   useEffect(() => {
     const fetchData = async () => {
       const data: CalendarDate[] = await calendarAllGet();
+      setData(data);
       const datesWithMedications = new Set(
         data
           .filter((post) => post.medications && post.medications.length > 0)
@@ -33,9 +41,9 @@ const CalendarSection: React.FC = () => {
     };
 
     fetchData();
-  }, [edit]);
+  }, [edit, value]);
 
-  const addContent = ({ date, view }: TileContent) => {
+  const addContent = ({ date, view }: TileContentProps) => {
     if (view === 'month' && postArray.has(date.toDateString())) {
       return (
         <Pill
@@ -45,6 +53,29 @@ const CalendarSection: React.FC = () => {
         />
       );
     }
+
+    const healthData = calendarData.find(
+      (post) => new Date(post.date).toDateString() === date.toDateString()
+    );
+
+    if (
+      view === 'month' &&
+      healthData &&
+      (healthData.bloodsugarafter ||
+        healthData.bloodsugarbefore ||
+        healthData.temp ||
+        healthData.weight ||
+        healthData.photo)
+    ) {
+      return (
+        <Info
+          src='/img/calendarInfo.png'
+          alt='info icon'
+          className='pill-icon'
+        />
+      );
+    }
+
     return null;
   };
 
@@ -89,6 +120,10 @@ const CalendarContainer = styled.div`
 const Pill = styled.img`
   width: 14px;
   height: auto;
+`;
+
+const Info = styled.img`
+  width: 15px;
 `;
 
 export default CalendarSection;

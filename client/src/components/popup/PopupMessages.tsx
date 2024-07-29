@@ -23,6 +23,10 @@ export enum PopupType {
   ChangeUserProfileImageSuccess,
   ChangeUserProfileImageFailure,
 
+  DeleteFavorite, // src\components\myPage\FavoriteMedications.tsx
+  DeleteFavoriteSuccess,
+  DeleteFavoriteFailure,
+
   None
 }
 
@@ -79,6 +83,11 @@ const PopupContent = (
       case PopupType.ChangeUserProfileImageFailure:
         return (
           <div>프로필사진 변경에 실패했습니다. 잠시 후 다시 시도해주세요.</div>
+        );
+
+      case PopupType.DeleteFavoriteFailure:
+        return (
+          <div>즐겨찾는 약 삭제에 실패했습니다. 잠시 후 다시 시도해주세요.</div>
         );
     }
   };

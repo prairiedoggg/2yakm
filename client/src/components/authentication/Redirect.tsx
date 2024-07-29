@@ -1,9 +1,10 @@
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { get } from '../../api/api';
-import Cookies from 'js-cookie';
+import { useUserStore } from '../../store/user';
 
 const Redirect = ({ sns }: { sns: string }) => {
+  const { setToken } = useUserStore();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -31,13 +32,7 @@ const Redirect = ({ sns }: { sns: string }) => {
       })
         .then((res) => {
           if (res.token) {
-            // 쿠키에 토큰 저장
-            console.log(res.token);
-            Cookies.set('token', res.token, { path: '/' });
-            console.log(Cookies.get('jwt'));
-            Cookies.set('refreshToken', res.refreshToken, {
-              path: '/'
-            });
+            setToken(res.token, res.refreshToken);
             navigate('/');
           }
         })

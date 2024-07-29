@@ -1,10 +1,10 @@
 import { useEffect, useState, useRef } from 'react';
 import { useCalendar } from '../../store/store';
 
-const EditDetailPhoto: React.FC = () => {
+const EditDetailPhoto = () => {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const [isCameraOn, setIsCameraOn] = useState(false);
-  const { photo, setPhoto } = useCalendar();
+  const { setPhoto, photo } = useCalendar();
 
   useEffect(() => {
     const initCamera = async () => {

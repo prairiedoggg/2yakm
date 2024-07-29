@@ -14,6 +14,7 @@ export const get = async (
 ) => {
   try {
     const response = await api.get(url, { params, withCredentials });
+
     return response.data;
   } catch (error) {
     console.error(`GET request to ${url} failed`, error);

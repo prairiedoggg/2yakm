@@ -1,6 +1,8 @@
 import { post, del, patch } from './api';
 import useUserStore from '../store/user';
 import Cookies from 'js-cookie';
+import base64 from 'base-64';
+
 
 export const login = async (
   email: string,
@@ -129,6 +131,14 @@ export const changePassword = async (
 };
 
 const storeLoginData = (data: any) => {
-  if (data) useUserStore.getState().setUser(data.userName, data.email);
+  const userData = decodingToken(data.token);
+  if (data && userData) useUserStore.getState().setUser(data.userName, data.email, data.profileimg, userData.id);
+  console.log(useUserStore.getState().user);
   if (data.token) Cookies.set('token', `${data.token}`, { path: '/' });
 };
+
+const decodingToken = (token: string) =>{
+  let payload = token.substring(token.indexOf('.')+1, token.lastIndexOf('.'));
+  let decodingInfo = base64.decode(payload);
+  return JSON.parse(decodingInfo);
+}

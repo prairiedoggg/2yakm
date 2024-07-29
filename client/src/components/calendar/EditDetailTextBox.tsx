@@ -21,6 +21,7 @@ const EditDetailTextBox = ({ title }: EditDetailTextBoxProps) => {
     setTemp,
     setWeight
   } = useCalendar();
+
   const handleIsTakenPill = (times: string[], takenStatuses: boolean[]) => {
     return times.map((time, index) => (
       <StyledLabel key={index}>
@@ -32,7 +33,7 @@ const EditDetailTextBox = ({ title }: EditDetailTextBoxProps) => {
 
   const renderSimpleInput = (
     label: string,
-    value: number | string | null,
+    value: string | null,
     onChange: (e: React.ChangeEvent<HTMLInputElement>) => void,
     unit: string,
     handleDelete: (label: string) => void
@@ -97,20 +98,29 @@ const EditDetailTextBox = ({ title }: EditDetailTextBoxProps) => {
           </TextContainer>
         );
       case '체온':
-        return renderSimpleInput(
-          '체온',
-          temp,
-          (e) => setTemp(parseInt(e.target.value) || null),
-          '°C',
-          handleDeleteField
+        return (
+          <>
+            {renderSimpleInput(
+              '체온',
+              temp,
+              (e) => setTemp(parseInt(e.target.value) || null),
+              '°C',
+              handleDeleteField
+            )}
+          </>
         );
+
       case '체중':
-        return renderSimpleInput(
-          '체중',
-          weight,
-          (e) => setWeight(parseInt(e.target.value) || null),
-          'kg',
-          handleDeleteField
+        return (
+          <>
+            {renderSimpleInput(
+              '체중',
+              weight,
+              (e) => setWeight(parseInt(e.target.value) || null),
+              'kg',
+              handleDeleteField
+            )}
+          </>
         );
       case '사진 기록':
         return (
