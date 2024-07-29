@@ -66,26 +66,26 @@ def remove_background(input_path: str, final_output_path: str, num_passes: int):
     if not os.path.exists(uploads_dir):
         os.makedirs(uploads_dir)
 
+    # 중간 과정 확인을 위해 이미지 파일을 생성함
     for i in range(num_passes):
-        intermediate_output_path_next = os.path.join(uploads_dir, f"intermediate_{unique_id}_{i+1}.png")
+        intermediate_output_path_next = os.path.join(uploads_dir, f"intermediate_{unique_id}_{i+1}.png") 
         process_and_save(intermediate_output_path, intermediate_output_path_next)
         intermediate_output_path = intermediate_output_path_next
     
-    # 최종 결과를 최종 출력 경로에 복사
+    # 최종 연산 완료된 파일을 저장함
     os.rename(intermediate_output_path, final_output_path)
-    print(f"Final result saved at: {final_output_path}")
+    print(f"{final_output_path}") # stdout
 
-    # 중간 결과 파일 삭제
+    # 중간 과정 확인을 위해 생성된 파일을 삭제함
     for i in range(num_passes):
         intermediate_file = os.path.join(uploads_dir, f"intermediate_{unique_id}_{i+1}.png")
         if os.path.exists(intermediate_file):
             os.remove(intermediate_file)
-            print(f"Deleted intermediate file: {intermediate_file}")
+            print(f"중간 연산 파일 삭제 : {intermediate_file}")
 
 if __name__ == "__main__":
     input_path = sys.argv[1]
     final_output_path = sys.argv[2]
-    num_passes = 3
+    num_passes = 3 # 총 전처리 횟수 (배포 후 서버 성능 고려해서 수정할 것)
     
     remove_background(input_path, final_output_path, num_passes)
-    print(f"Final output path: {final_output_path}")

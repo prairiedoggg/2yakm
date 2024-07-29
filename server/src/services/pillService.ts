@@ -6,6 +6,7 @@ import { promisify } from 'util';
 import path from 'path';
 import fs from 'fs';
 import { v4 as uuidv4 } from 'uuid';
+import iconv from 'iconv-lite';
 
 const client = new vision.ImageAnnotatorClient({
   keyFilename: process.env.GOOGLE_APPLICATION_CREDENTIALS
@@ -32,6 +33,11 @@ interface SearchResult {
   total: number;
   limit: number;
   offset: number;
+}
+
+interface ExecFileResult {
+  stdout: Buffer;
+  stderr: Buffer;
 }
 
 export const getPills = async (
@@ -88,13 +94,21 @@ export const searchPillsbyName = async (
       pills: result.rows,
       total: result.rowCount ?? 0,
       limit,
-      offset,
+      offset
     };
   } catch (error: unknown) {
     if (error instanceof Error) {
-      throw createError('DatabaseError', `Failed to search pills by name: ${error.message}`, 500);
+      throw createError(
+        'DatabaseError',
+        `Failed to search pills by name: ${error.message}`,
+        500
+      );
     } else {
-      throw createError('UnknownError', `Failed to search pills by name: An unknown error occurred`, 500);
+      throw createError(
+        'UnknownError',
+        `Failed to search pills by name: An unknown error occurred`,
+        500
+      );
     }
   }
 };
@@ -159,7 +173,7 @@ const searchPillsByFrontAndBack = async (
       pills: result.rows,
       total: result.rowCount ?? 0,
       limit,
-      offset,
+      offset
     };
   } catch (error: unknown) {
     if (error instanceof Error) {
@@ -201,10 +215,7 @@ const searchPillsByNameFromText = async (
 };
 
 // execFile은 shell을 생성하지 않아 exec보다 더 효율적임, 비동기 명령어 실행을 async, await로 할 수 있게 promisify를 사용함
-const execFilePromise: (
-  file: string,
-  args: string[]
-) => Promise<{ stdout: string; stderr: string }> = promisify(execFile);
+const execFilePromise = promisify(execFile);
 
 // 이미지 배경을 제거하는 함수
 const preprocessImage = async (
@@ -228,17 +239,28 @@ const preprocessImage = async (
 
   const startTime = Date.now();
   try {
-    const { stdout, stderr } = await execFilePromise('python', command); // execFilePromise를 사용하여 Python 스크립트를 실행함
-    if (stderr) {
-      console.error(`stderr: ${stderr}`); // standard error, 에러 출력됨
+    const { stdout, stderr }: ExecFileResult = await execFilePromise(
+      'python',
+      command,
+      {
+        encoding: 'buffer'
+      }
+    ); // execFilePromise를 사용하여 Python 스크립트를 실행함
+
+    // stdout, stderr 한글 깨짐 현상 수정
+    const decodedStdout = iconv.decode(stdout, 'euc-kr');
+    const decodedStderr = iconv.decode(stderr, 'euc-kr');
+
+    if (decodedStderr) {
+      console.error(`stderr: ${decodedStderr}`); // standard error, 에러 출력됨
     }
-    console.log(`stdout: ${stdout}`); // standard output, 전처리 결과가 출력됨
+    console.log(`stdout: ${decodedStdout}`); // standard output, 전처리 결과가 출력됨
     console.log(
       `전처리가 완료되었습니다. 작업시간 : ${(Date.now() - startTime) / 1000}초`
     );
     const processedImageBuffer = fs.readFileSync(outputPath); // 처리된 이미지를 읽어와서 processedImageBuffer로 초기화
     return { processedImageBuffer, processedImagePath: outputPath }; // 처리된 이미지와, 경로를 반환함
-  } catch (error) {
+  } catch (error: any) {
     console.error('이미지 전처리 중 에러가 발생했습니다.', error);
     throw createError('Preprocessing Failed', '이미지 전처리 실패', 500);
   } finally {
@@ -261,7 +283,7 @@ const detectTextInImage = async (
       // Remove numbers, dots, parentheses, square brackets
       const filteredText = detections
         .map((text) => text?.description ?? '')
-        .filter((text) => !text.match(/[\.()]/))
+        .filter((text) => !text.match(/[\.()]/));
 
       console.log('Filtered text:', filteredText);
       return filteredText;
@@ -286,9 +308,8 @@ export const searchPillsByImage = async (
   let outputPath = '';
 
   try {
-    const { processedImageBuffer, processedImagePath } = await preprocessImage(
-      imageBuffer
-    ); // preprocessImage를 이용해 전처리를 하고 전처리된 이미지와, 경로를 받아옴
+    const { processedImageBuffer, processedImagePath } =
+      await preprocessImage(imageBuffer); // preprocessImage를 이용해 전처리를 하고 전처리된 이미지와, 경로를 받아옴
     outputPath = processedImagePath;
     const detectedText = await detectTextInImage(processedImageBuffer);
     if (!detectedText || detectedText.length === 0) {
@@ -393,4 +414,3 @@ export const getPillReviewCountService = async (
     );
   }
 };
-
