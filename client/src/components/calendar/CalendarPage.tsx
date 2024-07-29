@@ -5,14 +5,9 @@ import CalendarDetail from './CalendarDetail';
 import CalendarSection from './CalendarSection';
 import Nav from '../Nav';
 import { useDateStore } from '../../store/store';
-import { get, post } from '../../api/api';
 
 const CalendarPage: React.FC = () => {
   const { value, arrow, setArrow, edit, setEdit } = useDateStore();
-
-  get('http://localhost:3000/api/calendars')
-    .then((res) => console.log(res))
-    .catch((err) => console.log(err));
 
   dayjs.locale('ko');
   const days = dayjs(value).format('D. ddd');
@@ -25,7 +20,7 @@ const CalendarPage: React.FC = () => {
     }
   };
 
-  const handleEdit = () => {
+  const handleEdit = async () => {
     setEdit();
   };
 
@@ -103,9 +98,12 @@ const ImgContainer = styled.div`
   margin: 5px 0;
 `;
 
-const Arrow = styled.img`
+const Arrow = styled.button<{ src: string }>`
   width: 20px;
-  height: auto;
+  height: 20px;
+  background: url(${(props) => props.src}) no-repeat center center;
+  background-size: contain;
+  border: none;
   cursor: pointer;
 `;
 
@@ -119,9 +117,12 @@ const DateBox = styled.div`
   font-size: 14pt;
 `;
 
-const Edit = styled.img`
+const Edit = styled.button<{ src: string }>`
   width: 18px;
   height: 18px;
+  background: url(${(props) => props.src}) no-repeat center center;
+  background-size: contain;
+  border: none;
   cursor: pointer;
 `;
 

@@ -53,7 +53,7 @@ const EditDetailPhoto: React.FC = () => {
   };
   console.log('사진', uploadedImage);
   return (
-    <div>
+    <div style={{ width: '150px' }}>
       <button onClick={toggleCamera}>
         {isCameraOn ? 'Turn Off Camera' : 'Turn On Camera'}
       </button>

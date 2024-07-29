@@ -25,11 +25,20 @@ const useSearchHistoryStore = create<SearchHistoryState>(
       },
       clearHistory: () => set({ history: [] })
     }),
+<<<<<<< HEAD
     {
       name: 'searchHistory',
       getStorage: () => localStorage
     }
   )
 );
+=======
+  clearHistory: () => {
+    localStorage.removeItem('searchHistory');
+    return set({ history: [] });
+  },
+  setHistory: (history) => set({ history })
+}));
+>>>>>>> 2963eba (d)
 
 export { useSearchHistoryStore };
