@@ -10,17 +10,23 @@ export interface Review {
   content: string;
 }
 
-export interface ReviewsResponse { 
+export interface ReviewsResponse {
   reviews: Review[];
   nextCursor?: number;
-  
+}
+
+interface FetchReviewsContext {
+  pageParam?: number;
+  queryKey: [string, string | null];
 }
 
 export const fetchReviews = async ({
-  pageParam = 0
-}): Promise<ReviewsResponse> => {
+  pageParam = 0,
+  queryKey
+}: FetchReviewsContext): Promise<ReviewsResponse> => {
+  const [, pillId] = queryKey;
   try {
-    const data = await get(`/api/reviews/pills/{pillId}`, {
+    const data = await get(`/api/reviews/pills/${pillId}`, {
       cursor: pageParam
     });
     console.log('리뷰 get:', data);
@@ -33,6 +39,7 @@ export const fetchReviews = async ({
 
 export const createReview = async (review: {
   content: string;
+  pillid: string;
 }): Promise<Review> => {
   try {
     const data = await post(`/api/reviews`, review);
@@ -44,9 +51,31 @@ export const createReview = async (review: {
   }
 };
 
-export const fetchUserAllReview = async (limit: number, offset:number, sortedBy:string, order:string, onSuccess?:(arg0:any)=>void, onFailure?:(arg0:any)=>void) => {
+export const fetchReviewCount = async (pillId: string) => {
   try {
-    const data = await get('/api/reviews/users', { limit: limit, offset:offset, sortedBy:sortedBy, order:order });
+    const data = await get(`/api/pills/${pillId}/reviewcount`);
+    console.log('리뷰수:', data);
+    return data.count;
+  } catch (error) {
+    console.log('리뷰 수 가져오기 실패:', error);
+  }
+};
+
+export const fetchUserAllReview = async (
+  limit: number,
+  offset: number,
+  sortedBy: string,
+  order: string,
+  onSuccess?: (arg0: any) => void,
+  onFailure?: (arg0: any) => void
+) => {
+  try {
+    const data = await get('/api/reviews/users', {
+      limit: limit,
+      offset: offset,
+      sortedBy: sortedBy,
+      order: order
+    });
     if (onSuccess) onSuccess(data);
   } catch (error) {
     console.error('change ProfileImage failed', error);

@@ -10,18 +10,18 @@ import {
   fetchFavoriteStatusApi,
   fetchFavoriteCount
 } from '../../api/favoriteApi';
-import { useFavoriteStore } from '../../store/favorite';
 import { useSearchStore } from '../../store/search';
 import { usePillStore } from '../../store/pill';
+import { useFavoriteStore } from '../../store/favorite';
 
 const SearchResults = () => {
   const { searchQuery } = useSearchStore();
-  const [activeTab, setActiveTab] = useState<string>('effectiveness');
-  const { isFavorite, setIsFavorite } = useFavoriteStore();
   const { pillData, setPillData } = usePillStore();
+  const { isFavorite, setIsFavorite, favoriteCount, setFavoriteCount } =
+    useFavoriteStore();
+  const [activeTab, setActiveTab] = useState<string>('effectiveness');
   const [pillId, setPillId] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
-  const [favoriteCount, setFavoriteCount] = useState<number>(0);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -33,8 +33,8 @@ const SearchResults = () => {
           setPillData(data);
           console.log('약데이터', data);
           const count = await fetchFavoriteCount(data.id);
-          console.log('좋아요 수',count);
-          setFavoriteCount(count); 
+          console.log('좋아요 수', count);
+          setFavoriteCount(count);
           const status = await fetchFavoriteStatusApi(data.id);
           setIsFavorite(!status);
         } else {

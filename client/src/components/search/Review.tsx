@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import create from 'zustand';
 import {
@@ -6,13 +6,9 @@ import {
   useMutation,
   useQueryClient
 } from '@tanstack/react-query';
-import {
-  fetchReviews,
-  createReview,
-  type Review
-} from '../../api/reviewApi';
-
-
+import { fetchReviews, createReview, type Review } from '../../api/reviewApi';
+import { fetchPillDataByName } from '../../api/pillApi'
+import { useSearchStore } from '../../store/search';
 
 interface ReviewState {
   isWritingReview: boolean;
@@ -27,17 +23,35 @@ export const useReviewStore = create<ReviewState>((set) => ({
 
 const Review = () => {
   const queryClient = useQueryClient();
-  const [newReview, setNewReview] = useState('');
+  const { searchQuery } = useSearchStore();
   const { isWritingReview, toggleReviewForm } = useReviewStore();
+  const [newReview, setNewReview] = useState('');
+  const [pillId, setPillId] = useState<string | null>(null);
 
-  const { data, fetchNextPage, hasNextPage, isFetchingNextPage } =
-    useInfiniteQuery({
-      queryKey: ['reviews'],
-      queryFn: fetchReviews,
-      getNextPageParam: (lastPage) => lastPage.nextCursor,
-      initialPageParam: 0
-    });
-  
+  useEffect(() => {
+   const fetchPillId = async () => {
+     try {
+       const fetchedPill = await fetchPillDataByName(searchQuery);
+       if (fetchedPill) {
+         setPillId(fetchedPill.id);
+       }
+     } catch (error) {
+       console.error('약 id 불러오기 에러:', error);
+     }
+   };
+    fetchPillId();
+  }, []);
+
+
+const { data, fetchNextPage, hasNextPage, isFetchingNextPage } =
+  useInfiniteQuery({
+    queryKey: ['reviews', pillId],
+    queryFn: fetchReviews,
+    enabled: !!pillId,
+    getNextPageParam: (lastPage) => lastPage.nextCursor,
+    initialPageParam: 0
+  });
+
   const mutation = useMutation({
     mutationFn: createReview,
     onSuccess: () => {
