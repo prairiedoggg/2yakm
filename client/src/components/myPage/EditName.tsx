@@ -1,19 +1,17 @@
-/**
-File Name : EditMyInformation
-Description : 내 정보 수정 페이지
-Author : 오선아
-
-History
-Date        Author   Status    Description
-2024.07.19  오선아   Created
-*/
-
 import styled from 'styled-components';
 import { Icon } from '@iconify-icon/react';
 import { ChangeEvent, useState } from 'react';
+import useUserStore from '../../store/user';
+import { changeUserName } from '../../api/myPageService';
+import PopupContent, { PopupType } from '../popup/PopupMessages';
+import Popup from '../popup/Popup';
+import { useNavigate } from 'react-router-dom';
 
 const EditName = ({ onEdit }: { onEdit: () => void }) => {
+  const { user } = useUserStore.getState();
   const [name, setName] = useState('');
+  const [popupType, setPopupType] = useState<PopupType>(PopupType.None);
+  const navigate = useNavigate();
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
@@ -23,11 +21,11 @@ const EditName = ({ onEdit }: { onEdit: () => void }) => {
   return (
     <MyPageContainer>
       <StyledContent>
-        <div className='title'>새로운 이름을 입력해주세요</div>
+        <div className='title'>새로운 이름을 입력해주세요 (3글자 이상)</div>
         <div className='input-container'>
           <input
             type='text'
-            placeholder='홍길동'
+            placeholder={user?.userName ?? ''}
             value={name}
             onChange={handleChange}
           />
@@ -45,12 +43,34 @@ const EditName = ({ onEdit }: { onEdit: () => void }) => {
         </div>
         <button
           className='submitButton'
-          disabled={!(name.trim().length > 0)}
-          onClick={onEdit}
+          disabled={!(name.trim().length > 2)}
+          onClick={() => {
+            changeUserName(
+              name,
+              () => {
+                setPopupType(PopupType.ChangeUserNameSuccess);
+              },
+              () => {
+                setPopupType(PopupType.ChangeUserNameFailure);
+              }
+            );
+          }} //onEdit()
         >
           변경 완료
         </button>
       </StyledContent>
+
+      {popupType !== PopupType.None && (
+        <Popup
+          onClose={() =>
+            popupType == PopupType.ChangeUserNameFailure
+              ? setPopupType(PopupType.None)
+              : onEdit()
+          }
+        >
+          {PopupContent(popupType, navigate)}
+        </Popup>
+      )}
     </MyPageContainer>
   );
 };
@@ -75,7 +95,6 @@ const StyledContent = styled.div`
   .title {
     font-weight: bold;
   }
-
   .submitButton {
     background-color: #fde72e;
     border: none;

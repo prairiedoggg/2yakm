@@ -4,12 +4,13 @@ import { Icon } from '@iconify-icon/react';
 import styled from 'styled-components';
 import PillExp from './PillExp';
 import Review from './Review';
-import { useFavoriteStore } from '../../store/favorite';
 import { fetchPillData } from '../../api/pillApi';
 import {
   toggleFavoriteApi,
-  fetchFavoriteStatusApi
+  fetchFavoriteStatusApi,
+  fetchFavoriteCount
 } from '../../api/favoriteApi';
+import { useFavoriteStore } from '../../store/favorite';
 import { useSearchStore } from '../../store/search';
 import { usePillStore } from '../../store/pill';
 
@@ -20,6 +21,7 @@ const SearchResults = () => {
   const { pillData, setPillData } = usePillStore();
   const [pillId, setPillId] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
+  const [favoriteCount, setFavoriteCount] = useState<number>(0);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -31,7 +33,10 @@ const SearchResults = () => {
           setPillData(data);
           console.log('약데이터', data);
           const status = await fetchFavoriteStatusApi(data.id);
-          setIsFavorite(status);
+          setIsFavorite(!status);
+          const count = await fetchFavoriteCount(data.id);
+          console.log(count);
+          setFavoriteCount(count); 
         } else {
           setPillData(null);
           setPillId(null);
@@ -50,6 +55,8 @@ const SearchResults = () => {
     try {
       await toggleFavoriteApi(pillId);
       setIsFavorite(!isFavorite);
+      const count = await fetchFavoriteCount(pillId);
+      setFavoriteCount(count);
     } catch (error) {
       console.error('좋아요상태 실패:', error);
     }
@@ -69,29 +76,34 @@ const SearchResults = () => {
 
   return (
     <SearchResultsContainer>
-      <PillHeader>
+      <PillInfo>
         <img src={`/img/pill.png`} alt='pill' />
         <section>
-          <PillTitle>
-            <h3>{pillData.name}</h3>
+          <PillHeader>
+            <PillTitle>
+              <h3>{pillData.name}</h3>
+              <HeartButton onClick={handleToggleFavorite}>
+                <Icon
+                  icon='mdi:heart'
+                  style={{
+                    color: isFavorite ? 'red' : 'gray'
+                  }}
+                  width='24'
+                  height='24'
+                />
+                <p>{favoriteCount}</p>
+              </HeartButton>
+            </PillTitle>
             <span>{pillData.engname}</span>
             <p>{pillData.companyname}</p>
-            <HeartButton onClick={handleToggleFavorite}>
-              <Icon
-                icon='mdi:heart'
-                color={isFavorite ? 'red' : 'gray'}
-                width='24'
-                height='24'
-              />
-            </HeartButton>
-          </PillTitle>
+          </PillHeader>
           <TagContainer>
             <Tag to='/search/tag/두통'>두통</Tag>
             <Tag to='/search/tag/신경통'>신경통</Tag>
             <Tag to='/search/tag/근육통'>근육통</Tag>
           </TagContainer>
         </section>
-      </PillHeader>
+      </PillInfo>
       <Exp>※ 태그들을 클릭해 관련 증상들을 모아보세요.</Exp>
       <PillMore>
         <Menu>
@@ -117,7 +129,7 @@ export default SearchResults;
 
 const SearchResultsContainer = styled.div``;
 
-const PillHeader = styled.div`
+const PillInfo = styled.div`
   display: flex;
   align-items: flex-start;
   width: 80vw;
@@ -128,7 +140,7 @@ const PillHeader = styled.div`
   }
 `;
 
-const PillTitle = styled.div`
+const PillHeader = styled.div`
   & p {
     padding-top: 5px;
     padding-bottom: 10px;
@@ -140,6 +152,10 @@ const PillTitle = styled.div`
     font-size: 10px;
     font-style: italic;
   }
+`;
+
+const PillTitle = styled.div`
+  display: flex;
 `;
 
 const HeartButton = styled.button`

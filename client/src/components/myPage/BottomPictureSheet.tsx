@@ -1,16 +1,7 @@
-/**
-File Name : BottomPictureSheet
-Description : 사진 선택용 바텀시트
-Author : 오선아
-
-History
-Date        Author   Status    Description
-2024.07.21  오선아   Created
-*/
-
 import styled from 'styled-components';
 import { Icon } from '@iconify-icon/react';
 import BottomSheet from '../BottomSheet';
+import { useCallback, useRef } from 'react';
 
 const BottomPictureSheet = ({
   title,
@@ -19,11 +10,23 @@ const BottomPictureSheet = ({
 }: {
   title: string;
   isVisible: boolean;
-  onClose: () => void;
+  onClose: (pic: File | null) => void;
 }) => {
+  const inputRef = useRef<HTMLInputElement | null>(null);
+
+  const onUploadImage = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      if (!e.target.files) {
+        return;
+      }
+      onClose(e.target.files[0]);
+    },
+    []
+  );
+
   return (
     <Sheet>
-      <BottomSheet isVisible={isVisible} onClose={onClose}>
+      <BottomSheet isVisible={isVisible} onClose={() => onClose(null)}>
         <div className='title'>{title}</div>
         <div className='menu'>
           <Icon
@@ -34,6 +37,13 @@ const BottomPictureSheet = ({
             onClick={() => {}}
           />{' '}
           카메라로 촬영하기
+          <input
+            className='file-input'
+            type='file'
+            capture='environment'
+            ref={inputRef}
+            onChange={onUploadImage}
+          />
         </div>
         <div className='menu'>
           <Icon
@@ -41,11 +51,18 @@ const BottomPictureSheet = ({
             width='1.5rem'
             height='1.5rem'
             style={{ color: 'black' }}
-            onClick={() => {}}
           />{' '}
           앨범에서 선택하기
+          <input
+            className='file-input'
+            type='file'
+            accept='image/*'
+            ref={inputRef}
+            onChange={onUploadImage}
+          />
         </div>
-        <button className='bottomClose' onClick={onClose}>
+
+        <button className='bottomClose' onClick={() => onClose(null)}>
           닫기
         </button>
       </BottomSheet>
@@ -57,6 +74,7 @@ const Sheet = styled.div`
   .menu {
     display: flex;
     gap: 10px;
+    cursor: pointer;
   }
 
   .title {
@@ -78,6 +96,12 @@ const Sheet = styled.div`
     font-size: 24px;
     cursor: pointer;
     color: #333;
+  }
+
+  .file-input {
+    position: absolute;
+    background-color: red;
+    opacity: 0%;
   }
 `;
 

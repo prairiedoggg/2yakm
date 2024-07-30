@@ -7,7 +7,7 @@ const MyInformation = ({
 }: {
   onEditInfo: () => void;
 }) => {
-  const user = useUserStore((state) => state.user);
+  const { user } = useUserStore.getState();
 
   return (
     <InformationLayout>
@@ -22,7 +22,7 @@ const MyInformation = ({
       <div className='profile'>
         <div className='info'>
           <div className='nameArea' onClick={() => onEditClick()}>
-            {user?.name ?? ''}
+            {user?.userName ?? ''}
             <Icon icon='ic:baseline-edit' style={{ color: '#d1d1d1' }} />
           </div>
           <div>{user?.email ?? ''}</div>

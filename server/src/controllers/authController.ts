@@ -13,9 +13,11 @@ import {
   verifyEmailService,
   requestEmailVerification,
   changeUsernameService,
-  deleteAccountService
+  deleteAccountService,
+  getUserInfo
 } from '../services/authService';
 import { createError } from '../utils/error';
+import { CustomRequest } from '../types/express';
 
 // 로그인
 export const loginController = async (req: Request, res: Response, next: NextFunction) => {
@@ -24,7 +26,7 @@ export const loginController = async (req: Request, res: Response, next: NextFun
     const result = await login(email, password);
     res.cookie('jwt', result.token, { httpOnly: true });
     res.cookie('refreshToken', result.refreshToken, { httpOnly: true });
-    res.status(200).json({ message: '로그인 성공', token: result.token, refreshToken: result.refreshToken, userName: result.userName, email: result.email });
+    res.status(200).json({ message: '로그인 성공' });
   } catch (error) {
     next(error);
   }
@@ -79,9 +81,14 @@ export const verifyEmailController = async (req: Request<{ query: { token: strin
 // 토큰 갱신
 export const refreshTokenController = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const { refreshToken } = req.body;
+    const { refreshToken } = req.cookies.refreshToken;
+    if (!refreshToken) {
+      throw createError('No RefreshToken', '리프레시 토큰이 없습니다.', 401);
+    }
     const { token, refreshToken: newRefreshToken } = await refreshTokenService(refreshToken);
-    res.status(200).json({ token, refreshToken: newRefreshToken });
+    res.cookie('jwt', token, { httpOnly: true });
+    res.cookie('refreshToken', newRefreshToken, { httpOnly: true });
+    res.status(200).json({ message: '토큰 갱신 성공' });
   } catch (error) {
     next(error);
   }
@@ -100,7 +107,7 @@ export const kakaoAuthController = async (req: Request<{ query: { code: string }
     } else {
       res.cookie('jwt', result.token, { httpOnly: true });
       res.cookie('refreshToken', result.refreshToken, { httpOnly: true });
-      res.status(200).json({ message: '로그인 성공', token: result.token, refreshToken: result.refreshToken, userName: result.userName, email: result.email });
+      res.status(200).json({ message: '로그인 성공' });
     }
   } catch (error) {
     next(error);
@@ -121,7 +128,7 @@ export const naverAuthController = async (req: Request<{ query: { code: string, 
     } else {
       res.cookie('jwt', result.token, { httpOnly: true });
       res.cookie('refreshToken', result.refreshToken, { httpOnly: true });
-      res.status(200).json({ message: '네이버 인증 성공', token: result.token, refreshToken: result.refreshToken, userName: result.userName, email: result.email });
+      res.status(200).json({ message: '네이버 인증 성공' });
     }
   } catch (error) {
     next(error);
@@ -143,7 +150,7 @@ export const googleAuthController = async (req: Request<{ query: { code: string 
     } else {
       res.cookie('jwt', result.token, { httpOnly: true });
       res.cookie('refreshToken', result.refreshToken, { httpOnly: true });
-      res.status(200).json({ message: '구글 인증 성공', token: result.token, refreshToken: result.refreshToken, userName: result.userName, email: result.email });
+      res.status(200).json({ message: '구글 인증 성공' });
     }
   } catch (error) {
     next(error);
@@ -230,11 +237,28 @@ export const changeUsernameController = async (req: Request, res: Response, next
 };
 
 // 회원탈퇴
-export const deleteAccountController = async (req: Request, res: Response, next: NextFunction) => {
+export const deleteAccountController = async (req: CustomRequest, res: Response, next: NextFunction) => {
   try {
-    const { userId } = req.body;
+    const userId = req.user?.id;
+    if (!userId) {
+      throw createError('Unauthorized', '사용자 인증이 필요합니다.', 401);
+    }
     await deleteAccountService(userId);
     res.status(200).json({ message: '회원탈퇴 완료' });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// 유저 정보
+export const getUserInfoController = async (req: CustomRequest, res: Response, next: NextFunction ) => {
+  try {
+    const userId = req.user?.id;
+    if (!userId) {
+      throw createError('Unauthorized', '사용자 인증이 필요합니다.', 401);
+    }
+    const userInfo = await getUserInfo(userId);
+    res.status(200).json(userInfo);
   } catch (error) {
     next(error);
   }

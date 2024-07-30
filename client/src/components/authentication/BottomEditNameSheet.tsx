@@ -1,13 +1,3 @@
-/**
-File Name : BottomPictureSheet
-Description : 사진 선택용 바텀시트
-Author : 오선아
-
-History
-Date        Author   Status    Description
-2024.07.21  오선아   Created
-*/
-
 import styled from 'styled-components';
 import { Icon } from '@iconify-icon/react';
 import BottomSheet from '../BottomSheet';
