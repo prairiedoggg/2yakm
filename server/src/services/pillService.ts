@@ -7,6 +7,7 @@ import path from 'path';
 import fs from 'fs';
 import { v4 as uuidv4 } from 'uuid';
 
+
 const client = new vision.ImageAnnotatorClient({
   keyFilename: process.env.GOOGLE_APPLICATION_CREDENTIALS
 });
@@ -79,7 +80,8 @@ export const searchPillsbyName = async (
   limit: number,
   offset: number
 ): Promise<SearchResult> => {
-  const query = `SELECT * FROM pills WHERE name LIKE $1 OR engname LIKE $1`;
+  const query = `SELECT * FROM pills WHERE name LIKE $1 OR engname LIKE $1 
+                 LIMIT $2 OFFSET $3 ` ;
   const values = [`${name}%`, limit, offset];
 
   try {
@@ -200,13 +202,12 @@ const searchPillsByNameFromText = async (
   }
 };
 
-// execFile은 shell을 생성하지 않아 exec보다 더 효율적임, 비동기 명령어 실행을 async, await로 할 수 있게 promisify를 사용함
 const execFilePromise: (
   file: string,
   args: string[]
 ) => Promise<{ stdout: string; stderr: string }> = promisify(execFile);
 
-// 이미지 배경을 제거하는 함수
+
 const preprocessImage = async (
   imageBuffer: Buffer
 ): Promise<{ processedImageBuffer: Buffer; processedImagePath: string }> => {
@@ -215,36 +216,35 @@ const preprocessImage = async (
   const inputPath = path.join(uploadsDir, `input_image_${uniqueId}.jpg`);
   const outputPath = path.join(uploadsDir, `processed_image_${uniqueId}.png`);
 
-  // 업로드 디렉터리가 존재하지 않으면 생성해줌
+  // Ensure the uploads directory exists
   if (!fs.existsSync(uploadsDir)) {
     fs.mkdirSync(uploadsDir);
   }
 
   fs.writeFileSync(inputPath, imageBuffer);
 
-  // RMBG-1.4 모델을 불러옴
   const pyPath = path.join(__dirname, '..', 'python', 'removeBackground.py');
-  const command = [pyPath, inputPath, outputPath]; // 파이썬 command 생성
+  const pythonExecutablePath = '/Users/wonsikwoo/miniconda3/envs/newenv/bin/python'; // Adjust this to your conda environment's Python interpreter path
+  const command = [pythonExecutablePath, pyPath, inputPath, outputPath];
 
   const startTime = Date.now();
   try {
-    const { stdout, stderr } = await execFilePromise('python', command); // execFilePromise를 사용하여 Python 스크립트를 실행함
+    const { stdout, stderr } = await execFilePromise(command[0], command.slice(1));
     if (stderr) {
-      console.error(`stderr: ${stderr}`); // standard error, 에러 출력됨
+      console.error(`stderr: ${stderr}`);
     }
-    console.log(`stdout: ${stdout}`); // standard output, 전처리 결과가 출력됨
-    console.log(
-      `전처리가 완료되었습니다. 작업시간 : ${(Date.now() - startTime) / 1000}초`
-    );
-    const processedImageBuffer = fs.readFileSync(outputPath); // 처리된 이미지를 읽어와서 processedImageBuffer로 초기화
-    return { processedImageBuffer, processedImagePath: outputPath }; // 처리된 이미지와, 경로를 반환함
+    console.log(`stdout: ${stdout}`);
+    console.log(`Image preprocessing completed in ${(Date.now() - startTime) / 1000} seconds`);
+    const processedImageBuffer = fs.readFileSync(outputPath);
+    return { processedImageBuffer, processedImagePath: outputPath };
   } catch (error) {
-    console.error('이미지 전처리 중 에러가 발생했습니다.', error);
-    throw createError('Preprocessing Failed', '이미지 전처리 실패', 500);
+    console.error('Error during image preprocessing:', error);
+    throw createError('PreprocessingFailed', 'Image preprocessing failed', 500);
   } finally {
-    fs.unlinkSync(inputPath); // 입력 파일을 삭제함
+    fs.unlinkSync(inputPath);
   }
 };
+
 
 const detectTextInImage = async (
   imageBuffer: Buffer
@@ -261,7 +261,8 @@ const detectTextInImage = async (
       // Remove numbers, dots, parentheses, square brackets
       const filteredText = detections
         .map((text) => text?.description ?? '')
-        .filter((text) => !text.match(/[\.()]/))
+        .filter((text) => !text.match(/[\.()]/)&& !text.includes('식품')&& !text.includes('의약품')&& !text.includes('안전')&& !text.includes('처')
+        && !text.includes('Ministry')&& !text.includes('of')&& !text.includes('Food')&& !text.includes('and')&& !text.includes('Drug')&& !text.includes('mm'))
 
       console.log('Filtered text:', filteredText);
       return filteredText;

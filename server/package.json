@@ -58,10 +58,12 @@
     "pinecone": "^0.1.0",
     "readable-stream": "^4.5.2",
     "reflect-metadata": "^0.2.2",
+    "sharp": "^0.33.4",
     "swagger": "^0.7.5",
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui": "^5.17.14",
     "swagger-ui-express": "^5.0.1",
+    "transformers": "^3.1.0",
     "typeorm": "^0.3.20",
     "uuid": "^10.0.0"
   }

@@ -89,3 +89,4 @@ if __name__ == "__main__":
     
     remove_background(input_path, final_output_path, num_passes)
     print(f"Final output path: {final_output_path}")
+
