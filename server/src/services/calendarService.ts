@@ -144,7 +144,7 @@ export const updateCalendar = async (
       bloodsugarBefore AS "bloodsugarBefore", bloodsugarAfter AS "bloodsugarAfter", medications
     `;
     const values = [
-      calendar.calImg ?? existingCalendar.calImg,
+      calendar.calImg ?? null,
       calendar.condition ?? existingCalendar.condition,
       calendar.weight ?? existingCalendar.weight,
       calendar.temperature ?? existingCalendar.temperature,
