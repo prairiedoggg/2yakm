@@ -183,7 +183,7 @@ const searchPillsByNameFromText = async (
     WHERE engname ILIKE $1
     LIMIT $2 OFFSET $3`;
 
-  const values = [`%${text}%`, limit, offset];
+  const values = [`${text}%`, limit, offset];
 
   try {
     const result = await pool.query(query, values);
@@ -261,8 +261,8 @@ const detectTextInImage = async (
       // Remove numbers, dots, parentheses, square brackets
       const filteredText = detections
         .map((text) => text?.description ?? '')
-        .filter((text) => !text.match(/[\.()]/)&& !text.includes('식품')&& !text.includes('의약품')&& !text.includes('안전')&& !text.includes('처')
-        && !text.includes('Ministry')&& !text.includes('of')&& !text.includes('Food')&& !text.includes('and')&& !text.includes('Drug')&& !text.includes('mm'))
+        .filter((text) => !text.match(/[\.()]/)&& !text.includes('식품')&& !text.includes('의약품')&& !text.includes('안전')&& !text.includes('처')&& !text.includes('foo')
+        && !text.includes('Ministry')&& !text.includes('of')&& !text.includes('Food')&& !text.includes('and')&& !text.includes('Drug')&& !text.includes('mm')&& !text.includes('-')&&!text.includes('\n'))
 
       console.log('Filtered text:', filteredText);
       return filteredText;
@@ -299,25 +299,38 @@ export const searchPillsByImage = async (
     let pills: PillData[] = [];
     let total = 0;
 
-    // Search by front and back text in pillocr table
-    for (const text of detectedText) {
-      if (text) {
-        const frontText = detectedText[0];
-        const backText = detectedText[1];
-        const resultByFrontAndBack = await searchPillsByFrontAndBack(
-          frontText,
-          backText,
-          limit,
-          offset
-        );
-        pills.push(...resultByFrontAndBack.pills);
-        total += resultByFrontAndBack.total;
-      }
-    }
+    // First try with detectedText[0] as front and detectedText[1] as back
+    const frontText1 = detectedText[0] || '';
+    const backText1 = detectedText[1] || '';
 
-    // If no results from pillocr, search in pills table by name
+    let resultByFrontAndBack = await searchPillsByFrontAndBack(
+      frontText1,
+      backText1,
+      limit,
+      offset
+    );
+
+    pills.push(...resultByFrontAndBack.pills);
+    total += resultByFrontAndBack.total;
+
+    // If no results, try with detectedText[0] + detectedText[1] as front and detectedText[2] as back
     if (total === 0) {
-      for (const text of detectedText) {
+      const frontText2 = detectedText.slice(0, 2).join(' ');
+      const backText2 = detectedText[2] || '';
+
+      resultByFrontAndBack = await searchPillsByFrontAndBack(
+        frontText2,
+        backText2,
+        limit,
+        offset
+      );
+
+      pills.push(...resultByFrontAndBack.pills);
+      total += resultByFrontAndBack.total;
+    }
+    // If no results from pillocr, search in pills table by name
+    
+    const text = detectedText[0];
         if (text) {
           const resultByName = await searchPillsByNameFromText(
             text,
@@ -327,8 +340,7 @@ export const searchPillsByImage = async (
           pills.push(...resultByName.pills);
           total += resultByName.total;
         }
-      }
-    }
+      
 
     // Remove duplicates based on id
     const uniquePills = Array.from(
