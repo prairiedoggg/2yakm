@@ -14,8 +14,8 @@ const convertToKoreanTime = (date: Date): Date => {
 export const getAllCalendars = async (userId: string): Promise<Calendar[]> => {
   try {
     const text = `
-      SELECT id, userId, date, calImg, condition, weight, temperature, 
-      bloodsugarBefore, bloodsugarAfter, medications
+      SELECT id, userId AS "userId", date, calImg AS "calImg", condition, weight, temperature, 
+      bloodsugarBefore AS "bloodsugarBefore", bloodsugarAfter AS "bloodsugarAfter", medications
       FROM calendar 
       WHERE userId = $1
     `;    
@@ -42,8 +42,8 @@ export const getCalendarById = async (userId: string, date: Date): Promise<Calen
   try {
     const dateString = format(zonedTimeToUtc(date, TIMEZONE), 'yyyy-MM-dd');
     const text = `
-      SELECT id, userId, date, calImg, condition, weight, temperature, 
-      bloodsugarBefore, bloodsugarAfter, medications
+      SELECT id, userId AS "userId", date, calImg AS "calImg", condition, weight, temperature, 
+      bloodsugarBefore AS "bloodsugarBefore", bloodsugarAfter AS "bloodsugarAfter", medications
       FROM calendar 
       WHERE userId = $1 AND date = $2
     `;    
