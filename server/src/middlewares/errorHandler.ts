@@ -19,7 +19,7 @@ const errorHandler = (err: CustomError, req: Request, res: Response, next: NextF
   res.status(err.status || 500).json({
     error: {
       name: err.name,
-      message: err.message
+      message: 'Internal server error'
     }
   });
 };
