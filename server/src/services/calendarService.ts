@@ -84,8 +84,8 @@ export const createCalendar = async (calendar: Omit<Calendar, 'id'>): Promise<Ca
       (userid, date, calimg, condition, weight, temperature, 
         bloodsugarBefore, bloodsugarAfter, medications) 
         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) 
-        RETURNING id, userId, date, calImg, condition, weight, temperature, 
-        bloodsugarBefore, bloodsugarAfter, medications
+        RETURNING id, userId, date, calImg AS "calImg", condition, weight, temperature, 
+        bloodsugarBefore AS "bloodsugarBefore", bloodsugarAfter AS "bloodsugarAfter", medications
     `;
     const values = [
       calendar.userId,
@@ -140,7 +140,7 @@ export const updateCalendar = async (
           bloodsugarBefore = $5, bloodsugarAfter = $6,
           medications = $7
       WHERE userId = $8 AND date = $9
-      RETURNING id, userId, date, calImg, condition, weight, temperature, 
+      RETURNING id, userId, date, calImg AS "calImg", condition, weight, temperature, 
       bloodsugarBefore AS "bloodsugarBefore", bloodsugarAfter AS "bloodsugarAfter", medications
     `;
     const values = [
