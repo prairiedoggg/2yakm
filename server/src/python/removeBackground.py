@@ -67,20 +67,25 @@ def remove_background(input_path: str, final_output_path: str, num_passes: int):
         os.makedirs(uploads_dir)
 
     # 중간 과정 확인을 위해 이미지 파일을 생성함
+    # 중간 과정 확인을 위해 이미지 파일을 생성함
     for i in range(num_passes):
+        intermediate_output_path_next = os.path.join(uploads_dir, f"intermediate_{unique_id}_{i+1}.png") 
         intermediate_output_path_next = os.path.join(uploads_dir, f"intermediate_{unique_id}_{i+1}.png") 
         process_and_save(intermediate_output_path, intermediate_output_path_next)
         intermediate_output_path = intermediate_output_path_next
     
     # 최종 연산 완료된 파일을 저장함
+    # 최종 연산 완료된 파일을 저장함
     os.rename(intermediate_output_path, final_output_path)
     print("이미지 전처리를 완료했습니다.") # stdout
 
+    # 중간 과정 확인을 위해 생성된 파일을 삭제함
     # 중간 과정 확인을 위해 생성된 파일을 삭제함
     for i in range(num_passes):
         intermediate_file = os.path.join(uploads_dir, f"intermediate_{unique_id}_{i+1}.png")
         if os.path.exists(intermediate_file):
             os.remove(intermediate_file)
+            print(f"중간 연산 파일 삭제 : {intermediate_file}")
             print(f"중간 연산 파일 삭제 : {intermediate_file}")
 
 if __name__ == "__main__":

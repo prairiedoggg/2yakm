@@ -1,13 +1,13 @@
 const { uploadToMemory, uploadToS3 } = require('../config/imgUploads');
 import {
-  getPillsHandler, 
-  getPillByIdHandler, 
-  searchPillsbyNameHandler, 
+  getPillsHandler,
+  getPillByIdHandler,
+  searchPillsbyNameHandler,
   searchPillsbyEfficacyHandler,
   searchPillsByImageHandler,
   getPillFavoriteCount,
   getPillReviewCount
-} from "../controllers/pillController"
+} from '../controllers/pillController';
 
 import { Router } from 'express';
 const router = Router();
@@ -261,7 +261,6 @@ router.get('/:id/favoritecount', getPillFavoriteCount);
  */
 router.get('/search/name', searchPillsbyNameHandler);
 
-
 /**
  * @swagger
  * /api/pills/search/efficacy:
@@ -360,43 +359,80 @@ router.get('/search/efficacy', searchPillsbyEfficacyHandler);
  *         content:
  *           application/json:
  *             schema:
- *               type: array
- *               items:
- *                 type: object
- *                 properties:
- *                   id:
- *                     type: integer
- *                   name:
- *                     type: string
- *                   engname:
- *                     type: string
- *                   companyname:
- *                     type: string
- *                   companyengname:
- *                     type: string
- *                   ingredientname:
- *                     type: string
- *                   ingredientengname:
- *                     type: string
- *                   type:
- *                     type: string
- *                   shape:
- *                     type: string
- *                   efficacy:
- *                     type: string
- *                   dosage:
- *                     type: string
- *                   caution:
- *                     type: string
- *                   storagemethod:
- *                     type: string
- *                   expdate:
- *                      type: string
- *                   source:
- *                      type: string
- *                   imgurl:
- *                      type: string
+ *               type: object
+ *               properties:
+ *                 pills:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       id:
+ *                         type: integer
+ *                       name:
+ *                         type: string
+ *                       engname:
+ *                         type: string
+ *                       companyname:
+ *                         type: string
+ *                       ingredientname:
+ *                         type: string
+ *                       efficacy:
+ *                         type: string
+ *                       importWords:
+ *                         type: string
+ *                       similarity:
+ *                         type: string
+ *                       imgurl:
+ *                         type: string
+ *                 totalCount:
+ *                   type: integer
+ *                   description: 검색된 약의 총 개수
+ *                 totalPages:
+ *                   type: integer
+ *                   description: 총 페이지 수
+ *                 limit:
+ *                   type: integer
+ *                   description: 요청된 약의 개수
+ *                 offset:
+ *                   type: integer
+ *                   description: 요청된 약의 시작 위치
+ *             examples:
+ *               example1:
+ *                 summary: OCR 결과 예시
+ *                 value:
+ *                   pills:
+ *                     - id: 0
+ *                       name: "string"
+ *                       engname: "string"
+ *                       companyname: "string"
+ *                       ingredientname: "string"
+ *                       efficacy: "string"
+ *                       importWords: "string"
+ *                   totalCount: 1
+ *                   totalPages: 1
+ *                   limit: 10
+ *                   offset: 0
+ *               example2:
+ *                 summary: 이미지 유사도 결과 예시
+ *                 value:
+ *                   pills:
+ *                     - id: 0
+ *                       name: "string"
+ *                       engname: "string"
+ *                       companyname: "string"
+ *                       ingredientname: "string"
+ *                       efficacy: "string"
+ *                       imgurl: "string"
+ *                       similarity: "string"
+ *                   totalCount: 1
+ *                   totalPages: 1
+ *                   limit: 10
+ *                   offset: 0
  */
-router.get('/search/image', uploadToMemory.single('image'), searchPillsByImageHandler);
+router.get(
+  '/search/image',
+  uploadToMemory.single('image'),
+  searchPillsByImageHandler
+);
 
 export default router;

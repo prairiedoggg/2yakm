@@ -7,32 +7,29 @@ import path from 'path';
 import fs from 'fs';
 import { v4 as uuidv4 } from 'uuid';
 import iconv from 'iconv-lite';
-import { Query, QueryResult } from 'pg';
+import { QueryResult } from 'pg';
+import { stopwords } from '../utils/stopwords';
+import { object } from 'joi';
 
 const client = new vision.ImageAnnotatorClient({
   keyFilename: process.env.GOOGLE_APPLICATION_CREDENTIALS
 });
 
-interface PillData {
+interface Pills {
   id: number;
   name: string;
-  front: string;
-  back: string;
-  shape: string;
-  imagepath: string;
-  favoriteCount: number;
+  engname: string;
+  companyname: string;
+  ingredientname: string;
+  efficacy: string;
+  importantWords?: string; // Optional to hold important words extracted from efficacy
   similarity?: string;
 }
 
 interface GetPillsResult {
   totalCount: number;
   totalPages: number;
-  data: PillData[];
-}
-
-interface SearchResult {
-  pills: PillData[];
-  total: number;
+  pills: Pills[];
   limit: number;
   offset: number;
   similarPills?: { id: string }[];
@@ -41,6 +38,12 @@ interface SearchResult {
 interface ExecFileResult {
   stdout: Buffer;
   stderr: Buffer;
+}
+
+interface SearchResult {
+  pills: Pills[];
+  totalCount: number;
+  totalPages: number;
 }
 
 export const getPills = async (
@@ -73,29 +76,72 @@ export const getPills = async (
   return {
     totalCount,
     totalPages,
-    data: rows
+    pills: rows,
+    limit,
+    offset
   };
 };
 
-export const getPillById = async (id: number): Promise<PillData | null> => {
-  const query = 'SELECT * FROM pills WHERE id = $1';
+export const getPillById = async (id: number): Promise<Pills | null> => {
+  const query =
+    'SELECT id, name, engname, companyname, ingredientname, efficacy FROM pills WHERE id = $1';
   const result = await pool.query(query, [id]);
   return result.rows[0] || null;
+};
+
+const getImportantWords = (text: string): string[] => {
+  console.log(`Original text: ${text}`);
+  const wordFrequency: { [key: string]: number } = {};
+  const priorityWordsSet = new Set(stopwords);
+  const words = text
+    .toLowerCase()
+    .split(/[\s,.;:ㆍ()]+/)
+    .filter((word) => {
+      const isValid = word && priorityWordsSet.has(word);
+      console.log(`Word: ${word}, isValid: ${isValid}`);
+      return isValid;
+    });
+
+  words.forEach((word) => {
+    if (!wordFrequency[word]) {
+      wordFrequency[word] = 0;
+    }
+    wordFrequency[word]++;
+  });
+
+  console.log(`Word frequency: ${JSON.stringify(wordFrequency)}`);
+
+  const sortedWords = Object.entries(wordFrequency).sort((a, b) => b[1] - a[1]);
+  const importantWords = sortedWords.slice(0, 3).map((entry) => entry[0]);
+  console.log(`Important words: ${importantWords}`);
+  return importantWords;
 };
 
 export const searchPillsbyName = async (
   name: string,
   limit: number,
   offset: number
-): Promise<SearchResult> => {
-  const query = `SELECT * FROM pills WHERE name LIKE $1 OR engname LIKE $1`;
+): Promise<GetPillsResult> => {
+  const query = `SELECT id, name, engname, companyname, ingredientname, efficacy FROM pills WHERE name LIKE $1 OR engname LIKE $1 
+                 LIMIT $2 OFFSET $3`;
   const values = [`${name}%`, limit, offset];
 
   try {
     const result = await pool.query(query, values);
+
+    const pills = result.rows.map((pill: Pills) => {
+      const importantWords = getImportantWords(pill.efficacy);
+      console.log(`Pill ID: ${pill.id}, Important Words: ${importantWords}`);
+      return {
+        ...pill,
+        importantWords: importantWords.join(', ')
+      };
+    });
+
     return {
-      pills: result.rows,
-      total: result.rowCount ?? 0,
+      pills,
+      totalCount: result.rowCount ?? 0,
+      totalPages: Math.ceil((result.rowCount ?? 0) / limit),
       limit,
       offset
     };
@@ -120,10 +166,10 @@ export const searchPillsbyEfficacy = async (
   efficacy: string,
   limit: number,
   offset: number
-): Promise<SearchResult> => {
+): Promise<GetPillsResult> => {
   const efficacyArray = efficacy.split(',').map((eff) => `%${eff.trim()}%`);
   const query = `
-    SELECT * 
+    SELECT id, name, engname, companyname, ingredientname, efficacy 
     FROM pills 
     WHERE ${efficacyArray
       .map((_, index) => `efficacy ILIKE $${index + 1}`)
@@ -133,9 +179,19 @@ export const searchPillsbyEfficacy = async (
 
   try {
     const result = await pool.query(query, values);
+
+    const pills = result.rows.map((pill: Pills) => {
+      const importantWords = getImportantWords(pill.efficacy);
+      return {
+        ...pill,
+        importantWords: importantWords.join(', ')
+      };
+    });
+
     return {
-      pills: result.rows,
-      total: result.rowCount ?? 0,
+      pills,
+      totalCount: result.rowCount ?? 0,
+      totalPages: Math.ceil((result.rowCount ?? 0) / limit),
       limit,
       offset
     };
@@ -161,9 +217,9 @@ const searchPillsByFrontAndBack = async (
   back: string,
   limit: number,
   offset: number
-): Promise<SearchResult> => {
+): Promise<GetPillsResult> => {
   const query = `
-    SELECT * 
+    SELECT id, name, front, back 
     FROM pillocr 
     WHERE front = $1 AND back = $2
     LIMIT $3 OFFSET $4`;
@@ -174,7 +230,8 @@ const searchPillsByFrontAndBack = async (
     const result = await pool.query(query, values);
     return {
       pills: result.rows,
-      total: result.rowCount ?? 0,
+      totalCount: result.rowCount ?? 0,
+      totalPages: Math.ceil((result.rowCount ?? 0) / limit),
       limit,
       offset
     };
@@ -191,20 +248,21 @@ const searchPillsByNameFromText = async (
   text: string,
   limit: number,
   offset: number
-): Promise<SearchResult> => {
+): Promise<GetPillsResult> => {
   const query = `
-    SELECT * 
+    SELECT id, name, engname, companyname, ingredientname, efficacy 
     FROM pills 
     WHERE engname ILIKE $1
     LIMIT $2 OFFSET $3`;
 
-  const values = [`%${text}%`, limit, offset];
+  const values = [`${text}%`, limit, offset];
 
   try {
     const result = await pool.query(query, values);
     return {
       pills: result.rows,
-      total: result.rowCount ?? 0,
+      totalCount: result.rowCount ?? 0,
+      totalPages: Math.ceil((result.rowCount ?? 0) / limit),
       limit,
       offset
     };
@@ -220,7 +278,6 @@ const searchPillsByNameFromText = async (
 // execFile은 shell을 생성하지 않아 exec보다 더 효율적임, 비동기 명령어 실행을 async, await로 할 수 있게 promisify를 사용함
 const execFilePromise = promisify(execFile);
 
-// 이미지 배경을 제거하는 함수
 const preprocessImage = async (
   imageBuffer: Buffer
 ): Promise<{ processedImageBuffer: Buffer; processedImagePath: string }> => {
@@ -229,14 +286,13 @@ const preprocessImage = async (
   const inputPath = path.join(uploadsDir, `input_image_${uniqueId}.jpg`);
   const outputPath = path.join(uploadsDir, `processed_image_${uniqueId}.png`);
 
-  // 업로드 디렉터리가 존재하지 않으면 생성해줌
+  // Ensure the uploads directory exists
   if (!fs.existsSync(uploadsDir)) {
     fs.mkdirSync(uploadsDir);
   }
 
   fs.writeFileSync(inputPath, imageBuffer);
 
-  // RMBG-1.4 모델을 불러옴
   const pyPath = path.join(__dirname, '..', 'python', 'removeBackground.py');
   const command = [pyPath, inputPath, outputPath]; // 파이썬 command 생성
 
@@ -272,9 +328,9 @@ const preprocessImage = async (
 };
 
 // 유사도 검색 결과에서 받아온 id를 이용해 DB에서 정보를 받아오는 함수
-const searchSimilarImageByIds = async (ids: string[]): Promise<PillData[]> => {
-  const query = `SELECT id, name, imgurl FROM pills WHERE id = ANY($1)`;
-  const result: QueryResult<PillData> = await pool.query(query, [ids]);
+const searchSimilarImageByIds = async (ids: string[]): Promise<Pills[]> => {
+  const query = `SELECT id, name, engname, companyname, ingredientname, efficacy, imgurl FROM pills WHERE id = ANY($1)`;
+  const result: QueryResult<Pills> = await pool.query(query, [ids]);
   return result.rows;
 };
 
@@ -351,10 +407,15 @@ const detectTextInImage = async (
 
     const detections = result.textAnnotations;
     if (detections && detections.length > 0) {
-      // Remove numbers, dots, parentheses, square brackets
       const filteredText = detections
         .map((text) => text?.description ?? '')
-        .filter((text) => !text.match(/[\.()]/));
+        .filter(
+          (text) =>
+            !text.match(/[\.()]/) &&
+            !text.includes('mm') &&
+            !text.includes('-') &&
+            !text.includes('\n')
+        );
 
       console.log('Filtered text:', filteredText);
       return filteredText;
@@ -375,7 +436,7 @@ export const searchPillsByImage = async (
   imageBuffer: Buffer,
   limit: number,
   offset: number
-): Promise<SearchResult> => {
+): Promise<GetPillsResult> => {
   let outputPath = '';
 
   try {
@@ -419,7 +480,8 @@ export const searchPillsByImage = async (
 
       return {
         pills,
-        total: pills.length,
+        totalCount: pills.length,
+        totalPages: Math.ceil(pills.length / limit),
         limit,
         offset
       };
@@ -427,68 +489,90 @@ export const searchPillsByImage = async (
 
     console.log('Detected Text:', detectedText);
 
-    let pills: PillData[] = [];
+    let pills: Pills[] = [];
     let total = 0;
 
-    // Search by front and back text in pillocr table
-    if (detectedText && detectedText.length > 0) {
-      for (const text of detectedText) {
-        if (text) {
-          const frontText = detectedText[0];
-          const backText = detectedText[1];
-          const resultByFrontAndBack = await searchPillsByFrontAndBack(
-            frontText,
-            backText,
-            limit,
-            offset
-          );
-          pills.push(...resultByFrontAndBack.pills);
-          total += resultByFrontAndBack.total;
-        }
-      }
+    // First try with detectedText[0] as front and detectedText[1] as back
+    const frontText1 = detectedText[0] || '';
+    const backText1 = detectedText[1] || '';
 
-      // If no results from pillocr, search in pills table by name
-      if (total === 0) {
-        for (const text of detectedText) {
-          if (text) {
-            const resultByName = await searchPillsByNameFromText(
-              text,
-              limit,
-              offset
-            );
-            pills.push(...resultByName.pills);
-            total += resultByName.total;
-          }
-        }
-      }
+    let resultByFrontAndBack = await searchPillsByFrontAndBack(
+      frontText1,
+      backText1,
+      limit,
+      offset
+    );
 
-      // Remove duplicates based on id
-      const uniquePills = Array.from(
-        new Map(pills.map((pill) => [pill.id, pill])).values()
-      );
+    pills.push(...resultByFrontAndBack.pills);
+    total += resultByFrontAndBack.totalCount;
 
-      return {
-        pills: uniquePills,
-        total: uniquePills.length,
+    if (total === 0) {
+      const frontText2 = detectedText[1] || '';
+      const backText2 = detectedText[2] || '';
+
+      resultByFrontAndBack = await searchPillsByFrontAndBack(
+        frontText2,
+        backText2,
         limit,
         offset
-      };
+      );
+
+      pills.push(...resultByFrontAndBack.pills);
+      total += resultByFrontAndBack.totalCount;
     }
+
+    // If no results from pillocr, search in pills table by name
+    if (total === 0) {
+      const text1 = detectedText[0];
+      if (text1) {
+        const resultByName = await searchPillsByNameFromText(
+          text1,
+          limit,
+          offset
+        );
+        pills.push(...resultByName.pills);
+        total += resultByName.totalCount;
+      }
+
+      const text2 = detectedText[1];
+      if (text2) {
+        const resultByName = await searchPillsByNameFromText(
+          text2,
+          limit,
+          offset
+        );
+        pills.push(...resultByName.pills);
+        total += resultByName.totalCount;
+      }
+    }
+
+    // Remove duplicates based on id
+    const uniquePills = Array.from(
+      new Map(pills.map((pill) => [pill.id, pill])).values()
+    );
+    const uniquePillNames = uniquePills.map((pill) => pill.name);
+    const detailedPills = await Promise.all(
+      uniquePillNames.map(async (name) => {
+        const result = await searchPillsbyName(name, limit, offset);
+        return result.pills;
+      })
+    ).then((results) => results.flat());
+
+    return {
+      pills: detailedPills,
+      totalCount: detailedPills.length,
+      totalPages: Math.ceil(detailedPills.length / limit),
+      limit,
+      offset
+    };
   } catch (error) {
     console.error('Error searching pills by image:', error);
     throw createError('SearchError', 'Failed to search pills by image.', 500);
   } finally {
     if (fs.existsSync(outputPath)) {
-      fs.unlinkSync(outputPath); // OCR 과정이 끝나면 전처리된 파일을 삭제함
+      fs.unlinkSync(outputPath);
     }
   }
-
-  return {
-    pills: [],
-    total: 0,
-    limit,
-    offset
-  };
 };
 
 export const getPillFavoriteCountService = async (
@@ -520,7 +604,7 @@ export const getPillReviewCountService = async (
     const query = `
       SELECT COUNT(*) AS count
       FROM reviews
-      WHERE id = $1
+      WHERE pillid = $1
     `;
     const values = [id];
     const { rows } = await pool.query(query, values);

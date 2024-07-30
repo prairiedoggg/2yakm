@@ -55,7 +55,6 @@ export const updateUsername = async (userId: string, updateData: UpdateUsernameD
   }
 };
 
-// Function to update the profile picture
 export const updateProfilePicture = async (userId: string, profilePicture: string): Promise<string> => {
   const result = await pool.query(
     'UPDATE users SET profileimg = $1 WHERE userid = $2 RETURNING profileimg',
@@ -63,7 +62,7 @@ export const updateProfilePicture = async (userId: string, profilePicture: strin
   );
 
   if (result.rows.length === 0) {
-    throw createError("사용자를 찾을 수 없습니다",'User not found', 404);
+    throw createError("사용자를 찾을 수 없습니다", 'User not found', 404);
   }
 
   return result.rows[0].profileimg;
@@ -73,7 +72,7 @@ export const updateProfilePicture = async (userId: string, profilePicture: strin
 export const uploadFileToS3 = async (file: any, fileName: string): Promise<string> => {
   // Logic to upload file to S3 and return the URL
   // This is a placeholder function. Implement S3 logic here.
-  const s3Url = `https://s3.amazonaws.com/yourbucket/${fileName}`;
+  const s3Url = `https://s3.amazonaws.com/eyakmoyak/${fileName}`;
   return s3Url;
 };
 
