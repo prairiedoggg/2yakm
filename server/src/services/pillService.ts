@@ -392,7 +392,7 @@ export const getPillReviewCountService = async (
     const query = `
       SELECT COUNT(*) AS count
       FROM reviews
-      WHERE id = $1
+      WHERE pillid = $1
     `;
     const values = [id];
     const { rows } = await pool.query(query, values);

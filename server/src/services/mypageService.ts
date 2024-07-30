@@ -73,7 +73,7 @@ export const updateProfilePicture = async (userId: string, profilePicture: strin
 export const uploadFileToS3 = async (file: any, fileName: string): Promise<string> => {
   // Logic to upload file to S3 and return the URL
   // This is a placeholder function. Implement S3 logic here.
-  const s3Url = `https://s3.amazonaws.com/yourbucket/${fileName}`;
+  const s3Url = `https://s3.amazonaws.com/eyakmoyak/${fileName}`;
   return s3Url;
 };
 

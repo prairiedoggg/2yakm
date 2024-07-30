@@ -86,6 +86,6 @@ def remove_background(input_path: str, final_output_path: str, num_passes: int):
 if __name__ == "__main__":
     input_path = sys.argv[1]
     final_output_path = sys.argv[2]
-    num_passes = 30 # 총 전처리 횟수 (배포 후 서버 성능 고려해서 수정할 것)
+    num_passes = 3 # 총 전처리 횟수 (배포 후 서버 성능 고려해서 수정할 것)
     
     remove_background(input_path, final_output_path, num_passes)
