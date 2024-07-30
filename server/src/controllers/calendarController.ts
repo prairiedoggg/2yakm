@@ -122,7 +122,7 @@ export const updateCalendar = [
     try {
       const userId = req.user?.email;
       const date = new Date(req.params.date);
-      const calImgUrl = req.file ? (req.file as any).location : null;
+      const calImgUrl = req.file ? (req.file as any).location : "";
 
       const { date: _, ...bodyWithoutDate } = req.body;
 
