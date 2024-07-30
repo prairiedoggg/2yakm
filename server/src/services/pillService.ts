@@ -7,6 +7,7 @@ import path from 'path';
 import fs from 'fs';
 import { v4 as uuidv4 } from 'uuid';
 import iconv from 'iconv-lite';
+import { Query, QueryResult } from 'pg';
 
 const client = new vision.ImageAnnotatorClient({
   keyFilename: process.env.GOOGLE_APPLICATION_CREDENTIALS
@@ -20,6 +21,7 @@ interface PillData {
   shape: string;
   imagepath: string;
   favoriteCount: number;
+  similarity?: string;
 }
 
 interface GetPillsResult {
@@ -33,6 +35,7 @@ interface SearchResult {
   total: number;
   limit: number;
   offset: number;
+  similarPills?: { id: string }[];
 }
 
 interface ExecFileResult {
@@ -254,7 +257,7 @@ const preprocessImage = async (
     if (decodedStderr) {
       console.error(`stderr: ${decodedStderr}`); // standard error, 에러 출력됨
     }
-    console.log(`stdout: ${decodedStdout}`); // standard output, 전처리 결과가 출력됨
+    console.log(`stdout: ${decodedStdout}`); // standard output, 결과가 출력됨
     console.log(
       `전처리가 완료되었습니다. 작업시간 : ${(Date.now() - startTime) / 1000}초`
     );
@@ -265,6 +268,74 @@ const preprocessImage = async (
     throw createError('Preprocessing Failed', '이미지 전처리 실패', 500);
   } finally {
     fs.unlinkSync(inputPath); // 입력 파일을 삭제함
+  }
+};
+
+// 유사도 검색 결과에서 받아온 id를 이용해 DB에서 정보를 받아오는 함수
+const searchSimilarImageByIds = async (ids: string[]): Promise<PillData[]> => {
+  const query = `SELECT id, name, imgurl FROM pills WHERE id = ANY($1)`;
+  const result: QueryResult<PillData> = await pool.query(query, [ids]);
+  return result.rows;
+};
+
+// 이미지 유사도를 검색하는 함수
+const searchSimilarImage = async (
+  imagePath: string
+): Promise<{
+  similarPills: { id: string; similarity: string }[];
+}> => {
+  const pyPath = path.join(__dirname, '..', 'python', 'imageVector.py');
+
+  // 유사도를 추출하기 위해서 임시로 txt파일을 생성함
+  const outputResultPath = path.join(
+    __dirname,
+    '..',
+    'python',
+    `temp_${uuidv4()}.txt`
+  );
+  const command = [pyPath, imagePath, outputResultPath]; // 파이썬 command 설정
+
+  try {
+    const { stdout, stderr }: ExecFileResult = await execFilePromise(
+      'python',
+      command,
+      { encoding: 'buffer' }
+    );
+
+    // stdout, stderr 한글 깨짐 현상 수정
+    const decodedStdout = iconv.decode(stdout, 'euc-kr');
+    const decodedStderr = iconv.decode(stderr, 'euc-kr');
+
+    if (decodedStderr) {
+      console.error(`stderr: ${decodedStderr}`); // standard error, 에러 출력됨
+    }
+    console.log(`stdout: ${decodedStdout}`); // standard output, 결과가 출력됨
+
+    // txt 파일에서 유사도를 읽어온 후에 삭제함
+    const result = fs.readFileSync(outputResultPath, 'utf-8');
+    fs.unlinkSync(outputResultPath);
+
+    const lines = result.trim().split('\n'); // 줄 단위로 자름
+
+    const similarPills = lines.map((line) => {
+      const [fullPath, similarity] = line.split(' ('); // 이미지 경로와 유사도를 분리함
+      const fileName = path.basename(fullPath).split('.')[0]; // 파일명만 추출하고 확장자를 제거함
+      return {
+        id: fileName,
+        similarity: similarity.replace(')', '').replace('\r', '')
+      };
+    });
+
+    return {
+      similarPills
+    };
+  } catch (error) {
+    console.error('이미지 유사도 검색 중 에러가 발생했습니다.', error);
+    throw createError(
+      'SimilaritySearch Failed',
+      '이미지 유사도 검색 실패',
+      500
+    );
   }
 };
 
@@ -312,55 +383,97 @@ export const searchPillsByImage = async (
       await preprocessImage(imageBuffer); // preprocessImage를 이용해 전처리를 하고 전처리된 이미지와, 경로를 받아옴
     outputPath = processedImagePath;
     const detectedText = await detectTextInImage(processedImageBuffer);
+
+    // 추출된 텍스트가 없을 경우 이미지 유사도 검색을 실행함
     if (!detectedText || detectedText.length === 0) {
-      return { pills: [], total: 0, limit, offset };
+      console.log('OCR 검색 결과가 없습니다. 이미지 유사도 검색을 시작합니다.');
+
+      const { similarPills } = await searchSimilarImage(outputPath);
+
+      const similarPillIds = similarPills.map((pill) => pill.id);
+
+      // 유사도 검색 결과에서 받아온 id를 이용해 DB에서 정보를 받아옴
+      let pills = await searchSimilarImageByIds(similarPillIds);
+
+      // id가 같은 pill data와 유사도를 합침
+      pills = pills.map((pill) => {
+        const similarityInfo = similarPills.find(
+          (similarPill) => similarPill.id === pill.id.toString()
+        );
+        return {
+          ...pill,
+          similarity: similarityInfo ? similarityInfo.similarity : '0%'
+        };
+      });
+
+      // 유사도가 높은 순으로 정렬함
+      pills.sort((a, b) => {
+        const similarityA = a.similarity
+          ? parseFloat(a.similarity.replace('%', ''))
+          : 0;
+        const similarityB = b.similarity
+          ? parseFloat(b.similarity.replace('%', ''))
+          : 0;
+        return similarityB - similarityA;
+      });
+
+      return {
+        pills,
+        total: pills.length,
+        limit,
+        offset
+      };
     }
+
+    console.log('Detected Text:', detectedText);
 
     let pills: PillData[] = [];
     let total = 0;
 
     // Search by front and back text in pillocr table
-    for (const text of detectedText) {
-      if (text) {
-        const frontText = detectedText[0];
-        const backText = detectedText[1];
-        const resultByFrontAndBack = await searchPillsByFrontAndBack(
-          frontText,
-          backText,
-          limit,
-          offset
-        );
-        pills.push(...resultByFrontAndBack.pills);
-        total += resultByFrontAndBack.total;
-      }
-    }
-
-    // If no results from pillocr, search in pills table by name
-    if (total === 0) {
+    if (detectedText && detectedText.length > 0) {
       for (const text of detectedText) {
         if (text) {
-          const resultByName = await searchPillsByNameFromText(
-            text,
+          const frontText = detectedText[0];
+          const backText = detectedText[1];
+          const resultByFrontAndBack = await searchPillsByFrontAndBack(
+            frontText,
+            backText,
             limit,
             offset
           );
-          pills.push(...resultByName.pills);
-          total += resultByName.total;
+          pills.push(...resultByFrontAndBack.pills);
+          total += resultByFrontAndBack.total;
         }
       }
+
+      // If no results from pillocr, search in pills table by name
+      if (total === 0) {
+        for (const text of detectedText) {
+          if (text) {
+            const resultByName = await searchPillsByNameFromText(
+              text,
+              limit,
+              offset
+            );
+            pills.push(...resultByName.pills);
+            total += resultByName.total;
+          }
+        }
+      }
+
+      // Remove duplicates based on id
+      const uniquePills = Array.from(
+        new Map(pills.map((pill) => [pill.id, pill])).values()
+      );
+
+      return {
+        pills: uniquePills,
+        total: uniquePills.length,
+        limit,
+        offset
+      };
     }
-
-    // Remove duplicates based on id
-    const uniquePills = Array.from(
-      new Map(pills.map((pill) => [pill.id, pill])).values()
-    );
-
-    return {
-      pills: uniquePills,
-      total: uniquePills.length,
-      limit,
-      offset
-    };
   } catch (error) {
     console.error('Error searching pills by image:', error);
     throw createError('SearchError', 'Failed to search pills by image.', 500);
@@ -369,6 +482,13 @@ export const searchPillsByImage = async (
       fs.unlinkSync(outputPath); // OCR 과정이 끝나면 전처리된 파일을 삭제함
     }
   }
+
+  return {
+    pills: [],
+    total: 0,
+    limit,
+    offset
+  };
 };
 
 export const getPillFavoriteCountService = async (

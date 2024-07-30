@@ -70,13 +70,15 @@ export const searchPillsbyNameHandler = async (
   req: Request<unknown, unknown, unknown, QueryParams>,
   res: Response,
   next: NextFunction
-)=> {
+) => {
   const name = req.query.name;
   const offset = parseInt(req.query.offset ?? '0', 10);
   const limit = parseInt(req.query.limit ?? '10', 10);
- 
+
   if (!name) {
-    return res.status(400).json({ message: 'name query parameter is required' });
+    return res
+      .status(400)
+      .json({ message: 'name query parameter is required' });
   }
 
   try {
@@ -86,7 +88,6 @@ export const searchPillsbyNameHandler = async (
     next(createError('DatabaseError', (error as Error).message, 500));
   }
 };
-
 
 interface EfficacyQueryParams {
   efficacy: string;
@@ -119,7 +120,7 @@ export const searchPillsByImageHandler = async (
   req: Request<unknown, unknown, unknown, ImageQueryParams>,
   res: Response,
   next: NextFunction
-)=> {
+) => {
   try {
     if (!req.file) {
       return res.status(400).json({ message: 'No file uploaded' });
@@ -163,4 +164,3 @@ export const getPillReviewCount = async (
     next(createError('DatabaseError', (error as Error).message, 500));
   }
 };
-

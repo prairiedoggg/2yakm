@@ -74,7 +74,7 @@ def remove_background(input_path: str, final_output_path: str, num_passes: int):
     
     # 최종 연산 완료된 파일을 저장함
     os.rename(intermediate_output_path, final_output_path)
-    print(f"{final_output_path}") # stdout
+    print("이미지 전처리를 완료했습니다.") # stdout
 
     # 중간 과정 확인을 위해 생성된 파일을 삭제함
     for i in range(num_passes):
@@ -86,6 +86,6 @@ def remove_background(input_path: str, final_output_path: str, num_passes: int):
 if __name__ == "__main__":
     input_path = sys.argv[1]
     final_output_path = sys.argv[2]
-    num_passes = 3 # 총 전처리 횟수 (배포 후 서버 성능 고려해서 수정할 것)
+    num_passes = 5 # 총 전처리 횟수 (배포 후 서버 성능 고려해서 수정할 것)
     
     remove_background(input_path, final_output_path, num_passes)
