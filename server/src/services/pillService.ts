@@ -6,7 +6,7 @@ import { promisify } from 'util';
 import path from 'path';
 import fs from 'fs';
 import { v4 as uuidv4 } from 'uuid';
-
+import iconv from 'iconv-lite';
 
 const client = new vision.ImageAnnotatorClient({
   keyFilename: process.env.GOOGLE_APPLICATION_CREDENTIALS
@@ -70,7 +70,7 @@ export const getPills = async (
 };
 
 export const getPillById = async (id: number): Promise<PillData | null> => {
-  const query = 'SELECT * FROM pills WHERE id = $1';
+  const query = 'SELECT name, engname, companyname, ingredientname, efficacy FROM pills WHERE id = $1';
   const result = await pool.query(query, [id]);
   return result.rows[0] || null;
 };
@@ -80,7 +80,7 @@ export const searchPillsbyName = async (
   limit: number,
   offset: number
 ): Promise<SearchResult> => {
-  const query = `SELECT * FROM pills WHERE name LIKE $1 OR engname LIKE $1 
+  const query = `SELECT name, engname, companyname, ingredientname, efficacy FROM pills WHERE name LIKE $1 OR engname LIKE $1 
                  LIMIT $2 OFFSET $3 ` ;
   const values = [`${name}%`, limit, offset];
 
@@ -108,7 +108,7 @@ export const searchPillsbyEfficacy = async (
 ): Promise<SearchResult> => {
   const efficacyArray = efficacy.split(',').map((eff) => `%${eff.trim()}%`);
   const query = `
-    SELECT * 
+    SELECT name, engname, companyname, ingredientname, efficacy 
     FROM pills 
     WHERE ${efficacyArray
       .map((_, index) => `efficacy ILIKE $${index + 1}`)
@@ -202,11 +202,7 @@ const searchPillsByNameFromText = async (
   }
 };
 
-const execFilePromise: (
-  file: string,
-  args: string[]
-) => Promise<{ stdout: string; stderr: string }> = promisify(execFile);
-
+const execFilePromise = promisify(execFile);
 
 const preprocessImage = async (
   imageBuffer: Buffer
@@ -224,24 +220,34 @@ const preprocessImage = async (
   fs.writeFileSync(inputPath, imageBuffer);
 
   const pyPath = path.join(__dirname, '..', 'python', 'removeBackground.py');
-  const pythonExecutablePath = '/Users/wonsikwoo/miniconda3/envs/newenv/bin/python'; // Adjust this to your conda environment's Python interpreter path
-  const command = [pythonExecutablePath, pyPath, inputPath, outputPath];
+  const command = [pyPath, inputPath, outputPath]; // 파이썬 command 생성
 
   const startTime = Date.now();
   try {
-    const { stdout, stderr } = await execFilePromise(command[0], command.slice(1));
-    if (stderr) {
-      console.error(`stderr: ${stderr}`);
+    const { stdout, stderr } = await execFilePromise('python',
+      command,
+      {
+        encoding: 'buffer'
+      }
+);
+    // stdout, stderr 한글 깨짐 현상 수정
+    const decodedStdout = iconv.decode(stdout, 'euc-kr');
+    const decodedStderr = iconv.decode(stderr, 'euc-kr');
+
+    if (decodedStderr) {
+      console.error(`stderr: ${decodedStderr}`); // standard error, 에러 출력됨
     }
-    console.log(`stdout: ${stdout}`);
-    console.log(`Image preprocessing completed in ${(Date.now() - startTime) / 1000} seconds`);
-    const processedImageBuffer = fs.readFileSync(outputPath);
-    return { processedImageBuffer, processedImagePath: outputPath };
-  } catch (error) {
-    console.error('Error during image preprocessing:', error);
-    throw createError('PreprocessingFailed', 'Image preprocessing failed', 500);
+    console.log(`stdout: ${decodedStdout}`); // standard output, 전처리 결과가 출력됨
+    console.log(
+      `전처리가 완료되었습니다. 작업시간 : ${(Date.now() - startTime) / 1000}초`
+    );
+    const processedImageBuffer = fs.readFileSync(outputPath); // 처리된 이미지를 읽어와서 processedImageBuffer로 초기화
+    return { processedImageBuffer, processedImagePath: outputPath }; // 처리된 이미지와, 경로를 반환함
+  } catch (error: any) {
+    console.error('이미지 전처리 중 에러가 발생했습니다.', error);
+    throw createError('Preprocessing Failed', '이미지 전처리 실패', 500);
   } finally {
-    fs.unlinkSync(inputPath);
+    fs.unlinkSync(inputPath); // 입력 파일을 삭제함
   }
 };
 
@@ -261,8 +267,7 @@ const detectTextInImage = async (
       // Remove numbers, dots, parentheses, square brackets
       const filteredText = detections
         .map((text) => text?.description ?? '')
-        .filter((text) => !text.match(/[\.()]/)&& !text.includes('식품')&& !text.includes('의약품')&& !text.includes('안전')&& !text.includes('처')&& !text.includes('foo')
-        && !text.includes('Ministry')&& !text.includes('of')&& !text.includes('Food')&& !text.includes('and')&& !text.includes('Drug')&& !text.includes('mm')&& !text.includes('-')&&!text.includes('\n'))
+        .filter((text) => !text.match(/[\.()]/)&& !text.includes('mm')&& !text.includes('-')&&!text.includes('\n'))
 
       console.log('Filtered text:', filteredText);
       return filteredText;
@@ -315,7 +320,7 @@ export const searchPillsByImage = async (
 
     // If no results, try with detectedText[0] + detectedText[1] as front and detectedText[2] as back
     if (total === 0) {
-      const frontText2 = detectedText.slice(0, 2).join(' ');
+      const frontText2 = detectedText[1] || '';
       const backText2 = detectedText[2] || '';
 
       resultByFrontAndBack = await searchPillsByFrontAndBack(
@@ -330,10 +335,22 @@ export const searchPillsByImage = async (
     }
     // If no results from pillocr, search in pills table by name
     
-    const text = detectedText[0];
-        if (text) {
+    
+    const text1 = detectedText[0];
+        if (text1) {
           const resultByName = await searchPillsByNameFromText(
-            text,
+            text1,
+            limit,
+            offset
+          );
+          pills.push(...resultByName.pills);
+          total += resultByName.total;
+        }
+
+    const text2 = detectedText[1];
+        if (text2) {
+          const resultByName = await searchPillsByNameFromText(
+            text2,
             limit,
             offset
           );
