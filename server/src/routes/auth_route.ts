@@ -15,8 +15,10 @@ import {
   requestEmailVerificationController,
   changeUsernameController,
   deleteAccountController,
-  naverAuthController
+  naverAuthController,
+  getUserInfoController
 } from '../controllers/authController';
+import authByToken from '../middlewares/authByToken';
 
 const router = Router();
 
@@ -302,7 +304,7 @@ router.post('/logout', logoutController);
  *                 message:
  *                   type: string
  */
-router.patch('/change-password', changePasswordController);
+router.patch('/change-password', authByToken, changePasswordController);
 
 /**
  * @swagger
@@ -506,7 +508,36 @@ router.patch('/change-username', changeUsernameController);
  *               properties:
  *                 message:
  *                   type: string
+ *       401:
+ *         description: 인증 실패
  */
-router.delete('/delete-account', deleteAccountController);
+router.delete('/delete-account', authByToken, deleteAccountController);
+
+/**
+ * @swagger
+ * /api/auth/user-info:
+ *   get:
+ *     summary: 유저 정보 가져오기
+ *     tags: [Auth]
+ *     responses:
+ *       200:
+ *         description: 유저 정보 가져오기 성공
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 id:
+ *                   type: string
+ *                 email:
+ *                   type: string
+ *                 username:
+ *                   type: string
+ *                 role:
+ *                   type: boolean
+ *       401:
+ *         description: 인증 실패
+ */
+router.get('/userInfo', authByToken, getUserInfoController);
 
 export default router;
