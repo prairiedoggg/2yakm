@@ -14,8 +14,8 @@ const convertToKoreanTime = (date: Date): Date => {
 export const getAllCalendars = async (userId: string): Promise<Calendar[]> => {
   try {
     const text = `
-      SELECT id, userId, date, calImg, condition, weight, temperature, 
-      bloodsugarBefore, bloodsugarAfter, medications
+      SELECT id, userId AS "userId", date, calImg AS "calImg", condition, weight, temperature, 
+      bloodsugarBefore AS "bloodsugarBefore", bloodsugarAfter AS "bloodsugarAfter", medications
       FROM calendar 
       WHERE userId = $1
     `;    
@@ -42,8 +42,8 @@ export const getCalendarById = async (userId: string, date: Date): Promise<Calen
   try {
     const dateString = format(zonedTimeToUtc(date, TIMEZONE), 'yyyy-MM-dd');
     const text = `
-      SELECT id, userId, date, calImg, condition, weight, temperature, 
-      bloodsugarBefore, bloodsugarAfter, medications
+      SELECT id, userId AS "userId", date, calImg AS "calImg", condition, weight, temperature, 
+      bloodsugarBefore AS "bloodsugarBefore", bloodsugarAfter AS "bloodsugarAfter", medications
       FROM calendar 
       WHERE userId = $1 AND date = $2
     `;    
@@ -84,8 +84,8 @@ export const createCalendar = async (calendar: Omit<Calendar, 'id'>): Promise<Ca
       (userid, date, calimg, condition, weight, temperature, 
         bloodsugarBefore, bloodsugarAfter, medications) 
         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) 
-        RETURNING id, userId, date, calImg, condition, weight, temperature, 
-        bloodsugarBefore, bloodsugarAfter, medications
+        RETURNING id, userId, date, calImg AS "calImg", condition, weight, temperature, 
+        bloodsugarBefore AS "bloodsugarBefore", bloodsugarAfter AS "bloodsugarAfter", medications
     `;
     const values = [
       calendar.userId,
@@ -140,11 +140,11 @@ export const updateCalendar = async (
           bloodsugarBefore = $5, bloodsugarAfter = $6,
           medications = $7
       WHERE userId = $8 AND date = $9
-      RETURNING id, userId, date, calImg, condition, weight, temperature, 
+      RETURNING id, userId, date, calImg AS "calImg", condition, weight, temperature, 
       bloodsugarBefore AS "bloodsugarBefore", bloodsugarAfter AS "bloodsugarAfter", medications
     `;
     const values = [
-      calendar.calImg ?? existingCalendar.calImg,
+      calendar.calImg ?? null,
       calendar.condition ?? existingCalendar.condition,
       calendar.weight ?? existingCalendar.weight,
       calendar.temperature ?? existingCalendar.temperature,
