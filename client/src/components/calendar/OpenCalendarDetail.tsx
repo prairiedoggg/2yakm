@@ -86,8 +86,6 @@ const OpenCalendarDetail: React.FC = () => {
 
         fetchPillData();
       }
-    } else {
-      navigate('/login');
     }
   }, [formattedDate]);
 

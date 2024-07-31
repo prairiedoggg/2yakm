@@ -1,3 +1,4 @@
+import Cookies from 'js-cookie';
 import { useEffect, useState } from 'react';
 import { Navigate } from 'react-router-dom';
 
@@ -13,13 +14,13 @@ const AuthenticatedRoute = ({
   useEffect(() => {
     const checkAuthentication = async () => {
       try {
-        const token = localStorage.getItem('token');
-        console.log(token);
+        const login = Cookies.get('login');
+        console.log(login);
 
-        if (token) {
+        if (login === '로그인 성공') {
           setIsAuthenticated(true);
         } else {
-          setIsAuthenticated(true);
+          setIsAuthenticated(false);
         }
       } catch (error) {
         console.error('사용자 인증 실패', error);

@@ -81,7 +81,7 @@ export const logout = async (callback?: () => void) => {
   try {
     await post('/api/auth/logout', {});
     useUserStore.getState().clearUser();
-    localStorage.removeItem('token');
+    Cookies.remove('login');
 
     if (callback) callback();
   } catch (error) {
