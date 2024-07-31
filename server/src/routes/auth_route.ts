@@ -49,8 +49,6 @@ const router = Router();
  *               properties:
  *                 message:
  *                   type: string
- *                 token:
- *                   type: string
  *       401:
  *         description: 인증 실패
  */
@@ -538,6 +536,6 @@ router.delete('/delete-account', authByToken, deleteAccountController);
  *       401:
  *         description: 인증 실패
  */
-router.get('/userInfo', authByToken, getUserInfoController);
+router.get('/user-info', authByToken, getUserInfoController);
 
 export default router;
