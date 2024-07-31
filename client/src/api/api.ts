@@ -1,11 +1,32 @@
-import axios from 'axios';
-import { IoBodySharp } from 'react-icons/io5';
+import axios, { HttpStatusCode } from 'axios';
+import { refreshAuthToken } from './authService';
 
 const api = axios.create({
   baseURL: 'http://localhost:3000/', //import.meta.env.SERVER_BASE_URL,
   timeout: 10000,
   withCredentials: true
 });
+
+api.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    const originalRequest = error.config;
+    if (
+      error.response &&
+      error.response.status === HttpStatusCode.Unauthorized &&
+      !originalRequest._retry
+    ) {
+      try {
+        const token = await refreshAuthToken();
+        localStorage.setItem('token', token);
+      } catch (err) {
+        console.error('토큰 갱신 실패:', err);
+        return Promise.reject(err);
+      }
+    }
+    return Promise.reject(error);
+  }
+);
 
 export const get = async (
   url: string,
