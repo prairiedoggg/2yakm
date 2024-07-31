@@ -1,10 +1,18 @@
+import { useEffect } from 'react';
 import styled from 'styled-components';
-import { useDateStore } from '../../store/store';
-import OpenCalendarDetail from './OpenCalendarDetail';
+import { useCalendar, useDateStore } from '../../store/store';
 import EditCalendarDatail from './EditCalendarDetail';
+import OpenCalendarDetail from './OpenCalendarDetail';
 
 const CalendarDetail: React.FC = () => {
-  const { edit } = useDateStore();
+  const { value, edit, setEdit, setNeverPost } = useDateStore();
+  const { setCalendarData } = useCalendar();
+
+  useEffect(() => {
+    setEdit(false);
+    setNeverPost(true);
+    setCalendarData(null);
+  }, [value]);
 
   return (
     <CalandarDatailContainer>

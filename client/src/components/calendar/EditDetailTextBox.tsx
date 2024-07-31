@@ -1,29 +1,22 @@
-import { useState } from 'react';
-import styled from 'styled-components';
-import EditDetailPhoto from './EditDetailPhoto';
 import { FiXCircle } from 'react-icons/fi';
+import styled from 'styled-components';
+import { useCalendar } from '../../store/store';
+import EditDetailPhoto from './EditDetailPhoto';
+import { convertToArray } from './calendarDetails/IsPillTaken';
 
 interface EditDetailTextBoxProps {
   title: string;
-  time?: string[][];
-  pillName?: string[];
-  isPillTaken?: boolean[][];
-  bloodSugar?: number[];
-  temp?: number;
-  weight?: number;
-  photo?: boolean;
 }
 
-const EditDetailTextBox = ({
-  title,
-  pillName,
-  time,
-  isPillTaken,
-  bloodSugar,
-  temp,
-  weight,
-  photo
-}: EditDetailTextBoxProps) => {
+const EditDetailTextBox = ({ title }: EditDetailTextBoxProps) => {
+  const {
+    calendarData,
+    setBloodSugarAfter,
+    setBloodSugarBefore,
+    setTemp,
+    setWeight
+  } = useCalendar();
+
   const handleIsTakenPill = (times: string[], takenStatuses: boolean[]) => {
     return times.map((time, index) => (
       <StyledLabel key={index}>
@@ -33,58 +26,20 @@ const EditDetailTextBox = ({
     ));
   };
 
-  const onChangeInput = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    setDeleted([false, '']);
-    setInputValue(value ? parseFloat(value) : undefined);
-  };
-
-  // 삭제 버튼
-  const [deleted, setDeleted] = useState<[boolean, string]>([false, '']);
-  const [isDeleted, name] = deleted;
-
-  const [inputValue, setInputValue] = useState<number | undefined>(
-    weight || temp
-  );
-  const handleDelete = (label: string) => {
-    setDeleted([true, label]);
-    setInputValue(undefined);
-  };
-
-  const plusDetail = () => {
-    switch (name) {
-      case '혈당':
-        return (
-          <TextContainer>
-            {renderSimpleInput(
-              '공복 혈당',
-              bloodSugar?.[0],
-              onChangeInput,
-              'mg/dL'
-            )}
-            {renderSimpleInput(
-              '식후 혈당',
-              bloodSugar?.[1],
-              onChangeInput,
-              'mg/dL'
-            )}
-          </TextContainer>
-        );
-      case '체온':
-        return renderSimpleInput('체온', undefined, onChangeInput, '°C');
-      case '체중':
-        return renderSimpleInput('체중', undefined, onChangeInput, 'kg');
-    }
-  };
-
   const renderSimpleInput = (
     label: string,
-    value: number | undefined,
+    value: string | null,
     onChange: (e: React.ChangeEvent<HTMLInputElement>) => void,
-    unit: string
+    unit: string,
+    handleDelete: (label: string) => void
   ) => (
     <UnitContainer>
-      <TextInput value={isDeleted ? '' : value} onChange={onChange} />
+      {(label === '공복 혈당' || label === '식후 혈당') && (
+        <Text style={{ fontSize: '13pt', lineHeight: '25px' }}>
+          {label}: &nbsp;
+        </Text>
+      )}
+      <TextInput value={value ?? ''} onChange={onChange} />
       <Unit>&nbsp;{unit}</Unit>
       <FiXCircle
         style={{ color: '#777777', margin: '5px 5px' }}
@@ -93,23 +48,29 @@ const EditDetailTextBox = ({
     </UnitContainer>
   );
 
-  const handleContent = () => {
+  const handleContent = (title: string) => {
     switch (title) {
       case '약 복용 여부':
         return (
           <UnitContainer>
             <PillCheck>
-              {pillName?.map((pill, index) => (
-                <PillRow key={index}>
-                  <div>{pill}</div>
-                  <PillTimeContainer>
-                    {time &&
-                      time[index] &&
-                      isPillTaken &&
-                      handleIsTakenPill(time[index], isPillTaken[index])}
-                  </PillTimeContainer>
-                </PillRow>
-              ))}
+              {calendarData?.pillData?.map((pill, index) => {
+                const times = convertToArray(pill.time) as string[];
+                const takenStatuses = convertToArray(pill.taken) as boolean[];
+
+                return (
+                  <PillRow key={index}>
+                    <div>{pill.name}</div>
+                    <PillTimeContainer>
+                      {times.length && takenStatuses.length ? (
+                        handleIsTakenPill(times, takenStatuses)
+                      ) : (
+                        <div>시간 데이터 없음</div>
+                      )}
+                    </PillTimeContainer>
+                  </PillRow>
+                );
+              })}
             </PillCheck>
           </UnitContainer>
         );
@@ -118,25 +79,48 @@ const EditDetailTextBox = ({
           <TextContainer>
             {renderSimpleInput(
               '공복 혈당',
-              bloodSugar?.[0],
-              onChangeInput,
-              'mg/dL'
+              calendarData?.bloodsugarbefore,
+              (e) => setBloodSugarBefore(parseInt(e.target.value) || null),
+              'mg/dL',
+              handleDeleteField
             )}
             {renderSimpleInput(
               '식후 혈당',
-              bloodSugar?.[1],
-              onChangeInput,
-              'mg/dL'
+              calendarData?.bloodsugarafter,
+              (e) => setBloodSugarAfter(parseInt(e.target.value) || null),
+              'mg/dL',
+              handleDeleteField
             )}
           </TextContainer>
         );
       case '체온':
-        return renderSimpleInput('체온', temp, onChangeInput, '°C');
+        return (
+          <>
+            {renderSimpleInput(
+              '체온',
+              calendarData?.temp,
+              (e) => setTemp(parseFloat(e.target.value) || null),
+              '°C',
+              handleDeleteField
+            )}
+          </>
+        );
+
       case '체중':
-        return renderSimpleInput('체중', weight, onChangeInput, 'kg');
+        return (
+          <>
+            {renderSimpleInput(
+              '체중',
+              calendarData?.weight,
+              (e) => setWeight(parseFloat(e.target.value) || null),
+              'kg',
+              handleDeleteField
+            )}
+          </>
+        );
       case '사진 기록':
         return (
-          <UnitContainer>
+          <UnitContainer className='photo'>
             <EditDetailPhoto />
           </UnitContainer>
         );
@@ -145,25 +129,43 @@ const EditDetailTextBox = ({
     }
   };
 
-  const isRender =
-    (time && time.length > 0) ||
-    (bloodSugar && bloodSugar.some((value) => value !== 0)) ||
-    (temp && temp !== 0) ||
-    (weight && weight !== 0) ||
-    photo;
+  const handleDeleteField = (label: string) => {
+    switch (label) {
+      case '공복 혈당':
+        setBloodSugarBefore(null);
+        break;
+      case '식후 혈당':
+        setBloodSugarAfter(null);
+        break;
+      case '체온':
+        setTemp(null);
+        break;
+      case '체중':
+        setWeight(null);
+        break;
+      default:
+        break;
+    }
+  };
 
   const isPill = title === '약 복용 여부';
 
-  return isRender ? (
-    !isDeleted ? (
-      <Container isPill={isPill}>
-        <ContentTitle>{title}</ContentTitle>
-        {handleContent()}
-      </Container>
-    ) : null
-  ) : null;
+  return (
+    <Container isPill={isPill}>
+      <ContentTitle>
+        {title}
+        {isPill && calendarData?.pillData ? (
+          <StyledButton>수정하기</StyledButton>
+        ) : isPill && !calendarData?.pillData ? (
+          <StyledButton>추가하기</StyledButton>
+        ) : null}
+      </ContentTitle>
+      {handleContent(title)}
+    </Container>
+  );
 };
 
+export default EditDetailTextBox;
 const Container = styled.div<{ isPill?: boolean }>`
   border: 0.5px #d9d9d9 solid;
   border-radius: 10px;
@@ -175,10 +177,15 @@ const Container = styled.div<{ isPill?: boolean }>`
 
 const ContentTitle = styled.div`
   font-size: 14pt;
+  display: flex;
 `;
 
 const UnitContainer = styled.div`
   display: flex;
+
+  &.photo {
+    justify-content: space-between;
+  }
 `;
 
 const TextContainer = styled.div`
@@ -186,7 +193,10 @@ const TextContainer = styled.div`
   flex-direction: column;
 `;
 
-const TextInput = styled.input`
+const TextInput = styled.input.attrs({
+  type: 'number',
+  step: 'any'
+})`
   width: 50px;
   font-size: 15pt;
   border: #d9d9d9 solid;
@@ -201,6 +211,10 @@ const Unit = styled.div`
 
 const StyledLabel = styled.label`
   display: flex;
+`;
+
+const Text = styled.div`
+  font-size: 15pt;
 `;
 
 const StyledInput = styled.input`
@@ -252,4 +266,10 @@ const PillTimeContainer = styled.div`
   margin-left: 10px;
 `;
 
-export default EditDetailTextBox;
+const StyledButton = styled.button`
+  width: 70px;
+  text-align: center;
+  border-radius: 10px;
+  border: none;
+  background-color: #d9d9d9;
+`;

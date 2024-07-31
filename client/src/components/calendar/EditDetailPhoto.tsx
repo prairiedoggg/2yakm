@@ -1,9 +1,11 @@
-import React, { useEffect, useState, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { FiXCircle } from 'react-icons/fi';
+import { useCalendar } from '../../store/store';
 
-const EditDetailPhoto: React.FC = () => {
+const EditDetailPhoto = () => {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const [isCameraOn, setIsCameraOn] = useState(false);
-  const [uploadedImage, setUploadedImage] = useState<string | null>(null);
+  const { setPhoto, setCalImg, calendarData, calImg } = useCalendar();
 
   useEffect(() => {
     const initCamera = async () => {
@@ -44,16 +46,35 @@ const EditDetailPhoto: React.FC = () => {
     setIsCameraOn((prevState) => !prevState);
   };
 
+  const photoInput = useRef<HTMLInputElement | null>(null);
   const onChangeImage = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      const formData = new FormData();
+      formData.append('file', file);
       const imageUrl = URL.createObjectURL(file);
-      setUploadedImage(imageUrl);
+
+      setPhoto(imageUrl);
+      setCalImg(formData);
+
+      console.log(imageUrl);
+      console.log(formData.get('file'));
     }
   };
-  console.log('사진', uploadedImage);
+
+  const handleClick = () => {
+    if (photoInput.current) {
+      photoInput.current.click();
+    }
+  };
+
+  const deletePhoto = () => {
+    setCalImg(null);
+    setPhoto(null);
+  };
+
   return (
-    <div>
+    <div style={{ width: '150px' }}>
       <button onClick={toggleCamera}>
         {isCameraOn ? 'Turn Off Camera' : 'Turn On Camera'}
       </button>
@@ -67,13 +88,29 @@ const EditDetailPhoto: React.FC = () => {
         autoPlay
         playsInline
       />
-      <input type='file' accept='image/*' onChange={onChangeImage} />
-      {uploadedImage && (
-        <img
-          src={uploadedImage}
-          alt='Uploaded preview'
-          style={{ width: '100%', height: 'auto' }}
+      <button onClick={() => handleClick()}>
+        사진 업로드
+        <input
+          type='file'
+          accept='image/jpg, image/jpeg, image/png'
+          multiple
+          ref={photoInput}
+          onChange={onChangeImage}
+          style={{ display: 'none' }}
         />
+      </button>
+      {calendarData?.photo && (
+        <div>
+          <img
+            src={calendarData?.photo}
+            alt='기록 이미지'
+            style={{ width: '100%', height: 'auto' }}
+          />
+          <FiXCircle
+            style={{ color: '#777777', margin: '5px 5px' }}
+            onClick={() => deletePhoto()}
+          />
+        </div>
       )}
     </div>
   );
