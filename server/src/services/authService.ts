@@ -92,7 +92,7 @@ if (!SECRET_KEY || !REFRESH_TOKEN_SECRET_KEY) {
 export const login = async (
   email: string,
   password: string
-): Promise<{ token: string, refreshToken: string, userId: string }> => {
+): Promise<{ token: string, refreshToken: string }> => {
   try {
     const query = 'SELECT userid, email, password, username, kakaoid, googleid, naverid FROM users WHERE email = $1';
     const values = [email];
@@ -122,7 +122,7 @@ export const login = async (
       { expiresIn: '7d' }
     );
 
-    return { token, refreshToken, userId: user.id };
+    return { token, refreshToken };
   } catch (error) {
     throw createError('DBError', '데이터베이스 오류가 발생했습니다.', 500);
   }
@@ -273,7 +273,7 @@ export const refreshTokenService = async (
 // 카카오 소셜
 export const kakaoAuthService = async (
   code: string
-): Promise<{ token?: string, refreshToken?: string, message?: string, userId?: string }> => {
+): Promise<{ token?: string, refreshToken?: string, message?: string }> => {
   const redirectUri = `${FRONTEND_URL}/kakao/callback`;
   const kakaoTokenUrl = `https://kauth.kakao.com/oauth/token`;
 
@@ -359,7 +359,7 @@ export const kakaoAuthService = async (
         { expiresIn: '7d' }
       );
 
-      return { token, refreshToken, userId: user.id };
+      return { token, refreshToken };
     } catch (error) {
       console.error('DB error:', error);
       throw createError('DBError', '데이터베이스 오류가 발생했습니다.', 500);
@@ -374,7 +374,7 @@ export const kakaoAuthService = async (
 export const naverAuthService = async (
   code: string,
   state: string
-): Promise<{ token?: string, refreshToken?: string, message?: string, userId?: string }> => {
+): Promise<{ token?: string, refreshToken?: string, message?: string }> => {
   const redirectUri = `${FRONTEND_URL}/naver/callback`;
   const naverTokenUrl = `https://nid.naver.com/oauth2.0/token`;
   const naverUserInfoUrl = `https://openapi.naver.com/v1/nid/me`;
@@ -460,7 +460,7 @@ export const naverAuthService = async (
         { expiresIn: '7d' }
       );
 
-      return { token, refreshToken, userId: user.id };
+      return { token, refreshToken };
     } catch (error) {
       console.error('DBError:', error);
       throw createError('DBError', '데이터베이스 오류가 발생했습니다.', 500);
@@ -474,7 +474,7 @@ export const naverAuthService = async (
 // 구글 소셜
 export const googleAuthService = async (
   code: string
-): Promise<{ token?: string, refreshToken?: string, message?: string, userId?: string }> => {
+): Promise<{ token?: string, refreshToken?: string, message?: string }> => {
   const tokenUrl = 'https://oauth2.googleapis.com/token';
   const userInfoUrl = 'https://www.googleapis.com/oauth2/v2/userinfo';
 
@@ -558,7 +558,7 @@ export const googleAuthService = async (
         { expiresIn: '7d' }
       );
 
-      return { token, refreshToken, userId: user.id};
+      return { token, refreshToken };
     } catch (error) {
       console.error('DBError:', error);
       throw createError('DBError', '데이터베이스 오류가 발생했습니다.', 500);

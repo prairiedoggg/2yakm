@@ -18,6 +18,15 @@ import {
 } from '../services/authService';
 import { createError } from '../utils/error';
 import { CustomRequest } from '../types/express';
+import jwt from 'jsonwebtoken';
+
+interface Decoded {
+  id: string;
+  email: string;
+  role: boolean;
+}
+
+const SECRET_KEY = process.env.SECRET_KEY;
 
 // 로그인
 export const loginController = async (req: Request, res: Response, next: NextFunction) => {
@@ -25,8 +34,7 @@ export const loginController = async (req: Request, res: Response, next: NextFun
     const { email, password } = req.body;
     const result = await login(email, password);
     res.cookie('jwt', result.token, { httpOnly: true });
-    res.cookie('refreshToken', result.refreshToken, { httpOnly: true });
-    res.cookie('userId', result.userId, { httpOnly: true }); 
+    res.cookie('refreshToken', result.refreshToken, { httpOnly: true }); 
     res.status(200).json({ message: '로그인 성공' });
   } catch (error) {
     next(error);
@@ -108,7 +116,6 @@ export const kakaoAuthController = async (req: Request<{ query: { code: string }
     } else {
       res.cookie('jwt', result.token, { httpOnly: true });
       res.cookie('refreshToken', result.refreshToken, { httpOnly: true });
-      res.cookie('userId', result.userId, { httpOnly: true });
       res.status(200).json({ message: '로그인 성공' });
     }
   } catch (error) {
@@ -130,7 +137,6 @@ export const naverAuthController = async (req: Request<{ query: { code: string, 
     } else {
       res.cookie('jwt', result.token, { httpOnly: true });
       res.cookie('refreshToken', result.refreshToken, { httpOnly: true });
-      res.cookie('userId', result.userId, { httpOnly: true });
       res.status(200).json({ message: '네이버 인증 성공' });
     }
   } catch (error) {
@@ -153,7 +159,6 @@ export const googleAuthController = async (req: Request<{ query: { code: string 
     } else {
       res.cookie('jwt', result.token, { httpOnly: true });
       res.cookie('refreshToken', result.refreshToken, { httpOnly: true });
-      res.cookie('userId', result.userId, { httpOnly: true });
       res.status(200).json({ message: '구글 인증 성공' });
     }
   } catch (error) {
@@ -257,12 +262,16 @@ export const deleteAccountController = async (req: CustomRequest, res: Response,
 // 유저 정보
 export const getUserInfoController = async (req: CustomRequest, res: Response, next: NextFunction ) => {
   try {
-    const userId = req.cookies.userId;
-    if (!userId) {
-      throw createError('Unauthorized', '사용자 인증이 필요합니다.', 401);
+    const token = req.cookies.twt;
+    if (!token) {
+      throw createError('Unauthorized', '토큰이 없습니다.', 401);
     }
-    const userInfo = await getUserInfo(userId);
-    res.status(200).json(userInfo);
+    const decoded = jwt.verify(token, SECRET_KEY!) as Decoded;
+    const user = await getUserInfo(decoded.id);
+    if (!user) {
+      throw createError ('User Not Found', '사용자를 찾을 수 없습니다.', 404);
+    }
+    res.status(200).json(user);
   } catch (error) {
     next(error);
   }
