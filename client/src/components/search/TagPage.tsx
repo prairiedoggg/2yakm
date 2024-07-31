@@ -2,21 +2,13 @@ import { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import Layout from '../Layout';
 import { useSearchStore } from '../../store/search';
-import { fetchPillListByEfficacy } from '../../api/pillApi';
+import { fetchPillListByEfficacy } from '../../api/search';
 import { fetchFavoriteCount } from '../../api/favoriteApi';
-import { fetchReviewCount } from '../../api/reviewApi'
+import { fetchReviewCount } from '../../api/reviewApi';
 import { usePillStore } from '../../store/pill';
 import { useFavoriteStore } from '../../store/favorite';
 import { useReviewStore } from '../../store/review';
 
-interface Pill {
-  id: string;
-  name: string;
-  engname: string;
-  companyname: string;
-  efficacy: string;
-  dosage: string;
-}
 
 const TagPage = () => {
   const { searchQuery } = useSearchStore();
@@ -29,7 +21,7 @@ const TagPage = () => {
     const fetchData = async () => {
       setLoading(true);
       try {
-        const data: Pill[] = await fetchPillListByEfficacy(searchQuery, 10, 0);
+        const data = await fetchPillListByEfficacy(searchQuery, 10, 0);
         console.log('효능 데이터:', data);
         setPillData(data);
 
@@ -37,7 +29,7 @@ const TagPage = () => {
           const favoritecount = await fetchFavoriteCount(data[0].id);
           setFavoriteCount(favoritecount);
           const reviewcount = await fetchReviewCount(data[0].id);
-          setReviewCount(reviewcount)
+          setReviewCount(reviewcount);
         }
       } catch (error) {
         console.log('효능 데이터 가져오기 실패:', error);
@@ -73,7 +65,7 @@ const TagPage = () => {
                 </PillTitle>
                 <FavoritesCount>
                   <p>즐겨찾기 {favoriteCount}</p>
-                  <p>리뷰 { reviewCount}</p>
+                  <p>리뷰 {reviewCount}</p>
                 </FavoritesCount>
                 <TagContainer>
                   <Tag>두통</Tag>

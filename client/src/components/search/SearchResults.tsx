@@ -4,7 +4,7 @@ import { Icon } from '@iconify-icon/react';
 import styled from 'styled-components';
 import PillExp from './PillExp';
 import Review from './Review';
-import { fetchPillDataByName } from '../../api/pillApi';
+import { fetchPillDataByName } from '../../api/search';
 import {
   toggleFavoriteApi,
   fetchFavoriteStatusApi,
@@ -98,11 +98,13 @@ const SearchResults = () => {
             <p>{pillData.companyname}</p>
           </PillHeader>
           <TagContainer>
-            {pillData.importantWords.split(', ').map((word) => (
-              <Tag to={`/search/tag/${word}`} key={word}>
-                {word}
-              </Tag>
-            ))}
+            {pillData.importantWords &&
+              pillData.importantWords.trim() &&
+              pillData.importantWords.split(', ').map((word) => (
+                <Tag to={`/search/tag/${word}`} key={word}>
+                  {word}
+                </Tag>
+              ))}
           </TagContainer>
         </section>
       </PillInfo>
