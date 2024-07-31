@@ -55,14 +55,25 @@ export const updateUsername = async (userId: string, updateData: UpdateUsernameD
   }
 };
 
-export const updateProfilePicture = async (userId: string, profilePicture: string): Promise<string> => {
+// Function to update the profile picture
+export const updateProfilePicture = async (userId: string, profilePicture: string | Buffer): Promise<string> => {
+  let profileimg: string;
+  
+  if (Buffer.isBuffer(profilePicture)) {
+    // Assuming profileimg is stored as base64 in the database
+    profileimg = profilePicture.toString('base64');
+  } else {
+    // URL case
+    profileimg = profilePicture;
+  }
+  
   const result = await pool.query(
     'UPDATE users SET profileimg = $1 WHERE userid = $2 RETURNING profileimg',
-    [profilePicture, userId]
+    [profileimg, userId]
   );
 
   if (result.rows.length === 0) {
-    throw createError("사용자를 찾을 수 없습니다", 'User not found', 404);
+    throw createError("사용자를 찾을 수 없습니다",'User not found', 404);
   }
 
   return result.rows[0].profileimg;
