@@ -234,6 +234,17 @@ export const linkGoogleAccountController = async (req: Request, res: Response, n
   }
 };
 
+// 네이버 연동
+export const linkNaverAccountController = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { userId, socialId } = req.body;
+    await linkSocialAccountService(userId, socialId, 'naver');
+    res.status(200).json({ message: '네이버 계정 연동 성공' });
+  } catch (error) {
+    next(error);
+  }
+};
+
 // 유저네임 변경
 export const changeUsernameController = async (req: Request, res: Response, next: NextFunction) => {
   try {
@@ -262,7 +273,7 @@ export const deleteAccountController = async (req: CustomRequest, res: Response,
 // 유저 정보
 export const getUserInfoController = async (req: CustomRequest, res: Response, next: NextFunction ) => {
   try {
-    const token = req.cookies.twt;
+    const token = req.cookies.jwt;
     if (!token) {
       throw createError('Unauthorized', '토큰이 없습니다.', 401);
     }

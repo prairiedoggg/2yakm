@@ -11,6 +11,7 @@ import {
   googleAuthController,
   linkKakaoAccountController,
   linkGoogleAccountController,
+  linkNaverAccountController,
   verifyEmailController,
   requestEmailVerificationController,
   changeUsernameController,
@@ -375,6 +376,36 @@ router.post('/link/kakao', linkKakaoAccountController);
 
 /**
  * @swagger
+ * /api/auth/link/naver:
+ *   post:
+ *     summary: 네이버 계정 연동
+ *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               userId:
+ *                 type: number
+ *               socialId:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: 네이버 계정 연동 성공
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ */
+router.post('/link/naver', linkNaverAccountController);
+
+/**
+ * @swagger
  * /api/auth/link/google:
  *   post:
  *     summary: 구글 계정 연동
@@ -505,6 +536,15 @@ router.delete('/delete-account', authByToken, deleteAccountController);
  *                   type: string
  *                 role:
  *                   type: boolean
+ *                 kakaoid:
+ *                   type: string
+ *                   nullable: true
+ *                 naverid:
+ *                   type: string
+ *                   nullable: true
+ *                 googleid:
+ *                   type: string
+ *                   nullable: true
  *       401:
  *         description: 인증 실패
  */
