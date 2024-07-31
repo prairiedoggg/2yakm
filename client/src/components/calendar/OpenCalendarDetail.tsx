@@ -1,10 +1,10 @@
-import styled from 'styled-components';
-import DetailTextBox from './DetailTextBox';
-import { calendarGet, calendarPost } from '../../api/calendarApi';
-import { useState, useEffect } from 'react';
 import dayjs from 'dayjs';
-import { useDateStore, useCalendar } from '../../store/store';
-import { calendarPut } from '../../api/calendarApi';
+import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import styled from 'styled-components';
+import { calendarGet, calendarPost, calendarPut } from '../../api/calendarApi';
+import { useCalendar, useDateStore } from '../../store/store';
+import DetailTextBox from './DetailTextBox';
 
 interface CalendarData {
   medications?: {
@@ -12,89 +12,96 @@ interface CalendarData {
     time?: string[];
     taken?: boolean[];
   }[];
-  bloodsugarbefore?: number;
-  bloodsugarafter?: number;
+  bloodsugarBefore?: number;
+  bloodsugarAfter?: number;
   temperature?: number;
   weight?: number;
-  calimg?: string;
+  calImg?: string;
 }
 
 const OpenCalendarDetail: React.FC = () => {
-  const { pillData, bloodsugarbefore, bloodsugarafter, temp, weight, photo } =
-    useCalendar();
+  const { calendarData, calImg } = useCalendar();
   const { value, edit, neverPost, setNeverPost } = useDateStore();
   const formattedDate = dayjs(value).format('YYYY-MM-DD');
   const [data, setData] = useState<CalendarData | null>(null);
+  const token = localStorage.getItem('token');
+  const navigate = useNavigate();
 
   useEffect(() => {
-    const data = {
-      date: formattedDate,
-      bloodsugarBefore: bloodsugarbefore,
-      bloodsugarAfter: bloodsugarafter,
-      medications: JSON.stringify(pillData),
-      temperature: temp,
-      weight: weight,
-      calimg: photo
-    };
+    const formData = new FormData();
+    formData.append('date', formattedDate);
+    formData.append(
+      'bloodsugarBefore',
+      calendarData?.bloodsugarbefore?.toString() || '0'
+    );
+    formData.append(
+      'bloodsugarAfter',
+      calendarData?.bloodsugarafter?.toString() || '0'
+    );
+    formData.append(
+      'medications',
+      JSON.stringify(calendarData?.pillData) || '[]'
+    );
+    formData.append('temperature', calendarData?.temp?.toString() || '0');
+    formData.append('weight', calendarData?.weight?.toString() || '0');
+    formData.append('calImg', calImg?.get('file') as Blob);
+    console.log('이미지이미지', calImg?.get('file'));
 
     const putData = async () => {
-      // 기존 데이터 있을 때
-      if (!edit && !neverPost) {
-        try {
-          const res = await calendarPut(formattedDate, data);
+      try {
+        if (!edit && !neverPost) {
+          const res = await calendarPut(formattedDate, formData);
           setData(res);
           console.log('일정 수정 성공:', res);
-        } catch (err) {
-          console.error('일정 수정 오류:', err);
-        }
-      } // 없을 때
-      else if (!edit && neverPost) {
-        try {
-          const res = await calendarPost(data);
+        } else if (!edit && neverPost) {
+          const res = await calendarPost(formData);
           setData(res);
           console.log('일정 등록 성공', res);
           setNeverPost(false);
-        } catch (err) {
-          console.log('일정 등록 실패', err);
         }
+      } catch (err) {
+        console.error('일정 등록/수정 오류:', err);
       }
     };
-
     putData();
   }, [edit]);
 
   useEffect(() => {
-    if (formattedDate !== undefined) {
-      const fetchPillData = async () => {
-        try {
-          const data = await calendarGet(formattedDate);
-          console.log(data);
-          setData(data);
-          setNeverPost(false);
+    if (!!token) {
+      if (formattedDate !== undefined) {
+        const fetchPillData = async () => {
+          try {
+            const data = await calendarGet(formattedDate);
+            console.log(data);
+            setData(data);
+            setNeverPost(false);
 
-          if (data === undefined) {
-            setNeverPost(true);
+            if (data === undefined) {
+              setNeverPost(true);
+            }
+          } catch (err) {
+            console.log('해당하는 약복용여부 정보 없음', err);
           }
-        } catch (err) {
-          console.log('해당하는 약복용여부 정보 없음', err);
-        }
-      };
+        };
 
-      fetchPillData();
+        fetchPillData();
+      }
+    } else {
+      navigate('/login');
     }
-  }, [formattedDate, edit]);
+  }, [formattedDate]);
 
   return (
     <ContentContainer>
       <DetailTextBox title='약 복용 여부' pillData={data?.medications} />
       <DetailTextBox
         title='혈당'
-        bloodsugarbefore={data?.bloodsugarbefore}
-        bloodsugarafter={data?.bloodsugarafter}
+        bloodsugarbefore={data?.bloodsugarBefore}
+        bloodsugarafter={data?.bloodsugarAfter}
       />
       <DetailTextBox title='체온' temp={data?.temperature} />
       <DetailTextBox title='체중' weight={data?.weight} />
-      <DetailTextBox title='사진 기록' photo={data?.calimg} />
+      <DetailTextBox title='사진 기록' photo={data?.calImg} />
     </ContentContainer>
   );
 };

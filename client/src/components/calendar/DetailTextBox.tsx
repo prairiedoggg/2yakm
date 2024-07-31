@@ -1,9 +1,9 @@
 import styled from 'styled-components';
-import IsPillTaken from './calendarDetails/IsPillTaken';
 import BloodSugar from './calendarDetails/BloodSugar';
+import IsPillTaken from './calendarDetails/IsPillTaken';
+import Photo from './calendarDetails/Photo';
 import Temperature from './calendarDetails/Temperature';
 import Weight from './calendarDetails/Weight';
-import Photo from './calendarDetails/Photo';
 
 interface DetailTextBoxProps {
   title: string;
@@ -70,18 +70,18 @@ const DetailTextBox = ({
 
   const isRender =
     (pillData && pillData && pillData.length > 0) ||
-    (bloodsugarbefore !== undefined && bloodsugarbefore !== null) ||
-    (bloodsugarafter !== undefined && bloodsugarafter !== null) ||
-    (temp !== undefined && temp !== null) ||
-    (weight !== undefined && weight !== null) ||
+    (bloodsugarbefore !== undefined && bloodsugarbefore !== 0) ||
+    (bloodsugarafter !== undefined && bloodsugarafter !== 0) ||
+    (temp !== undefined && temp !== 0) ||
+    (weight !== undefined && weight !== 0) ||
     (photo !== undefined && photo !== null);
 
   const isEmpty =
     (!pillData || !pillData || pillData.length === 0) &&
-    (bloodsugarbefore === undefined || bloodsugarbefore === null) &&
-    (bloodsugarafter === undefined || bloodsugarafter === null) &&
-    (temp === undefined || temp === null) &&
-    (weight === undefined || weight === null) &&
+    (bloodsugarbefore === undefined || bloodsugarbefore === 0) &&
+    (bloodsugarafter === undefined || bloodsugarafter === 0) &&
+    (temp === undefined || temp === 0) &&
+    (weight === undefined || weight === 0) &&
     (photo === undefined || photo === null);
 
   return isRender ? (

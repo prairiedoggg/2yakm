@@ -1,7 +1,7 @@
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import loadable from '@loadable/component';
-import AuthenticatedRoute from './AuthenticatedRoute';
 import 'dayjs/locale/ko';
+import { Route, BrowserRouter as Router, Routes } from 'react-router-dom';
+import AuthenticatedRoute from './AuthenticatedRoute';
 
 const Home = loadable(() => import('./components/home/Home'));
 const News = loadable(() => import('./components/cardNews/News'));
@@ -23,37 +23,37 @@ const Redirect = loadable(() => import('./components/authentication/Redirect'));
 
 const App = () => {
   return (
-      <Router>
-        <Routes>
-          <Route path='/' element={<Home />} />
-          <Route path='/news/:num' element={<News />} />
-          <Route path='/search' element={<Search />} />
-          <Route path='/search/tag/:tag' element={<TagPage />} />
-          <Route
-            path='/calendar'
-            element={<AuthenticatedRoute element={Calendar} />}
-          />
-          <Route
-            path='/alarm'
-            element={<AuthenticatedRoute element={Alarm} />}
-          />
-          <Route
-            path='/myPage'
-            element={<AuthenticatedRoute element={MyPage} />}
-          />
-          <Route path='/login' element={<Login />} />
-          <Route path='/verification/email' element={<EmailVerification />} />
-          <Route path='/register' element={<Register />} />
-          <Route
-            path='/password/reset'
-            element={<AuthenticatedRoute element={ResetPassword} />}
-          />
-          <Route path='/chatbot' element={<ChatBot />} />
-          <Route path='/kakao/callback' element={<Redirect sns='kakao' />} />
-          <Route path='/naver/callback' element={<Redirect sns='naver' />} />
-          <Route path='/google/callback' element={<Redirect sns='google' />} />
-        </Routes>
-      </Router>
+    <Router>
+      <Routes>
+        <Route path='/' element={<Home />} />
+        <Route path='/news/:num' element={<News />} />
+        <Route path='/search' element={<Search />} />
+        <Route path='/search/tag/:tag' element={<TagPage />} />
+        <Route
+          path='/calendar'
+          element={<AuthenticatedRoute element={Calendar} />}
+        />
+        <Route path='/alarm' element={<AuthenticatedRoute element={Alarm} />} />
+        <Route
+          path='/myPage'
+          element={<AuthenticatedRoute element={MyPage} />}
+        />
+        <Route path='/login' element={<Login />} />
+        <Route path='/verification/email' element={<EmailVerification />} />
+        <Route path='/register' element={<Register />} />
+        <Route
+          path='/password/reset'
+          element={<AuthenticatedRoute element={ResetPassword} />}
+        />
+        <Route
+          path='/chatbot'
+          element={<AuthenticatedRoute element={ChatBot} />}
+        />
+        <Route path='/kakao/callback' element={<Redirect sns='kakao' />} />
+        <Route path='/naver/callback' element={<Redirect sns='naver' />} />
+        <Route path='/google/callback' element={<Redirect sns='google' />} />
+      </Routes>
+    </Router>
   );
 };
 
