@@ -149,6 +149,21 @@ export const changePassword = async (
   }
 };
 
+export const resetPassword = async (
+  email: string,
+  onSuccess?: () => void,
+  onFailure?: (arg0: any) => void
+) => {
+  try {
+    const data = await post('/api/auth/request-password', { email: email });
+
+    if (onSuccess) onSuccess();
+  } catch (error) {
+    console.error('reset Password failed', error);
+    if (onFailure) onFailure(error);
+  }
+};
+
 export const refreshAuthToken = async () => {
   try {
     const response = await post(`api/auth/token`, {});
