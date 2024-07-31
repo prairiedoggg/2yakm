@@ -7,7 +7,7 @@ export const fetchReviews = async ({
   cursorLimit = 10,
   cursor = null
 }: {
-  pillId: string;
+  pillId: number;
   initialLimit?: number;
   cursorLimit?: number;
   cursor?: string | null;
@@ -30,7 +30,7 @@ export const fetchReviews = async ({
 
 export const createReview = async (review: {
   content: string;
-  pillId: string;
+  pillId: number;
 }) => {
   try {
     const data = await post(`/api/reviews`, review);
