@@ -24,6 +24,10 @@ interface Pills {
   efficacy: string;
   importantWords?: string; // Optional to hold important words extracted from efficacy
   similarity?: string;
+  dosage: string;
+  caution: string;
+  storagemethod: string;
+  imgurl: string;
 }
 
 interface GetPillsResult {
@@ -84,7 +88,7 @@ export const getPills = async (
 
 export const getPillById = async (id: number): Promise<Pills | null> => {
   const query =
-    'SELECT id, name, engname, companyname, ingredientname, efficacy FROM pills WHERE id = $1';
+    'SELECT id, name, engname, companyname, ingredientname, efficacy, dosage, caution, storagemethod, imgurl FROM pills WHERE id = $1';
   const result = await pool.query(query, [id]);
   return result.rows[0] || null;
 };
@@ -122,7 +126,7 @@ export const searchPillsbyName = async (
   limit: number,
   offset: number
 ): Promise<GetPillsResult> => {
-  const query = `SELECT id, name, engname, companyname, ingredientname, efficacy FROM pills WHERE name LIKE $1 OR engname LIKE $1 
+  const query = `SELECT id, name, engname, companyname, ingredientname, efficacy, dosage, caution, storagemethod, imgurl FROM pills WHERE name ILIKE $1 OR engname ILIKE $1 
                  LIMIT $2 OFFSET $3`;
   const values = [`${name}%`, limit, offset];
 
@@ -169,7 +173,7 @@ export const searchPillsbyEfficacy = async (
 ): Promise<GetPillsResult> => {
   const efficacyArray = efficacy.split(',').map((eff) => `%${eff.trim()}%`);
   const query = `
-    SELECT id, name, engname, companyname, ingredientname, efficacy 
+    SELECT id, name, engname, companyname, ingredientname, efficacy, dosage, caution, storagemethod, imgurl
     FROM pills 
     WHERE ${efficacyArray
       .map((_, index) => `efficacy ILIKE $${index + 1}`)
@@ -219,7 +223,7 @@ const searchPillsByFrontAndBack = async (
   offset: number
 ): Promise<GetPillsResult> => {
   const query = `
-    SELECT id, name, front, back 
+    SELECT id, name, front, back, imagepath 
     FROM pillocr 
     WHERE front = $1 AND back = $2
     LIMIT $3 OFFSET $4`;
@@ -250,7 +254,7 @@ const searchPillsByNameFromText = async (
   offset: number
 ): Promise<GetPillsResult> => {
   const query = `
-    SELECT id, name, engname, companyname, ingredientname, efficacy 
+    SELECT id, name, engname, companyname, ingredientname, efficacy, dosage, caution, storagemethod, imgurl
     FROM pills 
     WHERE engname ILIKE $1
     LIMIT $2 OFFSET $3`;
@@ -329,7 +333,7 @@ const preprocessImage = async (
 
 // 유사도 검색 결과에서 받아온 id를 이용해 DB에서 정보를 받아오는 함수
 const searchSimilarImageByIds = async (ids: string[]): Promise<Pills[]> => {
-  const query = `SELECT id, name, engname, companyname, ingredientname, efficacy, imgurl FROM pills WHERE id = ANY($1)`;
+  const query = `SELECT id, name, engname, companyname, ingredientname, efficacy, dosage, caution, storagemethod, imgurl FROM pills WHERE id = ANY($1)`;
   const result: QueryResult<Pills> = await pool.query(query, [ids]);
   return result.rows;
 };
@@ -412,9 +416,7 @@ const detectTextInImage = async (
         .filter(
           (text) =>
             !text.match(/[\.()]/) &&
-            !text.includes('mm') &&
-            !text.includes('-') &&
-            !text.includes('\n')
+            !text.includes('-')    
         );
 
       console.log('Filtered text:', filteredText);
@@ -487,7 +489,13 @@ export const searchPillsByImage = async (
       };
     }
 
-    console.log('Detected Text:', detectedText);
+    if (detectedText[0].includes('\n')){
+      const temp = detectedText[0].split('\n')
+      detectedText[0] = temp[0]
+      detectedText[1] = temp[1]
+    }
+
+    console.log('Detected Text:',detectedText)
 
     let pills: Pills[] = [];
     let total = 0;
