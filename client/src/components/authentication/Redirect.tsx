@@ -2,6 +2,7 @@ import Cookies from 'js-cookie';
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { get } from '../../api/api';
+import { fetchUserInformation } from '../../api/authService';
 
 const Redirect = ({ sns }: { sns: string }) => {
   const navigate = useNavigate();
@@ -34,7 +35,10 @@ const Redirect = ({ sns }: { sns: string }) => {
           if (res.message === '로그인 성공') {
             Cookies.set('login', res.message);
             // 쿠키에 토큰 저장
-            navigate('/');
+            fetchUserInformation(() => {
+              navigate('/', { replace: true });
+              window.location.reload();
+            });
           }
         })
         .catch((error) => {

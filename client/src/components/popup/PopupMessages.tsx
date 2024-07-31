@@ -27,6 +27,10 @@ export enum PopupType {
   DeleteFavoriteSuccess,
   DeleteFavoriteFailure,
 
+  DeleteReview, // src\components\myPage\ManageReviews.tsx
+  DeleteReviewSuccess,
+  DeleteReviewFailure,
+
   None
 }
 
@@ -89,6 +93,9 @@ const PopupContent = (
         return (
           <div>즐겨찾는 약 삭제에 실패했습니다. 잠시 후 다시 시도해주세요.</div>
         );
+
+      case PopupType.DeleteReviewFailure:
+        return <div>리뷰 삭제에 실패했습니다. 잠시 후 다시 시도해주세요.</div>;
     }
   };
 

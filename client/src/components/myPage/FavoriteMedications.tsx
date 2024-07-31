@@ -44,9 +44,7 @@ const FavoriteMedications = () => {
           })
         }));
         setLoading(false);
-
         setItems(temp);
-
         setItemCount(data.totalCount);
       },
       () => {

@@ -1,7 +1,6 @@
-import base64 from 'base-64';
 import Cookies from 'js-cookie';
-import useUserStore from '../store/user';
-import { del, post } from './api';
+import useUserStore, { LoginType } from '../store/user';
+import { del, post, get } from './api';
 
 export const login = async (
   email: string,
@@ -11,11 +10,33 @@ export const login = async (
 ) => {
   try {
     const data = await post('/api/auth/login', { email: email, password });
-    console.log(data);
-    storeLoginData(data);
+    Cookies.set('login', data.message);
+
     if (onSuccess) onSuccess();
   } catch (error) {
     console.error('Login failed', error);
+    if (onFailure) onFailure(error);
+  }
+};
+
+export const fetchUserInformation = async (
+  onSuccess?: () => void,
+  onFailure?: (arg0: any) => void
+) => {
+  try {
+    const data = await get('/api/auth/user-info');
+    console.log(data);
+
+    let loginType = LoginType.none;
+    if(data.kakaoid !== null) loginType = LoginType.kakao;
+    else if(data.naverid !== null) loginType = LoginType.naver;
+    else if(data.googleid !== null) loginType = LoginType.google;
+    
+    useUserStore.getState().setUser(data.username, data.email, data.profileImg, data.id, data.role, loginType);
+
+    if (onSuccess) onSuccess();
+  } catch (error) {
+    console.error('fetch User Information failed', error);
     if (onFailure) onFailure(error);
   }
 };
@@ -28,8 +49,7 @@ export const deleteAccount = async (
   try {
     const data = await del('/api/auth/delete-account', { userId: userId });
     useUserStore.getState().clearUser();
-    Cookies.remove('token');
-    Cookies.remove('refreshToken');
+    Cookies.remove('login');
     if (onSuccess) onSuccess(data);
   } catch (error) {
     console.error('delete Account failed', error);
@@ -52,7 +72,6 @@ export const signup = async (
       password: password,
       confirmPassword: confirmPassword
     });
-    storeLoginData(data);
 
     if (onSuccess) onSuccess();
   } catch (error) {
@@ -92,7 +111,8 @@ export const logout = async (callback?: () => void) => {
 export const loginForKakao = async (code: string) => {
   try {
     const data = await post('/api/auth/kakao/callback', { code });
-    storeLoginData(data);
+    Cookies.set('login', data.message);
+
   } catch (error) {
     console.error('Login failed', error);
   }
@@ -101,7 +121,8 @@ export const loginForKakao = async (code: string) => {
 export const loginForGoogle = async (code: string) => {
   try {
     const data = await post('/api/auth/google/callback', { code });
-    storeLoginData(data);
+    Cookies.set('login', data.message);
+
   } catch (error) {
     console.error('Login failed', error);
   }
@@ -126,22 +147,6 @@ export const changePassword = async (
     if (onFailure) onFailure(error);
     console.error('changePassword failed', error);
   }
-};
-
-const storeLoginData = (data: any) => {
-  const userData = decodingToken(data.token);
-  if (data && userData)
-    useUserStore
-      .getState()
-      .setUser(data.userName, data.email, data.profileimg, userData.id);
-  console.log(useUserStore.getState().user);
-  if (data.token) Cookies.set('token', `${data.token}`, { path: '/' });
-};
-
-const decodingToken = (token: string) => {
-  let payload = token.substring(token.indexOf('.') + 1, token.lastIndexOf('.'));
-  let decodingInfo = base64.decode(payload);
-  return JSON.parse(decodingInfo);
 };
 
 export const refreshAuthToken = async () => {

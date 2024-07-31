@@ -1,4 +1,4 @@
-import { get, post } from './api';
+import { get, post, del } from './api';
 
 
 export const fetchReviews = async ({
@@ -42,7 +42,17 @@ export const createReview = async (review: {
   }
 };
 
-export const fetchReviewCount = async (pillId: number) => {
+export const deleteReview = async (id:number, onSuccess?:(arg0:any)=>void, onFailure?:(arg0:any)=>void) =>{
+  try {
+    const data = await del('/api/reviews', { id:id });
+    if (onSuccess) onSuccess(data);
+  } catch (error) {
+    console.error('change ProfileImage failed', error);
+    if (onFailure) onFailure(error);
+  }
+};
+
+export const fetchReviewCount = async (pillId: string) => {
   try {
     const data = await get(`/api/pills/${pillId}/reviewcount`);
     console.log('리뷰수:', data);
