@@ -1,7 +1,8 @@
 import { put, get, post, del } from './api';
 
-export const AddMyPills = async ( name:string, expiredat:string,  onSuccess?:()=>void, onFailure?:(arg0:any)=>void) => {
+export const addMyPills = async ( name:string, expiredat:string,  onSuccess?:()=>void, onFailure?:(arg0:any)=>void) => {
     try {
+        console.log(expiredat);
       const data = await post('/api/mypills', {name:name, expiredat:expiredat} );
       if (onSuccess) onSuccess();  
   
@@ -11,12 +12,13 @@ export const AddMyPills = async ( name:string, expiredat:string,  onSuccess?:()=
     }
   };
 
-  export const FetchMyPills = async (
+  export const fetchMyPills = async (
     limit: number,
     offset: number,
     sortedBy: string,
     order: string,
-    onSuccess?:()=>void, onFailure?:(arg0:any)=>void) => {
+    onSuccess?:(arg0:any)=>void, 
+    onFailure?:(arg0:any)=>void) => {
     try {
       const data = await get('/api/mypills', {
         limit: limit,
@@ -25,7 +27,7 @@ export const AddMyPills = async ( name:string, expiredat:string,  onSuccess?:()=
         order: order
       } );
 
-      if (onSuccess) onSuccess();  
+      if (onSuccess) onSuccess(data);  
   
     } catch (error) {
       console.error('Fetch My Pills failed', error);
@@ -33,7 +35,7 @@ export const AddMyPills = async ( name:string, expiredat:string,  onSuccess?:()=
     }
   };
 
-  export const UpdateMyPills = async (
+  export const updateMyPills = async (
     mypillid:string,
     name:string, expiredat:string,
     onSuccess?:()=>void, onFailure?:(arg0:any)=>void) => {
@@ -47,7 +49,7 @@ export const AddMyPills = async ( name:string, expiredat:string,  onSuccess?:()=
     }
   };
 
-  export const DeleteMyPills = async (
+  export const deleteMyPills = async (
     mypillid:string,
     onSuccess?:()=>void, onFailure?:(arg0:any)=>void) => {
     try {

@@ -24,7 +24,7 @@ export const fetchUserInformation = async (
   onFailure?: (arg0: any) => void
 ) => {
   try {
-    const data = await get('/api/auth/userInfo');
+    const data = await get('/api/auth/user-info');
     console.log(data);
 
     let loginType = LoginType.none;

@@ -3,7 +3,6 @@ import Header from '../Header';
 import MyInformation from './MyInformation';
 import EditMyInformation from './EditMyInformation';
 import EditName from './EditName';
-import ConfirmPassword from './ConfirmPassword';
 import EditPassword from './EditPassword';
 import EditPharmacist from './EditPharmacist';
 import FavoriteMedications from './FavoriteMedications';
