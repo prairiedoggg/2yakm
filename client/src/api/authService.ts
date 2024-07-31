@@ -1,5 +1,5 @@
 import Cookies from 'js-cookie';
-import useUserStore from '../store/user';
+import useUserStore, { LoginType } from '../store/user';
 import { del, post, get } from './api';
 
 export const login = async (
@@ -26,7 +26,13 @@ export const fetchUserInformation = async (
   try {
     const data = await get('/api/auth/userInfo');
     console.log(data);
-    useUserStore.getState().setUser(data.username, data.email, data.profileImg, data.id, data.role);
+
+    let loginType = LoginType.none;
+    if(data.kakaoid !== null) loginType = LoginType.kakao;
+    else if(data.naverid !== null) loginType = LoginType.naver;
+    else if(data.googleid !== null) loginType = LoginType.google;
+    
+    useUserStore.getState().setUser(data.username, data.email, data.profileImg, data.id, data.role, loginType);
 
     if (onSuccess) onSuccess();
   } catch (error) {

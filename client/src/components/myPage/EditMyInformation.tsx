@@ -4,7 +4,7 @@ import { Icon } from '@iconify-icon/react';
 import { useState } from 'react';
 import { logout, deleteAccount } from '../../api/authService';
 import { useNavigate } from 'react-router-dom';
-import useUserStore from '../../store/user';
+import useUserStore, { LoginType } from '../../store/user';
 import Loading from '../Loading';
 import Popup from '../popup/Popup';
 import PopupContent, { PopupType } from '../popup/PopupMessages';
@@ -30,14 +30,17 @@ const EditMyInformation = ({
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  const infos1: Info[] = [
+  let infos1: Info[] = [
     { info: '이메일', onClick: undefined },
-    { info: '이름', onClick: onEditNameClick },
-    { info: '비밀번호 변경', onClick: onEditPasswordClick }
+    { info: '이름', onClick: onEditNameClick }
   ];
 
+  if (user?.loginType == LoginType.none)
+    infos1.push({ info: '비밀번호 변경', onClick: onEditPasswordClick });
+
   const infos2: Info[] = [
-    { info: '약사 인증', onClick: onEditPharmacistClick }
+    { info: '약사 인증', onClick: onEditPharmacistClick },
+    { info: '연동된 소셜계정', onClick: undefined }
   ];
 
   const getInfoValue = (type: string) => {
@@ -48,8 +51,28 @@ const EditMyInformation = ({
         return user?.email;
       case '프로필 이미지':
         return user?.profileImg;
-      case '연동된 소셜계정':
-        return <Icon icon='devicon:google' width='1.1rem' height='1.1rem' />;
+      case '연동된 소셜계정': {
+        if (user?.loginType == LoginType.kakao)
+          return (
+            <Icon
+              icon='ri:kakao-talk-fill'
+              width='1.5rem'
+              height='1.5rem'
+              style={{ color: '#3A1D1F' }}
+            />
+          );
+        else if (user?.loginType == LoginType.naver)
+          return (
+            <Icon
+              icon='simple-icons:naver'
+              width='1.1rem'
+              height='1.1rem'
+              style={{ color: '#00c73c' }}
+            />
+          );
+        else
+          return <Icon icon='devicon:google' width='1.1rem' height='1.1rem' />;
+      }
       default:
         return '';
     }

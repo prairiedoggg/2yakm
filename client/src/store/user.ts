@@ -1,6 +1,14 @@
 import { create } from 'zustand'
 //persist 사용하기.
 
+export enum LoginType {
+  kakao,
+  naver,
+  google,
+
+  none,
+}
+
 interface User {
   user: {
     userName: string;
@@ -8,24 +16,31 @@ interface User {
     profileImg: string;
     id: string;
     role: boolean;
+    loginType:LoginType;
   } | null;
+
   userToken: {
     token: string;
     refreshToken: string;
   };
+
   setToken: (token: string, refreshToken: string) => void;
+
   setUser: (
     userName: string,
     email: string,
     profileImg: string,
     id: string,
-    role: boolean
+    role: boolean,
+    loginType:LoginType
   ) => void;
+
   setUserId: (id: string) => void;
   setProfileImg: (profileImg: string) => void;
   setUserName: (userName: string) => void;
   setEmail: (email: string) => void;
   setRole: (role: boolean) => void;
+  setLoginType: (role: LoginType) => void;
   clearUser: () => void;
 }
 
@@ -44,11 +59,19 @@ const useUserStore = create<User>((set) => ({
     }));
   },
 
-  setUser: (userName, email, profileImg, id, role) => {
-    const user = { userName, email, profileImg, id, role };
+  setUser: (userName, email, profileImg, id, role, loginType) => {
+    const user = { userName, email, profileImg, id, role, loginType };
     localStorage.setItem('user', JSON.stringify(user));
     set({ user });
   },
+
+  setLoginType: (loginType) =>
+    set((state) => {
+      const updatedUser = state.user ? { ...state.user, loginType } : null;
+      if (updatedUser)
+        localStorage.setItem('user', JSON.stringify(updatedUser));
+      return { user: updatedUser };
+    }),
 
   setUserId: (id) =>
     set((state) => {
