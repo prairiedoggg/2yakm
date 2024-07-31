@@ -20,7 +20,7 @@ const SearchResults = () => {
   const { isFavorite, setIsFavorite, favoriteCount, setFavoriteCount } =
     useFavoriteStore();
   const [activeTab, setActiveTab] = useState<string>('effectiveness');
-  const [pillId, setPillId] = useState<string | null>(null);
+  const [pillId, setPillId] = useState<number | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
 
   useEffect(() => {
@@ -53,14 +53,12 @@ const SearchResults = () => {
   const handleToggleFavorite = async () => {
     if (!pillId) return;
     try {
+      await toggleFavoriteApi(pillId!.toString());
       setIsFavorite(!isFavorite);
-      setFavoriteCount(favoriteCount + 1);
-      await toggleFavoriteApi(pillId);
-      await fetchFavoriteCount(pillId);
+      const count = await fetchFavoriteCount(pillId!.toString());
+      setFavoriteCount(count);
     } catch (error) {
       console.error('좋아요상태 실패:', error);
-      setIsFavorite(!isFavorite);
-      setFavoriteCount(favoriteCount - 1);
     }
   };
 
@@ -100,9 +98,11 @@ const SearchResults = () => {
             <p>{pillData.companyname}</p>
           </PillHeader>
           <TagContainer>
-            <Tag to='/search/tag/두통'>두통</Tag>
-            <Tag to='/search/tag/신경통'>신경통</Tag>
-            <Tag to='/search/tag/근육통'>근육통</Tag>
+            {pillData.importantWords.split(', ').map((word) => (
+              <Tag to={`/search/tag/${word}`} key={word}>
+                {word}
+              </Tag>
+            ))}
           </TagContainer>
         </section>
       </PillInfo>

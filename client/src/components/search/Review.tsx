@@ -3,7 +3,7 @@ import styled from 'styled-components';
 import { fetchReviews, createReview } from '../../api/reviewApi';
 import { useReviewStore } from '../../store/review';
 
-const Review = ({ pillId }: { pillId: string }) => {
+const Review = ({ pillId }: { pillId: number }) => {
   const {
     reviews,
     setReviews,
@@ -15,7 +15,7 @@ const Review = ({ pillId }: { pillId: string }) => {
   const [newReview, setNewReview] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
-  const loadReviews = async (pillId: string, cursor: string | null) => {
+  const loadReviews = async (pillId: number, cursor: string | null) => {
     if (isLoading) return;
     setIsLoading(true);
     try {
@@ -90,7 +90,7 @@ const Review = ({ pillId }: { pillId: string }) => {
           >
             <User>
               <Profile src={`/img/user.svg`} alt='유저' />
-              <span>{review.name}</span>
+              <span>{review.username}</span>
             </User>
             <p>{review.content}</p>
           </ReviewItem>

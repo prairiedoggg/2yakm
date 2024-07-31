@@ -1,8 +1,8 @@
 import create from 'zustand';
 
 export interface Review {
-  id: string;
-  pillId: string;
+  id: number;
+  pillId: number;
   name?: string;
   userid: string;
   username?: string;
