@@ -53,12 +53,14 @@ const SearchResults = () => {
   const handleToggleFavorite = async () => {
     if (!pillId) return;
     try {
-      await toggleFavoriteApi(pillId);
       setIsFavorite(!isFavorite);
-      const count = await fetchFavoriteCount(pillId);
-      setFavoriteCount(count);
+      setFavoriteCount(favoriteCount + 1);
+      await toggleFavoriteApi(pillId);
+      await fetchFavoriteCount(pillId);
     } catch (error) {
       console.error('좋아요상태 실패:', error);
+      setIsFavorite(!isFavorite);
+      setFavoriteCount(favoriteCount - 1);
     }
   };
 
@@ -118,7 +120,11 @@ const SearchResults = () => {
           ))}
         </Menu>
         <Contants>
-          {activeTab === 'effectiveness' ? <PillExp /> : <Review />}
+          {activeTab === 'effectiveness' ? (
+            <PillExp />
+          ) : (
+            <Review pillId={pillId!} />
+          )}
         </Contants>
       </PillMore>
     </SearchResultsContainer>
