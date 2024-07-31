@@ -52,7 +52,6 @@ export const deleteReview = async (id:number, onSuccess?:(arg0:any)=>void, onFai
   }
 };
 
-export const fetchUserAllReview = async (limit: number, offset:number, sortedBy:string, order:string, onSuccess?:(arg0:any)=>void, onFailure?:(arg0:any)=>void) => {
 export const fetchReviewCount = async (pillId: string) => {
   try {
     const data = await get(`/api/pills/${pillId}/reviewcount`);

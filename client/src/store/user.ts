@@ -1,9 +1,11 @@
-import { create } from 'zustand';
+import { create } from 'zustand'
+//persist 사용하기.
+
 interface User {
   user: {
     userName: string;
     email: string;
-    profileimg: string;
+    profileImg: string;
     id: string;
   } | null;
   userToken: {
@@ -14,11 +16,11 @@ interface User {
   setUser: (
     userName: string,
     email: string,
-    profileimg: string,
+    profileImg: string,
     id: string
   ) => void;
   setUserId: (id: string) => void;
-  setProfileimg: (profileimg: string) => void;
+  setProfileImg: (profileImg: string) => void;
   setUserName: (userName: string) => void;
   setEmail: (email: string) => void;
   clearUser: () => void;
@@ -57,9 +59,9 @@ const useUserStore = create<User>((set) => ({
         localStorage.setItem('user', JSON.stringify(updatedUser));
       return { user: updatedUser };
     }),
-  setProfileimg: (profileImage) =>
+  setProfileImg: (profileImg) =>
     set((state) => {
-      const updatedUser = state.user ? { ...state.user, profileImage } : null;
+      const updatedUser = state.user ? { ...state.user, profileImg } : null;
       if (updatedUser)
         localStorage.setItem('user', JSON.stringify(updatedUser));
       return { user: updatedUser };

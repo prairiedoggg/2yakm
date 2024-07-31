@@ -1,4 +1,3 @@
-import base64 from 'base-64';
 import Cookies from 'js-cookie';
 import useUserStore from '../store/user';
 import { del, post } from './api';
@@ -11,8 +10,8 @@ export const login = async (
 ) => {
   try {
     const data = await post('/api/auth/login', { email: email, password });
-    console.log(data);
-    storeLoginData(data);
+    Cookies.set('login', data.message);
+
     if (onSuccess) onSuccess();
   } catch (error) {
     console.error('Login failed', error);
@@ -52,7 +51,6 @@ export const signup = async (
       password: password,
       confirmPassword: confirmPassword
     });
-    storeLoginData(data);
 
     if (onSuccess) onSuccess();
   } catch (error) {
@@ -92,7 +90,8 @@ export const logout = async (callback?: () => void) => {
 export const loginForKakao = async (code: string) => {
   try {
     const data = await post('/api/auth/kakao/callback', { code });
-    storeLoginData(data);
+    Cookies.set('login', data.message);
+
   } catch (error) {
     console.error('Login failed', error);
   }
@@ -101,7 +100,8 @@ export const loginForKakao = async (code: string) => {
 export const loginForGoogle = async (code: string) => {
   try {
     const data = await post('/api/auth/google/callback', { code });
-    storeLoginData(data);
+    Cookies.set('login', data.message);
+
   } catch (error) {
     console.error('Login failed', error);
   }
@@ -126,22 +126,6 @@ export const changePassword = async (
     if (onFailure) onFailure(error);
     console.error('changePassword failed', error);
   }
-};
-
-const storeLoginData = (data: any) => {
-  const userData = decodingToken(data.token);
-  if (data && userData)
-    useUserStore
-      .getState()
-      .setUser(data.userName, data.email, data.profileimg, userData.id);
-  console.log(useUserStore.getState().user);
-  if (data.token) Cookies.set('token', `${data.token}`, { path: '/' });
-};
-
-const decodingToken = (token: string) => {
-  let payload = token.substring(token.indexOf('.') + 1, token.lastIndexOf('.'));
-  let decodingInfo = base64.decode(payload);
-  return JSON.parse(decodingInfo);
 };
 
 export const refreshAuthToken = async () => {

@@ -8,7 +8,6 @@ import useUserStore from '../../store/user';
 import Loading from '../Loading';
 import Popup from '../popup/Popup';
 import PopupContent, { PopupType } from '../popup/PopupMessages';
-import { PiCactus } from 'react-icons/pi';
 import { changeProfileImage, fetchUserProfile } from '../../api/myPageService';
 
 interface Info {
@@ -48,7 +47,7 @@ const EditMyInformation = ({
       case '이메일':
         return user?.email;
       case '프로필 이미지':
-        return user?.profileimg;
+        return user?.profileImg;
       case '연동된 소셜계정':
         return <Icon icon='devicon:google' width='1.1rem' height='1.1rem' />;
       default:
@@ -118,7 +117,7 @@ const EditMyInformation = ({
         <div className='thumbnail'>
           <img
             className='thumbnailImage'
-            src={user?.profileimg ?? `img/user.svg`}
+            src={user?.profileImg ?? `img/user.svg`}
             alt='프로필 이미지'
           />
           <div className='edit-thumb' onClick={() => setBottomSheet(true)}>
@@ -153,13 +152,27 @@ const EditMyInformation = ({
         onClose={(pic) => {
           if (pic !== null) {
             setLoading(true);
+
+            // 파일데이터 확인용 테스트 코드. 프로필 이미지 업로드 구현 완료 후 삭제 예정
+            // const testBuffer = pic.arrayBuffer().then((data) => {
+            //   console.log(data);
+
+            //   let arr = new Uint8Array(data);
+            //   console.log(arr);
+
+            //   var imgsrc =
+            //     'data:image/png;base64,' +
+            //     btoa(String.fromCharCode.apply(null, Array.from(arr)));
+            //   console.log(imgsrc);
+            // });
+
             const formData = new FormData();
-            formData.append('image', pic);
+            formData.append('profilePicture', pic);
             changeProfileImage(
               formData,
               () => {
+                fetchUserProfile(() => {});
                 setLoading(false);
-                window.location.reload();
               },
               () => {
                 setLoading(false);
@@ -205,6 +218,9 @@ const StyledContent = styled.div`
     .thumbnailImage {
       width: 100%;
       height: 100%;
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
     }
 
     .edit-thumb {
