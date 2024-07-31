@@ -6,6 +6,11 @@ interface User {
     profileimg: string;
     id: string;
   } | null;
+  userToken: {
+    token: string;
+    refreshToken: string;
+  };
+  setToken: (token: string, refreshToken: string) => void;
   setUser: (
     userName: string,
     email: string,
@@ -21,6 +26,18 @@ interface User {
 
 const useUserStore = create<User>((set) => ({
   user: JSON.parse(localStorage.getItem('user') || 'null'),
+  userToken: {
+    token: localStorage.getItem('token') || '',
+    refreshToken: localStorage.getItem('refreshToken') || ''
+  },
+
+  setToken: (token, refreshToken) => {
+    localStorage.setItem('token', token);
+    localStorage.setItem('refreshToken', refreshToken);
+    set(() => ({
+      userToken: { token, refreshToken }
+    }));
+  },
   setUser: (userName, email, profileimg, id) => {
     const user = { userName, email, profileimg, id };
     localStorage.setItem('user', JSON.stringify(user));

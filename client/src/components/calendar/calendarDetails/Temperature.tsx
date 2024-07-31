@@ -1,7 +1,7 @@
-import ChangeTextColor from './ChangeTextColor';
+import { useEffect } from 'react';
 import { styled } from 'styled-components';
 import { useCalendar } from '../../../store/store';
-import { useEffect } from 'react';
+import ChangeTextColor from './ChangeTextColor';
 
 interface TemperatureProps {
   temp?: number;
@@ -33,12 +33,10 @@ const Temperature = ({ temp }: TemperatureProps) => {
   };
 
   return (
-    temp !== null && (
-      <>
-        {handleTemperature()}
-        <Unit>&nbsp;°C</Unit>
-      </>
-    )
+    <>
+      {handleTemperature()}
+      <Unit>&nbsp;°C</Unit>
+    </>
   );
 };
 

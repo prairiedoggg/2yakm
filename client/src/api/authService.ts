@@ -1,8 +1,7 @@
-import { post, del, patch } from './api';
-import useUserStore from '../store/user';
-import Cookies from 'js-cookie';
 import base64 from 'base-64';
-
+import Cookies from 'js-cookie';
+import useUserStore from '../store/user';
+import { del, post } from './api';
 
 export const login = async (
   email: string,
@@ -82,8 +81,7 @@ export const logout = async (callback?: () => void) => {
   try {
     await post('/api/auth/logout', {});
     useUserStore.getState().clearUser();
-    Cookies.remove('token');
-    Cookies.remove('refreshToken');
+    localStorage.removeItem('token');
 
     if (callback) callback();
   } catch (error) {
@@ -132,13 +130,28 @@ export const changePassword = async (
 
 const storeLoginData = (data: any) => {
   const userData = decodingToken(data.token);
-  if (data && userData) useUserStore.getState().setUser(data.userName, data.email, data.profileimg, userData.id);
+  if (data && userData)
+    useUserStore
+      .getState()
+      .setUser(data.userName, data.email, data.profileimg, userData.id);
   console.log(useUserStore.getState().user);
   if (data.token) Cookies.set('token', `${data.token}`, { path: '/' });
 };
 
-const decodingToken = (token: string) =>{
-  let payload = token.substring(token.indexOf('.')+1, token.lastIndexOf('.'));
+const decodingToken = (token: string) => {
+  let payload = token.substring(token.indexOf('.') + 1, token.lastIndexOf('.'));
   let decodingInfo = base64.decode(payload);
   return JSON.parse(decodingInfo);
-}
+};
+
+export const refreshAuthToken = async () => {
+  try {
+    const response = await post(`api/auth/token`, {});
+    const token = response.data.token;
+    localStorage.setItem('token', token);
+    return token;
+  } catch (err) {
+    console.error('Refresh token failed:', err);
+    throw err;
+  }
+};
