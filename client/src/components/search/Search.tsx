@@ -35,7 +35,7 @@ const Search = () => {
         )
       ) : (
         <SearchHistory />
-      )}
+      )}               
       <Nav />
     </>
   );

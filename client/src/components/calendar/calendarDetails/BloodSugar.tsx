@@ -1,6 +1,6 @@
-import ChangeTextColor from './ChangeTextColor';
-import { useCalendar } from '../../../store/store';
 import { useEffect } from 'react';
+import { useCalendar } from '../../../store/store';
+import ChangeTextColor from './ChangeTextColor';
 
 interface BloodSugarProps {
   bloodsugarbefore?: number;

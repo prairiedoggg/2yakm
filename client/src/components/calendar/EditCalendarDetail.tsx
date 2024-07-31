@@ -1,7 +1,9 @@
 import styled from 'styled-components';
 import EditDetailTextBox from './EditDetailTextBox';
 
-const ContentContainer = styled.div``;
+const ContentContainer = styled.div`
+  overflow: hidden;
+`;
 
 const OpenCalendarDetail: React.FC = () => {
   return (

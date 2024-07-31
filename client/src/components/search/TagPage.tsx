@@ -1,9 +1,13 @@
 import { useEffect, useState } from 'react';
-import styled from 'styled-components'; 
-import Layout from '../Layout'
+import styled from 'styled-components';
+import Layout from '../Layout';
+import { useSearchStore } from '../../store/search';
 import { fetchPillListByEfficacy } from '../../api/pillApi';
-import { useSearchStore } from '../../store/search'
-import { usePillStore } from '../../store/pill'
+import { fetchFavoriteCount } from '../../api/favoriteApi';
+import { fetchReviewCount } from '../../api/reviewApi'
+import { usePillStore } from '../../store/pill';
+import { useFavoriteStore } from '../../store/favorite';
+import { useReviewStore } from '../../store/review';
 
 interface Pill {
   id: string;
@@ -14,31 +18,38 @@ interface Pill {
   dosage: string;
 }
 
-
-
 const TagPage = () => {
   const { searchQuery } = useSearchStore();
-  const { pillData, setPillData } = usePillStore()
-  const [loading, setLoading] = useState<boolean>(false)
+  const { pillData, setPillData } = usePillStore();
+  const { favoriteCount, setFavoriteCount } = useFavoriteStore();
+  const { reviewCount, setReviewCount } = useReviewStore();
+  const [loading, setLoading] = useState<boolean>(false);
 
-  useEffect(() => { 
-    const fetchData = async () => { 
-      setLoading(true)
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
       try {
         const data: Pill[] = await fetchPillListByEfficacy(searchQuery, 10, 0);
-        console.log('효능 데이터:', data)
-        setPillData(data)
-      } catch (error) {
-        console.log('효능 데이터 가져오기 실패:', error)
-      } finally { 
-        setLoading(false)
-      }
-    }
-    fetchData()
-  }, [searchQuery])
+        console.log('효능 데이터:', data);
+        setPillData(data);
 
-  if (loading) { 
-    return <div>데이터 검색중입니다.</div>
+        if (data.length > 0) {
+          const favoritecount = await fetchFavoriteCount(data[0].id);
+          setFavoriteCount(favoritecount);
+          const reviewcount = await fetchReviewCount(data[0].id);
+          setReviewCount(reviewcount)
+        }
+      } catch (error) {
+        console.log('효능 데이터 가져오기 실패:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, [searchQuery, setFavoriteCount, setReviewCount]);
+
+  if (loading) {
+    return <div>데이터 검색중입니다.</div>;
   }
 
   if (!pillData || pillData.length === 0) {
@@ -61,8 +72,8 @@ const TagPage = () => {
                   <img src='/img/arrow.svg' alt='더보기' />
                 </PillTitle>
                 <FavoritesCount>
-                  <p>즐겨찾기 1024</p>
-                  <p>리뷰 512</p>
+                  <p>즐겨찾기 {favoriteCount}</p>
+                  <p>리뷰 { reviewCount}</p>
                 </FavoritesCount>
                 <TagContainer>
                   <Tag>두통</Tag>

@@ -1,7 +1,7 @@
-import styled from 'styled-components';
-import EditDetailPhoto from './EditDetailPhoto';
 import { FiXCircle } from 'react-icons/fi';
+import styled from 'styled-components';
 import { useCalendar } from '../../store/store';
+import EditDetailPhoto from './EditDetailPhoto';
 import { convertToArray } from './calendarDetails/IsPillTaken';
 
 interface EditDetailTextBoxProps {
@@ -10,12 +10,7 @@ interface EditDetailTextBoxProps {
 
 const EditDetailTextBox = ({ title }: EditDetailTextBoxProps) => {
   const {
-    pillData,
-    bloodsugarbefore,
-    bloodsugarafter,
-    temp,
-    weight,
-    photo,
+    calendarData,
     setBloodSugarAfter,
     setBloodSugarBefore,
     setTemp,
@@ -59,9 +54,10 @@ const EditDetailTextBox = ({ title }: EditDetailTextBoxProps) => {
         return (
           <UnitContainer>
             <PillCheck>
-              {pillData?.map((pill, index) => {
+              {calendarData?.pillData?.map((pill, index) => {
                 const times = convertToArray(pill.time) as string[];
                 const takenStatuses = convertToArray(pill.taken) as boolean[];
+
                 return (
                   <PillRow key={index}>
                     <div>{pill.name}</div>
@@ -83,14 +79,14 @@ const EditDetailTextBox = ({ title }: EditDetailTextBoxProps) => {
           <TextContainer>
             {renderSimpleInput(
               '공복 혈당',
-              bloodsugarbefore,
+              calendarData?.bloodsugarbefore,
               (e) => setBloodSugarBefore(parseInt(e.target.value) || null),
               'mg/dL',
               handleDeleteField
             )}
             {renderSimpleInput(
               '식후 혈당',
-              bloodsugarafter,
+              calendarData?.bloodsugarafter,
               (e) => setBloodSugarAfter(parseInt(e.target.value) || null),
               'mg/dL',
               handleDeleteField
@@ -102,8 +98,8 @@ const EditDetailTextBox = ({ title }: EditDetailTextBoxProps) => {
           <>
             {renderSimpleInput(
               '체온',
-              temp,
-              (e) => setTemp(parseInt(e.target.value) || null),
+              calendarData?.temp,
+              (e) => setTemp(parseFloat(e.target.value) || null),
               '°C',
               handleDeleteField
             )}
@@ -115,8 +111,8 @@ const EditDetailTextBox = ({ title }: EditDetailTextBoxProps) => {
           <>
             {renderSimpleInput(
               '체중',
-              weight,
-              (e) => setWeight(parseInt(e.target.value) || null),
+              calendarData?.weight,
+              (e) => setWeight(parseFloat(e.target.value) || null),
               'kg',
               handleDeleteField
             )}
@@ -152,22 +148,21 @@ const EditDetailTextBox = ({ title }: EditDetailTextBoxProps) => {
     }
   };
 
-  const isRender =
-    (pillData && pillData.length > 0) ||
-    bloodsugarbefore !== undefined ||
-    bloodsugarafter !== undefined ||
-    temp !== undefined ||
-    weight !== undefined ||
-    photo;
-
   const isPill = title === '약 복용 여부';
 
-  return isRender ? (
+  return (
     <Container isPill={isPill}>
-      <ContentTitle>{title}</ContentTitle>
+      <ContentTitle>
+        {title}
+        {isPill && calendarData?.pillData ? (
+          <StyledButton>수정하기</StyledButton>
+        ) : isPill && !calendarData?.pillData ? (
+          <StyledButton>추가하기</StyledButton>
+        ) : null}
+      </ContentTitle>
       {handleContent(title)}
     </Container>
-  ) : null;
+  );
 };
 
 export default EditDetailTextBox;
@@ -182,6 +177,7 @@ const Container = styled.div<{ isPill?: boolean }>`
 
 const ContentTitle = styled.div`
   font-size: 14pt;
+  display: flex;
 `;
 
 const UnitContainer = styled.div`
@@ -197,7 +193,10 @@ const TextContainer = styled.div`
   flex-direction: column;
 `;
 
-const TextInput = styled.input`
+const TextInput = styled.input.attrs({
+  type: 'number',
+  step: 'any'
+})`
   width: 50px;
   font-size: 15pt;
   border: #d9d9d9 solid;
@@ -265,4 +264,12 @@ const PillTimeContainer = styled.div`
   flex-wrap: wrap;
   gap: 10px;
   margin-left: 10px;
+`;
+
+const StyledButton = styled.button`
+  width: 70px;
+  text-align: center;
+  border-radius: 10px;
+  border: none;
+  background-color: #d9d9d9;
 `;

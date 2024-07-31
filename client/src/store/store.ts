@@ -28,32 +28,83 @@ interface PillData {
   taken?: boolean | boolean[];
 }
 
-interface Calendar {
+interface CalendarData {
   pillData?: PillData[];
   bloodsugarbefore?: number | null;
   bloodsugarafter?: number | null;
   temp?: number | null;
   weight?: number | null;
   photo?: string | null;
+}
+
+interface Calendar {
+  calendarData: CalendarData | null;
+  calImg?: FormData | null;
+  setCalendarData: (calendarData: CalendarData | null) => void;
   setPillData: (pillData: PillData[]) => void;
   setBloodSugarBefore: (bloodsugarbefore: number | null) => void;
   setBloodSugarAfter: (bloodsugarafter: number | null) => void;
   setTemp: (temp: number | null) => void;
   setWeight: (weight: number | null) => void;
   setPhoto: (photo: string | null) => void;
+  setCalImg: (calImg: FormData) => void;
 }
 
 export const useCalendar = create<Calendar>((set) => ({
-  pillData: [],
-  bloodsugarbefore: null,
-  bloodsugarafter: null,
-  temp: null,
-  weight: null,
-  photo: null,
-  setPillData: (pillData) => set({ pillData }),
-  setBloodSugarBefore: (bloodsugarbefore) => set({ bloodsugarbefore }),
-  setBloodSugarAfter: (bloodsugarafter) => set({ bloodsugarafter }),
-  setTemp: (temp) => set({ temp }),
-  setWeight: (weight) => set({ weight }),
-  setPhoto: (photo) => set({ photo })
+  calendarData: null,
+  setCalendarData: (calendarData) => set({ calendarData }),
+
+  setPillData: (pillData) =>
+    set((state) => ({
+      calendarData: {
+        ...state.calendarData,
+        pillData
+      }
+    })),
+
+  setBloodSugarBefore: (bloodsugarbefore) =>
+    set((state) => ({
+      calendarData: {
+        ...state.calendarData,
+        bloodsugarbefore
+      }
+    })),
+
+  setBloodSugarAfter: (bloodsugarafter) =>
+    set((state) => ({
+      calendarData: {
+        ...state.calendarData,
+        bloodsugarafter
+      }
+    })),
+
+  setTemp: (temp) =>
+    set((state) => ({
+      calendarData: {
+        ...state.calendarData,
+        temp
+      }
+    })),
+
+  setWeight: (weight) =>
+    set((state) => ({
+      calendarData: {
+        ...state.calendarData,
+        weight
+      }
+    })),
+
+  setPhoto: (photo) =>
+    set((state) => ({
+      calendarData: {
+        ...state.calendarData,
+        photo
+      }
+    })),
+
+  calImg: new FormData(),
+  setCalImg: (formData) =>
+    set(() => ({
+      calImg: formData
+    }))
 }));

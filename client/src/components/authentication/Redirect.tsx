@@ -1,10 +1,9 @@
+import Cookies from 'js-cookie';
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { get } from '../../api/api';
-import { useUserStore } from '../../store/user';
 
 const Redirect = ({ sns }: { sns: string }) => {
-  const { setToken } = useUserStore();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -31,8 +30,10 @@ const Redirect = ({ sns }: { sns: string }) => {
         code: code
       })
         .then((res) => {
-          if (res.token) {
-            setToken(res.token, res.refreshToken);
+          console.log(res);
+          if (res.message === '로그인 성공') {
+            Cookies.set('login', res.message);
+            // 쿠키에 토큰 저장
             navigate('/');
           }
         })
