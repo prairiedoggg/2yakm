@@ -82,7 +82,7 @@ export const verifyEmailController = async (req: Request<{ query: { token: strin
 // 토큰 갱신
 export const refreshTokenController = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const { refreshToken } = req.cookies.refreshToken;
+    const refreshToken = req.cookies.refreshToken;
     if (!refreshToken) {
       throw createError('No RefreshToken', '리프레시 토큰이 없습니다.', 401);
     }

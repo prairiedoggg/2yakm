@@ -187,7 +187,7 @@ export const signupService = async (
 
     const passwordRegex = /^(?=.*[!@#$%^&*(),.?":{}|<>])[A-Za-z\d!@#$%^&*(),.?":{}|<>]{8,}$/;
     if (!passwordRegex.test(password)) {
-      throw createError('InvalidPssword', '비밀번호는 특수문자를 포함한 8자리 이상이어야 합니다.',400)
+      throw createError('InvalidPassword', '비밀번호는 특수문자를 포함한 8자리 이상이어야 합니다.',400)
     }
     const hashedPassword = await bcrypt.hash(password, 10);
 
@@ -601,6 +601,11 @@ export const changePasswordService = async (
         401
       );
     }
+    
+    const passwordRegex = /^(?=.*[!@#$%^&*(),.?":{}|<>])[A-Za-z\d!@#$%^&*(),.?":{}|<>]{8,}$/;
+    if (!passwordRegex.test(newPassword)) {
+      throw createError('InvalidPassword', '비밀번호는 특수문자를 포함한 8자리 이상이어야 합니다.',400)
+    }
 
     const hashedNewPassword = await bcrypt.hash(newPassword, 10);
 
@@ -661,6 +666,11 @@ export const resetPasswordService = async (
       }
 
       const user = result.rows[0];
+
+      const passwordRegex = /^(?=.*[!@#$%^&*(),.?":{}|<>])[A-Za-z\d!@#$%^&*(),.?":{}|<>]{8,}$/;
+    if (!passwordRegex.test(newPassword)) {
+      throw createError('InvalidPassword', '비밀번호는 특수문자를 포함한 8자리 이상이어야 합니다.',400)
+    }
 
       const hashedNewPassword = await bcrypt.hash(newPassword, 10);
 

@@ -1,16 +1,8 @@
-/**
-File Name : EditMyInformation
-Description : 내 정보 수정 페이지
-Author : 오선아
-
-History
-Date        Author   Status    Description
-2024.07.19  오선아   Created
-*/
-
 import { Icon } from '@iconify-icon/react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import styled from 'styled-components';
+import { fetchUserAllReview } from '../../api/reviewApi';
+import Loading from '../Loading';
 
 interface MedicationItem {
   title: string;
@@ -20,25 +12,50 @@ interface MedicationItem {
 
 const ManageReviews = () => {
   const [deleteItem, setDeleteItem] = useState(false);
+  const [itemCount, setItemCount] = useState(0);
+  const [loading, setLoading] = useState(false);
 
-  const items: MedicationItem[] = [
-    // test
-    {
-      title: '타이레놀',
-      titleEn: 'Tylenol Tablet 500mg',
-      desc: '종합 감기약으로 타이레놀 좋습니다.'
-    },
-    {
-      title: '타이레놀',
-      titleEn: 'Tylenol Tablet 500mg',
-      desc: '종합 감기약으로 타이레놀 좋습니다.'
-    },
-    {
-      title: '타이레놀',
-      titleEn: 'Tylenol Tablet 500mg',
-      desc: '종합 감기약으로 타이레놀 좋습니다.'
-    }
-  ];
+  let items: MedicationItem[] = [];
+  // = [
+  //   // test
+  //   {
+  //     title: '타이레놀',
+  //     titleEn: 'Tylenol Tablet 500mg',
+  //     desc: '종합 감기약으로 타이레놀 좋습니다.'
+  //   },
+  //   {
+  //     title: '타이레놀',
+  //     titleEn: 'Tylenol Tablet 500mg',
+  //     desc: '종합 감기약으로 타이레놀 좋습니다.'
+  //   },
+  //   {
+  //     title: '타이레놀',
+  //     titleEn: 'Tylenol Tablet 500mg',
+  //     desc: '종합 감기약으로 타이레놀 좋습니다.'
+  //   }
+  // ];
+
+  useEffect(() => {
+    setLoading(true);
+    const data = fetchUserAllReview(
+      10,
+      0,
+      'createdAt',
+      'DESC',
+      (data) => {
+        // items = data.data.map(({ name, createdAt, content }) => ({
+        //   title: name,
+        //   titleEn: createdAt,
+        //   desc: content
+        // }));
+        setLoading(false);
+        setItemCount(data.totalCount);
+      },
+      () => {
+        setLoading(false);
+      }
+    );
+  }, []);
 
   const renderItems = (item: MedicationItem, showHr: boolean, key: number) => {
     return (
@@ -58,7 +75,7 @@ const ManageReviews = () => {
     <MyPageContainer>
       <StyledContent>
         <div className='totalCount'>
-          내가 쓴 총 리뷰 {items.length}개{' '}
+          내가 쓴 총 리뷰 {itemCount}개{' '}
           <Icon
             onClick={() => setDeleteItem(!deleteItem)}
             icon='ic:baseline-edit'
@@ -73,6 +90,7 @@ const ManageReviews = () => {
           )}
         </div>
       </StyledContent>
+      {loading && <Loading />}
     </MyPageContainer>
   );
 };

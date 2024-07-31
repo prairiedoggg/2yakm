@@ -56,6 +56,34 @@ router.post('/login', loginController);
 
 /**
  * @swagger
+ * /api/auth/token:
+ *   post:
+ *     summary: 토큰 갱신
+ *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               refreshToken:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: 토큰 갱신 성공
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ */
+router.post('/token', refreshTokenController);
+
+/**
+ * @swagger
  * /api/auth/signup:
  *   post:
  *     summary: 사용자 회원가입
@@ -76,7 +104,7 @@ router.post('/login', loginController);
  *               confirmPassword:
  *                 type: string
  *     responses:
- *       201:
+ *       200:
  *         description: 회원가입 성공
  *         content:
  *           application/json:
@@ -85,13 +113,6 @@ router.post('/login', loginController);
  *               properties:
  *                 message:
  *                   type: string
- *                 user:
- *                   type: object
- *                   properties:
- *                     email:
- *                       type: string
- *                     username:
- *                       type: string
  *       409:
  *         description: 사용자 이미 존재함
  */
@@ -127,36 +148,6 @@ router.post('/request-email-verification', requestEmailVerificationController);
 
 /**
  * @swagger
- * /api/auth/token:
- *   post:
- *     summary: 토큰 갱신
- *     tags: [Auth]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               refreshToken:
- *                 type: string
- *     responses:
- *       200:
- *         description: 토큰 갱신 성공
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 token:
- *                   type: string
- *                 refreshToken:
- *                   type: string
- */
-router.post('/token', refreshTokenController);
-
-/**
- * @swagger
  * /api/auth/kakao/callback:
  *   get:
  *     summary: 카카오 로그인 콜백
@@ -175,9 +166,7 @@ router.post('/token', refreshTokenController);
  *             schema:
  *               type: object
  *               properties:
- *                 token:
- *                   type: string
- *                 refreshToken:
+ *                 message:
  *                   type: string
  *       400:
  *         description: 인증 실패
@@ -211,14 +200,6 @@ router.get('/kakao/callback', kakaoAuthController);
  *               properties:
  *                 message:
  *                   type: string
- *                 token:
- *                   type: string
- *                 refreshToken:
- *                   type: string
- *                 userName:
- *                   type: string
- *                 email:
- *                   type: string
  *       400:
  *         description: 인증 실패
  */
@@ -245,8 +226,6 @@ router.get('/naver/callback', naverAuthController);
  *               type: object
  *               properties:
  *                 message:
- *                   type: string
- *                 token:
  *                   type: string
  *       500:
  *         description: 서버 오류
@@ -278,6 +257,8 @@ router.post('/logout', logoutController);
  *   patch:
  *     summary: 비밀번호 변경
  *     tags: [Auth]
+ *     security:
+ *       - bearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
@@ -379,8 +360,6 @@ router.post('/reset-password', resetPasswordController);
  *                 type: number
  *               socialId:
  *                 type: string
- *               email:
- *                 type: string
  *     responses:
  *       200:
  *         description: 카카오 계정 연동 성공
@@ -410,8 +389,6 @@ router.post('/link/kakao', linkKakaoAccountController);
  *               userId:
  *                 type: number
  *               socialId:
- *                 type: string
- *               email:
  *                 type: string
  *     responses:
  *       200:
@@ -487,15 +464,8 @@ router.patch('/change-username', changeUsernameController);
  *   delete:
  *     summary: 회원탈퇴
  *     tags: [Auth]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               userId:
- *                 type: string
+ *     security:
+ *       - bearerAuth: []
  *     responses:
  *       200:
  *         description: 회원탈퇴 성공
@@ -517,6 +487,8 @@ router.delete('/delete-account', authByToken, deleteAccountController);
  *   get:
  *     summary: 유저 정보 가져오기
  *     tags: [Auth]
+ *     security:
+ *       - bearerAuth: []
  *     responses:
  *       200:
  *         description: 유저 정보 가져오기 성공

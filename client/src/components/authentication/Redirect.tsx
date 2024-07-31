@@ -1,7 +1,7 @@
+import Cookies from 'js-cookie';
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { get } from '../../api/api';
-import Cookies from 'js-cookie';
 
 const Redirect = ({ sns }: { sns: string }) => {
   const navigate = useNavigate();
@@ -30,13 +30,10 @@ const Redirect = ({ sns }: { sns: string }) => {
         code: code
       })
         .then((res) => {
-          if (res.token) {
+          console.log(res);
+          if (res.message === '로그인 성공') {
+            Cookies.set('login', res.message);
             // 쿠키에 토큰 저장
-            console.log(res);
-            Cookies.set('token', res.token, { path: '/' });
-            Cookies.set('refreshToken', res.refreshToken, {
-              path: '/'
-            });
             navigate('/');
           }
         })

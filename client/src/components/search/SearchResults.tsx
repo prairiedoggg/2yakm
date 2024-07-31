@@ -4,39 +4,39 @@ import { Icon } from '@iconify-icon/react';
 import styled from 'styled-components';
 import PillExp from './PillExp';
 import Review from './Review';
-import { fetchPillData } from '../../api/pillApi';
+import { fetchPillDataByName } from '../../api/pillApi';
 import {
   toggleFavoriteApi,
   fetchFavoriteStatusApi,
   fetchFavoriteCount
 } from '../../api/favoriteApi';
-import { useFavoriteStore } from '../../store/favorite';
 import { useSearchStore } from '../../store/search';
 import { usePillStore } from '../../store/pill';
+import { useFavoriteStore } from '../../store/favorite';
 
 const SearchResults = () => {
   const { searchQuery } = useSearchStore();
-  const [activeTab, setActiveTab] = useState<string>('effectiveness');
-  const { isFavorite, setIsFavorite } = useFavoriteStore();
   const { pillData, setPillData } = usePillStore();
+  const { isFavorite, setIsFavorite, favoriteCount, setFavoriteCount } =
+    useFavoriteStore();
+  const [activeTab, setActiveTab] = useState<string>('effectiveness');
   const [pillId, setPillId] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
-  const [favoriteCount, setFavoriteCount] = useState<number>(0);
 
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
       try {
-        const data = await fetchPillData(searchQuery, 1, 0);
+        const data = await fetchPillDataByName(searchQuery, 1, 0);
         if (data) {
           setPillId(data.id);
           setPillData(data);
           console.log('약데이터', data);
+          const count = await fetchFavoriteCount(data.id);
+          console.log('좋아요 수', count);
+          setFavoriteCount(count);
           const status = await fetchFavoriteStatusApi(data.id);
           setIsFavorite(!status);
-          const count = await fetchFavoriteCount(data.id);
-          console.log(count);
-          setFavoriteCount(count); 
         } else {
           setPillData(null);
           setPillId(null);
@@ -53,12 +53,14 @@ const SearchResults = () => {
   const handleToggleFavorite = async () => {
     if (!pillId) return;
     try {
-      await toggleFavoriteApi(pillId);
       setIsFavorite(!isFavorite);
-      const count = await fetchFavoriteCount(pillId);
-      setFavoriteCount(count);
+      setFavoriteCount(favoriteCount + 1);
+      await toggleFavoriteApi(pillId);
+      await fetchFavoriteCount(pillId);
     } catch (error) {
       console.error('좋아요상태 실패:', error);
+      setIsFavorite(!isFavorite);
+      setFavoriteCount(favoriteCount - 1);
     }
   };
 
@@ -118,7 +120,11 @@ const SearchResults = () => {
           ))}
         </Menu>
         <Contants>
-          {activeTab === 'effectiveness' ? <PillExp /> : <Review />}
+          {activeTab === 'effectiveness' ? (
+            <PillExp />
+          ) : (
+            <Review pillId={pillId!} />
+          )}
         </Contants>
       </PillMore>
     </SearchResultsContainer>

@@ -44,7 +44,7 @@ const EmailLogin = ({
 
   return (
     <Content>
-      <Logo src='/img/logo_not_chicken.svg' alt='이약뭐약' />
+      <Logo src='/img/logo.svg' alt='이약뭐약' />
       <div className='login-inputs'>
         <div className='input-container'>
           <input
