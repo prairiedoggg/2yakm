@@ -3,6 +3,10 @@ import { Icon } from '@iconify-icon/react';
 import { ChangeEvent, FormEvent, useState } from 'react';
 import useUserStore from '../../store/user';
 import { changePassword } from '../../api/authService';
+import Loading from '../Loading';
+import Popup from '../popup/Popup';
+import PopupContent, { PopupType } from '../popup/PopupMessages';
+import { useNavigate } from 'react-router-dom';
 
 interface FormData {
   email: string;
@@ -17,7 +21,9 @@ enum InputType {
   NewPasswordConfirm = 'newPasswordConfirm'
 }
 
-const ConfirmPassword = ({ onEdit }: { onEdit: () => void }) => {
+const EditPassword = ({ onEdit }: { onEdit: () => void }) => {
+  const navigate = useNavigate();
+  const [popupType, setPopupType] = useState<PopupType>(PopupType.None);
   const user = useUserStore((state) => state.user);
   const [formData, setFormData] = useState<FormData>({
     email: user?.email ?? '',
@@ -26,6 +32,7 @@ const ConfirmPassword = ({ onEdit }: { onEdit: () => void }) => {
     newPasswordConfirm: ''
   });
 
+  const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -37,13 +44,21 @@ const ConfirmPassword = ({ onEdit }: { onEdit: () => void }) => {
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
+    setLoading(true);
     changePassword(
       formData.email,
       formData.oldPassword,
       formData.newPassword,
       (data) => {
+        setLoading(false);
+        setPopupType(PopupType.changePasswordSuccess);
         console.log(`비밀번호 변경 완료`);
-        console.log(data);
+      },
+      (error) => {
+        setLoading(false);
+        setPopupType(PopupType.changePasswordFailure);
+
+        console.log(error);
       }
     );
   };
@@ -165,6 +180,12 @@ const ConfirmPassword = ({ onEdit }: { onEdit: () => void }) => {
           </button>
         </form>
       </StyledContent>
+      {loading && <Loading />}
+      {popupType !== PopupType.None && (
+        <Popup onClose={() => setPopupType(PopupType.None)}>
+          {PopupContent(popupType, navigate)}
+        </Popup>
+      )}
     </MyPageContainer>
   );
 };
@@ -259,4 +280,4 @@ const StyledContent = styled.div`
   }
 `;
 
-export default ConfirmPassword;
+export default EditPassword;

@@ -45,3 +45,6 @@ Desktop.ini
 
 # PostgreSQL Certificates
 certs/
+
+# Image Vector Files
+src/python/vector/*

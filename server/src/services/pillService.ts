@@ -7,11 +7,12 @@ import path from 'path';
 import fs from 'fs';
 import { v4 as uuidv4 } from 'uuid';
 import iconv from 'iconv-lite';
+import { QueryResult } from 'pg';
 import { stopwords } from '../utils/stopwords';
 
 
 const client = new vision.ImageAnnotatorClient({
-  keyFilename: process.env.GOOGLE_APPLICATION_CREDENTIALS,
+  keyFilename: process.env.GOOGLE_APPLICATION_CREDENTIALS
 });
 
 interface Pills {
@@ -22,6 +23,7 @@ interface Pills {
   ingredientname: string;
   efficacy: string;
   importantWords?: string; // Optional to hold important words extracted from efficacy
+  similarity?: string;
 }
 
 interface GetPillsResult {
@@ -30,6 +32,12 @@ interface GetPillsResult {
   pills: Pills[];
   limit: number;
   offset: number;
+  similarPills?: { id: string }[];
+}
+
+interface ExecFileResult {
+  stdout: Buffer;
+  stderr: Buffer;
 }
 
 interface SearchResult {
@@ -37,7 +45,6 @@ interface SearchResult {
   totalCount: number;
   totalPages: number;
 }
-
 
 export const getPills = async (
   limit: number,
@@ -71,12 +78,13 @@ export const getPills = async (
     totalPages,
     pills: rows,
     limit,
-    offset,
+    offset
   };
 };
 
 export const getPillById = async (id: number): Promise<Pills | null> => {
-  const query = 'SELECT id, name, engname, companyname, ingredientname, efficacy FROM pills WHERE id = $1';
+  const query =
+    'SELECT id, name, engname, companyname, ingredientname, efficacy FROM pills WHERE id = $1';
   const result = await pool.query(query, [id]);
   return result.rows[0] || null;
 };
@@ -88,13 +96,13 @@ const getImportantWords = (text: string): string[] => {
   const words = text
     .toLowerCase()
     .split(/[\s,.;:ㆍ()]+/)
-    .filter(word => {
+    .filter((word) => {
       const isValid = word && priorityWordsSet.has(word);
       console.log(`Word: ${word}, isValid: ${isValid}`);
       return isValid;
     });
 
-  words.forEach(word => {
+  words.forEach((word) => {
     if (!wordFrequency[word]) {
       wordFrequency[word] = 0;
     }
@@ -104,7 +112,7 @@ const getImportantWords = (text: string): string[] => {
   console.log(`Word frequency: ${JSON.stringify(wordFrequency)}`);
 
   const sortedWords = Object.entries(wordFrequency).sort((a, b) => b[1] - a[1]);
-  const importantWords = sortedWords.slice(0, 3).map(entry => entry[0]);
+  const importantWords = sortedWords.slice(0, 3).map((entry) => entry[0]);
   console.log(`Important words: ${importantWords}`);
   return importantWords;
 };
@@ -126,7 +134,7 @@ export const searchPillsbyName = async (
       console.log(`Pill ID: ${pill.id}, Important Words: ${importantWords}`);
       return {
         ...pill,
-        importantWords: importantWords.join(', '),
+        importantWords: importantWords.join(', ')
       };
     });
 
@@ -135,13 +143,21 @@ export const searchPillsbyName = async (
       totalCount: result.rowCount ?? 0,
       totalPages: Math.ceil((result.rowCount ?? 0) / limit),
       limit,
-      offset,
+      offset
     };
   } catch (error: unknown) {
     if (error instanceof Error) {
-      throw createError('DatabaseError', `Failed to search pills by name: ${error.message}`, 500);
+      throw createError(
+        'DatabaseError',
+        `Failed to search pills by name: ${error.message}`,
+        500
+      );
     } else {
-      throw createError('UnknownError', `Failed to search pills by name: An unknown error occurred`, 500);
+      throw createError(
+        'UnknownError',
+        `Failed to search pills by name: An unknown error occurred`,
+        500
+      );
     }
   }
 };
@@ -168,7 +184,7 @@ export const searchPillsbyEfficacy = async (
       const importantWords = getImportantWords(pill.efficacy);
       return {
         ...pill,
-        importantWords: importantWords.join(', '),
+        importantWords: importantWords.join(', ')
       };
     });
 
@@ -177,7 +193,7 @@ export const searchPillsbyEfficacy = async (
       totalCount: result.rowCount ?? 0,
       totalPages: Math.ceil((result.rowCount ?? 0) / limit),
       limit,
-      offset,
+      offset
     };
   } catch (error: unknown) {
     if (error instanceof Error) {
@@ -217,7 +233,7 @@ const searchPillsByFrontAndBack = async (
       totalCount: result.rowCount ?? 0,
       totalPages: Math.ceil((result.rowCount ?? 0) / limit),
       limit,
-      offset,
+      offset
     };
   } catch (error: unknown) {
     if (error instanceof Error) {
@@ -248,7 +264,7 @@ const searchPillsByNameFromText = async (
       totalCount: result.rowCount ?? 0,
       totalPages: Math.ceil((result.rowCount ?? 0) / limit),
       limit,
-      offset,
+      offset
     };
   } catch (error: unknown) {
     if (error instanceof Error) {
@@ -259,6 +275,7 @@ const searchPillsByNameFromText = async (
   }
 };
 
+// execFile은 shell을 생성하지 않아 exec보다 더 효율적임, 비동기 명령어 실행을 async, await로 할 수 있게 promisify를 사용함
 const execFilePromise = promisify(execFile);
 
 const preprocessImage = async (
@@ -281,12 +298,14 @@ const preprocessImage = async (
 
   const startTime = Date.now();
   try {
-    const { stdout, stderr } = await execFilePromise('python',
+    const { stdout, stderr }: ExecFileResult = await execFilePromise(
+      'python',
       command,
       {
         encoding: 'buffer'
       }
-);
+    ); // execFilePromise를 사용하여 Python 스크립트를 실행함
+
     // stdout, stderr 한글 깨짐 현상 수정
     const decodedStdout = iconv.decode(stdout, 'euc-kr');
     const decodedStderr = iconv.decode(stderr, 'euc-kr');
@@ -294,7 +313,7 @@ const preprocessImage = async (
     if (decodedStderr) {
       console.error(`stderr: ${decodedStderr}`); // standard error, 에러 출력됨
     }
-    console.log(`stdout: ${decodedStdout}`); // standard output, 전처리 결과가 출력됨
+    console.log(`stdout: ${decodedStdout}`); // standard output, 결과가 출력됨
     console.log(
       `전처리가 완료되었습니다. 작업시간 : ${(Date.now() - startTime) / 1000}초`
     );
@@ -308,6 +327,73 @@ const preprocessImage = async (
   }
 };
 
+// 유사도 검색 결과에서 받아온 id를 이용해 DB에서 정보를 받아오는 함수
+const searchSimilarImageByIds = async (ids: string[]): Promise<Pills[]> => {
+  const query = `SELECT id, name, engname, companyname, ingredientname, efficacy, imgurl FROM pills WHERE id = ANY($1)`;
+  const result: QueryResult<Pills> = await pool.query(query, [ids]);
+  return result.rows;
+};
+
+// 이미지 유사도를 검색하는 함수
+const searchSimilarImage = async (
+  imagePath: string
+): Promise<{
+  similarPills: { id: string; similarity: string }[];
+}> => {
+  const pyPath = path.join(__dirname, '..', 'python', 'imageVector.py');
+
+  // 유사도를 추출하기 위해서 임시로 txt파일을 생성함
+  const outputResultPath = path.join(
+    __dirname,
+    '..',
+    'python',
+    `temp_${uuidv4()}.txt`
+  );
+  const command = [pyPath, imagePath, outputResultPath]; // 파이썬 command 설정
+
+  try {
+    const { stdout, stderr }: ExecFileResult = await execFilePromise(
+      'python',
+      command,
+      { encoding: 'buffer' }
+    );
+
+    // stdout, stderr 한글 깨짐 현상 수정
+    const decodedStdout = iconv.decode(stdout, 'euc-kr');
+    const decodedStderr = iconv.decode(stderr, 'euc-kr');
+
+    if (decodedStderr) {
+      console.error(`stderr: ${decodedStderr}`); // standard error, 에러 출력됨
+    }
+    console.log(`stdout: ${decodedStdout}`); // standard output, 결과가 출력됨
+
+    // txt 파일에서 유사도를 읽어온 후에 삭제함
+    const result = fs.readFileSync(outputResultPath, 'utf-8');
+    fs.unlinkSync(outputResultPath);
+
+    const lines = result.trim().split('\n'); // 줄 단위로 자름
+
+    const similarPills = lines.map((line) => {
+      const [fullPath, similarity] = line.split(' ('); // 이미지 경로와 유사도를 분리함
+      const fileName = path.basename(fullPath).split('.')[0]; // 파일명만 추출하고 확장자를 제거함
+      return {
+        id: fileName,
+        similarity: similarity.replace(')', '').replace('\r', '')
+      };
+    });
+
+    return {
+      similarPills
+    };
+  } catch (error) {
+    console.error('이미지 유사도 검색 중 에러가 발생했습니다.', error);
+    throw createError(
+      'SimilaritySearch Failed',
+      '이미지 유사도 검색 실패',
+      500
+    );
+  }
+};
 
 const detectTextInImage = async (
   imageBuffer: Buffer
@@ -323,7 +409,13 @@ const detectTextInImage = async (
     if (detections && detections.length > 0) {
       const filteredText = detections
         .map((text) => text?.description ?? '')
-        .filter((text) => !text.match(/[\.()]/) && !text.includes('mm') && !text.includes('-') && !text.includes('\n'));
+        .filter(
+          (text) =>
+            !text.match(/[\.()]/) &&
+            !text.includes('mm') &&
+            !text.includes('-') &&
+            !text.includes('\n')
+        );
 
       console.log('Filtered text:', filteredText);
       return filteredText;
@@ -348,14 +440,54 @@ export const searchPillsByImage = async (
   let outputPath = '';
 
   try {
-    const { processedImageBuffer, processedImagePath } = await preprocessImage(
-      imageBuffer
-    );
+    const { processedImageBuffer, processedImagePath } =
+      await preprocessImage(imageBuffer); // preprocessImage를 이용해 전처리를 하고 전처리된 이미지와, 경로를 받아옴
     outputPath = processedImagePath;
     const detectedText = await detectTextInImage(processedImageBuffer);
+
+    // 추출된 텍스트가 없을 경우 이미지 유사도 검색을 실행함
     if (!detectedText || detectedText.length === 0) {
-      return { pills: [], totalCount: 0, totalPages: 0, limit, offset };
+      console.log('OCR 검색 결과가 없습니다. 이미지 유사도 검색을 시작합니다.');
+
+      const { similarPills } = await searchSimilarImage(outputPath);
+
+      const similarPillIds = similarPills.map((pill) => pill.id);
+
+      // 유사도 검색 결과에서 받아온 id를 이용해 DB에서 정보를 받아옴
+      let pills = await searchSimilarImageByIds(similarPillIds);
+
+      // id가 같은 pill data와 유사도를 합침
+      pills = pills.map((pill) => {
+        const similarityInfo = similarPills.find(
+          (similarPill) => similarPill.id === pill.id.toString()
+        );
+        return {
+          ...pill,
+          similarity: similarityInfo ? similarityInfo.similarity : '0%'
+        };
+      });
+
+      // 유사도가 높은 순으로 정렬함
+      pills.sort((a, b) => {
+        const similarityA = a.similarity
+          ? parseFloat(a.similarity.replace('%', ''))
+          : 0;
+        const similarityB = b.similarity
+          ? parseFloat(b.similarity.replace('%', ''))
+          : 0;
+        return similarityB - similarityA;
+      });
+
+      return {
+        pills,
+        totalCount: pills.length,
+        totalPages: Math.ceil(pills.length / limit),
+        limit,
+        offset
+      };
     }
+
+    console.log('Detected Text:', detectedText);
 
     let pills: Pills[] = [];
     let total = 0;
@@ -388,44 +520,43 @@ export const searchPillsByImage = async (
       pills.push(...resultByFrontAndBack.pills);
       total += resultByFrontAndBack.totalCount;
     }
-    
+
     // If no results from pillocr, search in pills table by name
     if (total === 0) {
-    const text1 = detectedText[0];
-        if (text1) {
-          const resultByName = await searchPillsByNameFromText(
-            text1,
-            limit,
-            offset
-          );
-          pills.push(...resultByName.pills);
-          total += resultByName.totalCount;
-        }
-
-    const text2 = detectedText[1];
-        if (text2) {
-          const resultByName = await searchPillsByNameFromText(
-            text2,
-            limit,
-            offset
-          );
-          pills.push(...resultByName.pills);
-          total += resultByName.totalCount;
-        }
+      const text1 = detectedText[0];
+      if (text1) {
+        const resultByName = await searchPillsByNameFromText(
+          text1,
+          limit,
+          offset
+        );
+        pills.push(...resultByName.pills);
+        total += resultByName.totalCount;
       }
 
+      const text2 = detectedText[1];
+      if (text2) {
+        const resultByName = await searchPillsByNameFromText(
+          text2,
+          limit,
+          offset
+        );
+        pills.push(...resultByName.pills);
+        total += resultByName.totalCount;
+      }
+    }
 
     // Remove duplicates based on id
     const uniquePills = Array.from(
       new Map(pills.map((pill) => [pill.id, pill])).values()
     );
-    const uniquePillNames = uniquePills.map(pill => pill.name);
+    const uniquePillNames = uniquePills.map((pill) => pill.name);
     const detailedPills = await Promise.all(
       uniquePillNames.map(async (name) => {
         const result = await searchPillsbyName(name, limit, offset);
         return result.pills;
       })
-    ).then(results => results.flat());
+    ).then((results) => results.flat());
 
     return {
       pills: detailedPills,

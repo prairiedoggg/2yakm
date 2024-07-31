@@ -15,7 +15,7 @@ const transporter = nodemailer.createTransport({
 });
 
 interface User {
-  id: number;
+  id: string;
   email: string;
   username: string;
   password: string;
@@ -25,13 +25,19 @@ interface User {
 }
 
 interface UserResponse {
+  id: string;
   email: string;
   username: string;
+  role: boolean;
+  kakaoid?: number;
+  naverid?: number;
+  googleid?: number;
 }
 
 interface Decoded {
   id: number;
   email: string;
+  role: boolean;
 }
 
 interface KakaoTokenResponse {
@@ -92,7 +98,7 @@ if (!SECRET_KEY || !REFRESH_TOKEN_SECRET_KEY) {
 export const login = async (
   email: string,
   password: string
-): Promise<{ token: string, refreshToken: string, userName: string, email: string }> => {
+): Promise<{ token: string, refreshToken: string }> => {
   try {
     const query = 'SELECT userid, email, password, username, kakaoid, googleid, naverid FROM users WHERE email = $1';
     const values = [email];
@@ -112,7 +118,7 @@ export const login = async (
       throw createError('InvalidCredentials', '비밀번호가 틀렸습니다.', 401);
     }
 
-    const payload = { id: user.userid, email: user.email };
+    const payload = { id: user.userid, role: user.role };
     const token = jwt.sign(payload, SECRET_KEY, {
       expiresIn: '30m',
     });
@@ -122,7 +128,7 @@ export const login = async (
       { expiresIn: '7d' }
     );
 
-    return { token, refreshToken, userName: user.username, email: user.email };
+    return { token, refreshToken };
   } catch (error) {
     throw createError('DBError', '데이터베이스 오류가 발생했습니다.', 500);
   }
@@ -253,7 +259,7 @@ export const refreshTokenService = async (
   }
 
   const newToken = jwt.sign(
-    { id: payload.id, email: payload.email },
+    { id: payload.id, role: payload.role},
     SECRET_KEY,
     { expiresIn: '30m' }
   );
@@ -269,7 +275,7 @@ export const refreshTokenService = async (
 // 카카오 소셜
 export const kakaoAuthService = async (
   code: string
-): Promise<{ token?: string, refreshToken?: string, message?: string, userName?: string, email?: string }> => {
+): Promise<{ token?: string, refreshToken?: string, message?: string }> => {
   const redirectUri = `${FRONTEND_URL}/kakao/callback`;
   const kakaoTokenUrl = `https://kauth.kakao.com/oauth/token`;
 
@@ -345,7 +351,7 @@ export const kakaoAuthService = async (
         user = newUserResult.rows[0];
       }
 
-      const payload = { id: user.userid, email: user.email, kakaoid: user.kakaoid };
+      const payload = { id: user.userid, kakaoid: user.kakaoid, role: user.role };
       const token = jwt.sign(payload, SECRET_KEY, {
         expiresIn: '30m',
       });
@@ -355,7 +361,7 @@ export const kakaoAuthService = async (
         { expiresIn: '7d' }
       );
 
-      return { token, refreshToken, userName: user.username, email: user.email };
+      return { token, refreshToken };
     } catch (error) {
       console.error('DB error:', error);
       throw createError('DBError', '데이터베이스 오류가 발생했습니다.', 500);
@@ -370,7 +376,7 @@ export const kakaoAuthService = async (
 export const naverAuthService = async (
   code: string,
   state: string
-): Promise<{ token?: string, refreshToken?: string, message?: string, userName?: string, email?: string }> => {
+): Promise<{ token?: string, refreshToken?: string, message?: string }> => {
   const redirectUri = `${FRONTEND_URL}/naver/callback`;
   const naverTokenUrl = `https://nid.naver.com/oauth2.0/token`;
   const naverUserInfoUrl = `https://openapi.naver.com/v1/nid/me`;
@@ -446,7 +452,7 @@ export const naverAuthService = async (
         user = newUserResult.rows[0];
       }
 
-      const payload = { id: user.userid, email: user.email, naverid: user.naverid };
+      const payload = { id: user.userid, naverid: user.naverid, role: user.role };
       const token = jwt.sign(payload, SECRET_KEY, {
         expiresIn: '30m',
       });
@@ -456,7 +462,7 @@ export const naverAuthService = async (
         { expiresIn: '7d' }
       );
 
-      return { token, refreshToken, userName: user.username, email: user.email };
+      return { token, refreshToken };
     } catch (error) {
       console.error('DBError:', error);
       throw createError('DBError', '데이터베이스 오류가 발생했습니다.', 500);
@@ -470,7 +476,7 @@ export const naverAuthService = async (
 // 구글 소셜
 export const googleAuthService = async (
   code: string
-): Promise<{ token?: string, refreshToken?: string, message?: string, userName?:string, email?: string }> => {
+): Promise<{ token?: string, refreshToken?: string, message?: string }> => {
   const tokenUrl = 'https://oauth2.googleapis.com/token';
   const userInfoUrl = 'https://www.googleapis.com/oauth2/v2/userinfo';
 
@@ -544,7 +550,7 @@ export const googleAuthService = async (
         user = newUserResult.rows[0];
       }
 
-      const payload = { id: user.userid, email: user.email, googleid: user.googleid };
+      const payload = { id: user.userid, googleid: user.googleid, role: user.role };
       const token = jwt.sign(payload, SECRET_KEY, {
         expiresIn: '30m',
       });
@@ -554,7 +560,7 @@ export const googleAuthService = async (
         { expiresIn: '7d' }
       );
 
-      return { token, refreshToken, userName: user.name, email: user.email };
+      return { token, refreshToken };
     } catch (error) {
       console.error('DBError:', error);
       throw createError('DBError', '데이터베이스 오류가 발생했습니다.', 500);
@@ -800,5 +806,23 @@ const unlinkNaverAccount = async (naverId: string): Promise<void> => {
     });
   } catch (error) {
     throw createError('NaverUnlinkError', '네이버 계정 연동 해제 실패', 500);
+  }
+};
+
+// 유저 정보
+export const getUserInfo = async (userId: string): Promise<UserResponse> => {
+  try {
+    const query = 'SELECT userid, email, username, role, kakaoid, naverid, googleid FROM users WHERE userid = $1';
+    const values = [userId];
+    const result = await pool.query(query, values);
+
+    if (result.rows.length === 0) {
+      throw createError('User Not Found', '사용자를 찾을 수 없습니다.', 404);
+    }
+
+    const user = result.rows[0];
+    return { id: user.userid, email: user.email, username: user.username, role: user.role, kakaoid: user.kakaoid, naverid: user.naverid, googleid: user.googleid };
+  } catch (error) {
+    throw createError('DB Error', '데이터베이스 오류 발생', 500);
   }
 };
