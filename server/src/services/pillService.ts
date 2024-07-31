@@ -8,7 +8,7 @@ import fs from 'fs';
 import { v4 as uuidv4 } from 'uuid';
 import iconv from 'iconv-lite';
 import { stopwords } from '../utils/stopwords';
-import { object } from 'joi';
+
 
 const client = new vision.ImageAnnotatorClient({
   keyFilename: process.env.GOOGLE_APPLICATION_CREDENTIALS,
@@ -414,7 +414,7 @@ export const searchPillsByImage = async (
         }
       }
 
-      
+
     // Remove duplicates based on id
     const uniquePills = Array.from(
       new Map(pills.map((pill) => [pill.id, pill])).values()
