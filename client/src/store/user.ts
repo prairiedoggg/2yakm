@@ -7,6 +7,7 @@ interface User {
     email: string;
     profileImg: string;
     id: string;
+    role: boolean;
   } | null;
   userToken: {
     token: string;
@@ -17,12 +18,14 @@ interface User {
     userName: string,
     email: string,
     profileImg: string,
-    id: string
+    id: string,
+    role: boolean
   ) => void;
   setUserId: (id: string) => void;
   setProfileImg: (profileImg: string) => void;
   setUserName: (userName: string) => void;
   setEmail: (email: string) => void;
+  setRole: (role: boolean) => void;
   clearUser: () => void;
 }
 
@@ -40,11 +43,13 @@ const useUserStore = create<User>((set) => ({
       userToken: { token, refreshToken }
     }));
   },
-  setUser: (userName, email, profileimg, id) => {
-    const user = { userName, email, profileimg, id };
+
+  setUser: (userName, email, profileImg, id, role) => {
+    const user = { userName, email, profileImg, id, role };
     localStorage.setItem('user', JSON.stringify(user));
     set({ user });
   },
+
   setUserId: (id) =>
     set((state) => {
       const updatedUser = state.user ? { ...state.user, id } : null;
@@ -52,6 +57,13 @@ const useUserStore = create<User>((set) => ({
         localStorage.setItem('user', JSON.stringify(updatedUser));
       return { user: updatedUser };
     }),
+    setRole: (role) =>
+      set((state) => {
+        const updatedUser = state.user ? { ...state.user, role } : null;
+        if (updatedUser)
+          localStorage.setItem('user', JSON.stringify(updatedUser));
+        return { user: updatedUser };
+      }),
   setUserName: (userName) =>
     set((state) => {
       const updatedUser = state.user ? { ...state.user, userName } : null;

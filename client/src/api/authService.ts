@@ -1,6 +1,6 @@
 import Cookies from 'js-cookie';
 import useUserStore from '../store/user';
-import { del, post } from './api';
+import { del, post, get } from './api';
 
 export const login = async (
   email: string,
@@ -19,6 +19,22 @@ export const login = async (
   }
 };
 
+export const fetchUserInformation = async (
+  onSuccess?: () => void,
+  onFailure?: (arg0: any) => void
+) => {
+  try {
+    const data = await get('/api/auth/userInfo');
+    console.log(data);
+    useUserStore.getState().setUser(data.username, data.email, data.profileImg, data.id, data.role);
+
+    if (onSuccess) onSuccess();
+  } catch (error) {
+    console.error('fetch User Information failed', error);
+    if (onFailure) onFailure(error);
+  }
+};
+
 export const deleteAccount = async (
   userId: string,
   onSuccess?: (arg0: any) => void,
@@ -27,8 +43,7 @@ export const deleteAccount = async (
   try {
     const data = await del('/api/auth/delete-account', { userId: userId });
     useUserStore.getState().clearUser();
-    Cookies.remove('token');
-    Cookies.remove('refreshToken');
+    Cookies.remove('login');
     if (onSuccess) onSuccess(data);
   } catch (error) {
     console.error('delete Account failed', error);
