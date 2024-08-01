@@ -27,6 +27,7 @@ interface Decoded {
 }
 
 const SECRET_KEY = process.env.SECRET_KEY;
+const FRONTEND_URL = process.env.DOMAIN || 'http://localhost:5173';
 
 // 로그인
 export const loginController = async (req: Request, res: Response, next: NextFunction) => {
@@ -81,7 +82,7 @@ export const verifyEmailController = async (req: Request<{ query: { token: strin
       throw createError('Invalid Token', '유효하지 않은 토큰입니다.', 400);
     }
     await verifyEmailService(token);
-    res.status(200).json({ message: '이메일 인증 완료되었습니다. 회원가입을 계속해주세요.' });
+    res.redirect(`${FRONTEND_URL}/verification/email`)
   } catch (error) {
     next(error);
   }
@@ -116,7 +117,7 @@ export const kakaoAuthController = async (req: Request<{ query: { code: string }
     } else {
       res.cookie('jwt', result.token, { httpOnly: true });
       res.cookie('refreshToken', result.refreshToken, { httpOnly: true });
-      res.status(200).json({ message: '로그인 성공' });
+      res.status(302).redirect(`${FRONTEND_URL}`);
     }
   } catch (error) {
     next(error);
@@ -137,7 +138,7 @@ export const naverAuthController = async (req: Request<{ query: { code: string, 
     } else {
       res.cookie('jwt', result.token, { httpOnly: true });
       res.cookie('refreshToken', result.refreshToken, { httpOnly: true });
-      res.status(200).json({ message: '네이버 인증 성공' });
+      res.status(302).redirect(`${FRONTEND_URL}`);
     }
   } catch (error) {
     next(error);
@@ -159,7 +160,7 @@ export const googleAuthController = async (req: Request<{ query: { code: string 
     } else {
       res.cookie('jwt', result.token, { httpOnly: true });
       res.cookie('refreshToken', result.refreshToken, { httpOnly: true });
-      res.status(200).json({ message: '구글 인증 성공' });
+      res.status(302).redirect(`${FRONTEND_URL}`);
     }
   } catch (error) {
     next(error);
@@ -193,9 +194,7 @@ export const requestPasswordController = async (req: Request, res: Response, nex
   try {
     const { email } = req.body;
     await requestPasswordService(email);
-    res
-      .status(200)
-      .json({ message: '비밀번호 재설정 이메일이 전송되었습니다.' });
+    res.status(200).json({ message: '비밀번호 재설정 이메일이 전송되었습니다.' });
   } catch (error) {
     next(error);
   }
@@ -206,17 +205,21 @@ export const resetPasswordController = async (req: Request, res: Response, next:
   try {
     const { token, newPassword } = req.body;
     await resetPasswordService(token, newPassword);
-    res.status(200).json({ message: '비밀번호가 재설정되었습니다.' });
+    res.redirect(`${FRONTEND_URL}/verification/email`);
   } catch (error) {
     next(error);
   }
 };
 
 // 카카오 연동
-export const linkKakaoAccountController = async (req: Request, res: Response, next: NextFunction) => {
+export const linkKakaoAccountController = async (req: CustomRequest, res: Response, next: NextFunction) => {
   try {
-    const { userId, socialId } = req.body;
-    await linkSocialAccountService(userId, socialId, 'kakao');
+    const userId = req.user?.id;
+    const { accessToken } = req.body;
+    if (!userId) {
+      throw createError('Unauthorized', '사용자 인증이 필요합니다.', 401);
+    }
+    await linkSocialAccountService(userId, accessToken, 'kakao');
     res.status(200).json({ message: '카카오 계정 연동 성공' });
   } catch (error) {
     next(error);
@@ -224,10 +227,14 @@ export const linkKakaoAccountController = async (req: Request, res: Response, ne
 };
 
 // 구글 연동
-export const linkGoogleAccountController = async (req: Request, res: Response, next: NextFunction) => {
+export const linkGoogleAccountController = async (req: CustomRequest, res: Response, next: NextFunction) => {
   try {
-    const { userId, socialId } = req.body;
-    await linkSocialAccountService(userId, socialId, 'google');
+    const userId = req.user?.id;
+    const { accessToken } = req.body;
+    if (!userId) {
+      throw createError('Unauthorized', '사용자 인증이 필요합니다.', 401);
+    }
+    await linkSocialAccountService(userId, accessToken, 'google');
     res.status(200).json({ message: '구글 계정 연동 성공' });
   } catch (error) {
     next(error);
@@ -235,10 +242,14 @@ export const linkGoogleAccountController = async (req: Request, res: Response, n
 };
 
 // 네이버 연동
-export const linkNaverAccountController = async (req: Request, res: Response, next: NextFunction) => {
+export const linkNaverAccountController = async (req: CustomRequest, res: Response, next: NextFunction) => {
   try {
-    const { userId, socialId } = req.body;
-    await linkSocialAccountService(userId, socialId, 'naver');
+    const userId = req.user?.id;
+    const { accessToken } = req.body;
+    if (!userId) {
+      throw createError('Unauthorized', '사용자 인증이 필요합니다.', 401);
+    }
+    await linkSocialAccountService(userId, accessToken, 'naver');
     res.status(200).json({ message: '네이버 계정 연동 성공' });
   } catch (error) {
     next(error);

@@ -17,21 +17,6 @@ export const fetchPillDataByName = async (
   }
 };
 
-export const listPillDataByName = async (
-  name: string,
-  limit: number = 10,
-  offset: number = 0
-) => {
-  try {
-    const data = await get(`/api/pills/search/name`, { name, limit, offset });
-    console.log('이름으로 검색 list Get:', data);
-    return data[0];
-  } catch (error) {
-    console.error('약데이터 가져오기 실패:', error);
-    throw error;
-  }
-};
-
 export const fetchPillListByEfficacy = async (
   efficacy: string,
   limit: number = 10,
@@ -49,5 +34,25 @@ export const fetchPillListByEfficacy = async (
     }
   } catch (error) {
     console.error('약데이터 가져오기 실패:', error);
+  }
+};
+
+export const fetchAutocompleteSuggestions = async (name: string) => {
+  try {
+    const data = await get(`/api/pills/search/name`, {
+      name,
+      limit: 10,
+      offset: 0
+    });
+    console.log('자동완성 데이터:', data);
+    if (data && data.pills) {
+      return data.pills.map((pill: { name: string }) => pill.name);
+    } else { 
+      throw new Error('자동완성 잘못된 응답 형식')
+    }
+    
+  } catch (error) {
+    console.error('자동완성 데이터 가져오기 실패:', error);
+    throw error;
   }
 };

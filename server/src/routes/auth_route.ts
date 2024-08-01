@@ -160,15 +160,8 @@ router.post('/request-email-verification', requestEmailVerificationController);
  *         schema:
  *           type: string
  *     responses:
- *       200:
- *         description: 로그인 성공
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
+ *       302:
+ *         description: 로그인 성공, 리다이렉션
  *       400:
  *         description: 인증 실패
  */
@@ -192,15 +185,8 @@ router.get('/kakao/callback', kakaoAuthController);
  *         schema:
  *           type: string
  *     responses:
- *       200:
- *         description: 로그인 성공
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
+ *       302:
+ *         description: 로그인 성공, 리다이렉션
  *       400:
  *         description: 인증 실패
  */
@@ -219,15 +205,8 @@ router.get('/naver/callback', naverAuthController);
  *         schema:
  *           type: string
  *     responses:
- *       200:
- *         description: 로그인 성공
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
+ *       302:
+ *         description: 로그인 성공, 리다이렉션
  *       500:
  *         description: 서버 오류
  */
@@ -332,15 +311,12 @@ router.post('/request-password', requestPasswordController);
  *               newPassword:
  *                 type: string
  *     responses:
- *       200:
- *         description: 비밀번호가 재설정되었습니다.
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
+ *       302:
+ *         description: 비밀번호 재설정 완료, 리다이렉션
+ *       400:
+ *         description: 유효하지 않은 토큰 또는 비밀번호 불일치
+ *       500:
+ *         description: 서버 오류
  */
 router.post('/reset-password', resetPasswordController);
 
@@ -372,7 +348,7 @@ router.post('/reset-password', resetPasswordController);
  *                 message:
  *                   type: string
  */
-router.post('/link/kakao', linkKakaoAccountController);
+router.post('/link/kakao', authByToken, linkKakaoAccountController);
 
 /**
  * @swagger
@@ -402,7 +378,7 @@ router.post('/link/kakao', linkKakaoAccountController);
  *                 message:
  *                   type: string
  */
-router.post('/link/naver', linkNaverAccountController);
+router.post('/link/naver', authByToken, linkNaverAccountController);
 
 /**
  * @swagger
@@ -432,7 +408,7 @@ router.post('/link/naver', linkNaverAccountController);
  *                 message:
  *                   type: string
  */
-router.post('/link/google', linkGoogleAccountController);
+router.post('/link/google', authByToken, linkGoogleAccountController);
 
 /**
  * @swagger
@@ -447,15 +423,12 @@ router.post('/link/google', linkGoogleAccountController);
  *         schema:
  *           type: string
  *     responses:
- *        200:
- *          description: 이메일 인증 완료
- *          content:
- *            application/json:
- *              schema:
- *                type: object
- *                properties:
- *                  message:
- *                    type: string
+ *        302:
+ *          description: 이메일 인증 완료, 리다이렉션
+ *        400:
+ *          description: 유효하지 않은 토큰
+ *        500:
+ *          description: 서버 오류
  */
 router.get('/verify-email', verifyEmailController);
 

@@ -82,7 +82,6 @@ interface GoogleUserInfoResponse {
 const SECRET_KEY = process.env.SECRET_KEY;
 const REFRESH_TOKEN_SECRET_KEY = process.env.REFRESH_TOKEN_SECRET_KEY;
 const DOMAIN = process.env.DOMAIN || 'http://localhost:3000';
-const FRONTEND_URL = process.env.DOMAIN || 'http://localhost:5173';
 
 if (!SECRET_KEY || !REFRESH_TOKEN_SECRET_KEY) {
   throw new Error('SECRET_KEY 또는 REFRESH_TOKEN_SECRET_KEY 확인바람.');
@@ -274,7 +273,7 @@ export const refreshTokenService = async (
 export const kakaoAuthService = async (
   code: string
 ): Promise<{ token?: string, refreshToken?: string, message?: string }> => {
-  const redirectUri = `${FRONTEND_URL}/kakao/callback`;
+  const redirectUri = `${DOMAIN}/api/auth/kakao/callback`;
   const kakaoTokenUrl = `https://kauth.kakao.com/oauth/token`;
 
   try {
@@ -375,7 +374,7 @@ export const naverAuthService = async (
   code: string,
   state: string
 ): Promise<{ token?: string, refreshToken?: string, message?: string }> => {
-  const redirectUri = `${FRONTEND_URL}/naver/callback`;
+  const redirectUri = `${DOMAIN}/api/auth/naver/callback`;
   const naverTokenUrl = `https://nid.naver.com/oauth2.0/token`;
   const naverUserInfoUrl = `https://openapi.naver.com/v1/nid/me`;
 
@@ -486,7 +485,7 @@ export const googleAuthService = async (
         code,
         client_id: process.env.GOOGLE_CLIENT_ID,
         client_secret: process.env.GOOGLE_CLIENT_SECRET,
-        redirect_uri: `${FRONTEND_URL}/google/callback`,
+        redirect_uri: `${DOMAIN}/api/auth/google/callback`,
         grant_type: 'authorization_code',
       },
       headers: {
@@ -692,9 +691,41 @@ export const resetPasswordService = async (
 };
 
 // 소셜 연동
-export const linkSocialAccountService = async (userId: number, socialId: string, provider: 'kakao' | 'google' | 'naver'): Promise<void> => {
+export const linkSocialAccountService = async (userId: string, accessToken: string, provider: 'kakao' | 'google' | 'naver'): Promise<void> => {
   try {
-    const query = 'SELECT kakoid, naverid, googleid FROM users WHERE userid = $1';
+    let socialId: string;
+    if (provider === 'kakao') {
+      const userInfoResponse = await axiosRequest<KakaoUserInfoResponse>({
+        method: 'get',
+        url: 'https://kapi.kakao.com/v2/user/me',
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+      socialId = userInfoResponse.id;
+    } else if (provider === 'google') {
+      const userInfoResponse = await axiosRequest<GoogleUserInfoResponse>({
+        method: 'get',
+        url: 'https://www.googleapis.com/oauth2/v2/userinfo',
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+      socialId = userInfoResponse.id;
+    } else if (provider === 'naver') {
+      const userInfoResponse = await axiosRequest<NaverUserInfoResponse>({
+        method: 'get',
+        url: 'https://openapi.naver.com/v1/nid/me',
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+      socialId = userInfoResponse.response.id;
+    } else {
+      throw createError('InvalidProvider', '유효하지 않은 제공자입니다.', 400);
+    }
+
+    const query = 'SELECT kakaoid, naverid, googleid FROM users WHERE userid = $1';
     const values = [userId];
     const result = await pool.query(query, values);
     const user = result.rows[0];
@@ -706,26 +737,14 @@ export const linkSocialAccountService = async (userId: number, socialId: string,
     const defaultPassword = provider === 'kakao' ? 'kakao_auth_password' : provider === 'google' ? 'google_auth_password': 'naver_auth_password';
 
     if (provider === 'kakao') {
-      if (user.kakaoid) {
-        throw createError('AlreadyLinked', '이미 카카오 계정과 연동되어 있습니다.', 400);
-      }
-
       const updateQuery = 'UPDATE users SET kakaoid = $1, password = $2 WHERE userid = $3';
       const updateValues = [socialId, defaultPassword, userId];
       await pool.query(updateQuery, updateValues);
     } else if (provider === 'google') {
-      if (user.googleid) {
-        throw createError('AlreadyLinked', '이미 구글 계정과 연동되어 있습니다.', 400);
-      }
-
       const updateQuery = 'UPDATE users SET googleid = $1, password = $2 WHERE userid = $3';
       const updateValues = [socialId, defaultPassword, userId];
       await pool.query(updateQuery, updateValues);
     } else if (provider === 'naver') {
-      if (user.naverid) {
-        throw createError('AlreadyLinked', '이미 네이버 계정과 연동되어 있습니다.', 400);
-      }
-
       const updateQuery = 'UPDATE users SET naverid = $1, password = $2 WHERE userid = $3';
       const updateValues = [socialId, defaultPassword, userId];
       await pool.query(updateQuery, updateValues);
