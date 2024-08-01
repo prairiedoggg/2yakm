@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom'; 
 import styled from 'styled-components';
 import SearchBox from '../SearchBox';
 import SearchHistory from './SearchHistory';
@@ -21,7 +22,6 @@ const Search = () => {
 
   return (
     <>
-      {!(searchQuery && searchType === 'efficacy') && (
         <BackgroundHeader>
           <SearchTypeSelect>
             <SearchTypeButton
@@ -39,12 +39,11 @@ const Search = () => {
           </SearchTypeSelect>
           <SearchBox />
         </BackgroundHeader>
-      )}
       {searchQuery ? (
         searchType === 'name' ? (
           <SearchResults />
         ) : (
-          <TagPage />
+           <Link to={`/search/tag/${searchQuery}`}/>
         )
       ) : (
         <AutoComplete />

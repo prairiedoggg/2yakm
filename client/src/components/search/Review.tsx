@@ -62,10 +62,9 @@ const Review = ({ pillId }: { pillId: number }) => {
     };
   }, [handleScroll, pillId]);
 
-
   useEffect(() => {
-     loadReviews(pillId, null);
-  }, [ pillId]);
+    loadReviews(pillId, null);
+  }, [pillId]);
 
   return (
     <ReviewContainer>

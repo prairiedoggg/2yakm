@@ -13,6 +13,7 @@ const AutoComplete = () => {
   if (suggestions.length === 0) {
     return <p>(자동완성)검색 결과가 없습니다</p>;
   }
+  
   return (
     <AutoCompleteContainer>
       <p>자동완성 페이지</p>
