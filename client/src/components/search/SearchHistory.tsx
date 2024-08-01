@@ -9,11 +9,11 @@ const SearchHistory = () => {
 
   return (
     <>
-      {searchQuery.length > 1 ? (
-        <AutoComplete />
-      ) : (
-        <HistoryContainer>
-          <HistoryInner>
+      <HistoryInner>
+        {searchQuery.length > 1 ? (
+          <AutoComplete />
+        ) : (
+          <>
             <HistoryTitle>
               <span>최근 검색어</span>
               <span onClick={clearHistory}>전체삭제</span>
@@ -23,16 +23,14 @@ const SearchHistory = () => {
                 <HistoryItem key={index}>{item}</HistoryItem>
               ))}
             </HistoryList>
-          </HistoryInner>
-        </HistoryContainer>
-      )}
+          </>
+        )}
+      </HistoryInner>
     </>
   );
 };
 
 export default SearchHistory;
-
-const HistoryContainer = styled.div``;
 
 const HistoryInner = styled.div`
   width: 85vw;

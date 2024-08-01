@@ -7,7 +7,6 @@ import SearchResults from './SearchResults';
 import TagPage from './TagPage';
 import Nav from '../Nav';
 import { useSearchStore } from '../../store/search';
-import AutoComplete from './AutoComplete';
 
 const Search = () => {
   const { searchQuery, setSearchQuery, searchType, setSearchType } =
@@ -46,7 +45,7 @@ const Search = () => {
            <Link to={`/search/tag/${searchQuery}`}/>
         )
       ) : (
-        <AutoComplete />
+        <SearchHistory/>
       )}
       <Nav />
     </>
