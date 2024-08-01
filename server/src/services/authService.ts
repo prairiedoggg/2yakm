@@ -692,7 +692,7 @@ export const resetPasswordService = async (
 };
 
 // 소셜 연동
-export const linkSocialAccountService = async (userId: number, socialId: string, provider: 'kakao' | 'google'): Promise<void> => {
+export const linkSocialAccountService = async (userId: number, socialId: string, provider: 'kakao' | 'google' | 'naver'): Promise<void> => {
   try {
     const query = 'SELECT kakoid, naverid, googleid FROM users WHERE userid = $1';
     const values = [userId];
