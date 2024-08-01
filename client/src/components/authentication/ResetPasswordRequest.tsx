@@ -7,7 +7,7 @@ import PopupContent, { PopupType } from '../popup/PopupMessages';
 import Loading from '../Loading';
 import Popup from '../popup/Popup';
 
-const ResetPassword = () => {
+const ResetPasswordRequest = () => {
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
@@ -210,4 +210,4 @@ const Content = styled.div`
 }
 }`;
 
-export default ResetPassword;
+export default ResetPasswordRequest;

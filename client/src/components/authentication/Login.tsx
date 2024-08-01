@@ -25,7 +25,7 @@ const Login = () => {
       case pageState.EmailLogin:
         return (
           <EmailLogin
-            onResetPasswordClick={() => navigate('/password/reset')}
+            onResetPasswordClick={() => navigate('/password/reset/request')}
             onRegisterClick={() => navigate('/register')}
           />
         );
