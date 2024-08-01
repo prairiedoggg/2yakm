@@ -1,7 +1,6 @@
 import { pool } from '../db';
 import { createError } from '../utils/error';
 
-
 // Define the types for the returned user profile data
 interface UserProfile {
   email: string;
@@ -11,15 +10,21 @@ interface UserProfile {
 
 // Function to get user profile
 export const getUserProfile = async (userId: string): Promise<UserProfile> => {
-  const result = await pool.query('SELECT email, username, profileimg FROM users WHERE userid = $1', [userId]);
-  
-  if (result.rows.length === 0) {
-    throw createError("사용자를 찾을 수 없습니다",'User not found', 404);
+  try {
+    const result = await pool.query('SELECT email, username, profileimg FROM users WHERE userid = $1', [userId]);
+
+    if (result.rows.length === 0) {
+      throw createError('사용자를 찾을 수 없습니다', 'User not found', 404);
+    }
+
+    const { email, username, profileimg } = result.rows[0];
+    return { email, username, profileimg};
+  } catch (error) {
+    console.error('Error executing query', error);
+    throw createError('DatabaseError','Failed to get user profile', 500)
   }
-  
-  const { email, username, profileimg } = result.rows[0];
-  return { email, username, profileimg };
 };
+
 
 // Define the types for the update data
 interface UpdateUsernameData {
@@ -56,35 +61,25 @@ export const updateUsername = async (userId: string, updateData: UpdateUsernameD
 };
 
 // Function to update the profile picture
-export const updateProfilePicture = async (userId: string, profilePicture: string | Buffer): Promise<string> => {
-  let profileimg: string;
-  
-  if (Buffer.isBuffer(profilePicture)) {
-    // Assuming profileimg is stored as base64 in the database
-    profileimg = profilePicture.toString('base64');
-  } else {
-    // URL case
-    profileimg = profilePicture;
-  }
-  
-  const result = await pool.query(
-    'UPDATE users SET profileimg = $1 WHERE userid = $2 RETURNING profileimg',
-    [profileimg, userId]
-  );
+export const updateProfilePicture = async (userId: string, profilePicture: string): Promise<string> => {
 
-  if (result.rows.length === 0) {
-    throw createError("사용자를 찾을 수 없습니다",'User not found', 404);
-  }
+  try {
+    const result = await pool.query(
+      'UPDATE users SET profileimg = $1 WHERE userid = $2 RETURNING profileimg',
+      [profilePicture, userId]
+    );
 
-  return result.rows[0].profileimg;
+    if (result.rows.length === 0) {
+      throw createError("사용자를 찾을 수 없습니다",'User not found', 404);
+    }
+
+    return result.rows[0].profileimg;
+  } catch (error) {
+    console.error('Error updating profile picture:', error);
+    throw createError('DatabaseError', 'Failed to update profile picture', 500);
+  }
 };
 
-// Function to upload a file to S3
-export const uploadFileToS3 = async (file: any, fileName: string): Promise<string> => {
-  // Logic to upload file to S3 and return the URL
-  // This is a placeholder function. Implement S3 logic here.
-  const s3Url = `https://s3.amazonaws.com/eyakmoyak/${fileName}`;
-  return s3Url;
-};
+
 
 

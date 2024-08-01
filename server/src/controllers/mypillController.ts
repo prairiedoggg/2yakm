@@ -58,8 +58,8 @@ export const addMyPill = async (
 
     const newPill = await addPill(userId, value);
     res.status(200).json(newPill);
-  } catch (error: unknown) {
-    next(createError('DatabaseError', (error as Error).message, 500));
+  } catch (error) {
+    next(error);
   }
 };
 
@@ -85,8 +85,8 @@ export const updateMyPill = async (
 
     const updatedPill = await updatePill(mypillId, value);
     res.status(200).json(updatedPill);
-  } catch (error: unknown) {
-    next(createError('DatabaseError', (error as Error).message, 500));
+  } catch (error) {
+    next(error);
   }
 };
 
@@ -108,8 +108,8 @@ export const getMyPills = async (
 
     const pills = await getPills(userId, limit, offset, sortedBy, order);
     res.status(200).json(pills);
-  } catch (error: unknown) {
-    next(createError('DatabaseError', (error as Error).message, 500));
+  } catch (error) {
+    next(error);
   }
 };
 
@@ -129,7 +129,7 @@ export const deleteMyPill = async (
     }
     const result = await deletePill(mypillId);
     res.status(200).json(result);
-  } catch (error: unknown) {
-    next(createError('DatabaseError', (error as Error).message, 500));
+  } catch (error) {
+    next(error);
   }
 };
