@@ -372,7 +372,7 @@ router.post('/reset-password', resetPasswordController);
  *                 message:
  *                   type: string
  */
-router.post('/link/kakao', linkKakaoAccountController);
+router.post('/link/kakao', authByToken, linkKakaoAccountController);
 
 /**
  * @swagger
@@ -402,7 +402,7 @@ router.post('/link/kakao', linkKakaoAccountController);
  *                 message:
  *                   type: string
  */
-router.post('/link/naver', linkNaverAccountController);
+router.post('/link/naver', authByToken, linkNaverAccountController);
 
 /**
  * @swagger
@@ -432,7 +432,7 @@ router.post('/link/naver', linkNaverAccountController);
  *                 message:
  *                   type: string
  */
-router.post('/link/google', linkGoogleAccountController);
+router.post('/link/google', authByToken, linkGoogleAccountController);
 
 /**
  * @swagger

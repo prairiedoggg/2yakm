@@ -213,10 +213,14 @@ export const resetPasswordController = async (req: Request, res: Response, next:
 };
 
 // 카카오 연동
-export const linkKakaoAccountController = async (req: Request, res: Response, next: NextFunction) => {
+export const linkKakaoAccountController = async (req: CustomRequest, res: Response, next: NextFunction) => {
   try {
-    const { userId, socialId } = req.body;
-    await linkSocialAccountService(userId, socialId, 'kakao');
+    const userId = req.user?.id;
+    const { accessToken } = req.body;
+    if (!userId) {
+      throw createError('Unauthorized', '사용자 인증이 필요합니다.', 401);
+    }
+    await linkSocialAccountService(userId, accessToken, 'kakao');
     res.status(200).json({ message: '카카오 계정 연동 성공' });
   } catch (error) {
     next(error);
@@ -224,10 +228,14 @@ export const linkKakaoAccountController = async (req: Request, res: Response, ne
 };
 
 // 구글 연동
-export const linkGoogleAccountController = async (req: Request, res: Response, next: NextFunction) => {
+export const linkGoogleAccountController = async (req: CustomRequest, res: Response, next: NextFunction) => {
   try {
-    const { userId, socialId } = req.body;
-    await linkSocialAccountService(userId, socialId, 'google');
+    const userId = req.user?.id;
+    const { accessToken } = req.body;
+    if (!userId) {
+      throw createError('Unauthorized', '사용자 인증이 필요합니다.', 401);
+    }
+    await linkSocialAccountService(userId, accessToken, 'google');
     res.status(200).json({ message: '구글 계정 연동 성공' });
   } catch (error) {
     next(error);
@@ -235,10 +243,14 @@ export const linkGoogleAccountController = async (req: Request, res: Response, n
 };
 
 // 네이버 연동
-export const linkNaverAccountController = async (req: Request, res: Response, next: NextFunction) => {
+export const linkNaverAccountController = async (req: CustomRequest, res: Response, next: NextFunction) => {
   try {
-    const { userId, socialId } = req.body;
-    await linkSocialAccountService(userId, socialId, 'naver');
+    const userId = req.user?.id;
+    const { accessToken } = req.body;
+    if (!userId) {
+      throw createError('Unauthorized', '사용자 인증이 필요합니다.', 401);
+    }
+    await linkSocialAccountService(userId, accessToken, 'naver');
     res.status(200).json({ message: '네이버 계정 연동 성공' });
   } catch (error) {
     next(error);

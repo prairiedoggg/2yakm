@@ -4,11 +4,10 @@ import { Icon } from '@iconify-icon/react';
 import { useState } from 'react';
 import { logout, deleteAccount } from '../../api/authService';
 import { useNavigate } from 'react-router-dom';
-import useUserStore from '../../store/user';
+import useUserStore, { LoginType } from '../../store/user';
 import Loading from '../Loading';
 import Popup from '../popup/Popup';
 import PopupContent, { PopupType } from '../popup/PopupMessages';
-import { PiCactus } from 'react-icons/pi';
 import { changeProfileImage, fetchUserProfile } from '../../api/myPageService';
 
 interface Info {
@@ -31,14 +30,17 @@ const EditMyInformation = ({
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  const infos1: Info[] = [
+  let infos1: Info[] = [
     { info: '이메일', onClick: undefined },
-    { info: '이름', onClick: onEditNameClick },
-    { info: '비밀번호 변경', onClick: onEditPasswordClick }
+    { info: '이름', onClick: onEditNameClick }
   ];
 
+  if (user?.loginType == LoginType.none)
+    infos1.push({ info: '비밀번호 변경', onClick: onEditPasswordClick });
+
   const infos2: Info[] = [
-    { info: '약사 인증', onClick: onEditPharmacistClick }
+    { info: '약사 인증', onClick: onEditPharmacistClick },
+    { info: '연동된 소셜계정', onClick: undefined }
   ];
 
   const getInfoValue = (type: string) => {
@@ -48,9 +50,29 @@ const EditMyInformation = ({
       case '이메일':
         return user?.email;
       case '프로필 이미지':
-        return user?.profileimg;
-      case '연동된 소셜계정':
-        return <Icon icon='devicon:google' width='1.1rem' height='1.1rem' />;
+        return user?.profileImg;
+      case '연동된 소셜계정': {
+        if (user?.loginType == LoginType.kakao)
+          return (
+            <Icon
+              icon='ri:kakao-talk-fill'
+              width='1.5rem'
+              height='1.5rem'
+              style={{ color: '#3A1D1F' }}
+            />
+          );
+        else if (user?.loginType == LoginType.naver)
+          return (
+            <Icon
+              icon='simple-icons:naver'
+              width='1.1rem'
+              height='1.1rem'
+              style={{ color: '#00c73c' }}
+            />
+          );
+        else
+          return <Icon icon='devicon:google' width='1.1rem' height='1.1rem' />;
+      }
       default:
         return '';
     }
@@ -118,7 +140,7 @@ const EditMyInformation = ({
         <div className='thumbnail'>
           <img
             className='thumbnailImage'
-            src={user?.profileimg ?? `img/user.svg`}
+            src={user?.profileImg ?? `img/user.svg`}
             alt='프로필 이미지'
           />
           <div className='edit-thumb' onClick={() => setBottomSheet(true)}>
@@ -153,13 +175,27 @@ const EditMyInformation = ({
         onClose={(pic) => {
           if (pic !== null) {
             setLoading(true);
+
+            // 파일데이터 확인용 테스트 코드. 프로필 이미지 업로드 구현 완료 후 삭제 예정
+            // const testBuffer = pic.arrayBuffer().then((data) => {
+            //   console.log(data);
+
+            //   let arr = new Uint8Array(data);
+            //   console.log(arr);
+
+            //   var imgsrc =
+            //     'data:image/png;base64,' +
+            //     btoa(String.fromCharCode.apply(null, Array.from(arr)));
+            //   console.log(imgsrc);
+            // });
+
             const formData = new FormData();
-            formData.append('image', pic);
+            formData.append('profilePicture', pic);
             changeProfileImage(
               formData,
               () => {
+                fetchUserProfile(() => {});
                 setLoading(false);
-                window.location.reload();
               },
               () => {
                 setLoading(false);
@@ -205,6 +241,9 @@ const StyledContent = styled.div`
     .thumbnailImage {
       width: 100%;
       height: 100%;
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
     }
 
     .edit-thumb {

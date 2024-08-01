@@ -27,6 +27,14 @@ export enum PopupType {
   DeleteFavoriteSuccess,
   DeleteFavoriteFailure,
 
+  DeleteReview, // src\components\myPage\ManageReviews.tsx
+  DeleteReviewSuccess,
+  DeleteReviewFailure,
+
+  ResetPassword, // src\components\authentication\ResetPassword.tsx
+  ResetPasswordSuccess,
+  ResetPasswordFailure,
+
   None
 }
 
@@ -88,6 +96,32 @@ const PopupContent = (
       case PopupType.DeleteFavoriteFailure:
         return (
           <div>즐겨찾는 약 삭제에 실패했습니다. 잠시 후 다시 시도해주세요.</div>
+        );
+
+      case PopupType.DeleteReviewFailure:
+        return <div>리뷰 삭제에 실패했습니다. 잠시 후 다시 시도해주세요.</div>;
+
+      case PopupType.ResetPasswordSuccess:
+        return (
+          <div>
+            패스워드 재설정 이메일을 발송했습니다.
+            <button
+              className='bottomClose'
+              onClick={() => {
+                navigate(-1);
+              }}
+            >
+              확인
+            </button>
+          </div>
+        );
+
+      case PopupType.ResetPasswordFailure:
+        return (
+          <div>
+            패스워드 재설정 이메일을 발송에 실패했습니다. 잠시 후 다시
+            시도해주세요.
+          </div>
         );
     }
   };

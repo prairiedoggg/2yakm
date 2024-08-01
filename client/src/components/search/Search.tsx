@@ -1,4 +1,5 @@
-import { ChangeEvent } from 'react';
+import { useState } from 'react';
+import { Link } from 'react-router-dom'; 
 import styled from 'styled-components';
 import SearchBox from '../SearchBox';
 import SearchHistory from './SearchHistory';
@@ -6,36 +7,47 @@ import SearchResults from './SearchResults';
 import TagPage from './TagPage';
 import Nav from '../Nav';
 import { useSearchStore } from '../../store/search';
+import AutoComplete from './AutoComplete';
 
 const Search = () => {
   const { searchQuery, setSearchQuery, searchType, setSearchType } =
     useSearchStore();
+  const [activeType, setActiveType] = useState<string>(searchType);
 
-  const handleTypeChange = (e: ChangeEvent<HTMLSelectElement>) => {
-    setSearchType(e.target.value);
-    setSearchQuery('')
+  const handleTypeClick = (type: string) => {
+    setSearchType(type);
+    setSearchQuery('');
+    setActiveType(type);
   };
 
   return (
     <>
-      {/* {!(searchQuery && searchType === 'efficacy') && ( */}
         <BackgroundHeader>
-          <SearchTypeSelect onChange={handleTypeChange} value={searchType}>
-            <option value='name'>이름</option>
-            <option value='efficacy'>효능</option>
+          <SearchTypeSelect>
+            <SearchTypeButton
+              onClick={() => handleTypeClick('name')}
+              className={activeType === 'name' ? 'active' : ''}
+            >
+              이름으로 검색
+            </SearchTypeButton>
+            <SearchTypeButton
+              onClick={() => handleTypeClick('efficacy')}
+              className={activeType === 'efficacy' ? 'active' : ''}
+            >
+              효능으로 검색
+            </SearchTypeButton>
           </SearchTypeSelect>
           <SearchBox />
         </BackgroundHeader>
-      {/* )} */}
       {searchQuery ? (
         searchType === 'name' ? (
           <SearchResults />
         ) : (
-          <TagPage />
+           <Link to={`/search/tag/${searchQuery}`}/>
         )
       ) : (
-        <SearchHistory />
-      )}               
+        <AutoComplete />
+      )}
       <Nav />
     </>
   );
@@ -51,19 +63,30 @@ const BackgroundHeader = styled.div`
   background-color: var(--main-color);
 `;
 
-const SearchTypeSelect = styled.select`
-  position: absolute;
-  top: 75px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 90vw;
-  height: 40px;
-  border-radius: 20px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  background-color: #ffffff;
-  padding: 0 15px;
-  box-sizing: border-box;
-  outline: none;
+const SearchTypeSelect = styled.div`
+  padding: 10px 20px;
+`;
+
+
+const SearchTypeButton = styled.button`
+  position: relative;
+  color: gray;
   border: none;
-  font-size: 16px;
+  background: none;
+
+  &.active {
+    color: black;
+  }
+
+  &:first-child::after {
+    position: absolute;
+    top: 50%;
+    right: 0;
+    transform: translateY(-50%);
+    content: '';
+    display: block;
+    width: 1px;
+    height: 10px;
+    background-color: gray;
+  }
 `;
