@@ -30,8 +30,8 @@ export const getPillsHandler = async <T extends PillsQueryParams>(
 
     const pills = await getPills(limit, offset, sortedBy, order);
     res.status(200).json(pills);
-  } catch (error: unknown) {
-    next(createError('DatabaseError', (error as Error).message, 500));
+  } catch (error) {
+    next(error);
   }
 };
 
@@ -48,8 +48,8 @@ export const getPillByIdHandler = async (
     } else {
       res.status(404).json({ message: 'Pill not found' });
     }
-  } catch (error: unknown) {
-    next(createError('DatabaseError', (error as Error).message, 500));
+  } catch (error) {
+    next(error);
   }
 };
 
@@ -84,8 +84,8 @@ export const searchPillsbyNameHandler = async (
   try {
     const pills = await searchPillsbyName(name, limit, offset);
     res.status(200).json(pills);
-  } catch (error: unknown) {
-    next(createError('DatabaseError', (error as Error).message, 500));
+  } catch (error) {
+    next(error);
   }
 };
 
@@ -106,8 +106,8 @@ export const searchPillsbyEfficacyHandler = async (
     const limit = parseInt(req.query.limit ?? '10', 10);
     const pills = await searchPillsbyEfficacy(efficacy, limit, offset);
     res.status(200).json(pills);
-  } catch (error: unknown) {
-    next(createError('DatabaseError', (error as Error).message, 500));
+  } catch (error) {
+    next(error);
   }
 };
 
@@ -130,8 +130,8 @@ export const searchPillsByImageHandler = async (
     const offset = parseInt(req.query.offset ?? '0', 10);
     const result = await searchPillsByImage(imageBuffer, limit, offset);
     res.status(200).json(result);
-  } catch (error: unknown) {
-    next(createError('DatabaseError', (error as Error).message, 500));
+  } catch (error) {
+    next(error);
   }
 };
 
@@ -145,8 +145,8 @@ export const getPillFavoriteCount = async (
   try {
     const count = await getPillFavoriteCountService(id);
     res.status(200).send({ count });
-  } catch (error: unknown) {
-    next(createError('DatabaseError', (error as Error).message, 500));
+  } catch (error) {
+    next(error);
   }
 };
 
@@ -160,7 +160,7 @@ export const getPillReviewCount = async (
   try {
     const count = await getPillReviewCountService(id);
     res.status(200).send({ count });
-  } catch (error: unknown) {
-    next(createError('DatabaseError', (error as Error).message, 500));
+  } catch (error) {
+    next(error);
   }
 };
