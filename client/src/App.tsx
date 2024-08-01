@@ -18,6 +18,9 @@ const EmailVerification = loadable(
 const ResetPasswordRequest = loadable(
   () => import('./components/authentication/ResetPasswordRequest')
 );
+const ResetPassword = loadable(
+  () => import('./components/authentication/ResetPassword')
+);
 const ChatBot = loadable(() => import('./components/chatBot/ChatBot'));
 const Redirect = loadable(() => import('./components/authentication/Redirect'));
 
@@ -45,7 +48,7 @@ const App = () => {
           path='/password/reset/request'
           element={<ResetPasswordRequest />}
         />
-        <Route path='/password/reset' element={<ResetPasswordRequest />} />
+        <Route path='/password/reset' element={<ResetPassword />} />
 
         <Route
           path='/chatbot'
