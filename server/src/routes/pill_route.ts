@@ -64,10 +64,6 @@ const router = Router();
  *                     type: string
  *                   ingredientengname:
  *                     type: string
- *                   type:
- *                     type: string
- *                   shape:
- *                     type: string
  *                   efficacy:
  *                     type: string
  *                   dosage:
@@ -77,11 +73,15 @@ const router = Router();
  *                   storagemethod:
  *                     type: string
  *                   expdate:
- *                      type: string
+ *                     type: string
  *                   source:
- *                      type: string
+ *                     type: string
+ *                   importWords:
+ *                     type: string
  *                   imgurl:
- *                      type: string
+ *                     type: string
+ *                   boxurl:
+ *                     type: string
  */
 router.get('/', getPillsHandler);
 
@@ -132,11 +132,13 @@ router.get('/', getPillsHandler);
  *                   type: string
  *                 storagemethod:
  *                   type: string
- *                 expdate:
- *                   type: string
  *                 source:
  *                   type: string
+ *                 importWords:
+ *                   type: string
  *                 imgurl:
+ *                   type: string
+ *                 boxurl:
  *                   type: string
  */
 router.get('/:id', getPillByIdHandler);
@@ -252,12 +254,15 @@ router.get('/:id/favoritecount', getPillFavoriteCount);
  *                     type: string
  *                   storagemethod:
  *                     type: string
- *                   expdate:
- *                      type: string
  *                   source:
- *                      type: string
+ *                     type: string
+ *                   importWords:
+ *                     type: string
  *                   imgurl:
- *                      type: string
+ *                     type: string
+ *                   boxurl:
+ *                     type: string
+ * 
  */
 router.get('/search/name', searchPillsbyNameHandler);
 
@@ -308,10 +313,6 @@ router.get('/search/name', searchPillsbyNameHandler);
  *                     type: string
  *                   ingredientengname:
  *                     type: string
- *                   type:
- *                     type: string
- *                   shape:
- *                     type: string
  *                   efficacy:
  *                     type: string
  *                   dosage:
@@ -320,12 +321,14 @@ router.get('/search/name', searchPillsbyNameHandler);
  *                     type: string
  *                   storagemethod:
  *                     type: string
- *                   expdate:
- *                      type: string
  *                   source:
- *                      type: string
+ *                     type: string
+ *                   importWords:
+ *                     type: string
  *                   imgurl:
- *                      type: string
+ *                     type: string
+ *                   boxurl:
+ *                     type: string
  */
 router.get('/search/efficacy', searchPillsbyEfficacyHandler);
 
@@ -378,56 +381,24 @@ router.get('/search/efficacy', searchPillsbyEfficacyHandler);
  *                         type: string
  *                       efficacy:
  *                         type: string
+ *                       dosage:
+ *                         type: string
+ *                       caution:
+ *                         type: string
+ *                       storagemethod:
+ *                         type: string
+ *                       source:
+ *                         type: string
  *                       importWords:
  *                         type: string
  *                       similarity:
  *                         type: string
  *                       imgurl:
  *                         type: string
- *                 totalCount:
- *                   type: integer
- *                   description: 검색된 약의 총 개수
- *                 totalPages:
- *                   type: integer
- *                   description: 총 페이지 수
- *                 limit:
- *                   type: integer
- *                   description: 요청된 약의 개수
- *                 offset:
- *                   type: integer
- *                   description: 요청된 약의 시작 위치
- *             examples:
- *               example1:
- *                 summary: OCR 결과 예시
- *                 value:
- *                   pills:
- *                     - id: 0
- *                       name: "string"
- *                       engname: "string"
- *                       companyname: "string"
- *                       ingredientname: "string"
- *                       efficacy: "string"
- *                       importWords: "string"
- *                   totalCount: 1
- *                   totalPages: 1
- *                   limit: 10
- *                   offset: 0
- *               example2:
- *                 summary: 이미지 유사도 결과 예시
- *                 value:
- *                   pills:
- *                     - id: 0
- *                       name: "string"
- *                       engname: "string"
- *                       companyname: "string"
- *                       ingredientname: "string"
- *                       efficacy: "string"
- *                       imgurl: "string"
- *                       similarity: "string"
- *                   totalCount: 1
- *                   totalPages: 1
- *                   limit: 10
- *                   offset: 0
+ *                       boxurl:
+ *                         type: string
+ *                     
+ *             
  */
 router.get(
   '/search/image',

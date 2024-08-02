@@ -88,7 +88,7 @@ export const getPills = async (
 
 export const getPillById = async (id: number): Promise<Pills | null> => {
   const query =
-    'SELECT id, name, engname, companyname, ingredientname, efficacy, dosage, caution, storagemethod, imgurl FROM pills WHERE id = $1';
+    'SELECT id, name, engname, companyname, ingredientname, efficacy, dosage, caution, storagemethod, source, imgurl, boxurl FROM pills WHERE id = $1';
   const result = await pool.query(query, [id]);
   return result.rows[0] || null;
 };
@@ -126,7 +126,7 @@ export const searchPillsbyName = async (
   limit: number,
   offset: number
 ): Promise<GetPillsResult> => {
-  const query = `SELECT id, name, engname, companyname, ingredientname, efficacy, dosage, caution, storagemethod, imgurl FROM pills WHERE name ILIKE $1 OR engname ILIKE $1 
+  const query = `SELECT id, name, engname, companyname, ingredientname, efficacy, dosage, caution, storagemethod, source, imgurl, boxurl FROM pills WHERE name ILIKE $1 OR engname ILIKE $1 
                  LIMIT $2 OFFSET $3`;
   const values = [`${name}%`, limit, offset];
 
@@ -173,7 +173,7 @@ export const searchPillsbyEfficacy = async (
 ): Promise<GetPillsResult> => {
   const efficacyArray = efficacy.split(',').map((eff) => `%${eff.trim()}%`);
   const query = `
-    SELECT id, name, engname, companyname, ingredientname, efficacy, dosage, caution, storagemethod, imgurl
+    SELECT id, name, engname, companyname, ingredientname, efficacy, dosage, caution, storagemethod, source, imgurl, boxurl
     FROM pills 
     WHERE ${efficacyArray
       .map((_, index) => `efficacy ILIKE $${index + 1}`)
@@ -254,7 +254,7 @@ const searchPillsByNameFromText = async (
   offset: number
 ): Promise<GetPillsResult> => {
   const query = `
-    SELECT id, name, engname, companyname, ingredientname, efficacy, dosage, caution, storagemethod, imgurl
+    SELECT id, name, engname, companyname, ingredientname, efficacy, dosage, caution, storagemethod, source, imgurl, boxurl
     FROM pills 
     WHERE engname ILIKE $1
     LIMIT $2 OFFSET $3`;
@@ -333,7 +333,7 @@ const preprocessImage = async (
 
 // 유사도 검색 결과에서 받아온 id를 이용해 DB에서 정보를 받아오는 함수
 const searchSimilarImageByIds = async (ids: string[]): Promise<Pills[]> => {
-  const query = `SELECT id, name, engname, companyname, ingredientname, efficacy, dosage, caution, storagemethod, imgurl FROM pills WHERE id = ANY($1)`;
+  const query = `SELECT id, name, engname, companyname, ingredientname, efficacy, dosage, caution, storagemethod, source, imgurl, boxurl FROM pills WHERE id = ANY($1)`;
   const result: QueryResult<Pills> = await pool.query(query, [ids]);
   return result.rows;
 };

@@ -1,5 +1,13 @@
 import { Response, Request, NextFunction } from 'express';
-import { getUserProfile, updateUsername, updateProfilePicture} from '../services/mypageService';
+import { 
+  getUserProfile, 
+  updateUsername, 
+  updateProfilePicture, 
+  addCertification, 
+  getCertification, 
+  deleteCertification
+}from '../services/mypageService';
+
 import Joi from 'joi';
 import { createError } from '../utils/error';
 import { uploadToS3 } from '../config/imgUploads';
@@ -68,4 +76,57 @@ export const updateProfilePictureS3 = [
       next(error);
     }
   }
-]
+];
+
+export const getCert = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+  try {
+    const user = req.user;
+    if (!user) {
+      return next(createError('UnauthorizedError', 'Unauthorized', 401));
+    }
+  const userId = user.id
+  const getCertifiedUser = await getCertification(userId)
+  res.status(200).json(getCertifiedUser);
+  }
+catch(error) {
+  next(error)
+}
+}
+
+export const addCert = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+
+  try {
+    const user = req.user;
+    if (!user) {
+      return next(createError('UnauthorizedError', 'Unauthorized', 401));
+    }
+
+  const userId = user.id
+  const CertData = req.body;
+  const name = CertData.name
+  const date = CertData.date
+  const number = CertData.number
+
+  const certifiedUser = await addCertification(userId, name, date, number)
+  res.status(200).json(certifiedUser);
+  }
+catch(error) {
+  next(error)
+}
+}
+
+export const deleteCert = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+  try {
+    const user = req.user;
+    if (!user) {
+      return next(createError('UnauthorizedError', 'Unauthorized', 401));
+    }
+  const userId = user.id
+  const name = req.body.name
+  const deleteCertifiedUser = await deleteCertification(userId, name)
+  res.status(200).json(deleteCertifiedUser);
+  }
+catch(error) {
+  next(error)
+}
+}
