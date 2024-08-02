@@ -1,14 +1,28 @@
 import { ChangeEvent, useState, KeyboardEvent, useEffect } from 'react';
 import styled from 'styled-components';
-import { Link } from 'react-router-dom';
-import { useSearchStore } from '../store/search';
-import { useSearchHistoryStore } from '../store/searchHistory';
-import { fetchAutocompleteSuggestions } from '../api/search';
+import { Link, useNavigate } from 'react-router-dom';
+import ImageSearchList from './ImageSearchList';
+import { useSearchStore } from '../../store/search';
+import { useSearchHistoryStore } from '../../store/searchHistory';
+import {
+  fetchAutocompleteSuggestions,
+  fetchPillDataByImage
+} from '../../api/search';
+import BottomPictureSheet from '../myPage/BottomPictureSheet';
+import { PillData } from '../../store/pill';
 
 const SearchBox = () => {
-  const { setSearchQuery, searchType, setSearchType, setSuggestions } =
-    useSearchStore();
+  const navigate = useNavigate();
+  const {
+    setSearchQuery,
+    setImageQuery,
+    searchType,
+    setSearchType,
+    setSuggestions
+  } = useSearchStore();
   const [query, setQuery] = useState<string>('');
+  const [imageResults, setImageResults] = useState<PillData[]>([]);
+  const [bottomSheet, setBottomSheet] = useState(false);
   const addHistory = useSearchHistoryStore((state) => state.addHistory);
 
   useEffect(() => {
@@ -53,6 +67,23 @@ const SearchBox = () => {
     }
   };
 
+  const handleCameraClick = () => {
+    setBottomSheet(true);
+  };
+
+  const handleImageUpload = async (image: File | null) => {
+    if (image) {
+      setImageQuery(image);
+      try {
+        const results = await fetchPillDataByImage(image, 10, 0);
+        setImageResults(results);
+      } catch (error) {
+        console.error('이미지 검색 실패:', error);
+      }
+    }
+    setBottomSheet(false);
+  };
+
   return (
     <>
       <Link to='/search' onClick={handleSearch}>
@@ -69,9 +100,19 @@ const SearchBox = () => {
             onChange={handleChange}
             onKeyDown={handleKeyDown}
           />
-          <SearchIcon src={`/img/camera.png`} alt='camera' />
+          <SearchIcon
+            src={`/img/camera.png`}
+            alt='camera'
+            onClick={handleCameraClick}
+          />
         </SearchContainer>
       </Link>
+      <BottomPictureSheet
+        title={'사진 등록'}
+        isVisible={bottomSheet}
+        onClose={handleImageUpload}
+      ></BottomPictureSheet>
+      {imageResults.length > 0 && <ImageSearchList pills={imageResults} />}
     </>
   );
 };

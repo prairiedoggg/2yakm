@@ -4,7 +4,7 @@ import { Icon } from '@iconify-icon/react';
 import styled from 'styled-components';
 import PillExp from './PillExp';
 import Review from './Review';
-import { fetchPillDataByName } from '../../api/search';
+import { fetchPillDataByName, fetchPillDataByImage } from '../../api/search';
 import {
   toggleFavoriteApi,
   fetchFavoriteStatusApi,
@@ -15,13 +15,14 @@ import { usePillStore } from '../../store/pill';
 import { useFavoriteStore } from '../../store/favorite';
 
 const SearchResults = () => {
-  const { searchQuery } = useSearchStore();
+  const { searchQuery, imageQuery } = useSearchStore();
   const { pillData, setPillData } = usePillStore();
   const { isFavorite, setIsFavorite, favoriteCount, setFavoriteCount } =
     useFavoriteStore();
   const [activeTab, setActiveTab] = useState<string>('effectiveness');
   const [pillId, setPillId] = useState<number | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
+ 
 
   useEffect(() => {
     const fetchData = async () => {
@@ -101,7 +102,7 @@ const SearchResults = () => {
             {pillData.importantWords &&
               pillData.importantWords.trim() &&
               pillData.importantWords.split(', ').map((word) => (
-                <Tag to={`/search/tag/${word}`} key={word}>
+                <Tag to={`/search/tag/:${word}`} key={word}>
                   {word}
                 </Tag>
               ))}

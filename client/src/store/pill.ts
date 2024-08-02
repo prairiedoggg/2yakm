@@ -1,6 +1,6 @@
 import create from 'zustand';
 
-interface PillData {
+export interface PillData {
   id: number;
   name: string;
   engname: string;

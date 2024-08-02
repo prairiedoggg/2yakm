@@ -19,13 +19,17 @@ const SearchHistory = () => {
               <span onClick={clearHistory}>전체삭제</span>
             </HistoryTitle>
             <HistoryList>
-              {history.map((item, index) => (
-                <HistoryItem key={index}>{item}</HistoryItem>
-              ))}
+              {history
+                .slice()
+                .reverse()
+                .map((item, index) => (
+                  <HistoryItem key={index}>{item}</HistoryItem>
+                ))}
             </HistoryList>
           </>
         )}
       </HistoryInner>
+
     </>
   );
 };

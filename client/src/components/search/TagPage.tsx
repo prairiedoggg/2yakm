@@ -9,7 +9,6 @@ import { usePillStore } from '../../store/pill';
 import { useFavoriteStore } from '../../store/favorite';
 import { useReviewStore } from '../../store/review';
 
-
 const TagPage = () => {
   const { searchQuery } = useSearchStore();
   const { pillData, setPillData } = usePillStore();
@@ -38,7 +37,7 @@ const TagPage = () => {
       }
     };
     fetchData();
-  }, [searchQuery, setFavoriteCount, setReviewCount]);
+  }, [ searchQuery, setFavoriteCount, setReviewCount]);
 
   if (loading) {
     return <div>데이터 검색중입니다.</div>;

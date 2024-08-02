@@ -1,14 +1,14 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom'; 
+import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
-import SearchBox from '../SearchBox';
+import SearchBox from './SearchBox';
 import SearchHistory from './SearchHistory';
 import SearchResults from './SearchResults';
-import TagPage from './TagPage';
 import Nav from '../Nav';
 import { useSearchStore } from '../../store/search';
 
 const Search = () => {
+    const navigate = useNavigate();
   const { searchQuery, setSearchQuery, searchType, setSearchType } =
     useSearchStore();
   const [activeType, setActiveType] = useState<string>(searchType);
@@ -19,33 +19,39 @@ const Search = () => {
     setActiveType(type);
   };
 
+    const handleSearchResult = () => {
+      if (searchType === 'efficacy' && searchQuery) {
+        navigate(`/search/tag/:${searchQuery}`); 
+      }
+    };
+
   return (
     <>
-        <BackgroundHeader>
-          <SearchTypeSelect>
-            <SearchTypeButton
-              onClick={() => handleTypeClick('name')}
-              className={activeType === 'name' ? 'active' : ''}
-            >
-              이름으로 검색
-            </SearchTypeButton>
-            <SearchTypeButton
-              onClick={() => handleTypeClick('efficacy')}
-              className={activeType === 'efficacy' ? 'active' : ''}
-            >
-              효능으로 검색
-            </SearchTypeButton>
-          </SearchTypeSelect>
-          <SearchBox />
-        </BackgroundHeader>
+      <BackgroundHeader>
+        <SearchTypeSelect>
+          <SearchTypeButton
+            onClick={() => handleTypeClick('name')}
+            className={activeType === 'name' ? 'active' : ''}
+          >
+            이름으로 검색
+          </SearchTypeButton>
+          <SearchTypeButton
+            onClick={() => handleTypeClick('efficacy')}
+            className={activeType === 'efficacy' ? 'active' : ''}
+          >
+            효능으로 검색
+          </SearchTypeButton>
+        </SearchTypeSelect>
+        <SearchBox />
+      </BackgroundHeader>
       {searchQuery ? (
         searchType === 'name' ? (
           <SearchResults />
         ) : (
-           <Link to={`/search/tag/${searchQuery}`}/>
+          handleSearchResult()
         )
       ) : (
-        <SearchHistory/>
+        <SearchHistory />
       )}
       <Nav />
     </>
