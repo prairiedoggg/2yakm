@@ -184,6 +184,10 @@ export const signupService = async (
       throw createError('PasswordMismatch', '비밀번호가 일치하지 않습니다.', 400);
     }
 
+    if (username.length < 3 || username.length > 20) {
+      throw createError('InvalidUsername', '이름은 3자 이상 20자 이하여야 합니다.', 400);
+    }
+
     const passwordRegex = /^(?=.*[!@#$%^&*(),.?":{}|<>])[A-Za-z\d!@#$%^&*(),.?":{}|<>]{8,}$/;
     if (!passwordRegex.test(password)) {
       throw createError('InvalidPassword', '비밀번호는 특수문자를 포함한 8자리 이상이어야 합니다.',400)
