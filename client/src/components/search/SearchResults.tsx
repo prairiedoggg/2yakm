@@ -1,28 +1,27 @@
+import { Icon } from '@iconify-icon/react';
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Icon } from '@iconify-icon/react';
 import styled from 'styled-components';
+import {
+  fetchFavoriteCount,
+  fetchFavoriteStatusApi,
+  toggleFavoriteApi
+} from '../../api/favoriteApi';
+import { fetchPillDataByName } from '../../api/searchApi';
+import { useFavoriteStore } from '../../store/favorite';
+import { usePillStore } from '../../store/pill';
+import { useSearchStore } from '../../store/search';
 import PillExp from './PillExp';
 import Review from './Review';
-import { fetchPillDataByName, fetchPillDataByImage } from '../../api/search';
-import {
-  toggleFavoriteApi,
-  fetchFavoriteStatusApi,
-  fetchFavoriteCount
-} from '../../api/favoriteApi';
-import { useSearchStore } from '../../store/search';
-import { usePillStore } from '../../store/pill';
-import { useFavoriteStore } from '../../store/favorite';
 
 const SearchResults = () => {
-  const { searchQuery, imageQuery } = useSearchStore();
+  const { searchQuery } = useSearchStore();
   const { pillData, setPillData } = usePillStore();
   const { isFavorite, setIsFavorite, favoriteCount, setFavoriteCount } =
     useFavoriteStore();
   const [activeTab, setActiveTab] = useState<string>('effectiveness');
   const [pillId, setPillId] = useState<number | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
- 
 
   useEffect(() => {
     const fetchData = async () => {
@@ -102,7 +101,7 @@ const SearchResults = () => {
             {pillData.importantWords &&
               pillData.importantWords.trim() &&
               pillData.importantWords.split(', ').map((word) => (
-                <Tag to={`/search/tag?q=${word}`} key={word}>
+                <Tag to={`/search/tag/:${word}`} key={word}>
                   {word}
                 </Tag>
               ))}
@@ -156,6 +155,7 @@ const PillHeader = styled.div`
     font-size: 12px;
     font-weight: 300;
   }
+
   & span {
     color: #696969;
     font-size: 10px;

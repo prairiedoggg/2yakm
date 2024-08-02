@@ -1,3 +1,4 @@
+import axios from 'axios';
 import { get } from './api';
 
 export const fetchPillDataByName = async (
@@ -36,8 +37,6 @@ export const fetchPillListByEfficacy = async (
     console.error('약데이터 가져오기 실패:', error);
   }
 };
-
-import axios from 'axios';
 
 const toBase64 = (file: File): Promise<string> =>
   new Promise((resolve, reject) => {
@@ -79,8 +78,6 @@ export const fetchPillDataByImage = async (
   }
 };
 
-
-
 export const fetchAutocompleteSuggestions = async (name: string) => {
   try {
     const data = await get(`/api/pills/search/name`, {
@@ -88,9 +85,9 @@ export const fetchAutocompleteSuggestions = async (name: string) => {
       limit: 10,
       offset: 0
     });
-    console.log('자동완성 데이터:', data);
-    if (data && data.pills) {
-      return data.pills.map((pill: { name: string }) => pill.name);
+
+    if (data && data.pills.length > 0) {
+      return data.pills;
     } else {
       throw new Error('자동완성 잘못된 응답 형식');
     }

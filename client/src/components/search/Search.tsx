@@ -1,16 +1,35 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
-import SearchBox from './SearchBox';
-import SearchHistory from './SearchHistory';
-import SearchResults from './SearchResults';
+import { PillData } from '../../store/pill.ts';
+import { useSearchStore } from '../../store/search.ts';
 import Nav from '../Nav';
-import { useSearchStore } from '../../store/search';
+import AutoComplete from './AutoComplete.tsx';
+import ImageSearchList from './ImageSearchList.tsx';
+import SearchBox from './SearchBox';
+import SearchHistory from './SearchHistory.tsx';
+import SearchResults from './SearchResults.tsx';
+
+const SEARCH_TYPES = [
+  {
+    key: 'name',
+    label: '이름으로 검색'
+  },
+  {
+    key: 'efficacy',
+    label: '효능으로 검색'
+  }
+];
 
 const Search = () => {
-    const navigate = useNavigate();
-  const { searchQuery, setSearchQuery, searchType, setSearchType } =
-    useSearchStore();
+  const [imageResults, setImageResults] = useState<PillData[]>([]);
+  const {
+    searchQuery,
+    searchType,
+    setSearchType,
+    setSearchQuery,
+    isSearched,
+    isImageSearch
+  } = useSearchStore();
   const [activeType, setActiveType] = useState<string>(searchType);
 
   const handleTypeClick = (type: string) => {
@@ -19,40 +38,43 @@ const Search = () => {
     setActiveType(type);
   };
 
-    const handleSearchResult = () => {
-      if (searchType === 'efficacy' && searchQuery) {
-        navigate(`/search/tag/:${searchQuery}`); 
-      }
-    };
+  const renderer = () => {
+    if (isImageSearch) return <ImageSearchList pills={imageResults} />;
 
+    if (searchQuery) {
+      if (isSearched) {
+        return <SearchResults />;
+      }
+
+      if (searchType !== 'efficacy') {
+        return <AutoComplete />;
+      }
+    }
+
+    return <SearchHistory />;
+  };
   return (
     <>
       <BackgroundHeader>
         <SearchTypeSelect>
-          <SearchTypeButton
-            onClick={() => handleTypeClick('name')}
-            className={activeType === 'name' ? 'active' : ''}
-          >
-            이름으로 검색
-          </SearchTypeButton>
-          <SearchTypeButton
-            onClick={() => handleTypeClick('efficacy')}
-            className={activeType === 'efficacy' ? 'active' : ''}
-          >
-            효능으로 검색
-          </SearchTypeButton>
+          {SEARCH_TYPES.map((type) => {
+            const { key, label } = type;
+            const isActive = key === activeType;
+
+            return (
+              <SearchTypeButton
+                key={key}
+                onClick={() => handleTypeClick(key)}
+                $isActive={isActive}
+              >
+                {label}
+              </SearchTypeButton>
+            );
+          })}
         </SearchTypeSelect>
-        <SearchBox />
+        <SearchBox setImageResults={setImageResults} />
       </BackgroundHeader>
-      {searchQuery ? (
-        searchType === 'name' ? (
-          <SearchResults />
-        ) : (
-          handleSearchResult()
-        )
-      ) : (
-        <SearchHistory />
-      )}
+      {renderer()}
       <Nav />
     </>
   );
@@ -72,16 +94,11 @@ const SearchTypeSelect = styled.div`
   padding: 10px 20px;
 `;
 
-
-const SearchTypeButton = styled.button`
+const SearchTypeButton = styled.button<{ $isActive: boolean }>`
   position: relative;
-  color: gray;
+  color: ${({ $isActive }) => (!$isActive ? 'gray' : 'black')};
   border: none;
   background: none;
-
-  &.active {
-    color: black;
-  }
 
   &:first-child::after {
     position: absolute;

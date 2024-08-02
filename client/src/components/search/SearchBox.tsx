@@ -1,61 +1,80 @@
-import { ChangeEvent, useState, KeyboardEvent, useEffect } from 'react';
-import styled from 'styled-components';
+import {
+  ChangeEvent,
+  Dispatch,
+  KeyboardEvent,
+  SetStateAction,
+  useState
+} from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import ImageSearchList from './imageSearchList';
-import { useSearchStore } from '../../store/search';
-import { useSearchHistoryStore } from '../../store/searchHistory';
+import styled from 'styled-components';
 import {
   fetchAutocompleteSuggestions,
   fetchPillDataByImage
 } from '../../api/search';
+import { PillData } from '../../store/pill.ts';
+import { useSearchStore } from '../../store/search';
+import { useSearchHistoryStore } from '../../store/searchHistory';
 import BottomPictureSheet from '../myPage/BottomPictureSheet';
-import { PillData } from '../../store/pill';
 
-const SearchBox = ({ setIsSearched }) => {
+interface SearchBoxProps {
+  setImageResults?: Dispatch<SetStateAction<PillData[]>>;
+}
+
+const SearchBox = ({ setImageResults }: SearchBoxProps) => {
   const navigate = useNavigate();
   const {
     setSearchQuery,
     setImageQuery,
     searchType,
-    setSearchType,
-    setSuggestions
+    setSuggestions,
+    setIsSearched,
+    setIsImageSearch,
+    isImageSearch,
+    isSearched
   } = useSearchStore();
   const [query, setQuery] = useState<string>('');
-  const [imageResults, setImageResults] = useState<PillData[]>([]);
   const [bottomSheet, setBottomSheet] = useState(false);
   const addHistory = useSearchHistoryStore((state) => state.addHistory);
 
-  useEffect(() => {
-    const fetchSuggestions = async () => {
-      try {
-        if (query.length > 1) {
-          const results = await fetchAutocompleteSuggestions(query);
-          console.log(results);
-          setSuggestions(results);
-        } else {
-          setSuggestions([]);
-        }
-      } catch (error) {
-        console.error('자동완성 데이터 가져오기 실패:', error);
-      }
-    };
+  const fetchSuggestions = async (newQuery: string) => {
+    if (newQuery === '') return;
 
-    fetchSuggestions();
-  }, [query, setSuggestions]);
+    try {
+      const results = await fetchAutocompleteSuggestions(newQuery);
+      setSuggestions(results);
+    } catch (error) {
+      console.error('자동완성 데이터 가져오기 실패:', error);
+    }
+  };
 
-  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
+  const handleChange = async (e: ChangeEvent<HTMLInputElement>) => {
     const newQuery = e.target.value;
     setQuery(newQuery);
+    setSearchQuery(newQuery);
+
+    if (searchType !== 'efficacy') {
+      await fetchSuggestions(newQuery);
+    }
+
+    if (isSearched) {
+      setIsSearched(false);
+    }
+
+    if (isImageSearch) {
+      setIsImageSearch(false);
+    }
   };
 
   const handleSearch = () => {
     if (query.trim()) {
       setSearchQuery(query);
       addHistory(query);
+
       if (searchType === 'efficacy') {
         navigate(`/search/tag?q=${query}`);
-        // setSearchType('efficacy');
       }
+
+      setIsSearched(true);
     } else {
       setSearchQuery('');
       setQuery('');
@@ -65,7 +84,6 @@ const SearchBox = ({ setIsSearched }) => {
   const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
       handleSearch();
-      setIsSearched(true)
     }
   };
 
@@ -78,11 +96,12 @@ const SearchBox = ({ setIsSearched }) => {
       setImageQuery(image);
       try {
         const results = await fetchPillDataByImage(image, 10, 0);
-        setImageResults(results);
+        setImageResults?.(results);
       } catch (error) {
         console.error('이미지 검색 실패:', error);
       }
     }
+    setIsImageSearch(true);
     setBottomSheet(false);
   };
 
@@ -114,7 +133,6 @@ const SearchBox = ({ setIsSearched }) => {
         isVisible={bottomSheet}
         onClose={handleImageUpload}
       ></BottomPictureSheet>
-      {imageResults.length > 0 && <ImageSearchList pills={imageResults} />}
     </>
   );
 };

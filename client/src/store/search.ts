@@ -1,4 +1,5 @@
-import create from 'zustand';
+import { create } from 'zustand';
+import { PillData } from './pill.ts';
 
 interface SearchState {
   searchQuery: string;
@@ -7,8 +8,12 @@ interface SearchState {
   setImageQuery: (image: File | null) => void;
   searchType: string;
   setSearchType: (type: string) => void;
-  suggestions: string[];
-  setSuggestions: (suggestions: string[]) => void;
+  suggestions: PillData[];
+  setSuggestions: (suggestions: PillData[]) => void;
+  isSearched: boolean;
+  setIsSearched: (isSearched: boolean) => void;
+  isImageSearch: boolean;
+  setIsImageSearch: (isImageSearch: boolean) => void;
 }
 
 export const useSearchStore = create<SearchState>((set) => ({
@@ -19,5 +24,9 @@ export const useSearchStore = create<SearchState>((set) => ({
   searchType: 'name',
   setSearchType: (type) => set({ searchType: type }),
   suggestions: [],
-  setSuggestions: (suggestions) => set({ suggestions })
+  setSuggestions: (suggestions) => set({ suggestions }),
+  isSearched: false,
+  setIsSearched: (isSearched: boolean) => set({ isSearched }),
+  isImageSearch: false,
+  setIsImageSearch: (isImageSearch: boolean) => set({ isImageSearch })
 }));

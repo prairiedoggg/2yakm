@@ -1,36 +1,24 @@
 import styled from 'styled-components';
-import AutoComplete from './AutoComplete';
-import { useSearchStore } from '../../store/search';
 import { useSearchHistoryStore } from '../../store/searchHistory';
 
 const SearchHistory = () => {
-  const { searchQuery } = useSearchStore();
   const { history, clearHistory } = useSearchHistoryStore();
 
   return (
-    <>
-      <HistoryInner>
-        {searchQuery.length > 1 ? (
-          <AutoComplete />
-        ) : (
-          <>
-            <HistoryTitle>
-              <span>최근 검색어</span>
-              <span onClick={clearHistory}>전체삭제</span>
-            </HistoryTitle>
-            <HistoryList>
-              {history
-                .slice()
-                .reverse()
-                .map((item, index) => (
-                  <HistoryItem key={index}>{item}</HistoryItem>
-                ))}
-            </HistoryList>
-          </>
-        )}
-      </HistoryInner>
-
-    </>
+    <HistoryInner>
+      <HistoryTitle>
+        <span>최근 검색어</span>
+        <span onClick={clearHistory}>전체삭제</span>
+      </HistoryTitle>
+      <HistoryList>
+        {history
+          .slice()
+          .reverse()
+          .map((item, index) => (
+            <HistoryItem key={index}>{item}</HistoryItem>
+          ))}
+      </HistoryList>
+    </HistoryInner>
   );
 };
 

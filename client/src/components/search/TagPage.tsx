@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import Layout from '../Layout';
-import { fetchPillListByEfficacy } from '../../api/search';
+import { fetchPillListByEfficacy } from '../../api/searchApi';
 import { fetchFavoriteCount } from '../../api/favoriteApi';
 import { fetchReviewCount } from '../../api/reviewApi';
 import { useFavoriteStore } from '../../store/favorite';
