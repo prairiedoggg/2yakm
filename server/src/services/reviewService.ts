@@ -22,6 +22,9 @@ export const createReviewService = async (
 ): Promise<Review | null> => {
   // 매개변수화된 쿼리 (SQL 인젝션 공격을 방지할 수 있음)
   try {
+    // transaction 시작
+    await pool.query('BEGIN');
+
     const insertQuery = `
       INSERT INTO reviews (pillid, userid, content)
       VALUES ($1, $2, $3)
@@ -56,8 +59,13 @@ export const createReviewService = async (
     const values = [insertedid];
     const result: QueryResult<Review> = await pool.query(query, values);
 
+    // transaction 종료
+    await pool.query('COMMIT');
+
     return result.rows.length ? result.rows[0] : null;
   } catch (error: any) {
+    // transaction 롤백
+    await pool.query('ROLLBACK');
     throw createError(
       'DBError',
       '리뷰 생성 중 데이터베이스 오류가 발생했습니다.',
