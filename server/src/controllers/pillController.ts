@@ -122,10 +122,13 @@ export const searchPillsByImageHandler = async (
   next: NextFunction
 ) => {
   try {
-    if (!req.file) {
+    if (!req.files) {
       return res.status(400).json({ message: 'No file uploaded' });
     }
-    const imageBuffer = req.file.buffer;
+
+    const files = req.files as Express.Multer.File[];
+
+    const imageBuffer = files.map((file) => file.buffer);
     const limit = parseInt(req.query.limit ?? '10', 10);
     const offset = parseInt(req.query.offset ?? '0', 10);
     const result = await searchPillsByImage(imageBuffer, limit, offset);

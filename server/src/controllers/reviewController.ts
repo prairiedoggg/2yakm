@@ -125,7 +125,7 @@ export const getUserAllReview = async (
       limit?: string;
       offset?: string;
       sortedBy?: string;
-      order?: string;
+      order?: 'ASC' | 'DESC';
     }
   > &
     CustomRequest,

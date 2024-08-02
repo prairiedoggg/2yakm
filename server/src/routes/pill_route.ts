@@ -342,7 +342,7 @@ router.get('/search/efficacy', searchPillsbyEfficacyHandler);
  *         name: image
  *         type: file
  *         required: true
- *         description: 검색할 약 이미지
+ *         description: 검색할 약 이미지 (1장 or 2장)
  *       - in: query
  *         name: limit
  *         schema:
@@ -431,7 +431,7 @@ router.get('/search/efficacy', searchPillsbyEfficacyHandler);
  */
 router.get(
   '/search/image',
-  uploadToMemory.single('image'),
+  uploadToMemory.array('image', 2),
   searchPillsByImageHandler
 );
 
