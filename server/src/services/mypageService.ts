@@ -1,53 +1,139 @@
-const { pool } = require('../db');
+import { pool } from '../db';
+import { createError } from '../utils/error';
 
-const getUserProfile = async (userId: string): Promise<{ email: string; username: string, profileimg: any }> => {
-  const result = await pool.query('SELECT email, username, profileimg FROM users WHERE userid = $1', [userId]);
-  if (result.rows.length === 0) {
-    throw new Error('User not found');
+// Define the types for the returned user profile data
+interface UserProfile {
+  email: string;
+  username: string;
+  profileimg: string;
+}
+
+interface Certification {
+  name: string;
+  date: string;
+  number: string;
+}
+
+// Function to get user profile
+export const getUserProfile = async (userId: string): Promise<UserProfile> => {
+  try {
+    const result = await pool.query('SELECT email, username, profileimg FROM users WHERE userid = $1', [userId]);
+
+    if (result.rows.length === 0) {
+      throw createError('사용자를 찾을 수 없습니다', 'User not found', 404);
+    }
+
+    const { email, username, profileimg } = result.rows[0];
+    return { email, username, profileimg};
+  } catch (error) {
+    console.error('Error executing query', error);
+    throw createError('DatabaseError','Failed to get user profile', 500)
   }
-  const { email, username, profileimg } = result.rows[0];
-  return { email, username, profileimg };
 };
 
-const updateUsername = async (userId: string, updateData: any) => {
+
+// Define the types for the update data
+interface UpdateUsernameData {
+  username: string;
+}
+
+// Function to update the username
+export const updateUsername = async (userId: string, updateData: UpdateUsernameData): Promise<{ email: string; username: string }> => {
   try {
     const query = `
       UPDATE users 
       SET username = $1 
       WHERE userid = $2
-      RETURNING email, username`;
-
+      RETURNING email, username
+    `;
+    
     const values = [updateData.username, userId];
     const result = await pool.query(query, values);
+    
+    if (result.rows.length === 0) {
+      throw createError("사용자를 찾을 수 없습니다",'User not found', 404);
+    }
+
     return result.rows[0];
   } catch (err) {
     if (err instanceof Error) {
       console.error('Error executing query', err.stack);
-      throw new Error('Failed to update username: ' + err.message);
+      throw createError('QueryError', 'Failed to update username', 500);
     } else {
       console.error('Unknown error', err);
-      throw new Error('Failed to update username due to an unknown error');
+      throw createError('UnknownError', 'Failed to update username due to an unknown error', 500);
     }
   }
 };
 
-const updateProfilePicture = async (userId: string, profilePicture: string): Promise<string> => {
-  const result = await pool.query(
-    'UPDATE users SET profileimg = $1 WHERE userid = $2 RETURNING profileimg',
-    [profilePicture, userId]
-  );
+// Function to update the profile picture
+export const updateProfilePicture = async (userId: string, profilePicture: string): Promise<string> => {
+  try {
+    const result = await pool.query(
+      'UPDATE users SET profileimg = $1 WHERE userid = $2 RETURNING profileimg',
+      [profilePicture, userId]
+    );
 
-  if (result.rows.length === 0) {
-    throw new Error('User not found');
+    if (result.rows.length === 0) {
+      throw createError("사용자를 찾을 수 없습니다",'User not found', 404);
+    }
+
+    return result.rows[0].profileimg;
+  } catch (error) {
+    console.error('Error updating profile picture:', error);
+    throw createError('DatabaseError', 'Failed to update profile picture', 500);
   }
-  return result.rows[0].profileimg;
 };
 
-const uploadFileToS3 = async (file: any, fileName: string): Promise<string> => {
-  // Logic to upload file to S3 and return the URL
-  // This is a placeholder function. Implement S3 logic here.
-  const s3Url = `https://s3.amazonaws.com/yourbucket/${fileName}`;
-  return s3Url;
-};
+export const addCertification = async (userId: string, name: string, date: string, number: string): Promise<Certification> => {
+  try {
 
-export { getUserProfile, updateUsername, updateProfilePicture, uploadFileToS3 };
+    const check = await pool.query(`SELECT * from certification where number = $1`, [number])
+
+    if (check.rows.length !=0) {
+      throw createError("이미 등록된 사업자등록증입니다", "Already registered", 403)
+    } 
+
+    const result = await pool.query(
+      `INSERT INTO certification (userid, name, date, number) values ($1, $2, $3, $4) returning name, date, number`, 
+      [userId, name, date, number]
+    );
+
+    const certification = result.rows[0];
+    return certification;
+  } catch (error) {
+    console.error('Error adding certification:', error);
+    throw createError('DatabaseError', 'Failed to add certification', 500);
+  }
+}
+
+export const getCertification = async (userId: string): Promise<Certification[]> => {
+  try {
+    const result = await pool.query('SELECT name, date, number FROM certification WHERE userid = $1', [userId]);
+
+    if (result.rows.length === 0) {
+      return [];
+    }
+
+    return result.rows;
+  } catch (error) {
+    console.error('Error getting certification:', error);
+    throw createError('DatabaseError', 'Failed to get certification', 500);
+  }
+}
+
+export const deleteCertification = async (userId: string, name: string): Promise<Certification> => {
+  try {
+    const result = await pool.query('DELETE FROM certification WHERE userid = $1 and name = $2 returning name, date, number', [userId, name]);
+
+    if (result.rows.length === 0) {
+      throw createError('사용자를 찾을 수 없습니다', 'User not found', 404);
+    }
+
+    const certification = result.rows[0];
+    return certification;
+  } catch (error) {
+    console.error('Error deleting certification:', error);
+    throw createError('DatabaseError', 'Failed to delete certification', 500);
+  }
+}

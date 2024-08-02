@@ -11,12 +11,18 @@ import {
   googleAuthController,
   linkKakaoAccountController,
   linkGoogleAccountController,
+  linkNaverAccountController,
   verifyEmailController,
   requestEmailVerificationController,
   changeUsernameController,
   deleteAccountController,
-  naverAuthController
+  naverAuthController,
+  getUserInfoController,
+  kakaoRedirectController,
+  naverRedirectController,
+  googleRedirectController
 } from '../controllers/authController';
+import authByToken from '../middlewares/authByToken';
 
 const router = Router();
 
@@ -47,12 +53,38 @@ const router = Router();
  *               properties:
  *                 message:
  *                   type: string
- *                 token:
- *                   type: string
  *       401:
  *         description: 인증 실패
  */
 router.post('/login', loginController);
+
+/**
+ * @swagger
+ * /api/auth/token:
+ *   post:
+ *     summary: 토큰 갱신
+ *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               refreshToken:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: 토큰 갱신 성공
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ */
+router.post('/token', refreshTokenController);
 
 /**
  * @swagger
@@ -76,7 +108,7 @@ router.post('/login', loginController);
  *               confirmPassword:
  *                 type: string
  *     responses:
- *       201:
+ *       200:
  *         description: 회원가입 성공
  *         content:
  *           application/json:
@@ -85,13 +117,6 @@ router.post('/login', loginController);
  *               properties:
  *                 message:
  *                   type: string
- *                 user:
- *                   type: object
- *                   properties:
- *                     email:
- *                       type: string
- *                     username:
- *                       type: string
  *       409:
  *         description: 사용자 이미 존재함
  */
@@ -127,36 +152,6 @@ router.post('/request-email-verification', requestEmailVerificationController);
 
 /**
  * @swagger
- * /api/auth/token:
- *   post:
- *     summary: 토큰 갱신
- *     tags: [Auth]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               refreshToken:
- *                 type: string
- *     responses:
- *       200:
- *         description: 토큰 갱신 성공
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 token:
- *                   type: string
- *                 refreshToken:
- *                   type: string
- */
-router.post('/token', refreshTokenController);
-
-/**
- * @swagger
  * /api/auth/kakao/callback:
  *   get:
  *     summary: 카카오 로그인 콜백
@@ -168,19 +163,10 @@ router.post('/token', refreshTokenController);
  *         schema:
  *           type: string
  *     responses:
- *       200:
- *         description: 로그인 성공
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 token:
- *                   type: string
- *                 refreshToken:
- *                   type: string
+ *       302:
+ *         description: 로그인 성공, 리다이렉션
  *       400:
- *         description: 인증 실패
+ *         description: 인증 실패, 로그인 페이지로 리디렉션
  */
 router.get('/kakao/callback', kakaoAuthController);
 
@@ -202,25 +188,10 @@ router.get('/kakao/callback', kakaoAuthController);
  *         schema:
  *           type: string
  *     responses:
- *       200:
- *         description: 로그인 성공
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                 token:
- *                   type: string
- *                 refreshToken:
- *                   type: string
- *                 userName:
- *                   type: string
- *                 email:
- *                   type: string
+ *       302:
+ *         description: 로그인 성공, 리다이렉션
  *       400:
- *         description: 인증 실패
+ *         description: 인증 실패, 로그인 페이지로 리디렉션
  */
 router.get('/naver/callback', naverAuthController);
 
@@ -237,21 +208,56 @@ router.get('/naver/callback', naverAuthController);
  *         schema:
  *           type: string
  *     responses:
- *       200:
- *         description: 로그인 성공
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                 token:
- *                   type: string
+ *       302:
+ *         description: 로그인 성공, 리다이렉션
+ *       400:
+ *        description: 인증 실패, 로그인 페이지로 리디렉션
  *       500:
  *         description: 서버 오류
  */
 router.get('/google/callback', googleAuthController);
+
+/**
+ * @swagger
+ * /api/auth/kakao:
+ *   get:
+ *     summary: 카카오 로그인 리디렉션
+ *     tags: [Auth]
+ *     responses:
+ *       302:
+ *         description: 카카오 로그인 페이지로 리디렉션
+ *       500:
+ *         description: 서버 오류
+ */
+router.get('/kakao', kakaoRedirectController);
+
+/**
+ * @swagger
+ * /api/auth/naver:
+ *   get:
+ *     summary: 네이버 로그인 리디렉션
+ *     tags: [Auth]
+ *     responses:
+ *       302:
+ *         description: 네이버 로그인 페이지로 리디렉션
+ *       500:
+ *         description: 서버 오류
+ */
+router.get('/naver', naverRedirectController);
+
+/**
+ * @swagger
+ * /api/auth/google:
+ *   get:
+ *     summary: 구글 로그인 리디렉션
+ *     tags: [Auth]
+ *     responses:
+ *       302:
+ *         description: 구글 로그인 페이지로 리디렉션
+ *       500:
+ *         description: 서버 오류
+ */
+router.get('/google', googleRedirectController);
 
 /**
  * @swagger
@@ -278,6 +284,8 @@ router.post('/logout', logoutController);
  *   patch:
  *     summary: 비밀번호 변경
  *     tags: [Auth]
+ *     security:
+ *       - bearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
@@ -302,7 +310,7 @@ router.post('/logout', logoutController);
  *                 message:
  *                   type: string
  */
-router.patch('/change-password', changePasswordController);
+router.patch('/change-password', authByToken, changePasswordController);
 
 /**
  * @swagger
@@ -350,15 +358,12 @@ router.post('/request-password', requestPasswordController);
  *               newPassword:
  *                 type: string
  *     responses:
- *       200:
- *         description: 비밀번호가 재설정되었습니다.
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
+ *       302:
+ *         description: 비밀번호 재설정 완료, 리다이렉션
+ *       400:
+ *         description: 유효하지 않은 토큰 또는 비밀번호 불일치
+ *       500:
+ *         description: 서버 오류
  */
 router.post('/reset-password', resetPasswordController);
 
@@ -379,8 +384,6 @@ router.post('/reset-password', resetPasswordController);
  *                 type: number
  *               socialId:
  *                 type: string
- *               email:
- *                 type: string
  *     responses:
  *       200:
  *         description: 카카오 계정 연동 성공
@@ -392,7 +395,37 @@ router.post('/reset-password', resetPasswordController);
  *                 message:
  *                   type: string
  */
-router.post('/link/kakao', linkKakaoAccountController);
+router.post('/link/kakao', authByToken, linkKakaoAccountController);
+
+/**
+ * @swagger
+ * /api/auth/link/naver:
+ *   post:
+ *     summary: 네이버 계정 연동
+ *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               userId:
+ *                 type: number
+ *               socialId:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: 네이버 계정 연동 성공
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ */
+router.post('/link/naver', authByToken, linkNaverAccountController);
 
 /**
  * @swagger
@@ -411,8 +444,6 @@ router.post('/link/kakao', linkKakaoAccountController);
  *                 type: number
  *               socialId:
  *                 type: string
- *               email:
- *                 type: string
  *     responses:
  *       200:
  *         description: 구글 계정 연동 성공
@@ -424,7 +455,7 @@ router.post('/link/kakao', linkKakaoAccountController);
  *                 message:
  *                   type: string
  */
-router.post('/link/google', linkGoogleAccountController);
+router.post('/link/google', authByToken, linkGoogleAccountController);
 
 /**
  * @swagger
@@ -439,15 +470,12 @@ router.post('/link/google', linkGoogleAccountController);
  *         schema:
  *           type: string
  *     responses:
- *        200:
- *          description: 이메일 인증 완료
- *          content:
- *            application/json:
- *              schema:
- *                type: object
- *                properties:
- *                  message:
- *                    type: string
+ *        302:
+ *          description: 이메일 인증 완료, 리다이렉션
+ *        400:
+ *          description: 유효하지 않은 토큰
+ *        500:
+ *          description: 서버 오류
  */
 router.get('/verify-email', verifyEmailController);
 
@@ -487,15 +515,8 @@ router.patch('/change-username', changeUsernameController);
  *   delete:
  *     summary: 회원탈퇴
  *     tags: [Auth]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               userId:
- *                 type: string
+ *     security:
+ *       - bearerAuth: []
  *     responses:
  *       200:
  *         description: 회원탈퇴 성공
@@ -506,7 +527,47 @@ router.patch('/change-username', changeUsernameController);
  *               properties:
  *                 message:
  *                   type: string
+ *       401:
+ *         description: 인증 실패
  */
-router.delete('/delete-account', deleteAccountController);
+router.delete('/delete-account', authByToken, deleteAccountController);
+
+/**
+ * @swagger
+ * /api/auth/user-info:
+ *   get:
+ *     summary: 유저 정보 가져오기
+ *     tags: [Auth]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: 유저 정보 가져오기 성공
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 id:
+ *                   type: string
+ *                 email:
+ *                   type: string
+ *                 username:
+ *                   type: string
+ *                 role:
+ *                   type: boolean
+ *                 kakaoid:
+ *                   type: string
+ *                   nullable: true
+ *                 naverid:
+ *                   type: string
+ *                   nullable: true
+ *                 googleid:
+ *                   type: string
+ *                   nullable: true
+ *       401:
+ *         description: 인증 실패
+ */
+router.get('/user-info', authByToken, getUserInfoController);
 
 export default router;

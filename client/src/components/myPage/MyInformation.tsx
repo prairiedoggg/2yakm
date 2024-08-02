@@ -1,21 +1,14 @@
-/**
-File Name : MyInformation
-Description : 내 정보
-Author : 오선아
-
-History
-Date        Author   Status    Description
-2024.07.19  오선아   Created
-*/
-
 import styled from 'styled-components';
 import { Icon } from '@iconify-icon/react';
+import useUserStore from '../../store/user';
 
 const MyInformation = ({
   onEditInfo: onEditClick
 }: {
   onEditInfo: () => void;
 }) => {
+  const { user } = useUserStore.getState();
+
   return (
     <InformationLayout>
       <div className='thumbnail'>
@@ -29,9 +22,10 @@ const MyInformation = ({
       <div className='profile'>
         <div className='info'>
           <div className='nameArea' onClick={() => onEditClick()}>
-            홍길동 <Icon icon='ic:baseline-edit' style={{ color: '#d1d1d1' }} />
+            {user?.userName ?? ''}
+            <Icon icon='ic:baseline-edit' style={{ color: '#d1d1d1' }} />
           </div>
-          <div>gildong@naver.com</div>
+          <div>{user?.email ?? ''}</div>
         </div>
       </div>
     </InformationLayout>

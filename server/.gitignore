@@ -29,6 +29,7 @@ build/
 
 # MacOS
 .DS_Store
+**/.DS_Store
 
 # Windows
 Thumbs.db
@@ -45,3 +46,6 @@ Desktop.ini
 
 # PostgreSQL Certificates
 certs/
+
+# Image Vector Files
+src/python/vector/*

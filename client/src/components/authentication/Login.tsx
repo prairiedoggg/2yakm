@@ -1,16 +1,7 @@
-/**
-File Name : Login
-Description : 로그인
-Author : 오선아
-
-History
-Date        Author   Status    Description
-2024.07.21  오선아   Created
-*/
-
 import styled from 'styled-components';
 import SnsLogin from './SnsLogin';
 import EmailLogin from './EmailLogin';
+import EmailVerification from './EmailVerification';
 
 import { useNavigate } from 'react-router-dom';
 import { Icon } from '@iconify-icon/react';
@@ -18,6 +9,7 @@ import { useState } from 'react';
 
 enum pageState {
   SnsLogin,
+  EmailVerification,
   EmailLogin
 }
 
@@ -27,6 +19,9 @@ const Login = () => {
 
   const renderContent = () => {
     switch (currentState) {
+      case pageState.EmailVerification:
+        return <EmailVerification />;
+
       case pageState.EmailLogin:
         return (
           <EmailLogin

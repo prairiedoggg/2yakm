@@ -1,27 +1,32 @@
-/**
-File Name : Login
-Description : 로그인
-Author : 오선아
-
-History
-Date        Author   Status    Description
-2024.07.21  오선아   Created
-*/
-
 import styled from 'styled-components';
 import { useNavigate } from 'react-router-dom';
 import { Icon } from '@iconify-icon/react';
 import { ChangeEvent, FormEvent, useState } from 'react';
+import { resetPassword } from '../../api/authService';
+import PopupContent, { PopupType } from '../popup/PopupMessages';
+import Loading from '../Loading';
+import Popup from '../popup/Popup';
 
 const ResetPassword = () => {
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [popupType, setPopupType] = useState(PopupType.None);
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
-
-    console.log('비번찾기');
-    navigate(-1);
+    setLoading(true);
+    resetPassword(
+      email,
+      () => {
+        setLoading(false);
+        setPopupType(PopupType.ResetPasswordSuccess);
+      },
+      () => {
+        setLoading(false);
+        setPopupType(PopupType.ResetPasswordFailure);
+      }
+    );
   };
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -81,6 +86,12 @@ const ResetPassword = () => {
           </button>
         </form>
       </Content>
+      {loading && <Loading />}
+      {popupType !== PopupType.None && (
+        <Popup onClose={() => setPopupType(PopupType.None)}>
+          {PopupContent(popupType, navigate)}
+        </Popup>
+      )}
     </Overlay>
   );
 };

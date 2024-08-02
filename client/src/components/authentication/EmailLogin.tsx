@@ -1,16 +1,10 @@
-/**
-File Name : EmailLogin
-Description : 이메일 로그인
-Author : 오선아
-
-History
-Date        Author   Status    Description
-2024.07.21  오선아   Created
-*/
-
 import styled from 'styled-components';
 import { Icon } from '@iconify-icon/react';
 import { ChangeEvent, useEffect, useState } from 'react';
+import { login, fetchUserInformation } from '../../api/authService';
+import { useNavigate } from 'react-router-dom';
+import Popup from '../popup/Popup';
+import Loading from '../Loading';
 
 const EmailLogin = ({
   onRegisterClick,
@@ -19,6 +13,8 @@ const EmailLogin = ({
   onRegisterClick: () => void;
   onResetPasswordClick: () => void;
 }) => {
+  const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState('');
   const [isEmailButtonEnabled, setIsEmailButtonEnabled] =
     useState<boolean>(false);
@@ -26,6 +22,7 @@ const EmailLogin = ({
   const [isPasswordButtonEnabled, setIsPasswordButtonEnabled] =
     useState<boolean>(false);
   const [showPassword, setShowPassword] = useState<boolean>(false);
+  const [popupMessage, setPopupMessage] = useState('');
 
   const handleEmailChange = (e: ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
@@ -47,7 +44,7 @@ const EmailLogin = ({
 
   return (
     <Content>
-      <Logo src='/img/logo_not_chicken.svg' alt='이약뭐약' />
+      <Logo src='/img/logo.svg' alt='이약뭐약' />
       <div className='login-inputs'>
         <div className='input-container'>
           <input
@@ -111,10 +108,34 @@ const EmailLogin = ({
       <button
         className='submitButton'
         disabled={!isEmailButtonEnabled || !isPasswordButtonEnabled}
-        onClick={() => {}}
+        onClick={() => {
+          setLoading(true);
+          login(
+            email,
+            password,
+            () => {
+              fetchUserInformation(() => {
+                setLoading(false);
+                navigate('/', { replace: true });
+                window.location.reload();
+              });
+            },
+            (error) => {
+              setLoading(false);
+              setPopupMessage(
+                '로그인에 실패했습니다. 이메일 또는 비밀번호를 확인해주세요.'
+              );
+            }
+          );
+        }}
       >
         시작하기
       </button>
+
+      {popupMessage !== '' && (
+        <Popup onClose={() => setPopupMessage('')}>{popupMessage}</Popup>
+      )}
+      {loading && <Loading />}
     </Content>
   );
 };

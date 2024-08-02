@@ -1,81 +1,124 @@
-const { pool } = require('../db');
+import { pool } from '../db';
+import { createError, commonError } from '../utils/error';
 
-export const addPill = async (
-  userId: string,
-  updateData: any
-): Promise<string> => {
+interface MyPill {
+  mypillid: string;
+  name: string;
+  expiredat: string;
+}
+
+interface UpdateData {
+  name: string;
+  expiredat: string;
+}
+
+interface MatchedPills {
+  pills: MyPill[];
+  total: number;
+}
+
+interface GetPillsResult {
+  totalCount: number;
+  totalPages: number;
+  data: MyPill[];
+}
+
+const matchPill = async (name: string): Promise<MatchedPills> => {
+  const query = `
+    SELECT * FROM pills WHERE name ILIKE $1
+  `;
+  const values = [`${name}%`];
+
   try {
-    const query = `
-      INSERT INTO mypills (userid, pillname, expiredat)
-      VALUES ($1, $2, $3) RETURNING pillname, expiredat`;
-
-    const values = [userId, updateData.name, updateData.expiredat];
     const result = await pool.query(query, values);
-
-    return `Pill added: ${result.rows[0].pillname}, Expires at: ${result.rows[0].expiredat}`;
-  } catch (err: unknown) {
-    if (err instanceof Error) {
-      console.error('Error executing query', err.stack);
-      throw new Error('Failed to add pill: ' + err.message);
+    return {
+      pills: result.rows,
+      total: result.rowCount ?? 0,  // Handle null case
+    };
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      throw createError('DatabaseError', `Failed to search pills by name: ${error.message}`, 500);
     } else {
-      console.error('Unknown error', err);
-      throw new Error('Failed to add pill due to an unknown error');
+      throw createError('UnknownError', 'Failed to search pills by name: An unknown error occurred', 500);
     }
   }
 };
 
-export const updatePill = async (
-  mypillId: string,
-  updateData: any
-): Promise<string> => {
+export const addPill = async (userId: string, updateData: UpdateData): Promise<{ newPill: MyPill; matchedPills: MatchedPills }> => {
+  try {
+    const query = `
+      INSERT INTO mypills (userid, pillname, expiredat)
+      VALUES ($1, $2, $3) RETURNING pillid, pillname, expiredat
+    `;
+    const values = [userId, updateData.name, updateData.expiredat];
+    const result = await pool.query(query, values);
+
+    if (result.rows.length === 0) {
+      throw createError(commonError.NO_RESOURCES.name, commonError.NO_RESOURCES.message, 500);
+    }
+
+    const newPill = result.rows[0];
+    const matchedPills = await matchPill(updateData.name);
+
+    return { newPill, matchedPills };
+  } catch (err: unknown) {
+    if (err instanceof Error) {
+      console.error('Error executing query', err.stack);
+      throw createError('DatabaseError', 'Failed to add pill: ' + err.message, 500);
+    } else {
+      console.error('Unknown error', err);
+      throw createError('UnknownError', 'Failed to add pill due to an unknown error', 500);
+    }
+  }
+};
+
+export const updatePill = async (mypillId: string, updateData: UpdateData): Promise<{ updatedPill: MyPill; matchedPills: MatchedPills }> => {
   try {
     const query = `
       UPDATE mypills SET pillname = $1, expiredat = $2 WHERE pillid = $3 
-      RETURNING pillid, pillname, expiredat`;
-
+      RETURNING pillid, pillname, expiredat
+    `;
     const values = [updateData.name, updateData.expiredat, mypillId];
     const result = await pool.query(query, values);
 
     if (result.rows.length === 0) {
-      throw new Error('Pill not found');
+      throw createError(commonError.USER_NOT_FOUND.name, commonError.USER_NOT_FOUND.message, 404);
     }
 
-    return `Pill updated: ${result.rows[0].pillname}, Expires at: ${result.rows[0].expiredat}`;
+    const updatedPill = result.rows[0];
+    const matchedPills = await matchPill(updateData.name);
+
+    return { updatedPill, matchedPills };
   } catch (err: unknown) {
     if (err instanceof Error) {
       console.error('Error executing query', err.stack);
-      throw new Error('Failed to update pill: ' + err.message);
+      throw createError('DatabaseError', 'Failed to update pill: ' + err.message, 500);
     } else {
       console.error('Unknown error', err);
-      throw new Error('Failed to update pill due to an unknown error');
+      throw createError('UnknownError', 'Failed to update pill due to an unknown error', 500);
     }
   }
 };
 
-export const getPills = async (
-  userId: string,
-  limit: number,
-  offset: number,
-  sortedBy: string,
-  order: string
-) => {
+export const getPills = async (userId: string, limit: number, offset: number, sortedBy: string, order: string): Promise<GetPillsResult> => {
   try {
     const countQuery = `
       SELECT COUNT(*) AS total
       FROM mypills
-      WHERE userid = $1`;
+      WHERE userid = $1
+    `;
     const countValues = [userId];
     const countResults = await pool.query(countQuery, countValues);
     const totalCount = parseInt(countResults.rows[0].total, 10);
     const totalPages = Math.ceil(totalCount / limit);
 
     const query = `
-      SELECT pillid, pillname, expiredat, created_at
+      SELECT pillid, pillname, expiredat, createdat
       FROM mypills
       WHERE userid = $1
       ORDER BY ${sortedBy} ${order}
-      LIMIT $2 OFFSET $3`;
-
+      LIMIT $2 OFFSET $3
+    `;
     const values = [userId, limit, offset];
     const { rows } = await pool.query(query, values);
 
@@ -87,35 +130,35 @@ export const getPills = async (
   } catch (err: unknown) {
     if (err instanceof Error) {
       console.error('Error executing query', err.stack);
-      throw new Error('Failed to get pills: ' + err.message);
+      throw createError('DatabaseError', 'Failed to get pills: ' + err.message, 500);
     } else {
       console.error('Unknown error', err);
-      throw new Error('Failed to get pills due to an unknown error');
+      throw createError('UnknownError', 'Failed to get pills due to an unknown error', 500);
     }
   }
 };
 
-export const deletePill = async (mypillId: string): Promise<string> => {
+export const deletePill = async (mypillId: string): Promise<MyPill> => {
   try {
     const query = `
       DELETE FROM mypills WHERE pillid = $1
-      RETURNING userid, pillname, expiredat`;
-
+      RETURNING pillid, userid, pillname, expiredat
+    `;
     const values = [mypillId];
     const result = await pool.query(query, values);
 
     if (result.rows.length === 0) {
-      throw new Error('Pill not found');
+      throw createError(commonError.USER_NOT_FOUND.name, commonError.USER_NOT_FOUND.message, 404);
     }
 
-    return `Pill deleted: ${result.rows[0].pillname}, Expires at: ${result.rows[0].expiredat}`;
+    return result.rows[0];
   } catch (err: unknown) {
     if (err instanceof Error) {
       console.error('Error executing query', err.stack);
-      throw new Error('Failed to delete pill: ' + err.message);
+      throw createError('DatabaseError', 'Failed to delete pill: ' + err.message, 500);
     } else {
       console.error('Unknown error', err);
-      throw new Error('Failed to delete pill due to an unknown error');
+      throw createError('UnknownError', 'Failed to delete pill due to an unknown error', 500);
     }
   }
 };

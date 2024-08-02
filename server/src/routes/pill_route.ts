@@ -1,21 +1,20 @@
 const { uploadToMemory, uploadToS3 } = require('../config/imgUploads');
 import {
-    getPillsHandler, 
-    getPillByIdHandler, 
-    searchPillsbyNameHandler, 
-    searchPillsbyEngNameHandler,
-    searchPillsbyEfficacyHandler,
-    searchPillsByImageHandler,
-    getPillFavoriteCount,
-    getPillReviewCount
-} from "../controllers/pillController"
+  getPillsHandler,
+  getPillByIdHandler,
+  searchPillsbyNameHandler,
+  searchPillsbyEfficacyHandler,
+  searchPillsByImageHandler,
+  getPillFavoriteCount,
+  getPillReviewCount
+} from '../controllers/pillController';
 
 import { Router } from 'express';
 const router = Router();
 
 /**
  * @swagger
- * api/pills:
+ * /api/pills:
  *   get:
  *     summary: 모든 약 정보 가져오기
  *     tags: [pills]
@@ -52,7 +51,7 @@ const router = Router();
  *                 type: object
  *                 properties:
  *                   id:
- *                     type: string
+ *                     type: integer
  *                   name:
  *                     type: string
  *                   engname:
@@ -65,30 +64,30 @@ const router = Router();
  *                     type: string
  *                   ingredientengname:
  *                     type: string
- *                   type:
- *                     type: string
- *                   shape:
- *                     type: string
  *                   efficacy:
  *                     type: string
  *                   dosage:
  *                     type: string
  *                   caution:
  *                     type: string
- *                   cautionwarning:
- *                     type: string
- *                   interaction:
- *                     type: string
- *                   sideeffect:
- *                     type: string
  *                   storagemethod:
+ *                     type: string
+ *                   expdate:
+ *                     type: string
+ *                   source:
+ *                     type: string
+ *                   importWords:
+ *                     type: string
+ *                   imgurl:
+ *                     type: string
+ *                   boxurl:
  *                     type: string
  */
 router.get('/', getPillsHandler);
 
 /**
  * @swagger
- * api/pills/{id}:
+ * /api/pills/{id}:
  *   get:
  *     summary: ID로 약 정보 가져오기
  *     tags: [pills]
@@ -108,7 +107,7 @@ router.get('/', getPillsHandler);
  *               type: object
  *               properties:
  *                 id:
- *                   type: string
+ *                   type: integer
  *                 name:
  *                   type: string
  *                 engname:
@@ -131,27 +130,22 @@ router.get('/', getPillsHandler);
  *                   type: string
  *                 caution:
  *                   type: string
- *                 cautionwarning:
- *                   type: string
- *                 interaction:
- *                   type: string
- *                 sideeffect:
- *                   type: string
  *                 storagemethod:
+ *                   type: string
+ *                 source:
+ *                   type: string
+ *                 importWords:
+ *                   type: string
+ *                 imgurl:
+ *                   type: string
+ *                 boxurl:
  *                   type: string
  */
 router.get('/:id', getPillByIdHandler);
 
-
-//router.put('/:id', updatePillHandler);
-
-
- 
-//router.delete('/:id', deletePillHandler);
-
 /**
  * @swagger
- * api/pills/{id}/reviewcount:
+ * /api/pills/{id}/reviewcount:
  *   get:
  *     summary: 특정 약의 리뷰 수 가져오기
  *     tags: [pills]
@@ -177,7 +171,7 @@ router.get('/:id/reviewcount', getPillReviewCount);
 
 /**
  * @swagger
- * api/pills/{id}/favoritecount:
+ * /api/pills/{id}/favoritecount:
  *   get:
  *     summary: 특정 약의 즐겨찾기 수 가져오기
  *     tags: [pills]
@@ -203,7 +197,7 @@ router.get('/:id/favoritecount', getPillFavoriteCount);
 
 /**
  * @swagger
- * api/pills/search/name:
+ * /api/pills/search/name:
  *   get:
  *     summary: 이름으로 약 검색
  *     tags: [pills]
@@ -235,7 +229,7 @@ router.get('/:id/favoritecount', getPillFavoriteCount);
  *                 type: object
  *                 properties:
  *                   id:
- *                     type: string
+ *                     type: integer
  *                   name:
  *                     type: string
  *                   engname:
@@ -258,88 +252,23 @@ router.get('/:id/favoritecount', getPillFavoriteCount);
  *                     type: string
  *                   caution:
  *                     type: string
- *                   cautionwarning:
- *                     type: string
- *                   interaction:
- *                     type: string
- *                   sideeffect:
- *                     type: string
  *                   storagemethod:
  *                     type: string
+ *                   source:
+ *                     type: string
+ *                   importWords:
+ *                     type: string
+ *                   imgurl:
+ *                     type: string
+ *                   boxurl:
+ *                     type: string
+ * 
  */
 router.get('/search/name', searchPillsbyNameHandler);
 
 /**
  * @swagger
- * api/pills/search/engname:
- *   get:
- *     summary: 영어 이름으로 약 검색
- *     tags: [pills]
- *     parameters:
- *       - in: query
- *         name: engname
- *         required: true
- *         schema:
- *           type: string
- *         description: 약 영어 이름
- *       - in: query
- *         name: limit
- *         schema:
- *           type: integer
- *         description: 가져올 약의 수
- *       - in: query
- *         name: offset
- *         schema:
- *           type: integer
- *         description: 가져올 약의 시작 위치
- *     responses:
- *       200:
- *         description: 성공
- *         content:
- *           application/json:
- *             schema:
- *               type: array
- *               items:
- *                 type: object
- *                 properties:
- *                   id:
- *                     type: string
- *                   name:
- *                     type: string
- *                   engname:
- *                     type: string
- *                   companyname:
- *                     type: string
- *                   companyengname:
- *                     type: string
- *                   ingredientname:
- *                     type: string
- *                   ingredientengname:
- *                     type: string
- *                   type:
- *                     type: string
- *                   shape:
- *                     type: string
- *                   efficacy:
- *                     type: string
- *                   dosage:
- *                     type: string
- *                   caution:
- *                     type: string
- *                   cautionwarning:
- *                     type: string
- *                   interaction:
- *                     type: string
- *                   sideeffect:
- *                     type: string
- *                   storagemethod:
- *                     type: string
- */
-router.get('/search/engname', searchPillsbyEngNameHandler);
-
-/**
- * @swagger
- * api/pills/search/efficacy:
+ * /api/pills/search/efficacy:
  *   get:
  *     summary: 효능으로 약 검색
  *     tags: [pills]
@@ -371,7 +300,7 @@ router.get('/search/engname', searchPillsbyEngNameHandler);
  *                 type: object
  *                 properties:
  *                   id:
- *                     type: string
+ *                     type: integer
  *                   name:
  *                     type: string
  *                   engname:
@@ -384,31 +313,29 @@ router.get('/search/engname', searchPillsbyEngNameHandler);
  *                     type: string
  *                   ingredientengname:
  *                     type: string
- *                   type:
- *                     type: string
- *                   shape:
- *                     type: string
  *                   efficacy:
  *                     type: string
  *                   dosage:
  *                     type: string
  *                   caution:
  *                     type: string
- *                   cautionwarning:
- *                     type: string
- *                   interaction:
- *                     type: string
- *                   sideeffect:
- *                     type: string
  *                   storagemethod:
+ *                     type: string
+ *                   source:
+ *                     type: string
+ *                   importWords:
+ *                     type: string
+ *                   imgurl:
+ *                     type: string
+ *                   boxurl:
  *                     type: string
  */
 router.get('/search/efficacy', searchPillsbyEfficacyHandler);
 
 /**
  * @swagger
- * api/pills/search/image:
- *   post:
+ * /api/pills/search/image:
+ *   get:
  *     summary: 이미지로 약 검색
  *     tags: [pills]
  *     consumes:
@@ -418,7 +345,7 @@ router.get('/search/efficacy', searchPillsbyEfficacyHandler);
  *         name: image
  *         type: file
  *         required: true
- *         description: 검색할 약 이미지
+ *         description: 검색할 약 이미지 (1장 or 2장)
  *       - in: query
  *         name: limit
  *         schema:
@@ -435,43 +362,48 @@ router.get('/search/efficacy', searchPillsbyEfficacyHandler);
  *         content:
  *           application/json:
  *             schema:
- *               type: array
- *               items:
- *                 type: object
- *                 properties:
- *                   id:
- *                     type: string
- *                   name:
- *                     type: string
- *                   engname:
- *                     type: string
- *                   companyname:
- *                     type: string
- *                   companyengname:
- *                     type: string
- *                   ingredientname:
- *                     type: string
- *                   ingredientengname:
- *                     type: string
- *                   type:
- *                     type: string
- *                   shape:
- *                     type: string
- *                   efficacy:
- *                     type: string
- *                   dosage:
- *                     type: string
- *                   caution:
- *                     type: string
- *                   cautionwarning:
- *                     type: string
- *                   interaction:
- *                     type: string
- *                   sideeffect:
- *                     type: string
- *                   storagemethod:
- *                     type: string
+ *               type: object
+ *               properties:
+ *                 pills:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       id:
+ *                         type: integer
+ *                       name:
+ *                         type: string
+ *                       engname:
+ *                         type: string
+ *                       companyname:
+ *                         type: string
+ *                       ingredientname:
+ *                         type: string
+ *                       efficacy:
+ *                         type: string
+ *                       dosage:
+ *                         type: string
+ *                       caution:
+ *                         type: string
+ *                       storagemethod:
+ *                         type: string
+ *                       source:
+ *                         type: string
+ *                       importWords:
+ *                         type: string
+ *                       similarity:
+ *                         type: string
+ *                       imgurl:
+ *                         type: string
+ *                       boxurl:
+ *                         type: string
+ *                     
+ *             
  */
-router.get('/search/image', uploadToMemory.single('image'), searchPillsByImageHandler);
+router.get(
+  '/search/image',
+  uploadToMemory.array('image', 2),
+  searchPillsByImageHandler
+);
 
 export default router;

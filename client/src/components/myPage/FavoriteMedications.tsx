@@ -1,49 +1,66 @@
-/**
-File Name : EditMyInformation
-Description : 내 정보 수정 페이지
-Author : 오선아
-
-History
-Date        Author   Status    Description
-2024.07.19  오선아   Created
-*/
-
 import styled from 'styled-components';
 import { Icon } from '@iconify-icon/react';
-import { ChangeEvent, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { fetchMyFavorites, toggleFavoriteApi } from '../../api/favoriteApi';
+import Loading from '../Loading';
+import Popup from '../popup/Popup';
+import PopupContent, { PopupType } from '../popup/PopupMessages';
+import { useNavigate } from 'react-router-dom';
 
-type MedicationItem = {
+interface MedicationItem {
+  pillid: string;
   title: string;
   registrationDate: string;
   tags: string[];
-};
+}
 
 const FavoriteMedications = () => {
   const [deleteItem, setDeleteItem] = useState(false);
+  const [itemCount, setItemCount] = useState(0);
+  const [loading, setLoading] = useState(false);
+  const [items, setItems] = useState<MedicationItem[]>([]);
+  const [popupType, setPopupType] = useState(PopupType.None);
+  const navigate = useNavigate();
 
-  const items: MedicationItem[] = [
-    // test
-    {
-      title: '타이레놀',
-      registrationDate: '2023.05.14',
-      tags: ['두통', '신경통', '근육통']
-    },
-    {
-      title: '타이레놀',
-      registrationDate: '2023.06.01',
-      tags: ['두통', '발열']
-    },
-    {
-      title: '타이레놀',
-      registrationDate: '2023.06.15',
-      tags: ['감기', '두통']
-    }
-  ];
+  const fetchDatas = () => {
+    setLoading(true);
 
-  const renderItems = (item: MedicationItem) => {
+    fetchMyFavorites(
+      0,
+      10,
+      'createdAt',
+      'DESC',
+      (data) => {
+        console.log(data);
+        const favorites = data.data;
+        const temp: MedicationItem[] = favorites.map((d: any) => ({
+          pillid: d.pillid,
+          title: d.name,
+          registrationDate: new Date(d.createdat).toDateString(),
+          tags: d.efficacy.split(' ').map((text: string) => {
+            if (text.length > 3) return text.slice(0, 3) + '...';
+            else return text;
+          })
+        }));
+        setLoading(false);
+        setItems(temp);
+        setItemCount(data.totalCount);
+      },
+      () => {
+        setLoading(false);
+      }
+    );
+  };
+
+  useEffect(() => {
+    fetchDatas();
+  }, []);
+
+  const renderItems = (item: MedicationItem, index: number) => {
+    console.log(item);
     return (
-      <Item>
+      <Item key={index}>
         <div className='title'>
           {item.title}
           <Icon
@@ -53,10 +70,32 @@ const FavoriteMedications = () => {
             style={{ color: 'black' }}
           />
         </div>
-        {deleteItem ? <div className='delete-button'>삭제</div> : ''}
+        {deleteItem ? (
+          <div
+            className='delete-button'
+            onClick={() => {
+              setLoading(true);
+              toggleFavoriteApi(
+                item.pillid,
+                () => {
+                  setLoading(false);
+                  fetchDatas();
+                },
+                () => {
+                  setPopupType(PopupType.DeleteFavoriteFailure);
+                  setLoading(false);
+                }
+              );
+            }}
+          >
+            삭제
+          </div>
+        ) : (
+          ''
+        )}
         <div className='registration'>등록일 {item.registrationDate}</div>
         <TagContainer>
-          {item.tags.map((tag, index) => (
+          {item.tags.slice(0, 3)?.map((tag, index) => (
             <Tag key={index} to={`/search/tag/${tag}`}>
               {tag}
             </Tag>
@@ -70,7 +109,7 @@ const FavoriteMedications = () => {
     <MyPageContainer>
       <StyledContent>
         <div className='totalCount'>
-          총 {items.length}개{' '}
+          총 {itemCount}개{' '}
           <Icon
             onClick={() => setDeleteItem(!deleteItem)}
             icon='ic:baseline-edit'
@@ -79,8 +118,16 @@ const FavoriteMedications = () => {
             style={{ color: '#d1d1d1' }}
           />
         </div>
-        <div className='items'>{items.map((item) => renderItems(item))}</div>
+        <div className='items'>
+          {items.map((item, index) => renderItems(item, index))}
+        </div>
       </StyledContent>
+      {loading && <Loading />}
+      {popupType !== PopupType.None && (
+        <Popup onClose={() => setPopupType(PopupType.None)}>
+          {PopupContent(popupType, navigate)}
+        </Popup>
+      )}
     </MyPageContainer>
   );
 };
@@ -119,6 +166,7 @@ const Item = styled.div`
   display: flex;
   flex-direction: column;
   gap: 5px;
+  width: 80%;
 
   .title {
     display: flex;

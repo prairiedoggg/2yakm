@@ -1,17 +1,11 @@
-/**
-File Name : Register
-Description : 회원가입
-Author : 오선아
-
-History
-Date        Author   Status    Description
-2024.07.21  오선아   Created
-*/
-
 import styled from 'styled-components';
 import { useNavigate } from 'react-router-dom';
 import { Icon } from '@iconify-icon/react';
 import { ChangeEvent, FormEvent, useState } from 'react';
+import { requestEmailVerification, signup } from '../../api/authService';
+import Loading from '../Loading';
+import Popup from '../popup/Popup';
+import PopupContent, { PopupType } from '../popup/PopupMessages';
 
 interface FormData {
   email: string;
@@ -21,8 +15,8 @@ interface FormData {
 }
 
 enum InputType {
-  Name = 'name',
   Email = 'email',
+  Name = 'name',
   Password = 'password',
   ConfirmPassword = 'confirmPassword'
 }
@@ -31,6 +25,8 @@ const Register = () => {
   const navigate = useNavigate();
   const inputKeys = Object.keys(InputType) as Array<keyof typeof InputType>;
 
+  const [loading, setLoading] = useState(false);
+  const [popupType, setPopupType] = useState(PopupType.None);
   const [formData, setFormData] = useState<FormData>({
     email: '',
     name: '',
@@ -50,8 +46,22 @@ const Register = () => {
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
+    setLoading(true);
 
-    console.log('회원가입');
+    signup(
+      formData.email,
+      formData.name,
+      formData.password,
+      formData.confirmPassword,
+      () => {
+        setLoading(false);
+        setPopupType(PopupType.RegistrationSuccess);
+      },
+      (error) => {
+        setLoading(false);
+        setPopupType(PopupType.RegistrationFailure);
+      }
+    );
   };
 
   const clearData = (name: string) => {
@@ -112,10 +122,23 @@ const Register = () => {
     );
   };
 
+  const getInputRightPadding = (type: InputType) => {
+    switch (type) {
+      case InputType.Email:
+        return 100;
+      case InputType.Password:
+      case InputType.ConfirmPassword:
+        return 60;
+      default:
+        return 30;
+    }
+  };
+
   const renderInput = (type: InputType, showHr: boolean) => {
     return (
       <div className='input-container'>
         <input
+          style={{ paddingRight: `${getInputRightPadding(type)}px` }}
           type={getInputType(type)}
           name={type}
           placeholder={getPlaceholder(type)}
@@ -148,6 +171,28 @@ const Register = () => {
             }}
             onClick={() => setShowPassword(!showPassword)}
           />
+        )}
+
+        {type === InputType.Email && (
+          <div
+            className='input-left-btn input-left-second text-btn'
+            onClick={() => {
+              setLoading(true);
+              requestEmailVerification(
+                formData.email,
+                () => {
+                  setLoading(false);
+                  setPopupType(PopupType.VerificationEmailSentSuccess);
+                },
+                (error) => {
+                  setLoading(false);
+                  setPopupType(PopupType.VerificationEmailSentFailure);
+                }
+              );
+            }}
+          >
+            인증하기
+          </div>
         )}
         {showHr && <hr />}
       </div>
@@ -188,6 +233,12 @@ const Register = () => {
           </button>
         </form>
       </Content>
+      {loading && <Loading />}
+      {popupType !== PopupType.None && (
+        <Popup onClose={() => setPopupType(PopupType.None)}>
+          {PopupContent(popupType, navigate)}
+        </Popup>
+      )}
     </Overlay>
   );
 };
@@ -276,6 +327,14 @@ const Content = styled.div`
     transform: translateY(-50%);
     cursor: pointer;
   }    
+
+  .text-btn{
+    font-size:0.9rem;
+    background-color:#ccc;
+    color:white;
+    border-radius: 10px; 
+    padding:3px;
+  }
 
   .input-left-second {
     right: 35px;

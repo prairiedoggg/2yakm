@@ -1,53 +1,105 @@
-import styled from 'styled-components';
-import DetailTextBox from './DetailTextBox';
-import { useQuery } from '@tanstack/react-query';
 import dayjs from 'dayjs';
+import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import styled from 'styled-components';
+import { calendarGet, calendarPost, calendarPut } from '../../api/calendarApi';
+import { useCalendar, useDateStore } from '../../store/store';
+import DetailTextBox from './DetailTextBox';
+
+interface CalendarData {
+  medications?: {
+    name?: string;
+    time?: string[];
+    taken?: boolean[];
+  }[];
+  bloodsugarBefore?: number;
+  bloodsugarAfter?: number;
+  temperature?: number;
+  weight?: number;
+  calImg?: string;
+}
 
 const OpenCalendarDetail: React.FC = () => {
-  // const {
-  //   pillName,
-  //   time,
-  //   isPillTaken,
-  //   bloodSugar,
-  //   temp,
-  //   weight,
-  //   photo,
-  //   setPillName,
-  //   setTime,
-  //   setIsPillTaken,
-  //   setBloodSugar,
-  //   setTemp,
-  //   setWeight,
-  //   setPhoto
-  // } = useCalendar();
+  const { calendarData, calImg } = useCalendar();
+  const { value, edit, neverPost, setNeverPost } = useDateStore();
+  const formattedDate = dayjs(value).format('YYYY-MM-DD');
+  const [data, setData] = useState<CalendarData | null>(null);
+  const token = localStorage.getItem('token');
+  const navigate = useNavigate();
 
-  // const { isLoading, error, data, isFetching } = useQuery({
-  //   queryKey: ['calendar'],
-  //   queryFn: async () => {
-  //     const response = await fetch('http://localhost:3000/api/calendars');
-  //     const data = await response.json();
-  //     return data;
-  //   }
-  // });
+  useEffect(() => {
+    const formData = new FormData();
+    formData.append('date', formattedDate);
+    formData.append(
+      'bloodsugarBefore',
+      calendarData?.bloodsugarbefore?.toString() || '0'
+    );
+    formData.append(
+      'bloodsugarAfter',
+      calendarData?.bloodsugarafter?.toString() || '0'
+    );
+    formData.append(
+      'medications',
+      JSON.stringify(calendarData?.pillData) || '[]'
+    );
+    formData.append('temperature', calendarData?.temp?.toString() || '0');
+    formData.append('weight', calendarData?.weight?.toString() || '0');
+    formData.append('calImg', calImg?.get('file') as Blob);
+    console.log('이미지이미지', calImg?.get('file'));
 
-  // console.log(data);
-  // if (isLoading) return <div>로딩중</div>;
-  // if (error) return <div>에러</div>;
+    const putData = async () => {
+      try {
+        if (!edit && !neverPost) {
+          const res = await calendarPut(formattedDate, formData);
+          setData(res);
+          console.log('일정 수정 성공:', res);
+        } else if (!edit && neverPost) {
+          const res = await calendarPost(formData);
+          setData(res);
+          console.log('일정 등록 성공', res);
+          setNeverPost(false);
+        }
+      } catch (err) {
+        console.error('일정 등록/수정 오류:', err);
+      }
+    };
+    putData();
+  }, [edit]);
+
+  useEffect(() => {
+    if (!!token) {
+      if (formattedDate !== undefined) {
+        const fetchPillData = async () => {
+          try {
+            const data = await calendarGet(formattedDate);
+            console.log(data);
+            setData(data);
+            setNeverPost(false);
+
+            if (data === undefined) {
+              setNeverPost(true);
+            }
+          } catch (err) {
+            console.log('해당하는 약복용여부 정보 없음', err);
+          }
+        };
+
+        fetchPillData();
+      }
+    }
+  }, [formattedDate]);
 
   return (
     <ContentContainer>
-      {/* title을 배열로 관리 -> map */}
+      <DetailTextBox title='약 복용 여부' pillData={data?.medications} />
       <DetailTextBox
-        title='약 복용 여부'
-        pillName={['타이레놀', '처방약']}
-        time={[['11시', '15시', '19시'], ['20시']]}
-        isPillTaken={[[true, false, true], [true]]}
+        title='혈당'
+        bloodsugarbefore={data?.bloodsugarBefore}
+        bloodsugarafter={data?.bloodsugarAfter}
       />
-      {/* 혈당 null 값은 0으로 바꾸기*/}
-      <DetailTextBox title='혈당' bloodSugar={[100, 200]} />
-      <DetailTextBox title='체온' temp={36.5} />
-      <DetailTextBox title='체중' weight={10} />
-      <DetailTextBox title='사진 기록' photo={true} />
+      <DetailTextBox title='체온' temp={data?.temperature} />
+      <DetailTextBox title='체중' weight={data?.weight} />
+      <DetailTextBox title='사진 기록' photo={data?.calImg} />
     </ContentContainer>
   );
 };

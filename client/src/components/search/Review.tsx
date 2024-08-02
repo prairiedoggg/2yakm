@@ -1,35 +1,70 @@
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import styled from 'styled-components';
-import { useReviewStore } from '../../store/review.ts';
+import { fetchReviews, createReview } from '../../api/reviewApi';
+import { useReviewStore } from '../../store/review';
 
-const Review = () => {
-  const { isWritingReview, toggleReviewForm } = useReviewStore();
-   const [reviews, setReviews] = useState([
-     {
-       id: 1,
-       user: '약사약사',
-       content: '종합 감기약으로 타이레놀이 좋습니다.',
-       bgColor: 'rgba(114,191,68, 0.1)'
-     },
-     {
-       id: 2,
-       user: '리뷰리뷰',
-       content: '감기 걸렸을 땐 항상 타이레놀 먹어요.',
-       bgColor: 'white'
-     }
-   ]);
+const Review = ({ pillId }: { pillId: number }) => {
+  const {
+    reviews,
+    setReviews,
+    nextCursor,
+    setNextCursor,
+    isWritingReview,
+    toggleReviewForm
+  } = useReviewStore();
   const [newReview, setNewReview] = useState('');
-    const handleReviewSubmit = () => {
-      const newReviewItem = {
-        id: reviews.length + 1,
-        user: '홍길동',
-        content: newReview,
-        bgColor: 'white'
-      };
-      setReviews([...reviews, newReviewItem]);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const loadReviews = async (pillId: number, cursor: string | null) => {
+    if (isLoading) return;
+    setIsLoading(true);
+    try {
+      const data = await fetchReviews({ pillId, cursor });
+      setReviews([...reviews, ...data.reviews]);
+      setNextCursor(data.nextCursor || null);
+    } catch (error) {
+      console.error('리뷰불러오기 에러:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleReviewSubmit = async () => {
+    const newReviewItem = {
+      content: newReview,
+      pillId
+    };
+    try {
+      const data = await createReview(newReviewItem);
+      setReviews([data, ...reviews]);
       setNewReview('');
       toggleReviewForm();
+    } catch (error) {
+      console.error('리뷰생성 에러:', error);
+    }
+  };
+
+  const handleScroll = useCallback(() => {
+    if (
+      window.innerHeight + document.documentElement.scrollTop !==
+        document.documentElement.offsetHeight ||
+      isLoading ||
+      !nextCursor
+    )
+      return;
+    loadReviews(pillId, nextCursor?.toString() || null);
+  }, [pillId, nextCursor, isLoading]);
+
+  useEffect(() => {
+    window.addEventListener('scroll', handleScroll);
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
     };
+  }, [handleScroll, pillId]);
+
+  useEffect(() => {
+    loadReviews(pillId, null);
+  }, [pillId]);
 
   return (
     <ReviewContainer>
@@ -37,7 +72,7 @@ const Review = () => {
       {isWritingReview && (
         <ReviewForm>
           <textarea
-            placeholder='리뷰를 작성해 주세요. 욕설, 비방, 명예훼손성 표현은 사용하지 말아주세요.'
+            placeholder='리뷰를 작성해 주세요.&#10;욕설, 비방, 명예훼손성 표현은 사용하지 말아주세요.'
             value={newReview}
             onChange={(e) => setNewReview(e.target.value)}
           />
@@ -48,16 +83,19 @@ const Review = () => {
         {reviews.map((review) => (
           <ReviewItem
             key={review.id}
-            style={{ backgroundColor: review.bgColor }}
+            style={{
+              backgroundColor: review.role ? 'rgba(114,191,68, 0.1)' : 'white'
+            }}
           >
             <User>
               <Profile src={`/img/user.svg`} alt='유저' />
-              <span>{review.user}</span>
+              <span>{review.username}</span>
             </User>
             <p>{review.content}</p>
           </ReviewItem>
         ))}
       </ReviewList>
+      {isLoading && <LoadingText>로딩 중...</LoadingText>}
     </ReviewContainer>
   );
 };
@@ -143,3 +181,9 @@ const User = styled.div`
 `;
 
 const Profile = styled.img``;
+
+const LoadingText = styled.div`
+  margin: 20px 0;
+  font-size: 14px;
+  color: gray;
+`;

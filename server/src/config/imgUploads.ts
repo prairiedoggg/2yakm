@@ -36,7 +36,7 @@ export const uploadToS3 = multer({
     }
   }),
   fileFilter: (req: any, file: any, cb: any) => {
-    if (file.fieldname === 'calImg') {
+    if (file.fieldname === 'calImg' || file.fieldname === 'profileImg') {
       cb(null, true);
     } else {
       cb(new multer.MulterError('LIMIT_UNEXPECTED_FILE', file.fieldname));

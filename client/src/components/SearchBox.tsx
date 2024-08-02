@@ -1,43 +1,57 @@
-import { ChangeEvent, useState, useEffect } from 'react';
+import { ChangeEvent, useState, KeyboardEvent, useEffect } from 'react';
 import styled from 'styled-components';
 import { Link } from 'react-router-dom';
-import { useSearchHistoryStore } from '../store/search';
+import { useSearchStore } from '../store/search';
+import { useSearchHistoryStore } from '../store/searchHistory';
+import { fetchAutocompleteSuggestions } from '../api/search';
 
-interface SearchBoxProps {
-  setSearchQuery: (query: string) => void;
-}
-
-const SearchBox = ({ setSearchQuery }: SearchBoxProps) => {
-  const [query, setQuery] = useState('');
+const SearchBox = () => {
+  const { setSearchQuery, searchType, setSearchType, setSuggestions } =
+    useSearchStore();
+  const [query, setQuery] = useState<string>('');
   const addHistory = useSearchHistoryStore((state) => state.addHistory);
 
-  // 입력값이 변경될 때 호출되는 함수
-  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
-    setQuery(e.target.value); // 로컬 상태에 검색어 저장
-    setSearchQuery(e.target.value); // 상위 컴포넌트에 검색어 전달
-  };
-
-  // 검색 버튼 클릭 또는 Enter 키 입력 시 호출되는 함수
-  const handleSearch = () => {
-    if (query.trim()) {
-      setSearchQuery(query); // 상위 컴포넌트에 검색어 설정
-      addHistory(query); // 검색 히스토리에 검색어 추가
-    }
-  };
-
   useEffect(() => {
-    const handleEnterKey = (e: KeyboardEvent) => {
-      if (e.key === 'Enter') {
-        handleSearch(); // Enter 키 입력 시 검색 실행
+    const fetchSuggestions = async () => {
+      try {
+        if (query.length > 1) {
+          const results = await fetchAutocompleteSuggestions(query);
+          console.log(results);
+          setSuggestions(results);
+        } else {
+          setSuggestions([]);
+        }
+      } catch (error) {
+        console.error('자동완성 데이터 가져오기 실패:', error);
       }
     };
 
-    window.addEventListener('keydown', handleEnterKey);
+    fetchSuggestions();
+  }, [query, setSuggestions]);
 
-    return () => {
-      window.removeEventListener('keydown', handleEnterKey);
-    };
-  }, [query]);
+  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const newQuery = e.target.value;
+    setQuery(newQuery);
+  };
+
+  const handleSearch = () => {
+    if (query.trim()) {
+      setSearchQuery(query);
+      addHistory(query);
+      if (searchType === 'efficacy') {
+        setSearchType('efficacy');
+      }
+    } else {
+      setSearchQuery('');
+      setQuery('');
+    }
+  };
+
+  const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      handleSearch();
+    }
+  };
 
   return (
     <>
@@ -53,6 +67,7 @@ const SearchBox = ({ setSearchQuery }: SearchBoxProps) => {
             placeholder='이미지 또는 이름으로 검색'
             value={query}
             onChange={handleChange}
+            onKeyDown={handleKeyDown}
           />
           <SearchIcon src={`/img/camera.png`} alt='camera' />
         </SearchContainer>

@@ -9,7 +9,6 @@ import cookieParser from 'cookie-parser';
 import { errorHandler, notFoundHandler } from './middlewares/errorHandler';
 import authByToken from './middlewares/authByToken';
 
-// import visionRouter from './routes/vision_route';
 import reviewRouter from './routes/review_route';
 import authRouter from './routes/auth_route';
 import calendarRouter from './routes/calendar_route';
@@ -19,6 +18,8 @@ import chatbotRouter from './routes/chatbot_route';
 import favoriteRouter from './routes/favorite_route';
 import mypillRouter from './routes/mypill_route';
 import pillRouter from './routes/pill_route';
+
+import { rescheduleAllAlarms } from './services/alarmService';
 
 dotenv.config();
 
@@ -56,4 +57,6 @@ app.use(notFoundHandler);
 app.use(errorHandler);
 app.listen(port, () => {
   console.log(`Server is running http://localhost:${port}`);
+  rescheduleAllAlarms();
 });
+

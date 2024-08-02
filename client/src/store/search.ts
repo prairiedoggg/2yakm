@@ -1,26 +1,19 @@
 import create from 'zustand';
 
-interface SearchHistoryState {
-  history: string[];
-  addHistory: (query: string) => void;
-  clearHistory: () => void;
-  setHistory: (history: string[]) => void;
+interface SearchState {
+  searchQuery: string;
+  setSearchQuery: (query: string) => void;
+  searchType: string;
+  setSearchType: (type: string) => void;
+  suggestions: string[];
+  setSuggestions:(suggestions:string[])=>void;
 }
 
-const useSearchHistoryStore = create<SearchHistoryState>((set) => ({
-  history: [],
-  addHistory: (query) =>
-    set((state) => {
-      const updatedHistory = [...state.history, query];
-      localStorage.setItem('searchHistory', JSON.stringify(updatedHistory));
-      return { history: updatedHistory };
-    }),
-  clearHistory: () => {
-    localStorage.removeItem('searchHistory');
-    return set({ history: [] });
-  },
-  setHistory: (history) => set({ history }) 
+export const useSearchStore = create<SearchState>((set) => ({
+  searchQuery: '',
+  setSearchQuery: (query) => set({ searchQuery: query }),
+  searchType: 'name',
+  setSearchType: (type) => set({ searchType: type }),
+  suggestions: [],
+  setSuggestions: (suggestions) => set({suggestions}),
 }));
-
-export { useSearchHistoryStore };
-

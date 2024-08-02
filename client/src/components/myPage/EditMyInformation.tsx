@@ -1,22 +1,19 @@
-/**
-File Name : EditMyInformation
-Description : 내 정보 수정 페이지
-Author : 오선아
-
-History
-Date        Author   Status    Description
-2024.07.19  오선아   Created
-*/
-
 import styled from 'styled-components';
 import BottomPictureSheet from './BottomPictureSheet';
 import { Icon } from '@iconify-icon/react';
 import { useState } from 'react';
+import { logout, deleteAccount } from '../../api/authService';
+import { useNavigate } from 'react-router-dom';
+import useUserStore, { LoginType } from '../../store/user';
+import Loading from '../Loading';
+import Popup from '../popup/Popup';
+import PopupContent, { PopupType } from '../popup/PopupMessages';
+import { changeProfileImage, fetchUserProfile } from '../../api/myPageService';
 
-type Info = {
+interface Info {
   info: string;
   onClick?: () => void;
-};
+}
 
 const EditMyInformation = ({
   onEditNameClick,
@@ -27,13 +24,19 @@ const EditMyInformation = ({
   onEditPasswordClick: () => void;
   onEditPharmacistClick: () => void;
 }) => {
+  const { user } = useUserStore.getState();
   const [bottomSheet, setBottomSheet] = useState(false);
+  const [popupType, setPopupType] = useState(PopupType.None);
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
-  const infos1: Info[] = [
+  let infos1: Info[] = [
     { info: '이메일', onClick: undefined },
-    { info: '이름', onClick: onEditNameClick },
-    { info: '비밀번호 변경', onClick: onEditPasswordClick }
+    { info: '이름', onClick: onEditNameClick }
   ];
+
+  if (user?.loginType == LoginType.none)
+    infos1.push({ info: '비밀번호 변경', onClick: onEditPasswordClick });
 
   const infos2: Info[] = [
     { info: '약사 인증', onClick: onEditPharmacistClick },
@@ -43,13 +46,68 @@ const EditMyInformation = ({
   const getInfoValue = (type: string) => {
     switch (type) {
       case '이름':
-        return '홍길동';
+        return user?.userName;
       case '이메일':
-        return 'gildong@naver.com';
-      case '연동된 소셜계정':
-        return <Icon icon='devicon:google' width='1.1rem' height='1.1rem' />;
+        return user?.email;
+      case '프로필 이미지':
+        return user?.profileImg;
+      case '연동된 소셜계정': {
+        if (user?.loginType == LoginType.kakao)
+          return (
+            <Icon
+              icon='ri:kakao-talk-fill'
+              width='1.5rem'
+              height='1.5rem'
+              style={{ color: '#3A1D1F' }}
+            />
+          );
+        else if (user?.loginType == LoginType.naver)
+          return (
+            <Icon
+              icon='simple-icons:naver'
+              width='1.1rem'
+              height='1.1rem'
+              style={{ color: '#00c73c' }}
+            />
+          );
+        else
+          return <Icon icon='devicon:google' width='1.1rem' height='1.1rem' />;
+      }
       default:
         return '';
+    }
+  };
+
+  const getPopupContent = (type: PopupType) => {
+    switch (type) {
+      case PopupType.DeleteAccount:
+        return (
+          <div>
+            이약뭐약 서비스 회원탈퇴를 하시겠어요?
+            <button
+              className='bottomClose'
+              onClick={() => {
+                setLoading(true);
+                deleteAccount(
+                  user?.id ?? '',
+                  () => {
+                    setLoading(false);
+                    setPopupType(PopupType.DeleteAccountSuccess);
+                  },
+                  () => {
+                    setLoading(false);
+                    setPopupType(PopupType.DeleteAccountFailure);
+                  }
+                );
+              }}
+            >
+              회원탈퇴
+            </button>
+          </div>
+        );
+
+      default:
+        return PopupContent(type, navigate);
     }
   };
 
@@ -57,7 +115,7 @@ const EditMyInformation = ({
     const items = [];
     for (let i = 0; i < infos.length; i++) {
       items.push(
-        <div>
+        <div key={i}>
           <div className='information-item' onClick={infos[i].onClick}>
             <div className='info-key'>{infos[i].info}</div>
             <div className='info-value'>
@@ -82,7 +140,7 @@ const EditMyInformation = ({
         <div className='thumbnail'>
           <img
             className='thumbnailImage'
-            src={`img/user.svg`}
+            src={user?.profileImg ?? `img/user.svg`}
             alt='프로필 이미지'
           />
           <div className='edit-thumb' onClick={() => setBottomSheet(true)}>
@@ -93,16 +151,68 @@ const EditMyInformation = ({
 
         <div className='informations'>{generateItems(infos2)}</div>
 
-        <div className='bottom-menu'>로그아웃 | 회원탈퇴</div>
+        <div className='bottom-menu'>
+          <div
+            onClick={() =>
+              logout(() => {
+                navigate('/', { replace: true });
+                window.location.reload();
+              })
+            }
+          >
+            로그아웃
+          </div>{' '}
+          |{' '}
+          <div onClick={() => setPopupType(PopupType.DeleteAccount)}>
+            회원탈퇴
+          </div>
+        </div>
       </StyledContent>
 
       <BottomPictureSheet
         title={'사진 등록'}
         isVisible={bottomSheet}
-        onClose={() => {
+        onClose={(pic) => {
+          if (pic !== null) {
+            setLoading(true);
+
+            // 파일데이터 확인용 테스트 코드. 프로필 이미지 업로드 구현 완료 후 삭제 예정
+            // const testBuffer = pic.arrayBuffer().then((data) => {
+            //   console.log(data);
+
+            //   let arr = new Uint8Array(data);
+            //   console.log(arr);
+
+            //   var imgsrc =
+            //     'data:image/png;base64,' +
+            //     btoa(String.fromCharCode.apply(null, Array.from(arr)));
+            //   console.log(imgsrc);
+            // });
+
+            const formData = new FormData();
+            formData.append('profilePicture', pic);
+            changeProfileImage(
+              formData,
+              () => {
+                fetchUserProfile(() => {});
+                setLoading(false);
+              },
+              () => {
+                setLoading(false);
+                setPopupType(PopupType.ChangeUserProfileImageFailure);
+              }
+            );
+          }
           setBottomSheet(false);
         }}
       />
+
+      {popupType !== PopupType.None && (
+        <Popup onClose={() => setPopupType(PopupType.None)}>
+          {getPopupContent(popupType)}
+        </Popup>
+      )}
+      {loading && <Loading />}
     </MyPageContainer>
   );
 };
@@ -131,6 +241,9 @@ const StyledContent = styled.div`
     .thumbnailImage {
       width: 100%;
       height: 100%;
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
     }
 
     .edit-thumb {
@@ -182,6 +295,8 @@ const StyledContent = styled.div`
   .bottom-menu {
     color: gray;
     margin-top: 50px;
+    display: flex;
+    gap: 10px;
   }
 `;
 

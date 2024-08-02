@@ -5,20 +5,9 @@ import CalendarDetail from './CalendarDetail';
 import CalendarSection from './CalendarSection';
 import Nav from '../Nav';
 import { useDateStore } from '../../store/store';
-import { useAuthentication } from '../../store/authentication';
-import { useNavigate } from 'react-router-dom';
-import { useEffect } from 'react';
 
 const CalendarPage: React.FC = () => {
-  const { isAuthenticated } = useAuthentication();
   const { value, arrow, setArrow, edit, setEdit } = useDateStore();
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    if (!isAuthenticated) {
-      navigate('/login');
-    }
-  }, [isAuthenticated]);
 
   dayjs.locale('ko');
   const days = dayjs(value).format('D. ddd');
@@ -31,11 +20,11 @@ const CalendarPage: React.FC = () => {
     }
   };
 
-  const handleEdit = () => {
-    setEdit();
+  const handleEdit = async () => {
+    setEdit(!edit);
   };
 
-  return isAuthenticated ? (
+  return (
     <CalendarContainer>
       <Modal expanded={arrow} onClick={setArrow} />
       <Header />
@@ -66,7 +55,7 @@ const CalendarPage: React.FC = () => {
       </MainContent>
       <Nav />
     </CalendarContainer>
-  ) : null;
+  );
 };
 
 const CalendarContainer = styled.div`
@@ -109,9 +98,12 @@ const ImgContainer = styled.div`
   margin: 5px 0;
 `;
 
-const Arrow = styled.img`
+const Arrow = styled.button<{ src: string }>`
   width: 20px;
-  height: auto;
+  height: 20px;
+  background: url(${(props) => props.src}) no-repeat center center;
+  background-size: contain;
+  border: none;
   cursor: pointer;
 `;
 
@@ -125,9 +117,12 @@ const DateBox = styled.div`
   font-size: 14pt;
 `;
 
-const Edit = styled.img`
+const Edit = styled.button<{ src: string }>`
   width: 18px;
   height: 18px;
+  background: url(${(props) => props.src}) no-repeat center center;
+  background-size: contain;
+  border: none;
   cursor: pointer;
 `;
 
