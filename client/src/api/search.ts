@@ -37,28 +37,49 @@ export const fetchPillListByEfficacy = async (
   }
 };
 
+import axios from 'axios';
+
+const toBase64 = (file: File): Promise<string> =>
+  new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = (error) => reject(error);
+  });
+
 export const fetchPillDataByImage = async (
-  image: string,
+  image: File,
   limit: number = 10,
   offset: number = 0
 ) => {
   try {
+    const base64Image = await toBase64(image);
     const params = new URLSearchParams();
-    params.append('image', image);
+    params.append('image', base64Image);
     params.append('limit', limit.toString());
     params.append('offset', offset.toString());
 
-    const data = await get(`/api/pills/search/image?${params.toString()}`);
+    const response = await axios.get(
+      `/api/pills/search/image?${params.toString()}`,
+      {
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      }
+    );
 
-    console.log('이미지로 검색 Get:', data);
-    if (data.pills && data.pills.length > 0) {
-      return data.pills;
+    if (response.status === 200 && response.data.pills) {
+      return response.data.pills;
+    } else {
+      throw new Error('Invalid response from server');
     }
   } catch (error) {
-    console.error('약데이터(image) 가져오기 실패:', error);
+    console.error('Error fetching pill data by image:', error);
     throw error;
   }
 };
+
+
 
 export const fetchAutocompleteSuggestions = async (name: string) => {
   try {
