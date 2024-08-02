@@ -17,7 +17,10 @@ import {
   changeUsernameController,
   deleteAccountController,
   naverAuthController,
-  getUserInfoController
+  getUserInfoController,
+  kakaoRedirectController,
+  naverRedirectController,
+  googleRedirectController
 } from '../controllers/authController';
 import authByToken from '../middlewares/authByToken';
 
@@ -163,7 +166,7 @@ router.post('/request-email-verification', requestEmailVerificationController);
  *       302:
  *         description: 로그인 성공, 리다이렉션
  *       400:
- *         description: 인증 실패
+ *         description: 인증 실패, 로그인 페이지로 리디렉션
  */
 router.get('/kakao/callback', kakaoAuthController);
 
@@ -188,7 +191,7 @@ router.get('/kakao/callback', kakaoAuthController);
  *       302:
  *         description: 로그인 성공, 리다이렉션
  *       400:
- *         description: 인증 실패
+ *         description: 인증 실패, 로그인 페이지로 리디렉션
  */
 router.get('/naver/callback', naverAuthController);
 
@@ -207,10 +210,54 @@ router.get('/naver/callback', naverAuthController);
  *     responses:
  *       302:
  *         description: 로그인 성공, 리다이렉션
+ *       400:
+ *        description: 인증 실패, 로그인 페이지로 리디렉션
  *       500:
  *         description: 서버 오류
  */
 router.get('/google/callback', googleAuthController);
+
+/**
+ * @swagger
+ * /api/auth/kakao:
+ *   get:
+ *     summary: 카카오 로그인 리디렉션
+ *     tags: [Auth]
+ *     responses:
+ *       302:
+ *         description: 카카오 로그인 페이지로 리디렉션
+ *       500:
+ *         description: 서버 오류
+ */
+router.get('/kakao', kakaoRedirectController);
+
+/**
+ * @swagger
+ * /api/auth/naver:
+ *   get:
+ *     summary: 네이버 로그인 리디렉션
+ *     tags: [Auth]
+ *     responses:
+ *       302:
+ *         description: 네이버 로그인 페이지로 리디렉션
+ *       500:
+ *         description: 서버 오류
+ */
+router.get('/naver', naverRedirectController);
+
+/**
+ * @swagger
+ * /api/auth/google:
+ *   get:
+ *     summary: 구글 로그인 리디렉션
+ *     tags: [Auth]
+ *     responses:
+ *       302:
+ *         description: 구글 로그인 페이지로 리디렉션
+ *       500:
+ *         description: 서버 오류
+ */
+router.get('/google', googleRedirectController);
 
 /**
  * @swagger
