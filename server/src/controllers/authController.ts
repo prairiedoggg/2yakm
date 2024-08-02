@@ -108,16 +108,17 @@ export const refreshTokenController = async (req: Request, res: Response, next: 
 export const kakaoAuthController = async (req: Request<{ query: { code: string } }>, res: Response, next: NextFunction) => {
   try {
     const { code } = req.query;
+    console.log({code});
     if (!code || typeof code !== 'string') {
       throw createError('Invalid Code', '유효하지 않은 코드입니다.', 400);
     }
     const result = await kakaoAuthService(code);
     if (result.message) {
-      res.status(400).json({ message: result.message });
+      res.status(400).redirect(`${FRONTEND_URL}/login`);
     } else {
       res.cookie('jwt', result.token, { httpOnly: true });
       res.cookie('refreshToken', result.refreshToken, { httpOnly: true });
-      res.status(302).redirect(`${FRONTEND_URL}`);
+      res.status(302).redirect(`${FRONTEND_URL}/snsLogin/callback`);
     }
   } catch (error) {
     next(error);
@@ -134,11 +135,11 @@ export const naverAuthController = async (req: Request<{ query: { code: string, 
     const result = await naverAuthService(code, state);
     
     if (result.message) {
-      res.status(400).json({ message: result.message });
+      res.status(400).redirect(`${FRONTEND_URL}/login`);
     } else {
       res.cookie('jwt', result.token, { httpOnly: true });
       res.cookie('refreshToken', result.refreshToken, { httpOnly: true });
-      res.status(302).redirect(`${FRONTEND_URL}`);
+      res.status(302).redirect(`${FRONTEND_URL}/snsLogin/callback`);
     }
   } catch (error) {
     next(error);
@@ -156,12 +157,43 @@ export const googleAuthController = async (req: Request<{ query: { code: string 
     const result = await googleAuthService(code);
     
     if (result.message) {
-      res.status(400).json({ message: result.message });
+      res.status(400).redirect(`${FRONTEND_URL}/login`);
     } else {
       res.cookie('jwt', result.token, { httpOnly: true });
       res.cookie('refreshToken', result.refreshToken, { httpOnly: true });
-      res.status(302).redirect(`${FRONTEND_URL}`);
+      res.status(302).redirect(`${FRONTEND_URL}/snsLogin/callback`);
     }
+  } catch (error) {
+    next(error);
+  }
+};
+
+// 카카오 리디렉션
+export const kakaoRedirectController = (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const kakaoAuthUrl = `https://kauth.kakao.com/oauth/authorize?client_id=${process.env.KAKAO_CLIENT_ID}&redirect_uri=${process.env.DOMAIN}/api/auth/kakao/callback&response_type=code`;
+    res.redirect(kakaoAuthUrl);
+  } catch (error) {
+    next(error);
+  }
+};
+
+// 네이버 리디렉션
+export const naverRedirectController = (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const state = Math.random().toString(36).substring(7); // 랜덤 문자열로 만들었음
+    const naverAuthUrl = `https://nid.naver.com/oauth2.0/authorize?client_id=${process.env.NAVER_CLIENT_ID}&redirect_uri=${process.env.DOMAIN}/api/auth/naver/callback&response_type=code&state=${state}`;
+    res.redirect(naverAuthUrl);
+  } catch (error) {
+    next(error);
+  }
+};
+
+// 구글 리디렉션
+export const googleRedirectController = (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const googleAuthUrl = `https://accounts.google.com/o/oauth2/auth?client_id=${process.env.GOOGLE_CLIENT_ID}&redirect_uri=${process.env.DOMAIN}/api/auth/google/callback&response_type=code&scope=email profile`;
+    res.redirect(googleAuthUrl);
   } catch (error) {
     next(error);
   }
