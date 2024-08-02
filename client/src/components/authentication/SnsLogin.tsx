@@ -9,7 +9,7 @@ Date        Author   Status    Description
 */
 
 import { Icon } from '@iconify-icon/react';
-import Link from 'antd/es/typography/Link';
+import { Link } from 'react-router-dom';
 import styled from 'styled-components';
 
 const SnsLogin = ({
