@@ -102,7 +102,7 @@ const SearchResults = () => {
             {pillData.importantWords &&
               pillData.importantWords.trim() &&
               pillData.importantWords.split(', ').map((word) => (
-                <Tag to={`/search/tag/:${word}`} key={word}>
+                <Tag to={`/search/tag?q=${word}`} key={word}>
                   {word}
                 </Tag>
               ))}

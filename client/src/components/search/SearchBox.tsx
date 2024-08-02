@@ -1,7 +1,7 @@
 import { ChangeEvent, useState, KeyboardEvent, useEffect } from 'react';
 import styled from 'styled-components';
 import { Link, useNavigate } from 'react-router-dom';
-import ImageSearchList from './ImageSearchList';
+import ImageSearchList from './imageSearchList';
 import { useSearchStore } from '../../store/search';
 import { useSearchHistoryStore } from '../../store/searchHistory';
 import {
@@ -11,7 +11,7 @@ import {
 import BottomPictureSheet from '../myPage/BottomPictureSheet';
 import { PillData } from '../../store/pill';
 
-const SearchBox = () => {
+const SearchBox = ({ setIsSearched }) => {
   const navigate = useNavigate();
   const {
     setSearchQuery,
@@ -53,7 +53,8 @@ const SearchBox = () => {
       setSearchQuery(query);
       addHistory(query);
       if (searchType === 'efficacy') {
-        setSearchType('efficacy');
+        navigate(`/search/tag?q=${query}`);
+        // setSearchType('efficacy');
       }
     } else {
       setSearchQuery('');
@@ -64,6 +65,7 @@ const SearchBox = () => {
   const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
       handleSearch();
+      setIsSearched(true)
     }
   };
 
