@@ -16,7 +16,7 @@ const EditDetailTextBox = ({ title }: EditDetailTextBoxProps) => {
     setTemp,
     setWeight
   } = useCalendar();
-  const { setEditTaken, setAddTaken } = useDateStore();
+  const { setAddTaken } = useDateStore();
 
   const renderSimpleInput = (
     label: string,
@@ -125,23 +125,14 @@ const EditDetailTextBox = ({ title }: EditDetailTextBoxProps) => {
     }
   };
 
-  const handleAddComponent = (add: boolean) => {
-    if (add === false) {
-      setEditTaken(!add);
-    }
-    setAddTaken(add);
-  };
-
   const isPill = title === '약 복용 여부';
 
   return (
     <Container isPill={isPill}>
       <ContentTitle>
         {title}
-        {isPill && calendarData?.pillData ? (
-          <Icon icon='lucide:edit' onClick={() => handleAddComponent(false)} />
-        ) : isPill && !calendarData?.pillData ? (
-          <Icon icon='f7:plus-app' onClick={() => handleAddComponent(true)} />
+        {isPill ? (
+          <Icon icon='f7:plus-app' onClick={() => setAddTaken(true)} />
         ) : null}
       </ContentTitle>
       {handleContent(title)}

@@ -1,3 +1,4 @@
+import { Icon } from '@iconify-icon/react/dist/iconify.mjs';
 import dayjs from 'dayjs';
 import styled from 'styled-components';
 import { useDateStore } from '../../store/calendar';
@@ -7,31 +8,51 @@ import CalendarDetail from './CalendarDetail';
 import CalendarSection from './CalendarSection';
 
 const CalendarPage: React.FC = () => {
-  const { value, arrow, setArrow, setEdit, setAddTaken } = useDateStore();
+  const { value, arrow, setArrow, edit, setEdit, setAddTaken } = useDateStore();
 
   dayjs.locale('ko');
   const days = dayjs(value).format('D. ddd');
 
-  const closeEdit = () => {
-    setArrow(false);
-    setEdit(false);
-    setAddTaken(false);
+  const openEdit = (open: boolean) => {
+    if (!open) {
+      setAddTaken(false);
+      setEdit(false);
+    } else {
+      setEdit(true);
+    }
+    setArrow(true);
   };
 
   return (
     <CalendarContainer>
-      <Modal expanded={arrow} onClick={closeEdit} />
+      <Modal expanded={arrow} onClick={() => openEdit(false)} />
       <Header />
       <MainContent>
         <CalendarSection />
         <EntireDetail expanded={arrow}>
           <CalandarDatailContainer>
-            <ImgContainer onClick={setArrow}>
+            <ImgContainer onClick={() => setArrow(true)}>
               <Line />
             </ImgContainer>
-            <DateContainer>
+            <TopContainer>
               <DateBox>{days}</DateBox>
-            </DateContainer>
+              {!edit ? (
+                <Icon
+                  icon='uil:edit'
+                  width='20px'
+                  height='20px'
+                  onClick={() => openEdit(true)}
+                />
+              ) : (
+                <Icon
+                  icon='uil:edit'
+                  width='20px'
+                  height='20px'
+                  style={{ color: '#72bf44' }}
+                  onClick={() => openEdit(false)}
+                />
+              )}
+            </TopContainer>
           </CalandarDatailContainer>
           <DetailContainer>
             <CalendarDetail />
@@ -91,24 +112,9 @@ const Line = styled.div`
   margin: 10px;
 `;
 
-const DateContainer = styled.div`
-  display: flex;
-  justify-content: space-between;
-  margin-top: 20px;
-`;
-
 const DateBox = styled.div`
   font-weight: 500;
   font-size: 14pt;
-`;
-
-const Edit = styled.button<{ src: string }>`
-  width: 18px;
-  height: 18px;
-  background: url(${(props) => props.src}) no-repeat center center;
-  background-size: contain;
-  border: none;
-  cursor: pointer;
 `;
 
 const DetailContainer = styled.div`
@@ -126,6 +132,12 @@ const Modal = styled.div<{ expanded: boolean }>`
   background: rgba(0, 0, 0, 0.3);
   z-index: ${({ expanded }) => (expanded ? '10' : '-1')};
   opacity: ${({ expanded }) => (expanded ? '1' : '0')};
+`;
+
+const TopContainer = styled.div`
+  display: flex;
+  justify-content: space-between;
+  margin-top: 20px;
 `;
 
 export default CalendarPage;

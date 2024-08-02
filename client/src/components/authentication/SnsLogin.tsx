@@ -9,6 +9,7 @@ Date        Author   Status    Description
 */
 
 import { Icon } from '@iconify-icon/react';
+import { Link } from 'react-router-dom';
 import styled from 'styled-components';
 
 const SnsLogin = ({
@@ -21,56 +22,54 @@ const SnsLogin = ({
   onEmailRegisterClick: () => void;
 }) => {
   const SERVER_BASE_URL = import.meta.env.VITE_APP_SERVER_BASE_URL;
+  const AUTH_URLS = `${SERVER_BASE_URL}api/auth/`;
+
+  const SNS_LOGINS = [
+    {
+      name: 'KAKAO',
+      label: '카카오톡 로그인',
+      icon: 'ri:kakao-talk-fill',
+      style: { color: '#3A1D1F', marginRight: '10px' },
+      iconSize: { width: '1.5rem', height: '1.5rem' }
+    },
+    {
+      name: 'NAVER',
+      label: '네이버 로그인',
+      icon: 'simple-icons:naver',
+      style: { color: 'white', marginRight: '10px', padding: '5px' },
+      iconSize: { width: '1rem', height: '1rem' }
+    },
+    {
+      name: 'GOOGLE',
+      label: '구글 로그인',
+      icon: 'logos:google-icon',
+      style: { marginRight: '10px', padding: '2px' },
+      iconSize: { width: '1.4rem', height: '1.4rem' }
+    }
+  ];
+
   return (
     <Content>
       <Logo src='/img/logo.svg' alt='이약뭐약' />
       <div className='bubble'>⚡ 3초만에 빠른 회원가입</div>
-      <a
-        className='login kakao'
-        onClick={onClose}
-        href={`${SERVER_BASE_URL}api/auth/kakao/callback`}
-      >
-        <div className='snsBox'>
-          <Icon
-            icon='ri:kakao-talk-fill'
-            width='1.5rem'
-            height='1.5rem'
-            style={{ color: '#3A1D1F', marginRight: '10px' }}
-          />
-          카카오톡 로그인
-        </div>
-      </a>
-      <a
-        className='login naver'
-        onClick={onClose}
-        href={`${SERVER_BASE_URL}api/auth/naver/callback`}
-      >
-        <div className='snsBox'>
-          <Icon
-            icon='simple-icons:naver'
-            width='1rem'
-            height='1rem'
-            style={{ color: 'white', marginRight: '10px', padding: '5px' }}
-          />
-          네이버 로그인
-        </div>
-      </a>
-      <a
-        className='login google'
-        onClick={onClose}
-        href={`${SERVER_BASE_URL}api/auth/google/callback`}
-      >
-        <div className='snsBox'>
-          <Icon
+      {SNS_LOGINS.map((sns) => {
+        const { name, iconSize, label, ...rest } = sns;
+
+        return (
+          <Link
+            to={AUTH_URLS[name]}
+            key={name}
+            className={`login ${name.toLowerCase()}`}
             onClick={onClose}
-            icon='logos:google-icon'
-            width='1.4rem'
-            height='1.4rem'
-            style={{ marginRight: '10px', padding: '2px' }}
-          />
-          구글 로그인
-        </div>
-      </a>
+          >
+            <div className='snsBox'>
+              <Icon {...iconSize} {...rest} />
+              {label}
+            </div>
+          </Link>
+        );
+      })}
+
       <div className='other'>
         <div onClick={onEmailLoginClick}>이메일로 로그인</div>
         <div onClick={onEmailRegisterClick}>이메일로 회원가입</div>
@@ -125,7 +124,8 @@ const Content = styled.div`
     width: 80%;
     border-radius: 5px;
     text-align: center;
-    font-weight: 500;
+    font-weight: 600;
+    font-size: 12pt;
     align-items: center;
     display: flex;
     justify-content: center;

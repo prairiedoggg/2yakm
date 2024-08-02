@@ -71,23 +71,18 @@ const DetailTextBox = ({
 
   const isPill = title === '약 복용 여부';
 
-  const openEdit = (isPill: boolean) => {
-    if (isPill) {
-      setAddTaken(true);
-      setEdit(true);
-    } else {
-      setEdit(true);
-    }
+  const openEdit = () => {
+    setEdit(true);
     setArrow(true);
   };
 
   return isRender ? (
-    <PillContainer isPill={isPill} onClick={() => openEdit(isPill)}>
+    <PillContainer isPill={isPill}>
       <ContentTitle>{title}</ContentTitle>
       <UnitContainer>{handleContent()}</UnitContainer>
     </PillContainer>
   ) : isEmpty ? (
-    <Empty onClick={() => openEdit(isPill)}>
+    <Empty onClick={() => openEdit}>
       {title} 정보 없음. 추가하려면 탭 하세요.
     </Empty>
   ) : null;

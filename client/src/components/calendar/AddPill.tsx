@@ -1,14 +1,14 @@
 import { Icon } from '@iconify-icon/react/dist/iconify.mjs';
 import { Button, Input, TimePicker } from 'antd';
 import dayjs, { Dayjs } from 'dayjs';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import styled from 'styled-components';
 import { useCalendar, useDateStore } from '../../store/calendar';
 import CalendarToast from './CalendarToast';
 
 const AddPill = () => {
-  const { addPillData, calendarData } = useCalendar();
-  const { setAddTaken, setEdit, edit } = useDateStore();
+  const { addPillData } = useCalendar();
+  const { setAddTaken, edit } = useDateStore();
   const [pillName, setPillName] = useState<string>('');
   const [alarmTimes, setAlarmTimes] = useState<
     { time: Dayjs; status: string; checked: boolean }[]
@@ -20,22 +20,7 @@ const AddPill = () => {
   const [nameError, setNameError] = useState<boolean>(false);
   const [timeError, setTimeError] = useState<boolean>(false);
 
-  useEffect(() => {
-    const pillData = calendarData?.pillData ?? [];
-    if (pillData.length > 0) {
-      setPillName(pillData[0].name ?? '');
-      const initialTimes = pillData[0].time.map((time, index) => ({
-        time: dayjs(time, 'HH:mm'),
-        status: 'active',
-        checked: pillData[0].taken[index]
-      }));
-      setAlarmTimes(initialTimes);
-    }
-  }, [calendarData]);
-
   const handleSavePill = () => {
-    setEdit(false);
-
     if (!pillName) {
       setNameError(true);
       return;
