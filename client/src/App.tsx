@@ -1,7 +1,7 @@
 import loadable from '@loadable/component';
 import 'dayjs/locale/ko';
 import { Route, BrowserRouter as Router, Routes } from 'react-router-dom';
-import AuthenticatedRoute from './AuthenticatedRoute';
+import AuthenticatedRoute from './components/AuthenticatedRoute';
 
 const Home = loadable(() => import('./components/home/Home'));
 const News = loadable(() => import('./components/cardNews/News'));
@@ -54,9 +54,7 @@ const App = () => {
           path='/chatbot'
           element={<AuthenticatedRoute element={ChatBot} />}
         />
-        <Route path='/kakao/callback' element={<Redirect sns='kakao' />} />
-        <Route path='/naver/callback' element={<Redirect sns='naver' />} />
-        <Route path='/google/callback' element={<Redirect sns='google' />} />
+        <Route path='/snsLogin/callback ' element={<Redirect />} />
       </Routes>
     </Router>
   );

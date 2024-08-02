@@ -1,6 +1,6 @@
 import Cookies from 'js-cookie';
 import useUserStore, { LoginType } from '../store/user';
-import { del, post, get } from './api';
+import { del, get, post } from './api';
 
 export const login = async (
   email: string,
@@ -28,11 +28,20 @@ export const fetchUserInformation = async (
     console.log(data);
 
     let loginType = LoginType.none;
-    if(data.kakaoid !== null) loginType = LoginType.kakao;
-    else if(data.naverid !== null) loginType = LoginType.naver;
-    else if(data.googleid !== null) loginType = LoginType.google;
-    
-    useUserStore.getState().setUser(data.username, data.email, data.profileImg, data.id, data.role, loginType);
+    if (data.kakaoid !== null) loginType = LoginType.kakao;
+    else if (data.naverid !== null) loginType = LoginType.naver;
+    else if (data.googleid !== null) loginType = LoginType.google;
+
+    useUserStore
+      .getState()
+      .setUser(
+        data.username,
+        data.email,
+        data.profileImg,
+        data.id,
+        data.role,
+        loginType
+      );
 
     if (onSuccess) onSuccess();
   } catch (error) {
@@ -112,7 +121,6 @@ export const loginForKakao = async (code: string) => {
   try {
     const data = await post('/api/auth/kakao/callback', { code });
     Cookies.set('login', data.message);
-
   } catch (error) {
     console.error('Login failed', error);
   }
@@ -122,7 +130,6 @@ export const loginForGoogle = async (code: string) => {
   try {
     const data = await post('/api/auth/google/callback', { code });
     Cookies.set('login', data.message);
-
   } catch (error) {
     console.error('Login failed', error);
   }
@@ -171,22 +178,14 @@ export const resetPassword = async (
   onFailure?: (arg0: any) => void
 ) => {
   try {
-    const data = await post('/api/auth/reset-password', { token:token, newPassword: password });
+    const data = await post('/api/auth/reset-password', {
+      token: token,
+      newPassword: password
+    });
 
     if (onSuccess) onSuccess();
   } catch (error) {
     console.error('reset Password failed', error);
     if (onFailure) onFailure(error);
-  }
-};
-
-export const refreshAuthToken = async () => {
-  try {
-    const response = await post(`api/auth/token`);
-    console.log('토큰 갱신', response);
-    return response;
-  } catch (err) {
-    console.error('Refresh token failed:', err);
-    throw err;
   }
 };
