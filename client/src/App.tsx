@@ -15,6 +15,9 @@ const Register = loadable(() => import('./components/authentication/Register'));
 const EmailVerification = loadable(
   () => import('./components/authentication/EmailVerification')
 );
+const ResetPasswordRequest = loadable(
+  () => import('./components/authentication/ResetPasswordRequest')
+);
 const ResetPassword = loadable(
   () => import('./components/authentication/ResetPassword')
 );
@@ -41,6 +44,10 @@ const App = () => {
         <Route path='/login' element={<Login />} />
         <Route path='/verification/email' element={<EmailVerification />} />
         <Route path='/register' element={<Register />} />
+        <Route
+          path='/password/reset/request'
+          element={<ResetPasswordRequest />}
+        />
         <Route path='/password/reset' element={<ResetPassword />} />
 
         <Route

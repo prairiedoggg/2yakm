@@ -91,6 +91,7 @@ const MyMedications = () => {
             style={{ color: '#ffbb25' }}
           />
         </div>
+        <div className='info'>📍폐의약품 전용수거함 위치</div>
         <div className='items'>
           {items.map((item, index) => renderItems(item, index))}
         </div>
@@ -218,7 +219,6 @@ const StyledContent = styled.div`
   height: 100%;
   display: flex;
   flex-direction: column;
-  gap: 30px;
 
   .totalCount {
     font-weight: 500;
@@ -226,6 +226,13 @@ const StyledContent = styled.div`
     justify-content: space-between;
     align-content: center;
     align-items: center;
+    margin-bottom: 10px;
+  }
+
+  .info {
+    margin-bottom: 30px;
+    font-weight: 500;
+    margin-left: -5px;
   }
 
   .items {
