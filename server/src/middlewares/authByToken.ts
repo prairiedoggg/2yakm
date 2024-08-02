@@ -2,9 +2,14 @@ import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import { commonError, createError } from '../utils/error';
 import { CustomRequest } from '../types/express';
-import dotenv from 'dotenv';
 
-dotenv.config();
+function getSecretKey(): string {
+  const secretKey = process.env.SECRET_KEY;
+  if (!secretKey) {
+    throw new Error("SECRET_KEY is not defined in the environment variables.");
+  }
+  return secretKey;
+}
 
 const authByToken = async (
   req: CustomRequest,
@@ -24,7 +29,8 @@ const authByToken = async (
   }
 
   try {
-    const user = jwt.verify(token, process.env.SECRET_KEY as string);
+    const secretKey = getSecretKey();
+    const user = jwt.verify(token, secretKey);
     req.user = user;
     next();
   } catch (err) {

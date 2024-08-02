@@ -114,7 +114,7 @@ export const kakaoAuthController = async (req: Request<{ query: { code: string }
     }
     const result = await kakaoAuthService(code);
     if (result.message) {
-      res.status(400).redirect(`${FRONTEND_URL}/login`);
+      res.status(400).json({message: '카카오 로그인에 실패했습니다.'}).redirect(`${FRONTEND_URL}/login`);
     } else {
       res.cookie('jwt', result.token, { httpOnly: true });
       res.cookie('refreshToken', result.refreshToken, { httpOnly: true });
@@ -135,7 +135,7 @@ export const naverAuthController = async (req: Request<{ query: { code: string, 
     const result = await naverAuthService(code, state);
     
     if (result.message) {
-      res.status(400).redirect(`${FRONTEND_URL}/login`);
+      res.status(400).json({message: '네이버 로그인에 실패했습니다.'}).redirect(`${FRONTEND_URL}/login`);
     } else {
       res.cookie('jwt', result.token, { httpOnly: true });
       res.cookie('refreshToken', result.refreshToken, { httpOnly: true });
@@ -157,7 +157,7 @@ export const googleAuthController = async (req: Request<{ query: { code: string 
     const result = await googleAuthService(code);
     
     if (result.message) {
-      res.status(400).redirect(`${FRONTEND_URL}/login`);
+      res.status(400).json({message: '구글 로그인에 실패했습니다.'}).redirect(`${FRONTEND_URL}/login`);
     } else {
       res.cookie('jwt', result.token, { httpOnly: true });
       res.cookie('refreshToken', result.refreshToken, { httpOnly: true });
