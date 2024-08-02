@@ -1,63 +1,63 @@
 import { Icon } from '@iconify-icon/react';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
+import { chatBot } from '../../api/chatbot';
+import { useChatBot } from '../../store/chatbot';
+import BotChat from './BotChat';
+import UserChat from './UserChat';
 
 const ChatBotBox: React.FC = () => {
+  const { chatList, addBotChat, addUserChat } = useChatBot();
   const [text, setText] = useState<string>('');
-  const [chatBotSpeaking, setChatBotSpeaking] = useState<string>('');
+  const chattingContainerRef = useRef<HTMLDivElement>(null);
+  const [loading, setLoading] = useState<boolean>(false);
+
+  // 스크롤 항상 허용
+  useEffect(() => {
+    if (chattingContainerRef.current) {
+      chattingContainerRef.current.scrollTop =
+        chattingContainerRef.current.scrollHeight;
+    }
+  }, [chatList]);
+
+  const handleChatting = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (text.trim() === '') return;
+
+    addUserChat(text);
+    setLoading(true);
+
+    try {
+      const res = await chatBot(text);
+      console.log('챗봇 대답', res);
+      addBotChat(res.reply);
+    } catch (err) {
+      console.log('챗봇 대화 실패', err);
+    } finally {
+      setLoading(false);
+    }
+    setText('');
+  };
 
   const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setText(e.target.value);
   };
 
-  // const handleChatting = async (e: React.FormEvent<HTMLFormElement>) => {
-  //   e.preventDefault();
-  //   try {
-  //     const res = await chatBot(text);
-  //     console.log('챗봇 대답', res);
-  //     setChatBotSpeaking(res.reply);
-  //     setText('');
-  //   } catch (err) {
-  //     console.log('챗봇 대화 실패', err);
-  //   }
-  // };
-
-  const firstChat = () => {
-    return (
-      <div>
-        증상에 맞는 약을 찾고 계신가요? <br />
-        <br />
-        저에게 구체적으로 증상을 말씀해주시면 더 정확히 답변 드릴 수 있어요 😃{' '}
-      </div>
-    );
-  };
-
   return (
     <ChatBotBoxContainer>
       <Box>
-        <ChattingContainer>
-          <BotChattingContainer>
-            <Icon
-              icon='fxemoji:frontfacingchick'
-              style={{
-                backgroundColor: 'white',
-                height: '30px',
-                borderRadius: '20px',
-                marginRight: '5px',
-                marginTop: '5px'
-              }}
-              width='30px'
-            />
-            <BotChatting>
-              {firstChat()}
-              {chatBotSpeaking}
-            </BotChatting>
-          </BotChattingContainer>
+        <ChattingContainer ref={chattingContainerRef}>
+          {chatList.map((chat, index) =>
+            chat.sender === 'user' ? (
+              <UserChat key={index} text={chat.text} />
+            ) : (
+              <BotChat key={index} text={chat.text} loading={loading} />
+            )
+          )}
         </ChattingContainer>
-        {/* onSubmit={handleChatting} */}
-        <ChattingInputContainer>
+        <ChattingInputContainer onSubmit={handleChatting}>
           <Chatting
-            placeholder='증상에 맞는 약을 머약이에게 질문해보세요!'
+            placeholder='증상에 맞는 약을 질문해보세요!'
             onChange={onChange}
             value={text}
           />
@@ -78,33 +78,25 @@ export default ChatBotBox;
 
 const ChatBotBoxContainer = styled.div`
   width: 100%;
+  height: 87vh;
 `;
+
 const Box = styled.div`
   margin: 10px 5%;
   position: relative;
-  border-radius: 50px;
+  border-radius: 40px;
   background-color: #ffe612;
   width: 90%;
-  height: 78vh;
-  overflow-y: auto;
-  padding: 20px;
+  height: 90%;
+  padding: 10px;
   font-size: 10.5pt;
 `;
 
 const ChattingContainer = styled.div`
   margin-top: 10px;
-`;
-
-const BotChattingContainer = styled.div`
-  display: flex;
-`;
-
-const BotChatting = styled.div`
-  background-color: white;
-  width: 85%;
-  border-radius: 20px;
-  padding: 15px 15px;
-  line-height: 18px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  height: 90%;
 `;
 
 const ChattingInputContainer = styled.form`
