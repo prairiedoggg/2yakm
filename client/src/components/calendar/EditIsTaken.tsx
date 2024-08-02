@@ -5,8 +5,10 @@ import { convertToArray } from './calendarDetails/IsPillTaken';
 
 const EditIsTaken: React.FC = () => {
   const { calendarData, setPillData } = useCalendar();
-
   const [pillData, setPillDataState] = useState(calendarData?.pillData || []);
+  const [showButtons, setShowButtons] = useState(
+    Array(pillData.length).fill(false)
+  );
 
   const handleCheckboxChange = (index: number, timeIndex: number) => {
     const updatedPillData = pillData.map((pill, pillIndex) => {
@@ -39,10 +41,40 @@ const EditIsTaken: React.FC = () => {
     ));
   };
 
+  const handleTouchStart = (e, index: number) => {
+    e.preventDefault();
+    const touchStartX = e.touches[0].clientX;
+    e.target.setAttribute('data-touch-start-x', touchStartX);
+  };
+
+  const handleTouchMove = (e) => {
+    e.preventDefault();
+  };
+
+  const handleTouchEnd = (e, index: number) => {
+    const touchStartX = parseFloat(e.target.getAttribute('data-touch-start-x'));
+    const touchEndX = e.changedTouches[0].clientX;
+    if (touchStartX - touchEndX > 50) {
+      const updatedShowButtons = showButtons.map((show, i) =>
+        i === index ? true : show
+      );
+      setShowButtons(updatedShowButtons);
+    }
+  };
+
+  const handleEdit = (index: number) => {};
+
+  const handleDelete = (index: number) => {};
+
   return (
     <EditTakenContainer>
       {pillData.map((pill, index) => (
-        <PillRow key={index}>
+        <PillRow
+          key={index}
+          onTouchStart={(e) => handleTouchStart(e, index)}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={(e) => handleTouchEnd(e, index)}
+        >
           <div>{pill.name}</div>
           <PillTimeContainer>
             {pill.time && pill.taken ? (
@@ -51,6 +83,12 @@ const EditIsTaken: React.FC = () => {
               <div>시간 데이터 없음</div>
             )}
           </PillTimeContainer>
+          {showButtons[index] && (
+            <ButtonContainer>
+              <Button onClick={() => handleEdit(index)}>편집</Button>
+              <Button onClick={() => handleDelete(index)}>삭제</Button>
+            </ButtonContainer>
+          )}
         </PillRow>
       ))}
     </EditTakenContainer>
@@ -101,11 +139,8 @@ const Time = styled.div`
 const PillRow = styled.div`
   display: flex;
   align-items: center;
-
   justify-content: space-between;
-  //   border-radius: 10px;
-  //   border: 0.5px #b9b9b9 solid;
-  //   padding: 10px 10px;
+  position: relative;
 `;
 
 const PillTimeContainer = styled.div`
@@ -113,4 +148,24 @@ const PillTimeContainer = styled.div`
   flex-wrap: wrap;
   gap: 10px;
   margin-left: 10px;
+`;
+
+const ButtonContainer = styled.div`
+  display: flex;
+  gap: 10px;
+  position: absolute;
+  right: 10px;
+`;
+
+const Button = styled.button`
+  padding: 10px;
+  border: none;
+  background-color: #007bff;
+  color: white;
+  border-radius: 5px;
+  cursor: pointer;
+
+  &:hover {
+    background-color: #0056b3;
+  }
 `;

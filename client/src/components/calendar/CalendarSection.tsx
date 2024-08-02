@@ -1,4 +1,5 @@
 import dayjs from 'dayjs';
+import Cookies from 'js-cookie';
 import { useEffect, useState } from 'react';
 import Calendar from 'react-calendar';
 import 'react-calendar/dist/Calendar.css';
@@ -24,6 +25,7 @@ interface TileContentProps {
 }
 
 const CalendarSection: React.FC = () => {
+  const login = Cookies.get('login');
   const { value, onChange, edit, addPosted, posted } = useDateStore();
   const [postArray, setPostArray] = useState<Set<string>>(new Set());
   const [calendarData, setData] = useState<CalendarDate[]>([]);
@@ -32,6 +34,7 @@ const CalendarSection: React.FC = () => {
     const fetchData = async () => {
       const data: CalendarDate[] = await calendarAllGet();
       setData(data);
+      console.log(data);
       const datesWithMedications = new Set(
         data
           .filter((post) => post.medications && post.medications.length > 0)
@@ -41,7 +44,7 @@ const CalendarSection: React.FC = () => {
     };
 
     fetchData();
-  }, [edit]);
+  }, [edit, login]);
 
   useEffect(() => {
     const postedDates = new Set(posted.map((item) => item.date));

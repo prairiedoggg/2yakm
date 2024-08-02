@@ -7,44 +7,45 @@ const EditDetailPhoto = () => {
   const [isCameraOn, setIsCameraOn] = useState(false);
   const { setPhoto, setCalImg, calendarData, calImg } = useCalendar();
 
+  const [isDeniedCameraPermission, setIsDeniedCameraPermission] =
+    useState(false);
+
   useEffect(() => {
-    const initCamera = async () => {
+    const startCamera = async () => {
       try {
-        if (isCameraOn) {
-          const stream = await navigator.mediaDevices.getUserMedia({
-            video: true
-          });
-          if (videoRef.current) {
-            videoRef.current.srcObject = stream;
-            videoRef.current.play();
-          }
-        } else {
-          if (videoRef.current && videoRef.current.srcObject) {
-            const tracks = (
-              videoRef.current.srcObject as MediaStream
-            ).getTracks();
-            tracks.forEach((track) => track.stop());
-            videoRef.current.srcObject = null;
-          }
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: true
+        });
+        if (videoRef.current) {
+          videoRef.current.srcObject = stream;
+          await videoRef.current.play();
+          setIsDeniedCameraPermission(false);
         }
       } catch (error) {
-        console.error('Error accessing camera:', error);
+        console.error('Error accessing camera: ', error);
+        setIsDeniedCameraPermission(true);
+        setIsCameraOn(false);
       }
     };
 
-    initCamera();
-
-    return () => {
+    const stopCamera = () => {
       if (videoRef.current && videoRef.current.srcObject) {
-        const tracks = (videoRef.current.srcObject as MediaStream).getTracks();
-        tracks.forEach((track) => track.stop());
+        const stream = videoRef.current.srcObject as MediaStream;
+        stream.getTracks().forEach((track) => track.stop());
+        videoRef.current.srcObject = null;
       }
     };
+
+    if (isCameraOn) {
+      startCamera();
+    } else {
+      stopCamera();
+    }
+
+    return () => stopCamera();
   }, [isCameraOn]);
 
-  const toggleCamera = () => {
-    setIsCameraOn((prevState) => !prevState);
-  };
+  const toggleCamera = () => setIsCameraOn((prevState) => !prevState);
 
   const photoInput = useRef<HTMLInputElement | null>(null);
   const onChangeImage = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -56,18 +57,10 @@ const EditDetailPhoto = () => {
 
       setPhoto(imageUrl);
       setCalImg(formData);
-
-      console.log(imageUrl);
-      console.log(formData.get('file'));
     }
   };
 
-  const handleClick = () => {
-    if (photoInput.current) {
-      photoInput.current.click();
-    }
-  };
-
+  const handleClick = () => photoInput.current?.click();
   const deletePhoto = () => {
     setCalImg(null);
     setPhoto(null);
@@ -88,7 +81,7 @@ const EditDetailPhoto = () => {
         autoPlay
         playsInline
       />
-      <button onClick={() => handleClick()}>
+      <button onClick={handleClick}>
         사진 업로드
         <input
           type='file'
@@ -107,8 +100,8 @@ const EditDetailPhoto = () => {
             style={{ width: '100%', height: 'auto' }}
           />
           <FiXCircle
-            style={{ color: '#777777', margin: '5px 5px' }}
-            onClick={() => deletePhoto()}
+            style={{ color: '#777777', margin: '5px 5px', cursor: 'pointer' }}
+            onClick={deletePhoto}
           />
         </div>
       )}

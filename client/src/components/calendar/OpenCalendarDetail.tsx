@@ -1,4 +1,5 @@
 import dayjs from 'dayjs';
+import Cookies from 'js-cookie';
 import { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import { calendarGet, calendarPost, calendarPut } from '../../api/calendarApi';
@@ -20,6 +21,7 @@ interface CalendarData {
 
 const OpenCalendarDetail: React.FC = () => {
   const today = dayjs().format('YYYY-MM-DD');
+  const login = Cookies.get('login');
   const { calendarData, calImg } = useCalendar();
   const { value, edit, posted, addPosted } = useDateStore();
   const formattedDate = dayjs(value).format('YYYY-MM-DD');
@@ -28,6 +30,7 @@ const OpenCalendarDetail: React.FC = () => {
     ? true
     : false;
 
+  console.log(isPosted);
   useEffect(() => {
     if (isPosted === true) {
       const fetchPillData = async () => {
@@ -43,7 +46,7 @@ const OpenCalendarDetail: React.FC = () => {
 
       fetchPillData();
     }
-  }, []);
+  }, [login]);
 
   useEffect(() => {
     const formData = new FormData();
@@ -71,12 +74,12 @@ const OpenCalendarDetail: React.FC = () => {
             const res = await calendarPut(formattedDate, formData);
             setData(res);
             console.log('일정 수정 성공:', res);
+          } else {
+            const res = await calendarPost(formData);
+            setData(res);
+            console.log('일정 등록 성공', res);
+            addPosted({ date: formattedDate, post: true });
           }
-        } else {
-          const res = await calendarPost(formData);
-          setData(res);
-          console.log('일정 등록 성공', res);
-          addPosted({ date: formattedDate, post: true });
         }
       } catch (err) {
         console.error('일정 등록/수정 오류:', err);
@@ -86,7 +89,6 @@ const OpenCalendarDetail: React.FC = () => {
   }, [edit]);
 
   useEffect(() => {
-    console.log(formattedDate, isPosted);
     if (formattedDate !== undefined && isPosted === true) {
       const fetchPillData = async () => {
         try {
@@ -103,7 +105,7 @@ const OpenCalendarDetail: React.FC = () => {
     } else if (isPosted === false) {
       setData(null);
     }
-  }, [formattedDate]);
+  }, [formattedDate, login]);
 
   return (
     <ContentContainer>
