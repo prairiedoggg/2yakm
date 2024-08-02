@@ -1,51 +1,36 @@
-import styled from 'styled-components';
-import Header from '../Header';
 import dayjs from 'dayjs';
+import styled from 'styled-components';
+import { useDateStore } from '../../store/calendar';
+import Header from '../Header';
+import Nav from '../Nav';
 import CalendarDetail from './CalendarDetail';
 import CalendarSection from './CalendarSection';
-import Nav from '../Nav';
-import { useDateStore } from '../../store/store';
 
 const CalendarPage: React.FC = () => {
-  const { value, arrow, setArrow, edit, setEdit } = useDateStore();
+  const { value, arrow, setArrow, setEdit, setAddTaken } = useDateStore();
 
   dayjs.locale('ko');
   const days = dayjs(value).format('D. ddd');
 
-  const handleSrc = (img: 'edit' | 'arrow') => {
-    if (img === 'edit') {
-      return edit ? '/img/editing.png' : '/img/calendarEdit.png';
-    } else if (img === 'arrow') {
-      return arrow ? '/img/calendarArrowDown.png' : '/img/calendarArrow.png';
-    }
-  };
-
-  const handleEdit = async () => {
-    setEdit(!edit);
+  const closeEdit = () => {
+    setArrow(false);
+    setEdit(false);
+    setAddTaken(false);
   };
 
   return (
     <CalendarContainer>
-      <Modal expanded={arrow} onClick={setArrow} />
+      <Modal expanded={arrow} onClick={closeEdit} />
       <Header />
       <MainContent>
         <CalendarSection />
         <EntireDetail expanded={arrow}>
           <CalandarDatailContainer>
-            <ImgContainer>
-              <Arrow
-                src={handleSrc('arrow')}
-                alt='Arrow Icon'
-                onClick={setArrow}
-              />
+            <ImgContainer onClick={setArrow}>
+              <Line />
             </ImgContainer>
             <DateContainer>
               <DateBox>{days}</DateBox>
-              <Edit
-                src={handleSrc('edit')}
-                alt='Edit Button'
-                onClick={handleEdit}
-              />
             </DateContainer>
           </CalandarDatailContainer>
           <DetailContainer>
@@ -77,7 +62,7 @@ const EntireDetail = styled.div<{ expanded: boolean }>`
   position: ${({ expanded }) => (expanded ? 'absolute' : 'relative')};
   bottom: ${({ expanded }) => (expanded ? '80px' : '0')};
   width: 100%;
-  height: ${({ expanded }) => (expanded ? '60%' : 'auto')};
+  height: ${({ expanded }) => (expanded ? '65%' : 'auto')};
   margin-bottom: ${({ expanded }) => (expanded ? 'auto' : '80px')};
   background-color: #ffffff;
   display: flex;
@@ -94,22 +79,22 @@ const CalandarDatailContainer = styled.div`
 `;
 
 const ImgContainer = styled.div`
-  text-align: center;
-  margin: 5px 0;
+  display: flex;
+  justify-content: center;
 `;
 
-const Arrow = styled.button<{ src: string }>`
-  width: 20px;
-  height: 20px;
-  background: url(${(props) => props.src}) no-repeat center center;
-  background-size: contain;
-  border: none;
-  cursor: pointer;
+const Line = styled.div`
+  width: 80px;
+  height: 3px;
+  background-color: #a9a9a9;
+  border-radius: 10px;
+  margin: 10px;
 `;
 
 const DateContainer = styled.div`
   display: flex;
   justify-content: space-between;
+  margin-top: 20px;
 `;
 
 const DateBox = styled.div`

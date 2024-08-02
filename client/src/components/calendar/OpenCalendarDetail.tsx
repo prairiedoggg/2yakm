@@ -1,9 +1,8 @@
 import dayjs from 'dayjs';
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import { calendarGet, calendarPost, calendarPut } from '../../api/calendarApi';
-import { useCalendar, useDateStore } from '../../store/store';
+import { useCalendar, useDateStore } from '../../store/calendar';
 import DetailTextBox from './DetailTextBox';
 
 interface CalendarData {
@@ -20,12 +19,31 @@ interface CalendarData {
 }
 
 const OpenCalendarDetail: React.FC = () => {
+  const today = dayjs().format('YYYY-MM-DD');
   const { calendarData, calImg } = useCalendar();
-  const { value, edit, neverPost, setNeverPost } = useDateStore();
+  const { value, edit, posted, addPosted } = useDateStore();
   const formattedDate = dayjs(value).format('YYYY-MM-DD');
   const [data, setData] = useState<CalendarData | null>(null);
-  const token = localStorage.getItem('token');
-  const navigate = useNavigate();
+  let isPosted = posted.find((item) => item.date === formattedDate)
+    ? true
+    : false;
+
+  useEffect(() => {
+    if (isPosted === true) {
+      const fetchPillData = async () => {
+        try {
+          const data = await calendarGet(today);
+          console.log(data);
+          setData(data);
+          addPosted({ date: formattedDate, post: true });
+        } catch (err) {
+          console.log('해당하는 약복용여부 정보 없음', err);
+        }
+      };
+
+      fetchPillData();
+    }
+  }, []);
 
   useEffect(() => {
     const formData = new FormData();
@@ -45,19 +63,20 @@ const OpenCalendarDetail: React.FC = () => {
     formData.append('temperature', calendarData?.temp?.toString() || '0');
     formData.append('weight', calendarData?.weight?.toString() || '0');
     formData.append('calImg', calImg?.get('file') as Blob);
-    console.log('이미지이미지', calImg?.get('file'));
 
     const putData = async () => {
       try {
-        if (!edit && !neverPost) {
-          const res = await calendarPut(formattedDate, formData);
-          setData(res);
-          console.log('일정 수정 성공:', res);
-        } else if (!edit && neverPost) {
+        if (!edit) {
+          if (isPosted) {
+            const res = await calendarPut(formattedDate, formData);
+            setData(res);
+            console.log('일정 수정 성공:', res);
+          }
+        } else {
           const res = await calendarPost(formData);
           setData(res);
           console.log('일정 등록 성공', res);
-          setNeverPost(false);
+          addPosted({ date: formattedDate, post: true });
         }
       } catch (err) {
         console.error('일정 등록/수정 오류:', err);
@@ -67,25 +86,22 @@ const OpenCalendarDetail: React.FC = () => {
   }, [edit]);
 
   useEffect(() => {
-    if (!!token) {
-      if (formattedDate !== undefined) {
-        const fetchPillData = async () => {
-          try {
-            const data = await calendarGet(formattedDate);
-            console.log(data);
-            setData(data);
-            setNeverPost(false);
+    console.log(formattedDate, isPosted);
+    if (formattedDate !== undefined && isPosted === true) {
+      const fetchPillData = async () => {
+        try {
+          const data = await calendarGet(formattedDate);
+          console.log(data);
+          setData(data);
+          addPosted({ date: formattedDate, post: true });
+        } catch (err) {
+          console.log('해당하는 약복용여부 정보 없음', err);
+        }
+      };
 
-            if (data === undefined) {
-              setNeverPost(true);
-            }
-          } catch (err) {
-            console.log('해당하는 약복용여부 정보 없음', err);
-          }
-        };
-
-        fetchPillData();
-      }
+      fetchPillData();
+    } else if (isPosted === false) {
+      setData(null);
     }
   }, [formattedDate]);
 

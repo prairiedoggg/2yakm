@@ -32,7 +32,7 @@ const Redirect = ({ sns }: { sns: string }) => {
       })
         .then((res) => {
           console.log(res);
-          if (res.message === '로그인 성공') {
+          if (res) {
             Cookies.set('login', res.message);
             // 쿠키에 토큰 저장
             fetchUserInformation(() => {
