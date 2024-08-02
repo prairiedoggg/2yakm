@@ -49,7 +49,7 @@ router.put('/', updateName);
 
 /**
  * @swagger
- * /api/mypage/profile-picture/s3:
+ * /api/mypage/profile-picture:
  *   put:
  *     summary: S3에 프로필 사진 업데이트
  *     tags: [mypage]
@@ -57,7 +57,7 @@ router.put('/', updateName);
  *       - multipart/form-data
  *     parameters:
  *       - in: formData
- *         name: profilePicture
+ *         name: profileImg
  *         type: file
  *         description: 업로드할 프로필 사진
  *     responses:
@@ -71,6 +71,6 @@ router.put('/', updateName);
  *                 profileimg:
  *                   type: string
  */
-router.put('/profile-picture/s3', updateProfilePictureS3);
+router.put('/profile-picture', updateProfilePictureS3);
 
 export default router;
