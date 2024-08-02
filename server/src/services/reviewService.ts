@@ -22,12 +22,38 @@ export const createReviewService = async (
 ): Promise<Review | null> => {
   // 매개변수화된 쿼리 (SQL 인젝션 공격을 방지할 수 있음)
   try {
-    const query = `
-    INSERT INTO reviews (pillid, userid, content)
-    VALUES ($1, $2, $3)
-    RETURNING *
+    const insertQuery = `
+      INSERT INTO reviews (pillid, userid, content)
+      VALUES ($1, $2, $3)
+      RETURNING *;
     `;
-    const values = [pillid, userid, content];
+    const insertValues = [pillid, userid, content];
+    const insertResult: QueryResult<Review> = await pool.query(
+      insertQuery,
+      insertValues
+    );
+
+    const insertedid = insertResult.rows[0].id;
+
+    const query = `
+      SELECT 
+        reviews.id,
+        reviews.pillid,
+        pills.name,
+        reviews.userid,
+        users.username,
+        reviews.content,
+        reviews.createdAt
+      FROM 
+        reviews
+      JOIN 
+        pills ON reviews.pillid = pills.id
+      JOIN 
+        users ON reviews.userid = users.userid
+      WHERE 
+        reviews.id = $1
+    `;
+    const values = [insertedid];
     const result: QueryResult<Review> = await pool.query(query, values);
 
     return result.rows.length ? result.rows[0] : null;
