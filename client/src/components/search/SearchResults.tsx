@@ -37,7 +37,7 @@ const SearchResults = () => {
           console.log('좋아요 수', count);
           setFavoriteCount(count);
           const status = await fetchFavoriteStatusApi(data.id);
-          setIsFavorite(!status);
+          setIsFavorite(status);
         } else {
           setPillData(null);
           setPillId(null);
@@ -87,7 +87,7 @@ const SearchResults = () => {
                 <Icon
                   icon='mdi:heart'
                   style={{
-                    color: isFavorite ? 'red' : 'gray'
+                    color: isFavorite ? 'gray' : 'red'
                   }}
                   width='24'
                   height='24'

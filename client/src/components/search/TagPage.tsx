@@ -5,15 +5,21 @@ import { useSearchStore } from '../../store/search';
 import { fetchPillListByEfficacy } from '../../api/search';
 import { fetchFavoriteCount } from '../../api/favoriteApi';
 import { fetchReviewCount } from '../../api/reviewApi';
-import { usePillStore } from '../../store/pill';
 import { useFavoriteStore } from '../../store/favorite';
 import { useReviewStore } from '../../store/review';
 
+
+export interface PillData {
+  id: number;
+  name: string;
+}
+
+
 const TagPage = () => {
   const { searchQuery } = useSearchStore();
-  const { pillData, setPillData } = usePillStore();
   const { favoriteCount, setFavoriteCount } = useFavoriteStore();
   const { reviewCount, setReviewCount } = useReviewStore();
+  const [pillData, setPillData] = useState<PillData[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
 
   useEffect(() => {
@@ -37,7 +43,7 @@ const TagPage = () => {
       }
     };
     fetchData();
-  }, [ searchQuery, setFavoriteCount, setReviewCount]);
+  }, [searchQuery, setFavoriteCount, setReviewCount]);
 
   if (loading) {
     return <div>데이터 검색중입니다.</div>;
@@ -54,7 +60,7 @@ const TagPage = () => {
       <ListContainer>
         <p>좋아요 개수로 정렬되었습니다.</p>
         <PillList>
-          {pillData.map((pill: Pill) => (
+          {pillData.map((pill: PillData) => (
             <PillItem key={pill.id}>
               <PillImg src={`/img/pill.png`} alt={pill.name}></PillImg>
               <PillText>

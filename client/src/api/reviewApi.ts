@@ -1,6 +1,5 @@
 import { get, post, del } from './api';
 
-
 export const fetchReviews = async ({
   pillId,
   initialLimit = 10,
@@ -27,14 +26,18 @@ export const fetchReviews = async ({
   }
 };
 
-
 export const createReview = async (review: {
   content: string;
   pillId: number;
 }) => {
   try {
-    const data = await post(`/api/reviews`, review);
-    console.log('리뷰 post');
+    const payload = {
+      content: review.content,
+      pillid: review.pillId
+    };
+    console.log('리뷰 생성 요청:', payload);
+    const data = await post(`/api/reviews`, payload);
+    console.log('리뷰 post 성공:', data);
     return data;
   } catch (error) {
     console.error('리뷰생성 에러:', error);
@@ -42,9 +45,13 @@ export const createReview = async (review: {
   }
 };
 
-export const deleteReview = async (id:number, onSuccess?:(arg0:any)=>void, onFailure?:(arg0:any)=>void) =>{
+export const deleteReview = async (
+  id: number,
+  onSuccess?: (arg0: any) => void,
+  onFailure?: (arg0: any) => void
+) => {
   try {
-    const data = await del('/api/reviews', { id:id });
+    const data = await del('/api/reviews', { id: id });
     if (onSuccess) onSuccess(data);
   } catch (error) {
     console.error('change ProfileImage failed', error);
