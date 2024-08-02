@@ -1,4 +1,5 @@
 import styled from 'styled-components';
+import { useDateStore } from '../../store/calendar';
 import BloodSugar from './calendarDetails/BloodSugar';
 import IsPillTaken from './calendarDetails/IsPillTaken';
 import Photo from './calendarDetails/Photo';
@@ -28,48 +29,32 @@ const DetailTextBox = ({
   weight,
   photo
 }: DetailTextBoxProps) => {
+  const { setAddTaken, setEdit, setArrow } = useDateStore();
+
   const handleContent = () => {
     switch (title) {
       case '약 복용 여부':
-        return (
-          <UnitContainer>
-            <IsPillTaken pillData={pillData} />
-          </UnitContainer>
-        );
+        return <IsPillTaken pillData={pillData} />;
       case '혈당':
         return (
-          <UnitContainer>
-            <BloodSugar
-              bloodsugarbefore={bloodsugarbefore}
-              bloodsugarafter={bloodsugarafter}
-            />
-          </UnitContainer>
+          <BloodSugar
+            bloodsugarbefore={bloodsugarbefore}
+            bloodsugarafter={bloodsugarafter}
+          />
         );
       case '체온':
-        return (
-          <UnitContainer>
-            <Temperature temp={temp} />
-          </UnitContainer>
-        );
+        return <Temperature temp={temp} />;
       case '체중':
-        return (
-          <UnitContainer>
-            <Weight weight={weight} />
-          </UnitContainer>
-        );
+        return <Weight weight={weight} />;
       case '사진 기록':
-        return (
-          <UnitContainer>
-            <Photo photo={photo} />
-          </UnitContainer>
-        );
+        return <Photo photo={photo} />;
       default:
         return null;
     }
   };
 
   const isRender =
-    (pillData && pillData && pillData.length > 0) ||
+    (pillData && pillData.length > 0) ||
     (bloodsugarbefore !== undefined && bloodsugarbefore !== 0) ||
     (bloodsugarafter !== undefined && bloodsugarafter !== 0) ||
     (temp !== undefined && temp !== 0) ||
@@ -77,30 +62,45 @@ const DetailTextBox = ({
     (photo !== undefined && photo !== null);
 
   const isEmpty =
-    (!pillData || !pillData || pillData.length === 0) &&
+    (!pillData || pillData.length === 0) &&
     (bloodsugarbefore === undefined || bloodsugarbefore === 0) &&
     (bloodsugarafter === undefined || bloodsugarafter === 0) &&
     (temp === undefined || temp === 0) &&
     (weight === undefined || weight === 0) &&
     (photo === undefined || photo === null);
 
+  const isPill = title === '약 복용 여부';
+
+  const openEdit = (isPill: boolean) => {
+    if (isPill) {
+      setAddTaken(true);
+      setEdit(true);
+    } else {
+      setEdit(true);
+    }
+    setArrow(true);
+  };
+
   return isRender ? (
-    <Container isPill={title === '약 복용 여부'}>
+    <PillContainer isPill={isPill} onClick={() => openEdit(isPill)}>
       <ContentTitle>{title}</ContentTitle>
-      {handleContent()}
-    </Container>
+      <UnitContainer>{handleContent()}</UnitContainer>
+    </PillContainer>
   ) : isEmpty ? (
-    <Empty>{title} 정보 없음. 추가하려면 탭 하세요.</Empty>
+    <Empty onClick={() => openEdit(isPill)}>
+      {title} 정보 없음. 추가하려면 탭 하세요.
+    </Empty>
   ) : null;
 };
 
-const Container = styled.div<{ isPill?: boolean }>`
+const PillContainer = styled.div<{ isPill?: boolean }>`
   border: 0.5px #d9d9d9 solid;
   border-radius: 10px;
   padding: 13px 10px;
   margin: 15px 0;
   display: ${({ isPill }) => (isPill ? 'block' : 'flex')};
   justify-content: ${({ isPill }) => (isPill ? 'normal' : 'space-between')};
+  cursor: pointer;
 `;
 
 const ContentTitle = styled.div`
@@ -121,6 +121,7 @@ const Empty = styled.div`
   font-size: 10.5pt;
   margin-top: 10px;
   color: #9b9a9a;
+  cursor: pointer;
 `;
 
 export default DetailTextBox;

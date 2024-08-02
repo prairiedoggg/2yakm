@@ -8,9 +8,8 @@ Date        Author   Status    Description
 2024.07.21  오선아   Created
 */
 
-import styled from 'styled-components';
 import { Icon } from '@iconify-icon/react';
-import { KAKAO_AUTH_URL, GOOGLE_AUTH_URL, NAVER_AUTH_URL } from '../../oAuth';
+import styled from 'styled-components';
 
 const SnsLogin = ({
   onClose,
@@ -21,11 +20,16 @@ const SnsLogin = ({
   onEmailLoginClick: () => void;
   onEmailRegisterClick: () => void;
 }) => {
+  const SERVER_BASE_URL = import.meta.env.VITE_APP_SERVER_BASE_URL;
   return (
     <Content>
       <Logo src='/img/logo.svg' alt='이약뭐약' />
       <div className='bubble'>⚡ 3초만에 빠른 회원가입</div>
-      <a className='login kakao' onClick={onClose} href={KAKAO_AUTH_URL}>
+      <a
+        className='login kakao'
+        onClick={onClose}
+        href={`${SERVER_BASE_URL}api/auth/kakao/callback`}
+      >
         <div className='snsBox'>
           <Icon
             icon='ri:kakao-talk-fill'
@@ -36,7 +40,11 @@ const SnsLogin = ({
           카카오톡 로그인
         </div>
       </a>
-      <a className='login naver' onClick={onClose} href={NAVER_AUTH_URL}>
+      <a
+        className='login naver'
+        onClick={onClose}
+        href={`${SERVER_BASE_URL}api/auth/naver/callback`}
+      >
         <div className='snsBox'>
           <Icon
             icon='simple-icons:naver'
@@ -47,7 +55,11 @@ const SnsLogin = ({
           네이버 로그인
         </div>
       </a>
-      <a className='login google' onClick={onClose} href={GOOGLE_AUTH_URL}>
+      <a
+        className='login google'
+        onClick={onClose}
+        href={`${SERVER_BASE_URL}api/auth/google/callback`}
+      >
         <div className='snsBox'>
           <Icon
             onClick={onClose}

@@ -1,6 +1,6 @@
-import styled from 'styled-components';
-import { useCalendar } from '../../../store/store';
 import { useEffect } from 'react';
+import styled from 'styled-components';
+import { useCalendar } from '../../../store/calendar';
 
 interface IsPillTakenProps {
   pillData?: {

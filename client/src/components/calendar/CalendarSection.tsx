@@ -4,7 +4,7 @@ import Calendar from 'react-calendar';
 import 'react-calendar/dist/Calendar.css';
 import styled from 'styled-components';
 import { calendarAllGet } from '../../api/calendarApi';
-import { useDateStore } from '../../store/store';
+import { useDateStore } from '../../store/calendar';
 import '../../styles/calendar.css';
 
 interface CalendarDate {
@@ -24,7 +24,7 @@ interface TileContentProps {
 }
 
 const CalendarSection: React.FC = () => {
-  const { value, onChange, edit } = useDateStore();
+  const { value, onChange, edit, addPosted, posted } = useDateStore();
   const [postArray, setPostArray] = useState<Set<string>>(new Set());
   const [calendarData, setData] = useState<CalendarDate[]>([]);
 
@@ -41,7 +41,19 @@ const CalendarSection: React.FC = () => {
     };
 
     fetchData();
-  }, [edit, value]);
+  }, [edit]);
+
+  useEffect(() => {
+    const postedDates = new Set(posted.map((item) => item.date));
+
+    calendarData.forEach((post) => {
+      const postDate = dayjs(post.date).format('YYYY-MM-DD');
+
+      if (!postedDates.has(postDate)) {
+        addPosted({ date: postDate, post: true });
+      }
+    });
+  }, [calendarData, addPosted, posted]);
 
   const addContent = ({ date, view }: TileContentProps) => {
     if (view === 'month' && postArray.has(date.toDateString())) {

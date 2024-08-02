@@ -16,9 +16,13 @@ api.interceptors.response.use(
       error.response.status === HttpStatusCode.Unauthorized &&
       !originalRequest._retry
     ) {
+      originalRequest._retry = true; // 무한 루프 방지 설정
+
       try {
-        const token = await refreshAuthToken();
-        localStorage.setItem('token', token);
+        const res = await refreshAuthToken();
+        console.log(res);
+
+        return api(originalRequest); // 원래 요청 다시 시도
       } catch (err) {
         console.error('토큰 갱신 실패:', err);
         return Promise.reject(err);
@@ -45,7 +49,7 @@ export const get = async (
 
 export const post = async (
   url: string,
-  data: any,
+  data?: any,
   params?: any,
   withCredentials?: boolean
 ) => {

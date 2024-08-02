@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { FiXCircle } from 'react-icons/fi';
-import { useCalendar } from '../../store/store';
+import { useCalendar } from '../../store/calendar';
 
 const EditDetailPhoto = () => {
   const videoRef = useRef<HTMLVideoElement | null>(null);

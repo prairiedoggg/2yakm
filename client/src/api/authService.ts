@@ -182,10 +182,9 @@ export const resetPassword = async (
 
 export const refreshAuthToken = async () => {
   try {
-    const response = await post(`api/auth/token`, {});
-    const token = response.data.token;
-    localStorage.setItem('token', token);
-    return token;
+    const response = await post(`api/auth/token`);
+    console.log('토큰 갱신', response);
+    return response;
   } catch (err) {
     console.error('Refresh token failed:', err);
     throw err;
