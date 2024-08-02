@@ -62,7 +62,7 @@ export const updateUsername = async (userId: string, updateData: UpdateUsernameD
 
 // Function to update the profile picture
 export const updateProfilePicture = async (userId: string, profilePicture: string): Promise<string> => {
-
+  console.log(profilePicture);
   try {
     const result = await pool.query(
       'UPDATE users SET profileimg = $1 WHERE userid = $2 RETURNING profileimg',

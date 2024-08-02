@@ -2,7 +2,7 @@ import { Response, Request, NextFunction } from 'express';
 import { getUserProfile, updateUsername, updateProfilePicture} from '../services/mypageService';
 import Joi from 'joi';
 import { createError } from '../utils/error';
-const { uploadToS3 } = require('../config/imgUploads');
+import { uploadToS3 } from '../config/imgUploads';
 
 interface RequestUser {
   id: string;
@@ -50,21 +50,22 @@ export const updateName = async (req: AuthenticatedRequest, res: Response, next:
   }
 };
 
-export const updateProfilePictureS3 = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+export const updateProfilePictureS3 = [
   uploadToS3.single('profileImg'),
   async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
     try {
       if (!req.user) {
         return next(createError('UnauthorizedError', 'Unauthorized', 401));
       }
-      if (!req.file) {
+      if (!req.file || !(req.file as any).location) {
         return next(createError('UploadError', 'No file uploaded', 400));
       }
-      const s3Url = (req.file as Express.MulterS3.File).location; // Assuming multer-s3 adds location property
+      const s3Url = req.file ? (req.file as any).location : null;
+      console.log(s3Url);
       const updatedProfilePicture = await updateProfilePicture(req.user.id, s3Url);
       res.status(200).json({ profilePicture: updatedProfilePicture });
     } catch (error) {
       next(error);
     }
   }
-};
+]
