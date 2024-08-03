@@ -5,6 +5,10 @@ import { zonedTimeToUtc, utcToZonedTime, format } from 'date-fns-tz';
 import { QueryResult } from 'pg';
 
 const TIMEZONE = 'Asia/Seoul';
+const getErrorMessage = (error: unknown): string => {
+  if (error instanceof Error) return error.message;
+  return String(error);
+};
 
 // 날짜를 한국 시간으로 변환하는 함수
 const convertToKoreanTime = (date: Date): Date => {
@@ -34,7 +38,8 @@ export const getAllCalendars = async (userId: string): Promise<Calendar[]> => {
       medications: typeof row.medications === 'string' ? JSON.parse(row.medications) : row.medications
     }));
   } catch (error) {
-    throw createError('DBError', '캘린더 조회 중 데이터베이스 오류가 발생했습니다.', 500);
+    console.error('getAllCalendars 오류:', error);
+    throw createError('DBError', `캘린더 조회 중 데이터베이스 오류가 발생했습니다. 원인: ${getErrorMessage(error)}`, 500);
   }
 };
 
@@ -69,7 +74,7 @@ export const getCalendarById = async (userId: string, date: Date): Promise<Calen
     };
   } catch (error) {
     console.error('getCalendarByDate 오류:', error);
-    throw createError('DBError', '캘린더 조회 중 데이터베이스 오류가 발생했습니다.', 500);
+    throw createError('DBError', `캘린더 조회 중 데이터베이스 오류가 발생했습니다. 원인: ${getErrorMessage(error)}`, 500);
   }
 };
 
@@ -116,7 +121,8 @@ export const createCalendar = async (calendar: Omit<Calendar, 'id'>): Promise<Ca
     if (error instanceof Error && error.name === 'DuplicateCalendar') {
       throw error;
     }
-    throw createError('DBError', '캘린더 생성 중 데이터베이스 오류가 발생했습니다.', 500);
+    console.error('createCalendar 오류:', error);
+    throw createError('DBError', `캘린더 생성 중 데이터베이스 오류가 발생했습니다. 원인: ${getErrorMessage(error)}`, 500);
   }
 };
 
@@ -175,7 +181,7 @@ export const updateCalendar = async (
   } catch (error) {
     console.error('updateCalendar 오류:', error);
     if (error instanceof Error && error.name === 'CalendarNotFound') throw error;
-    throw createError('DBError', '캘린더 업데이트 중 데이터베이스 오류가 발생했습니다.', 500);
+    throw createError('DBError', `캘린더 업데이트 중 데이터베이스 오류가 발생했습니다. 원인: ${getErrorMessage(error)}`, 500);
   }
 };
 
@@ -193,7 +199,8 @@ export const deleteCalendar = async (userId: string, date: Date): Promise<boolea
     
     return true;
   } catch (error) {
+    console.error('deleteCalendar 오류:', error);
     if (error instanceof Error && error.name === 'CalendarNotFound') throw error;
-    throw createError('DBError', '캘린더 삭제 중 데이터베이스 오류가 발생했습니다.', 500);
+    throw createError('DBError', `캘린더 삭제 중 데이터베이스 오류가 발생했습니다. 원인: ${getErrorMessage(error)}`, 500);
   }
 };
