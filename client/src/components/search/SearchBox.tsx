@@ -10,7 +10,7 @@ import styled from 'styled-components';
 import {
   fetchAutocompleteSuggestions,
   fetchPillDataByImage
-} from '../../api/search';
+} from '../../api/searchApi';
 import { PillData } from '../../store/pill.ts';
 import { useSearchStore } from '../../store/search';
 import { useSearchHistoryStore } from '../../store/searchHistory';
