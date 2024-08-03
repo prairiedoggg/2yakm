@@ -1,5 +1,5 @@
 import { Icon } from '@iconify-icon/react';
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import styled from 'styled-components';
 import SearchHeader from './SearchHeader';
@@ -23,6 +23,19 @@ const SearchResults = () => {
   const [activeTab, setActiveTab] = useState<string>('effectiveness');
   const [pillId, setPillId] = useState<number | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
+
+  const formatTextWithLineBreaks = (text: string) => {
+    return text.split('(').map((part, index, array) => (
+      <React.Fragment key={index}>
+        {part}
+        {index < array.length - 1 && (
+          <>
+            <br />({}
+          </>
+        )}
+      </React.Fragment>
+    ));
+  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -77,14 +90,14 @@ const SearchResults = () => {
 
   return (
     <>
-      <SearchHeader/>
+      <SearchHeader />
       <SearchResultsContainer>
         <PillInfo>
-          <img src={`/img/pill.png`} alt='pill' />
+          <img src={pillData.imgurl} alt='pill' />
           <section>
             <PillHeader>
-              <PillTitle>
-                <h3>{pillData.name}</h3>
+              <PillText>
+                <h3>{formatTextWithLineBreaks(pillData.name)}</h3>
                 <HeartButton onClick={handleToggleFavorite}>
                   <Icon
                     icon='mdi:heart'
@@ -96,7 +109,7 @@ const SearchResults = () => {
                   />
                   <p>{favoriteCount}</p>
                 </HeartButton>
-              </PillTitle>
+              </PillText>
               <span>{pillData.engname}</span>
               <p>{pillData.companyname}</p>
             </PillHeader>
@@ -104,7 +117,11 @@ const SearchResults = () => {
               {pillData.importantWords &&
                 pillData.importantWords.trim() &&
                 pillData.importantWords.split(', ').map((word) => (
-                  <Tag to={`/search/efficacy?q=${word}`} key={word} className='tag'>
+                  <Tag
+                    to={`/search/efficacy?q=${word}`}
+                    key={word}
+                    className='tag'
+                  >
                     {word}
                   </Tag>
                 ))}
@@ -147,8 +164,12 @@ const PillInfo = styled.div`
   width: 80vw;
   margin: auto;
 
+  & img {
+    width: 30%;
+  }
+
   & section {
-    margin-left: 30px;
+    margin-left: 20px;
   }
 `;
 
@@ -167,22 +188,26 @@ const PillHeader = styled.div`
   }
 `;
 
-const PillTitle = styled.div`
+const PillText = styled.div`
   display: flex;
+
+  & h3 {
+    font-size: 16px;
+    font-weight: 500;
+  }
 `;
 
 const HeartButton = styled.button`
+  margin-left: 5px;
   background: none;
   border: none;
   padding: 0;
   cursor: pointer;
 `;
 
-const TagContainer = styled.div`
-`;
+const TagContainer = styled.div``;
 
-const Tag = styled(Link)`
-`;
+const Tag = styled(Link)``;
 
 const Exp = styled.p`
   margin: 15px 20px;

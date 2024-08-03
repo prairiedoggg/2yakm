@@ -1,13 +1,16 @@
 import { create } from 'zustand';
 
 export interface PillData {
+  imgurl:string;
   id: number;
   name: string;
   engname: string;
   companyname: string;
+  importantWords: string;
   ingredientname: string;
   efficacy: string;
-  importantWords: string;
+  dosage: string;
+  caution: string;
 }
 
 interface PillState {
