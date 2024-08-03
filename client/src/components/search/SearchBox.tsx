@@ -131,9 +131,9 @@ export default SearchBox;
 
 const SearchContainer = styled.div`
   position: absolute;
-  top: 30px;
+  top: 100%;
   left: 50%;
-  transform: translateX(-50%);
+  transform: translate(-50%, -50%);
   display: flex;
   align-items: center;
   padding: 0 15px;
