@@ -7,6 +7,7 @@ import {
   getUserAllReviewService
 } from '../services/reviewService';
 import { CustomRequest } from '../types/express';
+import { createError } from '../utils/error';
 
 // 리뷰 생성 컨트롤러
 export const createReview = async (
@@ -102,6 +103,14 @@ export const getPillsAllReview = async (
   const cursorLimit = parseInt(req.query.cursorLimit ?? '10'); // cursor 적용 했을 때 가져올 자료 개수
   const cursor = parseInt(req.query.cursor) ?? undefined;
 
+  if (isNaN(initialLimit) || isNaN(cursorLimit)) {
+    throw createError(
+      'Invalid value',
+      'initialLimit, cursorLimit 값을 다시 확인해 주세요.',
+      400
+    );
+  }
+
   try {
     const { reviews, nextCursor } = await getPillsAllReviewService(
       pillid,
@@ -137,6 +146,14 @@ export const getUserAllReview = async (
   const offset = parseInt(req.query.offset ?? '0');
   const sortedBy = req.query.sortedBy ?? 'createdAt';
   const order = req.query.order?.toUpperCase() ?? 'DESC';
+
+  if (isNaN(limit) || isNaN(offset)) {
+    throw createError(
+      'Invalid value',
+      'limit, offset 값을 다시 확인해 주세요.',
+      400
+    );
+  }
 
   try {
     const review = await getUserAllReviewService(

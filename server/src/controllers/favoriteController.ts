@@ -5,6 +5,7 @@ import {
   userFavoriteStatusService
 } from '../services/favoriteService';
 import { CustomRequest } from '../types/express';
+import { createError } from '../utils/error';
 
 // 즐겨 찾는 약 검색 컨트롤러
 export const searchFavoritePill = async (
@@ -28,6 +29,14 @@ export const searchFavoritePill = async (
   const offset = parseInt(req.query.offset ?? '0');
   const sortedBy = req.query.sortedBy ?? 'createdAt';
   const order = req.query.order?.toUpperCase() ?? 'DESC';
+
+  if (isNaN(limit) || isNaN(offset)) {
+    throw createError(
+      'Invalid value',
+      'limit, offset 값을 다시 확인해 주세요.',
+      400
+    );
+  }
 
   try {
     const favorite = await searchFavoritePillService(

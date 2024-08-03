@@ -224,6 +224,8 @@ router.delete('/:id', authByToken, deleteReview);
  *                       createdat:
  *                         type: string
  *                         format: date-time
+ *       400:
+ *         description: limit, offset 값을 다시 확인해 주세요.
  *       401:
  *         description: 토큰이 없습니다
  *       500:
@@ -297,6 +299,8 @@ router.get('/users/', authByToken, getUserAllReview);
  *                 nextCursor:
  *                   type: integer
  *                   description: 다음 페이지를 가져오기 위한 커서 값 (마지막으로 반환된 리뷰의 id)
+ *       400:
+ *         description: initialLimit, cursorLimit 값을 다시 확인해 주세요.
  *       500:
  *         description: Internal Server Error
  */

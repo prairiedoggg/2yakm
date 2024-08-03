@@ -81,6 +81,8 @@ const router = Router();
  *                       createdat:
  *                         type: string
  *                         format: date-time
+ *       400:
+ *         description: limit, offset 값을 다시 확인해 주세요.
  *       401:
  *         description: 토큰이 없습니다
  *       500:
