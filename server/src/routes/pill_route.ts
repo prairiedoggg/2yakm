@@ -262,7 +262,7 @@ router.get('/:id/favoritecount', getPillFavoriteCount);
  *                     type: string
  *                   boxurl:
  *                     type: string
- * 
+ *
  */
 router.get('/search/name', searchPillsbyNameHandler);
 
@@ -397,10 +397,10 @@ router.get('/search/efficacy', searchPillsbyEfficacyHandler);
  *                         type: string
  *                       boxurl:
  *                         type: string
- *                     
- *             
+ *
+ *
  */
-router.get(
+router.post(
   '/search/image',
   uploadToMemory.array('image', 2),
   searchPillsByImageHandler
