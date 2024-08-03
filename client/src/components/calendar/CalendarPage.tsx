@@ -23,9 +23,15 @@ const CalendarPage: React.FC = () => {
     setArrow(true);
   };
 
+  const handleModal = () => {
+    setAddTaken(false);
+    setEdit(false);
+    setArrow(false);
+  };
+
   return (
     <CalendarContainer>
-      <Modal expanded={arrow} onClick={() => openEdit(false)} />
+      <Modal expanded={arrow} onClick={() => handleModal()} />
       <Header />
       <MainContent>
         <CalendarSection />
