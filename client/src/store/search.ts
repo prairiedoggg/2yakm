@@ -10,8 +10,6 @@ interface SearchState {
   setSearchType: (type: string) => void;
   suggestions: PillData[];
   setSuggestions: (suggestions: PillData[]) => void;
-  isSearched: boolean;
-  setIsSearched: (isSearched: boolean) => void;
   isImageSearch: boolean;
   setIsImageSearch: (isImageSearch: boolean) => void;
 }
@@ -25,8 +23,6 @@ export const useSearchStore = create<SearchState>((set) => ({
   setSearchType: (type) => set({ searchType: type }),
   suggestions: [],
   setSuggestions: (suggestions) => set({ suggestions }),
-  isSearched: false,
-  setIsSearched: (isSearched: boolean) => set({ isSearched }),
   isImageSearch: false,
   setIsImageSearch: (isImageSearch: boolean) => set({ isImageSearch })
 }));

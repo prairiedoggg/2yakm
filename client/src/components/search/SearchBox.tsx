@@ -27,10 +27,8 @@ const SearchBox = ({ setImageResults }: SearchBoxProps) => {
     setImageQuery,
     searchType,
     setSuggestions,
-    setIsSearched,
     setIsImageSearch,
     isImageSearch,
-    isSearched
   } = useSearchStore();
   const [query, setQuery] = useState<string>('');
   const [bottomSheet, setBottomSheet] = useState(false);
@@ -56,10 +54,6 @@ const SearchBox = ({ setImageResults }: SearchBoxProps) => {
       await fetchSuggestions(newQuery);
     }
 
-    if (isSearched) {
-      setIsSearched(false);
-    }
-
     if (isImageSearch) {
       setIsImageSearch(false);
     }
@@ -70,11 +64,7 @@ const SearchBox = ({ setImageResults }: SearchBoxProps) => {
       setSearchQuery(query);
       addHistory(query);
 
-      if (searchType === 'efficacy') {
-        navigate(`/search/efficacy?q=${query}`);
-      }
-
-      setIsSearched(true);
+      navigate(`/search/${searchType}?q=${query}`);
     } else {
       setSearchQuery('');
       setQuery('');
