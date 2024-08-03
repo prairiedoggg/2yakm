@@ -71,7 +71,7 @@ const SearchBox = ({ setImageResults }: SearchBoxProps) => {
       addHistory(query);
 
       if (searchType === 'efficacy') {
-        navigate(`/search/tag?q=${query}`);
+        navigate(`/search/efficacy?q=${query}`);
       }
 
       setIsSearched(true);

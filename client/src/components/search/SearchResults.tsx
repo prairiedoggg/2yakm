@@ -86,7 +86,7 @@ const SearchResults = () => {
                 <Icon
                   icon='mdi:heart'
                   style={{
-                    color: isFavorite ? 'gray' : 'red'
+                    color: isFavorite ? 'red' : 'gray'
                   }}
                   width='24'
                   height='24'
@@ -101,7 +101,7 @@ const SearchResults = () => {
             {pillData.importantWords &&
               pillData.importantWords.trim() &&
               pillData.importantWords.split(', ').map((word) => (
-                <Tag to={`/search/tag/:${word}`} key={word}>
+                <Tag to={`/search/efficacy?q=${word}`} key={word}>
                   {word}
                 </Tag>
               ))}

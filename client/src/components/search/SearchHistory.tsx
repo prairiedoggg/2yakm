@@ -1,4 +1,5 @@
 import styled from 'styled-components';
+import { Link } from 'react-router-dom';
 import { useSearchHistoryStore } from '../../store/searchHistory';
 
 const SearchHistory = () => {
@@ -15,7 +16,9 @@ const SearchHistory = () => {
           .slice()
           .reverse()
           .map((item, index) => (
-            <HistoryItem key={index}>{item}</HistoryItem>
+            <HistoryItem to={`/search/name?q=${item}`} key={index}>
+              {item}
+            </HistoryItem>
           ))}
       </HistoryList>
     </HistoryInner>
@@ -41,7 +44,8 @@ const HistoryList = styled.div`
   margin-top: 10px;
 `;
 
-const HistoryItem = styled.div`
+const HistoryItem = styled(Link)`
+  display: block;
   padding: 5px 0;
   color: #333;
 `;

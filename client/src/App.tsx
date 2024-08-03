@@ -3,9 +3,11 @@ import 'dayjs/locale/ko';
 import { Route, BrowserRouter as Router, Routes } from 'react-router-dom';
 import AuthenticatedRoute from './components/AuthenticatedRoute';
 
+
 const Home = loadable(() => import('./components/home/Home'));
 const News = loadable(() => import('./components/cardNews/News'));
 const Search = loadable(() => import('./components/search/Search'));
+const SearchResults = loadable(() => import('./components/search/SearchResults'));
 const TagPage = loadable(() => import('./components/search/TagPage'));
 const Calendar = loadable(() => import('./components/calendar/CalendarPage'));
 const Alarm = loadable(() => import('./components/alarm/Alarm'));
@@ -31,7 +33,8 @@ const App = () => {
         <Route path='/' element={<Home />} />
         <Route path='/news/:num' element={<News />} />
         <Route path='/search' element={<Search />} />
-        <Route path='/search/tag' element={<TagPage />} />
+        <Route path='/search/name' element={<SearchResults />} />
+        <Route path='/search/efficacy' element={<TagPage />} />
         <Route
           path='/calendar'
           element={<AuthenticatedRoute element={Calendar} />}
