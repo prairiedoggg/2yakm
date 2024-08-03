@@ -60,6 +60,7 @@ export const searchFavoritePillService = async (
       favorites.pillid,
       pills.name,
       pills.efficacy,
+      pills.boxurl,
       favorites.createdAt
     FROM
       favorites

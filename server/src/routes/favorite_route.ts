@@ -78,6 +78,10 @@ const router = Router();
  *                         type: string
  *                         description: pill efficacy(효능)
  *                         example: "1. 주효능·효과\n감기로 인한 발열 및 동통(통증), 두통, 신경통, 근육통, 월경통, 염좌통(삔 통증)\n2. 다음 질환에도 사용할 수 있다.\n치통, 관절통, 류마티양 동통(통증)"
+ *                       boxurl:
+ *                         type: string
+ *                         description: 약 상자 사진 url
+ *                         example: "https://res.cloudinary.com/dnxyampqy/image/upload/v1722529384/boximg/eyakmoyak/198500207.jpg"
  *                       createdat:
  *                         type: string
  *                         format: date-time
