@@ -325,7 +325,7 @@ const preprocessImage = async (
       {
         encoding: 'buffer'
       }
-    ); // execFilePromise를 사용하여 Python 스크립트를 실행함, buffer 형태로 인코딩해야 iconv로 변환할 수 있음
+    ); // execFilePromise를 사용하여 Python 스크립트를 실행함
 
     // stdout, stderr 한글 깨짐 현상 수정
     const decodedStdout = iconv.decode(stdout, 'euc-kr');
@@ -437,7 +437,10 @@ const detectTextInImage = async (
     if (detections && detections.length > 0) {
       const filteredText = detections
         .map((text) => text?.description ?? '')
-        .filter((text) => !text.match(/[\.()]/) && !text.includes('-'));
+        .filter(
+          (text) =>
+            !text.match(/[\.()]/) && 
+            !text.includes('-'));
 
       console.log('Filtered text:', filteredText);
       return filteredText;
@@ -509,13 +512,13 @@ export const searchPillsByImage = async (
       };
     }
 
-    if (detectedText[0].includes('\n')) {
+    if (detectedText[0].includes('\n')){
       const temp = detectedText[0].split('\n');
       detectedText[0] = temp[0];
       detectedText[1] = temp[1];
     }
 
-    console.log('Detected Text:', detectedText);
+    console.log('Detected Text:',detectedText);
 
     let pills: Pills[] = [];
     let total = 0;

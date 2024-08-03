@@ -117,7 +117,7 @@ interface ImageQueryParams {
 }
 
 export const searchPillsByImageHandler = async (
-  req: Request<unknown, unknown, unknown, ImageQueryParams>,
+  req: Request<unknown, unknown, unknown, ImageQueryParams>&{ files: Express.Multer.File[] },
   res: Response,
   next: NextFunction
 ) => {
@@ -125,9 +125,7 @@ export const searchPillsByImageHandler = async (
     if (!req.files) {
       return res.status(400).json({ message: 'No file uploaded' });
     }
-
-    const files = req.files as Express.Multer.File[];
-
+    const files = req.files
     const imageBuffer = files.map((file) => file.buffer);
     const limit = parseInt(req.query.limit ?? '10', 10);
     const offset = parseInt(req.query.offset ?? '0', 10);
