@@ -1,4 +1,5 @@
 import { Response, Request, NextFunction } from 'express';
+import { ParsedQs } from 'qs';
 import {
   getPills,
   getPillById,
@@ -62,10 +63,6 @@ interface QueryParams {
   order?: 'ASC' | 'DESC';
 }
 
-interface RequestParams {
-  id: string;
-}
-
 export const searchPillsbyNameHandler = async (
   req: Request<unknown, unknown, unknown, QueryParams>,
   res: Response,
@@ -111,25 +108,32 @@ export const searchPillsbyEfficacyHandler = async (
   }
 };
 
-interface ImageQueryParams {
+interface ImageQueryParams extends ParsedQs {
   limit?: string;
   offset?: string;
 }
 
+interface ImageRequest extends Request<{}, {}, {}, ImageQueryParams> {
+  files?: Express.Multer.File[] | { [fieldname: string]: Express.Multer.File[] };
+}
+
 export const searchPillsByImageHandler = async (
-  req: Request<unknown, unknown, unknown, ImageQueryParams>&{ files: Express.Multer.File[] },
+  req: ImageRequest,
   res: Response,
   next: NextFunction
 ) => {
   try {
-    if (!req.files) {
+    if (!req.files || (Array.isArray(req.files) && req.files.length === 0)) {
       return res.status(400).json({ message: 'No file uploaded' });
     }
-    const files = req.files
-    const imageBuffer = files.map((file) => file.buffer);
+
+    const imageBuffers: Buffer[] = Array.isArray(req.files)
+      ? req.files.map(file => file.buffer)
+      : Object.values(req.files).flat().map(file => file.buffer);
+
     const limit = parseInt(req.query.limit ?? '10', 10);
     const offset = parseInt(req.query.offset ?? '0', 10);
-    const result = await searchPillsByImage(imageBuffer, limit, offset);
+    const result = await searchPillsByImage(imageBuffers, limit, offset);
     res.status(200).json(result);
   } catch (error) {
     next(error);
