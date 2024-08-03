@@ -1,42 +1,70 @@
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import styled from 'styled-components';
-import create from 'zustand';
-import { useInfiniteQuery, useMutation, useQueryClient } from 'react-query';
 import { fetchReviews, createReview } from '../../api/reviewApi';
+import { useReviewStore } from '../../store/review';
 
-interface ReviewState {
-  isWritingReview: boolean;
-  toggleReviewForm: () => void;
-}
-
-export const useReviewStore = create<ReviewState>((set) => ({
-  isWritingReview: false,
-  toggleReviewForm: () =>
-    set((state) => ({ isWritingReview: !state.isWritingReview }))
-}));
-
-const Review = () => {
-  const queryClient = useQueryClient();
+const Review = ({ pillId }: { pillId: number }) => {
+  const {
+    reviews,
+    setReviews,
+    nextCursor,
+    setNextCursor,
+    isWritingReview,
+    toggleReviewForm
+  } = useReviewStore();
   const [newReview, setNewReview] = useState('');
-  const { isWritingReview, toggleReviewForm } = useReviewStore();
-  const { data, fetchNextPage, hasNextPage, isFetchingNextPage } =
-    useInfiniteQuery('reviews', fetchReviews, {
-      getNextPageParam: (lastPage) => lastPage.nextCursor
-    });
-  const mutation = useMutation(createReview, {
-    onSuccess: () => {
-      queryClient.invalidateQueries('reviews');
+  const [isLoading, setIsLoading] = useState(false);
+
+  const loadReviews = async (pillId: number, cursor: string | null) => {
+    if (isLoading) return;
+    setIsLoading(true);
+    try {
+      const data = await fetchReviews({ pillId, cursor });
+      setReviews([...reviews, ...data.reviews]);
+      setNextCursor(data.nextCursor || null);
+    } catch (error) {
+      console.error('리뷰불러오기 에러:', error);
+    } finally {
+      setIsLoading(false);
     }
-  });
+  };
 
   const handleReviewSubmit = async () => {
     const newReviewItem = {
-      content: newReview
+      content: newReview,
+      pillId
     };
-    await mutation.mutateAsync(newReviewItem);
-    setNewReview('');
-    toggleReviewForm();
+    try {
+      const data = await createReview(newReviewItem);
+      setReviews([data, ...reviews]);
+      setNewReview('');
+      toggleReviewForm();
+    } catch (error) {
+      console.error('리뷰생성 에러:', error);
+    }
   };
+
+  const handleScroll = useCallback(() => {
+    if (
+      window.innerHeight + document.documentElement.scrollTop !==
+        document.documentElement.offsetHeight ||
+      isLoading ||
+      !nextCursor
+    )
+      return;
+    loadReviews(pillId, nextCursor?.toString() || null);
+  }, [pillId, nextCursor, isLoading]);
+
+  useEffect(() => {
+    window.addEventListener('scroll', handleScroll);
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, [handleScroll, pillId]);
+
+  useEffect(() => {
+    loadReviews(pillId, null);
+  }, [pillId]);
 
   return (
     <ReviewContainer>
@@ -52,31 +80,22 @@ const Review = () => {
         </ReviewForm>
       )}
       <ReviewList>
-        {data?.pages.map((page) =>
-          page.reviews.map((review) => (
-            <ReviewItem
-              key={review.id}
-              style={{
-                backgroundColor: review.role ? 'rgba(114,191,68, 0.1)' : 'white'
-              }}
-            >
-              <User>
-                <Profile src={`/img/user.svg`} alt='유저' />
-                <span>{review.name}</span>
-              </User>
-              <p>{review.content}</p>
-            </ReviewItem>
-          ))
-        )}
+        {reviews.map((review) => (
+          <ReviewItem
+            key={review.id}
+            style={{
+              backgroundColor: review.role ? 'rgba(114,191,68, 0.1)' : 'white'
+            }}
+          >
+            <User>
+              <Profile src={`/img/user.svg`} alt='유저' />
+              <span>{review.username}</span>
+            </User>
+            <p>{review.content}</p>
+          </ReviewItem>
+        ))}
       </ReviewList>
-      {hasNextPage && (
-        <button
-          onClick={() => fetchNextPage()}
-          disabled={!hasNextPage || isFetchingNextPage}
-        >
-          {isFetchingNextPage ? '로딩 중...' : '더 불러오기'}
-        </button>
-      )}
+      {isLoading && <LoadingText>로딩 중...</LoadingText>}
     </ReviewContainer>
   );
 };
@@ -162,3 +181,9 @@ const User = styled.div`
 `;
 
 const Profile = styled.img``;
+
+const LoadingText = styled.div`
+  margin: 20px 0;
+  font-size: 14px;
+  color: gray;
+`;

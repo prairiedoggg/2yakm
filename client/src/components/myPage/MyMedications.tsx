@@ -1,7 +1,12 @@
 import styled from 'styled-components';
 import { Icon } from '@iconify-icon/react';
 import BottomSheet from '../BottomSheet';
-import { ChangeEvent, useState } from 'react';
+import { ChangeEvent, useEffect, useState } from 'react';
+import { addMyPills, fetchMyPills } from '../../api/myMedicineApi';
+import Loading from '../Loading';
+import Popup from '../popup/Popup';
+import PopupContent, { PopupType } from '../popup/PopupMessages';
+import { useNavigate } from 'react-router-dom';
 
 interface MedicationItem {
   title: string;
@@ -12,6 +17,11 @@ const MyMedications = () => {
   const [bottomSheet, setBottomSheet] = useState(false);
   const [name, setName] = useState('');
   const [date, setDate] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [items, setItems] = useState<MedicationItem[]>([]);
+  const [itemCount, setItemCount] = useState(0);
+  const [popupType, setPopupType] = useState(PopupType.None);
+  const navigate = useNavigate();
 
   const handleNameChange = (e: ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
@@ -23,21 +33,33 @@ const MyMedications = () => {
     setDate(value);
   };
 
-  const items: MedicationItem[] = [
-    // test
-    {
-      title: '타이레놀',
-      expiration: '2023.05.14'
-    },
-    {
-      title: '타이레놀',
-      expiration: '2023.05.14'
-    },
-    {
-      title: '타이레놀',
-      expiration: '2023.05.14'
-    }
-  ];
+  useEffect(() => {
+    fetchDatas();
+  }, []);
+
+  const fetchDatas = () => {
+    fetchMyPills(
+      10,
+      0,
+      'createdAt',
+      'DESC',
+      (data) => {
+        const reviews = data.data;
+        const temp: MedicationItem[] = reviews.map((d: any) => ({
+          id: d.id,
+          name: d.name,
+          content: d.content,
+          createdAt: new Date(d.createdat).toDateString()
+        }));
+        setLoading(false);
+        setItems(temp);
+        setItemCount(data.totalCount);
+      },
+      () => {
+        setLoading(false);
+      }
+    );
+  };
 
   const renderItems = (item: MedicationItem, key: number) => {
     return (
@@ -60,7 +82,7 @@ const MyMedications = () => {
     <MyPageContainer>
       <StyledContent>
         <div className='totalCount'>
-          총 {items.length}개{' '}
+          총 {itemCount}개{' '}
           <Icon
             onClick={() => setBottomSheet(true)}
             icon='basil:add-solid'
@@ -114,13 +136,26 @@ const MyMedications = () => {
 
             <button
               className='bottomClose'
-              onClick={() => setBottomSheet(false)}
+              onClick={() => {
+                setLoading(true);
+                addMyPills(name, date.toString(), () => {
+                  setBottomSheet(false);
+                  setLoading(false);
+                  fetchDatas();
+                });
+              }}
             >
               등록 완료
             </button>
           </BottomSheet>
         </Sheet>
       </StyledContent>
+      {loading && <Loading />}
+      {popupType !== PopupType.None && (
+        <Popup onClose={() => setPopupType(PopupType.None)}>
+          {PopupContent(popupType, navigate)}
+        </Popup>
+      )}
     </MyPageContainer>
   );
 };

@@ -10,7 +10,6 @@ import iconv from 'iconv-lite';
 import { QueryResult } from 'pg';
 import { stopwords } from '../utils/stopwords';
 
-
 const client = new vision.ImageAnnotatorClient({
   keyFilename: process.env.GOOGLE_APPLICATION_CREDENTIALS
 });
@@ -280,22 +279,43 @@ const searchPillsByNameFromText = async (
 const execFilePromise = promisify(execFile);
 
 const preprocessImage = async (
-  imageBuffer: Buffer
+  imageBuffer: Buffer[]
 ): Promise<{ processedImageBuffer: Buffer; processedImagePath: string }> => {
-  const uniqueId = uuidv4();
+  const preprocessId = uuidv4();
   const uploadsDir = path.join(__dirname, '..', 'uploads');
-  const inputPath = path.join(uploadsDir, `input_image_${uniqueId}.jpg`);
-  const outputPath = path.join(uploadsDir, `processed_image_${uniqueId}.png`);
+  const inputPath = imageBuffer.map((_, idx) =>
+    path.join(uploadsDir, `input_image_${preprocessId}_${idx + 1}.png`)
+  );
+  const mergedInputPath = path.join(
+    uploadsDir,
+    `merged_image_${preprocessId}.png`
+  );
+  const outputPath = path.join(
+    uploadsDir,
+    `processed_image_${preprocessId}.png`
+  );
 
-  // Ensure the uploads directory exists
   if (!fs.existsSync(uploadsDir)) {
     fs.mkdirSync(uploadsDir);
   }
 
-  fs.writeFileSync(inputPath, imageBuffer);
+  // 따로 객체를 반환할 필요가 없으므로 forEach를 사용함 (forEach의 반환값은 언제나 undefined)
+  imageBuffer.forEach((buffer, idx) => {
+    const filePath = inputPath[idx];
+    fs.writeFileSync(filePath, buffer); // buffer 이미지를 filePath에 저장함
+  });
+
+  let command: string[];
 
   const pyPath = path.join(__dirname, '..', 'python', 'removeBackground.py');
-  const command = [pyPath, inputPath, outputPath]; // 파이썬 command 생성
+
+  if (imageBuffer.length === 2) {
+    command = [pyPath, ...inputPath, outputPath];
+  } else if (imageBuffer.length === 1) {
+    command = [pyPath, inputPath[0], outputPath];
+  } else {
+    throw new Error('이미지 개수를 확인해주세요.');
+  }
 
   const startTime = Date.now();
   try {
@@ -305,7 +325,7 @@ const preprocessImage = async (
       {
         encoding: 'buffer'
       }
-    ); // execFilePromise를 사용하여 Python 스크립트를 실행함
+    ); // execFilePromise를 사용하여 Python 스크립트를 실행함, buffer 형태로 인코딩해야 iconv로 변환할 수 있음
 
     // stdout, stderr 한글 깨짐 현상 수정
     const decodedStdout = iconv.decode(stdout, 'euc-kr');
@@ -324,7 +344,14 @@ const preprocessImage = async (
     console.error('이미지 전처리 중 에러가 발생했습니다.', error);
     throw createError('Preprocessing Failed', '이미지 전처리 실패', 500);
   } finally {
-    fs.unlinkSync(inputPath); // 입력 파일을 삭제함
+    inputPath.forEach((path) => {
+      if (fs.existsSync(path)) {
+        fs.unlinkSync(path);
+      }
+    });
+    if (fs.existsSync(mergedInputPath)) {
+      fs.unlinkSync(mergedInputPath);
+    }
   }
 };
 
@@ -410,11 +437,7 @@ const detectTextInImage = async (
     if (detections && detections.length > 0) {
       const filteredText = detections
         .map((text) => text?.description ?? '')
-        .filter(
-          (text) =>
-            !text.match(/[\.()]/) &&
-            !text.includes('-')    
-        );
+        .filter((text) => !text.match(/[\.()]/) && !text.includes('-'));
 
       console.log('Filtered text:', filteredText);
       return filteredText;
@@ -432,7 +455,7 @@ const detectTextInImage = async (
 };
 
 export const searchPillsByImage = async (
-  imageBuffer: Buffer,
+  imageBuffer: Buffer[],
   limit: number,
   offset: number
 ): Promise<GetPillsResult> => {
@@ -486,13 +509,13 @@ export const searchPillsByImage = async (
       };
     }
 
-    if (detectedText[0].includes('\n')){
-      const temp = detectedText[0].split('\n')
-      detectedText[0] = temp[0]
-      detectedText[1] = temp[1]
+    if (detectedText[0].includes('\n')) {
+      const temp = detectedText[0].split('\n');
+      detectedText[0] = temp[0];
+      detectedText[1] = temp[1];
     }
 
-    console.log('Detected Text:',detectedText)
+    console.log('Detected Text:', detectedText);
 
     let pills: Pills[] = [];
     let total = 0;

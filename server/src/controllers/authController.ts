@@ -18,6 +18,16 @@ import {
 } from '../services/authService';
 import { createError } from '../utils/error';
 import { CustomRequest } from '../types/express';
+import jwt from 'jsonwebtoken';
+
+interface Decoded {
+  id: string;
+  email: string;
+  role: boolean;
+}
+
+const SECRET_KEY = process.env.SECRET_KEY;
+const FRONTEND_URL = process.env.DOMAIN || 'http://localhost:5173';
 
 // 로그인
 export const loginController = async (req: Request, res: Response, next: NextFunction) => {
@@ -25,7 +35,7 @@ export const loginController = async (req: Request, res: Response, next: NextFun
     const { email, password } = req.body;
     const result = await login(email, password);
     res.cookie('jwt', result.token, { httpOnly: true });
-    res.cookie('refreshToken', result.refreshToken, { httpOnly: true });
+    res.cookie('refreshToken', result.refreshToken, { httpOnly: true }); 
     res.status(200).json({ message: '로그인 성공' });
   } catch (error) {
     next(error);
@@ -72,7 +82,7 @@ export const verifyEmailController = async (req: Request<{ query: { token: strin
       throw createError('Invalid Token', '유효하지 않은 토큰입니다.', 400);
     }
     await verifyEmailService(token);
-    res.status(200).json({ message: '이메일 인증 완료되었습니다. 회원가입을 계속해주세요.' });
+    res.redirect(`${FRONTEND_URL}/verification/email`)
   } catch (error) {
     next(error);
   }
@@ -81,7 +91,7 @@ export const verifyEmailController = async (req: Request<{ query: { token: strin
 // 토큰 갱신
 export const refreshTokenController = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const { refreshToken } = req.cookies.refreshToken;
+    const refreshToken = req.cookies.refreshToken;
     if (!refreshToken) {
       throw createError('No RefreshToken', '리프레시 토큰이 없습니다.', 401);
     }
@@ -98,16 +108,17 @@ export const refreshTokenController = async (req: Request, res: Response, next: 
 export const kakaoAuthController = async (req: Request<{ query: { code: string } }>, res: Response, next: NextFunction) => {
   try {
     const { code } = req.query;
+    console.log({code});
     if (!code || typeof code !== 'string') {
       throw createError('Invalid Code', '유효하지 않은 코드입니다.', 400);
     }
     const result = await kakaoAuthService(code);
     if (result.message) {
-      res.status(400).json({ message: result.message });
+      res.status(400).json({message: '카카오 로그인에 실패했습니다.'}).redirect(`${FRONTEND_URL}/login`);
     } else {
       res.cookie('jwt', result.token, { httpOnly: true });
       res.cookie('refreshToken', result.refreshToken, { httpOnly: true });
-      res.status(200).json({ message: '로그인 성공' });
+      res.status(302).redirect(`${FRONTEND_URL}/snsLogin/callback`);
     }
   } catch (error) {
     next(error);
@@ -124,11 +135,11 @@ export const naverAuthController = async (req: Request<{ query: { code: string, 
     const result = await naverAuthService(code, state);
     
     if (result.message) {
-      res.status(400).json({ message: result.message });
+      res.status(400).json({message: '네이버 로그인에 실패했습니다.'}).redirect(`${FRONTEND_URL}/login`);
     } else {
       res.cookie('jwt', result.token, { httpOnly: true });
       res.cookie('refreshToken', result.refreshToken, { httpOnly: true });
-      res.status(200).json({ message: '네이버 인증 성공' });
+      res.status(302).redirect(`${FRONTEND_URL}/snsLogin/callback`);
     }
   } catch (error) {
     next(error);
@@ -146,12 +157,43 @@ export const googleAuthController = async (req: Request<{ query: { code: string 
     const result = await googleAuthService(code);
     
     if (result.message) {
-      res.status(400).json({ message: result.message });
+      res.status(400).json({message: '구글 로그인에 실패했습니다.'}).redirect(`${FRONTEND_URL}/login`);
     } else {
       res.cookie('jwt', result.token, { httpOnly: true });
       res.cookie('refreshToken', result.refreshToken, { httpOnly: true });
-      res.status(200).json({ message: '구글 인증 성공' });
+      res.status(302).redirect(`${FRONTEND_URL}/snsLogin/callback`);
     }
+  } catch (error) {
+    next(error);
+  }
+};
+
+// 카카오 리디렉션
+export const kakaoRedirectController = (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const kakaoAuthUrl = `https://kauth.kakao.com/oauth/authorize?client_id=${process.env.KAKAO_CLIENT_ID}&redirect_uri=${process.env.DOMAIN}/api/auth/kakao/callback&response_type=code`;
+    res.redirect(kakaoAuthUrl);
+  } catch (error) {
+    next(error);
+  }
+};
+
+// 네이버 리디렉션
+export const naverRedirectController = (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const state = Math.random().toString(36).substring(7); // 랜덤 문자열로 만들었음
+    const naverAuthUrl = `https://nid.naver.com/oauth2.0/authorize?client_id=${process.env.NAVER_CLIENT_ID}&redirect_uri=${process.env.DOMAIN}/api/auth/naver/callback&response_type=code&state=${state}`;
+    res.redirect(naverAuthUrl);
+  } catch (error) {
+    next(error);
+  }
+};
+
+// 구글 리디렉션
+export const googleRedirectController = (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const googleAuthUrl = `https://accounts.google.com/o/oauth2/auth?client_id=${process.env.GOOGLE_CLIENT_ID}&redirect_uri=${process.env.DOMAIN}/api/auth/google/callback&response_type=code&scope=email profile`;
+    res.redirect(googleAuthUrl);
   } catch (error) {
     next(error);
   }
@@ -184,9 +226,7 @@ export const requestPasswordController = async (req: Request, res: Response, nex
   try {
     const { email } = req.body;
     await requestPasswordService(email);
-    res
-      .status(200)
-      .json({ message: '비밀번호 재설정 이메일이 전송되었습니다.' });
+    res.status(200).json({ message: '비밀번호 재설정 이메일이 전송되었습니다.' });
   } catch (error) {
     next(error);
   }
@@ -197,17 +237,21 @@ export const resetPasswordController = async (req: Request, res: Response, next:
   try {
     const { token, newPassword } = req.body;
     await resetPasswordService(token, newPassword);
-    res.status(200).json({ message: '비밀번호가 재설정되었습니다.' });
+    res.redirect(`${FRONTEND_URL}/verification/email`);
   } catch (error) {
     next(error);
   }
 };
 
 // 카카오 연동
-export const linkKakaoAccountController = async (req: Request, res: Response, next: NextFunction) => {
+export const linkKakaoAccountController = async (req: CustomRequest, res: Response, next: NextFunction) => {
   try {
-    const { userId, socialId } = req.body;
-    await linkSocialAccountService(userId, socialId, 'kakao');
+    const userId = req.user?.id;
+    const { accessToken } = req.body;
+    if (!userId) {
+      throw createError('Unauthorized', '사용자 인증이 필요합니다.', 401);
+    }
+    await linkSocialAccountService(userId, accessToken, 'kakao');
     res.status(200).json({ message: '카카오 계정 연동 성공' });
   } catch (error) {
     next(error);
@@ -215,11 +259,30 @@ export const linkKakaoAccountController = async (req: Request, res: Response, ne
 };
 
 // 구글 연동
-export const linkGoogleAccountController = async (req: Request, res: Response, next: NextFunction) => {
+export const linkGoogleAccountController = async (req: CustomRequest, res: Response, next: NextFunction) => {
   try {
-    const { userId, socialId } = req.body;
-    await linkSocialAccountService(userId, socialId, 'google');
+    const userId = req.user?.id;
+    const { accessToken } = req.body;
+    if (!userId) {
+      throw createError('Unauthorized', '사용자 인증이 필요합니다.', 401);
+    }
+    await linkSocialAccountService(userId, accessToken, 'google');
     res.status(200).json({ message: '구글 계정 연동 성공' });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// 네이버 연동
+export const linkNaverAccountController = async (req: CustomRequest, res: Response, next: NextFunction) => {
+  try {
+    const userId = req.user?.id;
+    const { accessToken } = req.body;
+    if (!userId) {
+      throw createError('Unauthorized', '사용자 인증이 필요합니다.', 401);
+    }
+    await linkSocialAccountService(userId, accessToken, 'naver');
+    res.status(200).json({ message: '네이버 계정 연동 성공' });
   } catch (error) {
     next(error);
   }
@@ -253,12 +316,16 @@ export const deleteAccountController = async (req: CustomRequest, res: Response,
 // 유저 정보
 export const getUserInfoController = async (req: CustomRequest, res: Response, next: NextFunction ) => {
   try {
-    const userId = req.user?.id;
-    if (!userId) {
-      throw createError('Unauthorized', '사용자 인증이 필요합니다.', 401);
+    const token = req.cookies.jwt;
+    if (!token) {
+      throw createError('Unauthorized', '토큰이 없습니다.', 401);
     }
-    const userInfo = await getUserInfo(userId);
-    res.status(200).json(userInfo);
+    const decoded = jwt.verify(token, SECRET_KEY!) as Decoded;
+    const user = await getUserInfo(decoded.id);
+    if (!user) {
+      throw createError ('User Not Found', '사용자를 찾을 수 없습니다.', 404);
+    }
+    res.status(200).json(user);
   } catch (error) {
     next(error);
   }

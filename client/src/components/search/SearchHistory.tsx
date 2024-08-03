@@ -1,4 +1,5 @@
 import styled from 'styled-components';
+import AutoComplete from './AutoComplete';
 import { useSearchStore } from '../../store/search';
 import { useSearchHistoryStore } from '../../store/searchHistory';
 
@@ -8,20 +9,23 @@ const SearchHistory = () => {
 
   return (
     <>
-      <HistoryContainer>
-        <div>{searchQuery}</div>
-        <HistoryInner>
-          <HistoryTitle>
-            <span>최근 검색어</span>
-            <span onClick={clearHistory}>전체삭제</span>
-          </HistoryTitle>
-          <HistoryList>
-            {history.map((item, index) => (
-              <HistoryItem key={index}>{item}</HistoryItem>
-            ))}
-          </HistoryList>
-        </HistoryInner>
-      </HistoryContainer>
+      {searchQuery.length > 1 ? (
+        <AutoComplete />
+      ) : (
+        <HistoryContainer>
+          <HistoryInner>
+            <HistoryTitle>
+              <span>최근 검색어</span>
+              <span onClick={clearHistory}>전체삭제</span>
+            </HistoryTitle>
+            <HistoryList>
+              {history.map((item, index) => (
+                <HistoryItem key={index}>{item}</HistoryItem>
+              ))}
+            </HistoryList>
+          </HistoryInner>
+        </HistoryContainer>
+      )}
     </>
   );
 };

@@ -1,13 +1,33 @@
-import { ChangeEvent, useState, KeyboardEvent } from 'react';
+import { ChangeEvent, useState, KeyboardEvent, useEffect } from 'react';
 import styled from 'styled-components';
 import { Link } from 'react-router-dom';
 import { useSearchStore } from '../store/search';
 import { useSearchHistoryStore } from '../store/searchHistory';
+import { fetchAutocompleteSuggestions } from '../api/search';
 
 const SearchBox = () => {
-  const { searchQuery, setSearchQuery } = useSearchStore();
+  const { setSearchQuery, searchType, setSearchType, setSuggestions } =
+    useSearchStore();
   const [query, setQuery] = useState<string>('');
   const addHistory = useSearchHistoryStore((state) => state.addHistory);
+
+  useEffect(() => {
+    const fetchSuggestions = async () => {
+      try {
+        if (query.length > 1) {
+          const results = await fetchAutocompleteSuggestions(query);
+          console.log(results);
+          setSuggestions(results);
+        } else {
+          setSuggestions([]);
+        }
+      } catch (error) {
+        console.error('자동완성 데이터 가져오기 실패:', error);
+      }
+    };
+
+    fetchSuggestions();
+  }, [query, setSuggestions]);
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const newQuery = e.target.value;
@@ -18,6 +38,9 @@ const SearchBox = () => {
     if (query.trim()) {
       setSearchQuery(query);
       addHistory(query);
+      if (searchType === 'efficacy') {
+        setSearchType('efficacy');
+      }
     } else {
       setSearchQuery('');
       setQuery('');

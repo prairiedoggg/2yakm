@@ -23,7 +23,7 @@ const SnsLogin = ({
 }) => {
   return (
     <Content>
-      <Logo src='/img/logo_not_chicken.svg' alt='이약뭐약' />
+      <Logo src='/img/logo.svg' alt='이약뭐약' />
       <div className='bubble'>⚡ 3초만에 빠른 회원가입</div>
       <a className='login kakao' onClick={onClose} href={KAKAO_AUTH_URL}>
         <div className='snsBox'>

@@ -55,7 +55,7 @@ const PillExp = () => {
                 용량 및 용법
               </span>
             </ListTitle>
-            <p>{pillData.dosage}</p>
+            {/* <p>{pillData.dosage}</p> */}
           </li>
           <li>
             <ListTitle>
@@ -68,14 +68,14 @@ const PillExp = () => {
                 주의사항
               </span>
             </ListTitle>
-            {isExpanded ? (
+            {/* {isExpanded ? (
               <p className='last'>{pillData.caution}</p>
             ) : (
               <p className='last'>{pillData.caution.substring(0, 100)}...</p>
             )}
             <ToggleExpandButton onClick={toggleExpand}>
               {isExpanded ? '접기' : '펼치기'}
-            </ToggleExpandButton>
+            </ToggleExpandButton> */}
           </li>
         </ul>
       </PillExpBox>

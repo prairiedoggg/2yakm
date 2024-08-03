@@ -136,22 +136,3 @@ export const userFavoriteStatusService = async (
     );
   }
 };
-
-// // 해당 약의 좋아요 수를 확인하는 서비스
-// export const getPillFavoriteCountService = async (
-//   pillid: number
-// ): Promise<number> => {
-//   try {
-//     const query = `
-//   SELECT COUNT(*) AS count
-//   FROM favorites
-//   WHERE pillid = $1
-//   `;
-//     const values = [pillid];
-//     const { rows } = await pool.query(query, values);
-
-//     return parseInt(rows[0].count, 10);
-//   } catch (error: any) {
-//     throw error;
-//   }
-// };

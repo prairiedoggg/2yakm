@@ -1,11 +1,22 @@
-import create from 'zustand'
+import create from 'zustand';
 
-interface PillState { 
-  pillData: any | null;
-  setPillData: (data: any)=> void;
+interface PillData {
+  id: number;
+  name: string;
+  engname: string;
+  companyname: string;
+  ingredientname: string;
+  efficacy: string;
+  importantWords: string;
+}
+
+
+interface PillState {
+  pillData: PillData | null;
+  setPillData: (data: PillData | null) => void;
 }
 
 export const usePillStore = create<PillState>((set) => ({
   pillData: null,
-  setPillData: (data) => set({pillData:data}),
-}))
+  setPillData: (data: PillData | null) => set({ pillData: data })
+}));

@@ -1,7 +1,7 @@
 import styled from 'styled-components';
 import { Icon } from '@iconify-icon/react';
 import { ChangeEvent, useEffect, useState } from 'react';
-import { login } from '../../api/authService';
+import { login, fetchUserInformation } from '../../api/authService';
 import { useNavigate } from 'react-router-dom';
 import Popup from '../popup/Popup';
 import Loading from '../Loading';
@@ -44,7 +44,7 @@ const EmailLogin = ({
 
   return (
     <Content>
-      <Logo src='/img/logo_not_chicken.svg' alt='이약뭐약' />
+      <Logo src='/img/logo.svg' alt='이약뭐약' />
       <div className='login-inputs'>
         <div className='input-container'>
           <input
@@ -114,9 +114,11 @@ const EmailLogin = ({
             email,
             password,
             () => {
-              setLoading(false);
-              navigate('/', { replace: true });
-              window.location.reload();
+              fetchUserInformation(() => {
+                setLoading(false);
+                navigate('/', { replace: true });
+                window.location.reload();
+              });
             },
             (error) => {
               setLoading(false);

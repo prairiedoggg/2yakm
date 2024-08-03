@@ -59,12 +59,6 @@ interface NaverUserInfoResponse {
     nickname: string;
   };
 }
-interface KakaoTokenParams {
-  grant_type: string;
-  client_id: string | undefined;
-  redirect_uri: string;
-  code: string;
-}
 
 interface KakaoUserInfoResponse {
   id: string;
@@ -88,7 +82,6 @@ interface GoogleUserInfoResponse {
 const SECRET_KEY = process.env.SECRET_KEY;
 const REFRESH_TOKEN_SECRET_KEY = process.env.REFRESH_TOKEN_SECRET_KEY;
 const DOMAIN = process.env.DOMAIN || 'http://localhost:3000';
-const FRONTEND_URL = process.env.DOMAIN || 'http://localhost:5173';
 
 if (!SECRET_KEY || !REFRESH_TOKEN_SECRET_KEY) {
   throw new Error('SECRET_KEY 또는 REFRESH_TOKEN_SECRET_KEY 확인바람.');
@@ -118,7 +111,7 @@ export const login = async (
       throw createError('InvalidCredentials', '비밀번호가 틀렸습니다.', 401);
     }
 
-    const payload = { id: user.userid, role: user.role };
+    const payload = { id: user.userid, email: user.email, role: user.role };
     const token = jwt.sign(payload, SECRET_KEY, {
       expiresIn: '30m',
     });
@@ -191,6 +184,14 @@ export const signupService = async (
       throw createError('PasswordMismatch', '비밀번호가 일치하지 않습니다.', 400);
     }
 
+    if (username.length < 3 || username.length > 20) {
+      throw createError('InvalidUsername', '이름은 3자 이상 20자 이하여야 합니다.', 400);
+    }
+
+    const passwordRegex = /^(?=.*[!@#$%^&*(),.?":{}|<>])[A-Za-z\d!@#$%^&*(),.?":{}|<>]{8,}$/;
+    if (!passwordRegex.test(password)) {
+      throw createError('InvalidPassword', '비밀번호는 특수문자를 포함한 8자리 이상이어야 합니다.',400)
+    }
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const updateUserQuery = 'UPDATE users SET username = $1, password = $2 WHERE email = $3';
@@ -276,16 +277,16 @@ export const refreshTokenService = async (
 export const kakaoAuthService = async (
   code: string
 ): Promise<{ token?: string, refreshToken?: string, message?: string }> => {
-  const redirectUri = `${FRONTEND_URL}/kakao/callback`;
+  const redirectUri = `${DOMAIN}/api/auth/kakao/callback`;
   const kakaoTokenUrl = `https://kauth.kakao.com/oauth/token`;
-
+  console.log(redirectUri);
   try {
     const tokenResponse = await axiosRequest<KakaoTokenResponse>({
       method: 'post',
       url: kakaoTokenUrl,
       params: {
         grant_type: 'authorization_code',
-        client_id: process.env.VITE_APP_KAKAO_CLIENT_ID,
+        client_id: process.env.KAKAO_CLIENT_ID,
         redirect_uri: redirectUri,
         code,
       },
@@ -295,6 +296,7 @@ export const kakaoAuthService = async (
     });
 
     const { access_token } = tokenResponse;
+    console.log(access_token);
     const userInfoResponse = await axiosRequest<KakaoUserInfoResponse>({
       method: 'get',
       url: 'https://kapi.kakao.com/v2/user/me',
@@ -302,7 +304,7 @@ export const kakaoAuthService = async (
         Authorization: `Bearer ${access_token}`,
       },
     });
-
+    console.log(userInfoResponse);
     const { id, kakao_account, properties } = userInfoResponse;
     const email = kakao_account.email ?? null;
     const username =
@@ -351,7 +353,7 @@ export const kakaoAuthService = async (
         user = newUserResult.rows[0];
       }
 
-      const payload = { id: user.userid, kakaoid: user.kakaoid, role: user.role };
+      const payload = { id: user.userid, kakaoid: user.kakaoid, email: user.email, role: user.role };
       const token = jwt.sign(payload, SECRET_KEY, {
         expiresIn: '30m',
       });
@@ -377,7 +379,7 @@ export const naverAuthService = async (
   code: string,
   state: string
 ): Promise<{ token?: string, refreshToken?: string, message?: string }> => {
-  const redirectUri = `${FRONTEND_URL}/naver/callback`;
+  const redirectUri = `${DOMAIN}/api/auth/naver/callback`;
   const naverTokenUrl = `https://nid.naver.com/oauth2.0/token`;
   const naverUserInfoUrl = `https://openapi.naver.com/v1/nid/me`;
 
@@ -452,7 +454,7 @@ export const naverAuthService = async (
         user = newUserResult.rows[0];
       }
 
-      const payload = { id: user.userid, naverid: user.naverid, role: user.role };
+      const payload = { id: user.userid, naverid: user.naverid, email: user.email, role: user.role };
       const token = jwt.sign(payload, SECRET_KEY, {
         expiresIn: '30m',
       });
@@ -481,14 +483,12 @@ export const googleAuthService = async (
   const userInfoUrl = 'https://www.googleapis.com/oauth2/v2/userinfo';
 
   try {
-    const tokenResponse = await axiosRequest<GoogleTokenResponse>({
-      method: 'post',
-      url: tokenUrl,
+    const tokenResponse = await axios.post<GoogleTokenResponse>(tokenUrl, null, {
       params: {
         code,
         client_id: process.env.GOOGLE_CLIENT_ID,
         client_secret: process.env.GOOGLE_CLIENT_SECRET,
-        redirect_uri: `${FRONTEND_URL}/google/callback`,
+        redirect_uri: `${DOMAIN}/api/auth/google/callback`,
         grant_type: 'authorization_code',
       },
       headers: {
@@ -496,16 +496,14 @@ export const googleAuthService = async (
       },
     });
 
-    const { access_token } = tokenResponse;
-    const userInfoResponse = await axiosRequest<GoogleUserInfoResponse>({
-      method: 'get',
-      url: userInfoUrl,
+    const { access_token } = tokenResponse.data;
+    const userInfoResponse = await axios.get<GoogleUserInfoResponse>(userInfoUrl, {
       headers: {
         Authorization: `Bearer ${access_token}`,
       },
     });
 
-    const { id, email, name } = userInfoResponse;
+    const { id, email, name } = userInfoResponse.data;
 
     if (!email) {
       throw createError(
@@ -550,7 +548,7 @@ export const googleAuthService = async (
         user = newUserResult.rows[0];
       }
 
-      const payload = { id: user.userid, googleid: user.googleid, role: user.role };
+      const payload = { id: user.userid, googleid: user.googleid, email: user.email, role: user.role };
       const token = jwt.sign(payload, SECRET_KEY, {
         expiresIn: '30m',
       });
@@ -602,6 +600,11 @@ export const changePasswordService = async (
         '기존 비밀번호가 틀렸습니다.',
         401
       );
+    }
+    
+    const passwordRegex = /^(?=.*[!@#$%^&*(),.?":{}|<>])[A-Za-z\d!@#$%^&*(),.?":{}|<>]{8,}$/;
+    if (!passwordRegex.test(newPassword)) {
+      throw createError('InvalidPassword', '비밀번호는 특수문자를 포함한 8자리 이상이어야 합니다.',400)
     }
 
     const hashedNewPassword = await bcrypt.hash(newPassword, 10);
@@ -664,6 +667,11 @@ export const resetPasswordService = async (
 
       const user = result.rows[0];
 
+      const passwordRegex = /^(?=.*[!@#$%^&*(),.?":{}|<>])[A-Za-z\d!@#$%^&*(),.?":{}|<>]{8,}$/;
+    if (!passwordRegex.test(newPassword)) {
+      throw createError('InvalidPassword', '비밀번호는 특수문자를 포함한 8자리 이상이어야 합니다.',400)
+    }
+
       const hashedNewPassword = await bcrypt.hash(newPassword, 10);
 
       const updateQuery = 'UPDATE users SET password = $1 WHERE userid = $2';
@@ -684,9 +692,41 @@ export const resetPasswordService = async (
 };
 
 // 소셜 연동
-export const linkSocialAccountService = async (userId: number, socialId: string, provider: 'kakao' | 'google'): Promise<void> => {
+export const linkSocialAccountService = async (userId: string, accessToken: string, provider: 'kakao' | 'google' | 'naver'): Promise<void> => {
   try {
-    const query = 'SELECT kakoid, naverid, googleid FROM users WHERE userid = $1';
+    let socialId: string;
+    if (provider === 'kakao') {
+      const userInfoResponse = await axiosRequest<KakaoUserInfoResponse>({
+        method: 'get',
+        url: 'https://kapi.kakao.com/v2/user/me',
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+      socialId = userInfoResponse.id;
+    } else if (provider === 'google') {
+      const userInfoResponse = await axiosRequest<GoogleUserInfoResponse>({
+        method: 'get',
+        url: 'https://www.googleapis.com/oauth2/v2/userinfo',
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+      socialId = userInfoResponse.id;
+    } else if (provider === 'naver') {
+      const userInfoResponse = await axiosRequest<NaverUserInfoResponse>({
+        method: 'get',
+        url: 'https://openapi.naver.com/v1/nid/me',
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+      socialId = userInfoResponse.response.id;
+    } else {
+      throw createError('InvalidProvider', '유효하지 않은 제공자입니다.', 400);
+    }
+
+    const query = 'SELECT kakaoid, naverid, googleid FROM users WHERE userid = $1';
     const values = [userId];
     const result = await pool.query(query, values);
     const user = result.rows[0];
@@ -698,26 +738,14 @@ export const linkSocialAccountService = async (userId: number, socialId: string,
     const defaultPassword = provider === 'kakao' ? 'kakao_auth_password' : provider === 'google' ? 'google_auth_password': 'naver_auth_password';
 
     if (provider === 'kakao') {
-      if (user.kakaoid) {
-        throw createError('AlreadyLinked', '이미 카카오 계정과 연동되어 있습니다.', 400);
-      }
-
       const updateQuery = 'UPDATE users SET kakaoid = $1, password = $2 WHERE userid = $3';
       const updateValues = [socialId, defaultPassword, userId];
       await pool.query(updateQuery, updateValues);
     } else if (provider === 'google') {
-      if (user.googleid) {
-        throw createError('AlreadyLinked', '이미 구글 계정과 연동되어 있습니다.', 400);
-      }
-
       const updateQuery = 'UPDATE users SET googleid = $1, password = $2 WHERE userid = $3';
       const updateValues = [socialId, defaultPassword, userId];
       await pool.query(updateQuery, updateValues);
     } else if (provider === 'naver') {
-      if (user.naverid) {
-        throw createError('AlreadyLinked', '이미 네이버 계정과 연동되어 있습니다.', 400);
-      }
-
       const updateQuery = 'UPDATE users SET naverid = $1, password = $2 WHERE userid = $3';
       const updateValues = [socialId, defaultPassword, userId];
       await pool.query(updateQuery, updateValues);
