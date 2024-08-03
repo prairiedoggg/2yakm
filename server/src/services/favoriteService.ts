@@ -2,12 +2,36 @@ import { pool } from '../db';
 import { Favorite } from '../entity/favorite';
 import { createError } from '../utils/error';
 import { QueryResult } from 'pg';
+import { stopwords } from '../utils/stopwords';
 
 interface TotalCountAndData {
   totalCount: number;
   totalPages: number;
   data: Favorite[];
 }
+
+const getImportantWords = (text: string): string[] => {
+  const wordFrequency: { [key: string]: number } = {};
+  const priorityWordsSet = new Set(stopwords);
+  const words = text
+    .toLowerCase()
+    .split(/[\s,.;:ㆍ()]+/)
+    .filter((word) => {
+      const isValid = word && priorityWordsSet.has(word);
+      return isValid;
+    });
+
+  words.forEach((word) => {
+    if (!wordFrequency[word]) {
+      wordFrequency[word] = 0;
+    }
+    wordFrequency[word]++;
+  });
+
+  const sortedWords = Object.entries(wordFrequency).sort((a, b) => b[1] - a[1]);
+  const importantWords = sortedWords.slice(0, 3).map((entry) => entry[0]);
+  return importantWords;
+};
 
 // 즐겨 찾는 약 검색 서비스
 export const searchFavoritePillService = async (
@@ -18,7 +42,7 @@ export const searchFavoritePillService = async (
   order: string
 ): Promise<TotalCountAndData> => {
   try {
-    // 전체 리뷰 개수 조회
+    // 전체 즐겨찾는 약 개수 조회
     const countQuery = `
     SELECT COUNT(*) AS total
     FROM favorites
@@ -49,10 +73,18 @@ export const searchFavoritePillService = async (
     const values = [userid, limit, offset];
     const result: QueryResult<Favorite> = await pool.query(query, values);
 
+    const favoriteWithTag = result.rows.map((favorite: Favorite) => {
+      const importantWords = getImportantWords(favorite.efficacy);
+      return {
+        ...favorite,
+        importantWords: importantWords.join(', ')
+      };
+    });
+
     return {
       totalCount,
       totalPages,
-      data: result.rows
+      data: favoriteWithTag
     };
   } catch (error: any) {
     throw createError(
