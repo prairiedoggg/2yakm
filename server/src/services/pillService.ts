@@ -113,11 +113,8 @@ const getImportantWords = (text: string): string[] => {
     wordFrequency[word]++;
   });
 
-  console.log(`Word frequency: ${JSON.stringify(wordFrequency)}`);
-
   const sortedWords = Object.entries(wordFrequency).sort((a, b) => b[1] - a[1]);
   const importantWords = sortedWords.slice(0, 3).map((entry) => entry[0]);
-  console.log(`Important words: ${importantWords}`);
   return importantWords;
 };
 

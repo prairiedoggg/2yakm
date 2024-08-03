@@ -8,7 +8,7 @@ import {
   getPillFavoriteCountService,
   getPillReviewCountService
 } from '../services/pillService';
-import { createError } from '../utils/error'; // Assuming a custom error handler is defined here
+
 
 interface PillsQueryParams {
   limit?: string;

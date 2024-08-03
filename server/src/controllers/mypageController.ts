@@ -69,7 +69,6 @@ export const updateProfilePictureS3 = [
         return next(createError('UploadError', 'No file uploaded', 400));
       }
       const s3Url = req.file ? (req.file as any).location : null;
-      console.log(s3Url);
       const updatedProfilePicture = await updateProfilePicture(req.user.id, s3Url);
       res.status(200).json({ profilePicture: updatedProfilePicture });
     } catch (error) {
