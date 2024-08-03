@@ -16,11 +16,11 @@ interface RequestUser {
   id: string;
 }
 
-// Extend the Request interface to include the user
 interface AuthenticatedRequest extends Request {
   user?: RequestUser;
-  file?: Express.Multer.File;
+  file?: Express.Multer.File & { location?: string }; // Adding optional location property
 }
+
 
 export const updateUsernameSchema = Joi.object({
   username: Joi.string().min(3).max(30).required(),
@@ -65,11 +65,10 @@ export const updateProfilePictureS3 = [
       if (!req.user) {
         return next(createError('UnauthorizedError', 'Unauthorized', 401));
       }
-      if (!req.file || !(req.file as any).location) {
+      if (!req.file || !req.file.location) {
         return next(createError('UploadError', 'No file uploaded', 400));
       }
-      const s3Url = req.file ? (req.file as any).location : null;
-      console.log(s3Url);
+      const s3Url = req.file.location;
       const updatedProfilePicture = await updateProfilePicture(req.user.id, s3Url);
       res.status(200).json({ profilePicture: updatedProfilePicture });
     } catch (error) {
