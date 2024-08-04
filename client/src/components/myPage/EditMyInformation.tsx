@@ -172,8 +172,8 @@ const EditMyInformation = ({
       <BottomPictureSheet
         title={'사진 등록'}
         isVisible={bottomSheet}
-        onClose={(pic) => {
-          if (pic !== null) {
+        onClose={(file) => {
+          if (file !== null) {
             setLoading(true);
 
             // 파일데이터 확인용 테스트 코드. 프로필 이미지 업로드 구현 완료 후 삭제 예정
@@ -190,11 +190,13 @@ const EditMyInformation = ({
             // });
 
             const formData = new FormData();
-            formData.append('profilePicture', pic);
+            formData.append('profileImg', file);
             changeProfileImage(
               formData,
               () => {
-                fetchUserProfile(() => {});
+                fetchUserProfile((data) => {
+                  console.log(data);
+                });
                 setLoading(false);
               },
               () => {
