@@ -35,13 +35,13 @@ const EditMyInformation = ({
     { info: '이름', onClick: onEditNameClick }
   ];
 
+  let infos2: Info[] = [{ info: '약사 인증', onClick: onEditPharmacistClick }];
+
   if (user?.loginType == LoginType.none)
     infos1.push({ info: '비밀번호 변경', onClick: onEditPasswordClick });
 
-  const infos2: Info[] = [
-    { info: '약사 인증', onClick: onEditPharmacistClick },
-    { info: '연동된 소셜계정', onClick: undefined }
-  ];
+  if (user?.loginType != LoginType.none)
+    infos2.push({ info: '연동된 소셜계정', onClick: undefined });
 
   const getInfoValue = (type: string) => {
     switch (type) {
