@@ -335,7 +335,7 @@ router.get('/search/efficacy', searchPillsbyEfficacyHandler);
 /**
  * @swagger
  * /api/pills/search/image:
- *   get:
+ *   post:
  *     summary: 이미지로 약 검색
  *     tags: [pills]
  *     consumes:
@@ -400,7 +400,7 @@ router.get('/search/efficacy', searchPillsbyEfficacyHandler);
  *                     
  *             
  */
-router.get(
+router.post(
   '/search/image',
   uploadToMemory.array('image', 2),
   searchPillsByImageHandler
