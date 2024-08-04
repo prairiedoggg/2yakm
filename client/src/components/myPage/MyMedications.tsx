@@ -2,13 +2,18 @@ import styled from 'styled-components';
 import { Icon } from '@iconify-icon/react';
 import BottomSheet from '../BottomSheet';
 import { ChangeEvent, useEffect, useState } from 'react';
-import { addMyPills, fetchMyPills } from '../../api/myMedicineApi';
+import {
+  addMyPills,
+  fetchMyPills,
+  deleteMyPills
+} from '../../api/myMedicineApi';
 import Loading from '../Loading';
 import Popup from '../popup/Popup';
 import PopupContent, { PopupType } from '../popup/PopupMessages';
 import { useNavigate } from 'react-router-dom';
 
 interface MedicationItem {
+  id: string;
   title: string;
   expiration: string;
 }
@@ -21,7 +26,46 @@ const MyMedications = () => {
   const [items, setItems] = useState<MedicationItem[]>([]);
   const [itemCount, setItemCount] = useState(0);
   const [popupType, setPopupType] = useState(PopupType.None);
+  const [deleteItem, setDeleteItem] = useState(false);
+  const [selected, setSelected] = useState<MedicationItem>();
+
   const navigate = useNavigate();
+
+  const getPopupContent = (type: PopupType) => {
+    switch (type) {
+      case PopupType.DeleteMyPill:
+        return (
+          <div>
+            <b>{selected?.title}</b>해당 약을 삭제하시겠어요?
+            <button
+              className='bottomClose'
+              onClick={() => {
+                setLoading(true);
+
+                deleteMyPills(
+                  selected?.id.toString() ?? '',
+                  () => {
+                    setLoading(false);
+                    setSelected(undefined);
+                    fetchDatas();
+                  },
+                  () => {
+                    setPopupType(PopupType.DeleteMyPillFailure);
+                    setSelected(undefined);
+                    setLoading(false);
+                  }
+                );
+              }}
+            >
+              삭제
+            </button>
+          </div>
+        );
+
+      default:
+        return PopupContent(type, navigate);
+    }
+  };
 
   const handleNameChange = (e: ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
@@ -37,6 +81,13 @@ const MyMedications = () => {
     fetchDatas();
   }, []);
 
+  const formatDate = (dateString: string): string => {
+    if (!dateString) return '';
+
+    const [year, month, day] = dateString.split('-');
+    return `${year}.${month}.${day}`;
+  };
+
   const fetchDatas = () => {
     fetchMyPills(
       10,
@@ -46,10 +97,9 @@ const MyMedications = () => {
       (data) => {
         const reviews = data.data;
         const temp: MedicationItem[] = reviews.map((d: any) => ({
-          id: d.id,
-          name: d.name,
-          content: d.content,
-          createdAt: new Date(d.createdat).toDateString()
+          id: d.pillid,
+          title: d.pillname,
+          expiration: formatDate(d.expiredat)
         }));
         setLoading(false);
         setItems(temp);
@@ -66,6 +116,19 @@ const MyMedications = () => {
       <Item key={key}>
         <div className='title'>
           {item.title}
+          {deleteItem ? (
+            <div
+              className='delete-button'
+              onClick={() => {
+                setSelected(item);
+                setPopupType(PopupType.DeleteMyPill);
+              }}
+            >
+              삭제
+            </div>
+          ) : (
+            ''
+          )}
           <Icon
             icon='ep:arrow-right-bold'
             width='1.2em'
@@ -73,7 +136,9 @@ const MyMedications = () => {
             style={{ color: 'black' }}
           />
         </div>
-        <div className='registration'>유효기간 {item.expiration}</div>
+        <div className='registration'>
+          <b>유효기간</b> {item.expiration}
+        </div>
       </Item>
     );
   };
@@ -84,15 +149,26 @@ const MyMedications = () => {
         <div className='totalCount'>
           총 {itemCount}개{' '}
           <Icon
-            onClick={() => setBottomSheet(true)}
-            icon='basil:add-solid'
-            width='2rem'
-            height='2rem'
-            style={{ color: '#ffbb25' }}
+            onClick={() => setDeleteItem(!deleteItem)}
+            icon='ic:baseline-edit'
+            width='1.3rem'
+            height='1.3rem'
+            style={{ color: '#d1d1d1' }}
           />
         </div>
         <div className='info'>📍폐의약품 전용수거함 위치</div>
         <div className='items'>
+          <Item>
+            <div className='empty' onClick={() => setBottomSheet(true)}>
+              <Icon
+                icon='basil:add-solid'
+                width='2rem'
+                height='2rem'
+                style={{ color: '#ffbb25' }}
+              />
+              새로운 나의 약 추가하기
+            </div>
+          </Item>
           {items.map((item, index) => renderItems(item, index))}
         </div>
 
@@ -126,12 +202,7 @@ const MyMedications = () => {
                 />
               </div>
               <div className='input-container'>
-                <input
-                  type='date'
-                  placeholder='직접 입력 또는 사진으로 등록'
-                  value={date}
-                  onChange={handleDateChange}
-                />
+                <input type='date' value={date} onChange={handleDateChange} />
               </div>
             </div>
 
@@ -154,7 +225,7 @@ const MyMedications = () => {
       {loading && <Loading />}
       {popupType !== PopupType.None && (
         <Popup onClose={() => setPopupType(PopupType.None)}>
-          {PopupContent(popupType, navigate)}
+          {getPopupContent(popupType)}
         </Popup>
       )}
     </MyPageContainer>
@@ -263,13 +334,27 @@ const Item = styled.div`
 
   .delete-button {
     position: absolute;
-    right: 10px;
+    right: 30px;
     background-color: #d9d9d9;
     border: none;
     border-radius: 25px;
     padding: 3px 8px;
     cursor: pointer;
-    font-size: 0.9em;
+    font-size: 0.6em;
+  }
+
+  .empty {
+    color: gray;
+    border: 1px dotted gray;
+    border-radius: 10px;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    align-content: center;
+    text-align: center;
+    padding: 5px 0px 5px 0px;
   }
 `;
 

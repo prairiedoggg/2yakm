@@ -35,6 +35,10 @@ export enum PopupType {
   ResetPasswordSuccess,
   ResetPasswordFailure,
 
+  DeleteMyPill, // src\components\myPage\MyMedications.tsx
+  DeleteMyPillSuccess,
+  DeleteMyPillFailure,
+
   None
 }
 
@@ -122,6 +126,11 @@ const PopupContent = (
             패스워드 재설정 이메일을 발송에 실패했습니다. 잠시 후 다시
             시도해주세요.
           </div>
+        );
+
+      case PopupType.DeleteMyPillFailure:
+        return (
+          <div>나의 약 삭제에 실패했습니다. 잠시 후 다시 시도해주세요.</div>
         );
     }
   };
