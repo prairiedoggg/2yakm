@@ -1,7 +1,7 @@
 import styled from 'styled-components';
 import { Icon } from '@iconify-icon/react';
 import BottomSheet from '../BottomSheet';
-import { ChangeEvent, useEffect, useState } from 'react';
+import { ChangeEvent, useCallback, useEffect, useRef, useState } from 'react';
 import {
   addMyPills,
   fetchMyPills,
@@ -28,6 +28,10 @@ const MyMedications = () => {
   const [popupType, setPopupType] = useState(PopupType.None);
   const [deleteItem, setDeleteItem] = useState(false);
   const [selected, setSelected] = useState<MedicationItem>();
+  const [offset, setOffset] = useState(0);
+  const [limit] = useState(10);
+  const [hasMore, setHasMore] = useState(true);
+  const containerRef = useRef<HTMLDivElement | null>(null);
 
   const navigate = useNavigate();
 
@@ -77,9 +81,30 @@ const MyMedications = () => {
     setDate(value);
   };
 
+  const handleScroll = useCallback(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    const bottom =
+      container.scrollHeight === container.scrollTop + container.clientHeight;
+
+    if (bottom && !loading && hasMore) {
+      fetchDatas();
+    }
+  }, [loading, hasMore, offset]);
+
   useEffect(() => {
     fetchDatas();
   }, []);
+
+  useEffect(() => {
+    const container = containerRef.current;
+    if (container) container.addEventListener('scroll', handleScroll);
+
+    return () => {
+      if (container) container.removeEventListener('scroll', handleScroll);
+    };
+  }, [handleScroll]);
 
   const formatDate = (dateString: string): string => {
     if (!dateString) return '';
@@ -90,8 +115,8 @@ const MyMedications = () => {
 
   const fetchDatas = () => {
     fetchMyPills(
-      10,
-      0,
+      limit,
+      offset,
       'createdAt',
       'DESC',
       (data) => {
@@ -102,7 +127,10 @@ const MyMedications = () => {
           expiration: formatDate(d.expiredat)
         }));
         setLoading(false);
-        setItems(temp);
+        setItems((prevData) => [...prevData, ...temp]);
+        setOffset((prevOffset) => prevOffset + temp.length);
+        setHasMore(temp.length === limit);
+
         setItemCount(data.totalCount);
       },
       () => {
@@ -115,7 +143,16 @@ const MyMedications = () => {
     return (
       <Item key={key}>
         <div className='title'>
-          {item.title}
+          <div className='title2'>
+            {item.title}
+            <Icon
+              icon='ep:arrow-right-bold'
+              width='1.2em'
+              height='1.2em'
+              style={{ color: 'black' }}
+            />
+          </div>
+
           {deleteItem ? (
             <div
               className='delete-button'
@@ -129,12 +166,6 @@ const MyMedications = () => {
           ) : (
             ''
           )}
-          <Icon
-            icon='ep:arrow-right-bold'
-            width='1.2em'
-            height='1.2em'
-            style={{ color: 'black' }}
-          />
         </div>
         <div className='registration'>
           <b>유효기간</b> {item.expiration}
@@ -157,7 +188,7 @@ const MyMedications = () => {
           />
         </div>
         <div className='info'>📍폐의약품 전용수거함 위치</div>
-        <div className='items'>
+        <div className='items' ref={containerRef}>
           <Item>
             <div className='empty' onClick={() => setBottomSheet(true)}>
               <Icon
@@ -214,6 +245,9 @@ const MyMedications = () => {
                   setBottomSheet(false);
                   setLoading(false);
                   fetchDatas();
+
+                  setName('');
+                  setDate('');
                 });
               }}
             >
@@ -310,6 +344,7 @@ const StyledContent = styled.div`
     display: flex;
     flex-direction: column;
     gap: 30px;
+    overflow: auto;
   }
 `;
 
@@ -326,6 +361,12 @@ const Item = styled.div`
     display: flex;
     font-weight: bold;
     font-size: 1.2em;
+    justify-content: space-between;
+  }
+
+  .title2 {
+    display: flex;
+    justify-content: space-between;
   }
 
   .registration {
@@ -333,7 +374,6 @@ const Item = styled.div`
   }
 
   .delete-button {
-    position: absolute;
     right: 30px;
     background-color: #d9d9d9;
     border: none;
