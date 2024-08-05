@@ -9,7 +9,6 @@ import FavoriteMedications from './FavoriteMedications';
 import ManageReviews from './ManageReviews';
 import MyMedications from './MyMedications';
 
-import Toast from '../Toast';
 import Nav from '../Nav';
 import { Icon } from '@iconify-icon/react';
 import { useState } from 'react';
@@ -84,22 +83,10 @@ const MyPage = () => {
         );
 
       case pageState.EditPassword:
-        return (
-          <EditPassword
-            onEdit={() => {
-              setCurrentState(pageState.EditInfo);
-            }}
-          />
-        );
+        return <EditPassword />;
 
       case pageState.EditPharmacist:
-        return (
-          <EditPharmacist
-            onEdit={() => {
-              setCurrentState(pageState.EditInfo);
-            }}
-          />
-        );
+        return <EditPharmacist />;
 
       case pageState.MyMedications:
         return <MyMedications />;

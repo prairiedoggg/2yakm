@@ -1,5 +1,5 @@
-import { get, post, put, del, patch } from './api';
 import { Alarm } from '../store/alarm';
+import { del, get, patch, post, put } from './api';
 
 export const getAlarms = async (): Promise<void> => {
   try {
