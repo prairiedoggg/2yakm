@@ -11,6 +11,7 @@ export interface PillData {
   efficacy: string;
   dosage: string;
   caution: string;
+  source: string;
 }
 
 interface PillState {

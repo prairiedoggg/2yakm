@@ -1,8 +1,10 @@
-import { Icon } from '@iconify-icon/react';
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { Icon } from '@iconify-icon/react';
+import informationOutline from '@iconify/icons-mdi/information-outline';
 import styled from 'styled-components';
 import SearchHeader from './SearchHeader';
+import Nav from '../Nav';
 import {
   fetchFavoriteCount,
   fetchFavoriteStatusApi,
@@ -23,6 +25,7 @@ const SearchResults = () => {
   const [activeTab, setActiveTab] = useState<string>('effectiveness');
   const [pillId, setPillId] = useState<number | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
+  const [showInfo, setShowInfo] = useState<boolean>(false);
 
   const formatTextWithLineBreaks = (text: string) => {
     return text.split('(').map((part, index, array) => (
@@ -125,10 +128,17 @@ const SearchResults = () => {
                     {word}
                   </Tag>
                 ))}
+
+              <InfoIconContainer onClick={() => setShowInfo(!showInfo)}>
+                <Icon icon={informationOutline} width='24' height='24' />
+              </InfoIconContainer>
+              {showInfo && (
+                <InfoBox>태그를 클릭해 관련 증상들을 모아보세요.</InfoBox>
+              )}
             </TagContainer>
           </section>
         </PillInfo>
-        <Exp>※ 태그들을 클릭해 관련 증상들을 모아보세요.</Exp>
+        <Exp>출처 : <a target='_blank' href={pillData.source}>{pillData.source}</a></Exp>
         <PillMore>
           <Menu>
             {tabs.map((tab) => (
@@ -150,6 +160,7 @@ const SearchResults = () => {
           </Contants>
         </PillMore>
       </SearchResultsContainer>
+      <Nav />
     </>
   );
 };
@@ -165,11 +176,12 @@ const PillInfo = styled.div`
   margin: auto;
 
   & img {
-    width: 30%;
+    width: 35%;
   }
 
   & section {
-    margin-left: 20px;
+    flex: 1;
+    padding-left: 15px;
   }
 `;
 
@@ -198,22 +210,42 @@ const PillText = styled.div`
 `;
 
 const HeartButton = styled.button`
-  margin-left: 5px;
+  margin-left: auto;
   background: none;
   border: none;
   padding: 0;
   cursor: pointer;
 `;
 
-const TagContainer = styled.div``;
-
+const TagContainer = styled.div`
+  position: relative;
+`;
 const Tag = styled(Link)``;
+
+const InfoIconContainer = styled.div`
+  cursor: pointer;
+`;
+
+const InfoBox = styled.div`
+  position: absolute;
+  top: 90%;
+  right: 0;
+  background: #f8f8f8;
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  padding: 10px;
+  margin: 10px;
+  font-size: 14px;
+`;
 
 const Exp = styled.p`
   margin: 15px 20px;
   color: #696969;
   font-size: 14px;
-  text-align: end;
+
+  & a{
+    color: inherit;
+  }
 `;
 
 const PillMore = styled.div`

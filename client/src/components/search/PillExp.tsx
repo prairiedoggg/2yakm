@@ -121,6 +121,7 @@ const PillExpBox = styled.div`
 
   & p {
     margin: 5px 0;
+    white-space: pre-line;
   }
 
   & p.last {

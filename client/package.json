@@ -10,6 +10,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@iconify/icons-mdi": "^1.2.48",
+    "@iconify/react": "^5.0.2",
     "@loadable/component": "^5.16.4",
     "@tanstack/react-query": "^5.51.11",
     "antd": "^5.19.3",
