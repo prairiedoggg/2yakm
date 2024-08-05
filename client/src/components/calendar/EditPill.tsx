@@ -6,9 +6,9 @@ import styled from 'styled-components';
 import { useCalendar, useDateStore } from '../../store/calendar';
 import CalendarToast from './CalendarToast';
 
-const AddPill = () => {
-  const { addPillData, calendarData } = useCalendar();
-  const { setAddTaken, edit } = useDateStore();
+const EditPill = () => {
+  const { updatePillData, calendarData } = useCalendar();
+  const { edit, setEditTaken } = useDateStore();
   const [pillName, setPillName] = useState<string>('');
   const [alarmTimes, setAlarmTimes] = useState<
     { time: Dayjs; status: string; checked: boolean }[]
@@ -30,7 +30,7 @@ const AddPill = () => {
     }
   }, [calendarData]);
 
-  const handleSavePill = () => {
+  const handleSaveEditedPill = () => {
     if (!pillName) {
       setNameError(true);
       return;
@@ -42,8 +42,8 @@ const AddPill = () => {
 
     const times = alarmTimes.map((item) => item.time.format('HH:mm'));
     const taken = alarmTimes.map((item) => item.checked);
-    addPillData({ name: pillName, time: times, taken: taken });
-    setAddTaken(false);
+    updatePillData({ name: pillName, time: times, taken: taken });
+    setEditTaken(false);
 
     console.log(edit);
   };
@@ -145,14 +145,14 @@ const AddPill = () => {
         )}
       </AddPillContainer>
       <ButtonContainer>
-        <RunButton onClick={() => setAddTaken(false)}>취소</RunButton>
-        <RunButton onClick={handleSavePill}>저장</RunButton>
+        <RunButton onClick={() => setEditTaken(false)}>취소</RunButton>
+        <RunButton onClick={handleSaveEditedPill}>저장</RunButton>
       </ButtonContainer>
     </>
   );
 };
 
-export default AddPill;
+export default EditPill;
 
 const AddPillContainer = styled.div`
   padding: 0 10px;

@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import styled from 'styled-components';
-import { useCalendar } from '../../../store/calendar';
+import { useCalendar, useDateStore } from '../../../store/calendar';
 
 interface IsPillTakenProps {
   pillData?: {
@@ -8,6 +8,7 @@ interface IsPillTakenProps {
     time?: string | string[];
     taken?: boolean | boolean[];
   }[];
+  edit: boolean;
 }
 
 export const convertToArray = (
@@ -22,7 +23,8 @@ export const convertToArray = (
   return Array.isArray(value) ? value : [];
 };
 
-const IsPillTaken = ({ pillData = [] }: IsPillTakenProps) => {
+const IsPillTaken = ({ pillData = [], edit }: IsPillTakenProps) => {
+  const { setEditTaken } = useDateStore();
   const { setPillData } = useCalendar();
   useEffect(() => {
     if (pillData !== undefined) {
@@ -39,6 +41,12 @@ const IsPillTaken = ({ pillData = [] }: IsPillTakenProps) => {
     ));
   };
 
+  const handleEditTaken = () => {
+    if (edit) {
+      setEditTaken(true);
+    }
+  };
+
   return (
     <PillCheck>
       {pillData.map((pill, index) => {
@@ -46,7 +54,7 @@ const IsPillTaken = ({ pillData = [] }: IsPillTakenProps) => {
         const takenStatuses = convertToArray(pill.taken) as boolean[];
 
         return (
-          <PillRow key={index}>
+          <PillRow key={index} onClick={() => handleEditTaken()}>
             <div>{pill.name}</div>
             <PillTimeContainer>
               {times.length && takenStatuses.length ? (

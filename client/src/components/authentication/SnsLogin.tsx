@@ -22,7 +22,7 @@ const SnsLogin = ({
   onEmailRegisterClick: () => void;
 }) => {
   const SERVER_BASE_URL = import.meta.env.VITE_APP_SERVER_BASE_URL;
-  const AUTH_URLS = `${SERVER_BASE_URL}api/auth/`;
+  const AUTH_URLS = `${SERVER_BASE_URL}api/auth`;
 
   const SNS_LOGINS = [
     {
@@ -57,7 +57,7 @@ const SnsLogin = ({
 
         return (
           <Link
-            to={AUTH_URLS[name]}
+            to={`${AUTH_URLS}/${name}`}
             key={name}
             className={`login ${name.toLowerCase()}`}
             onClick={onClose}

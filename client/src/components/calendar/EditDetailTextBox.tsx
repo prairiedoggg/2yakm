@@ -2,7 +2,7 @@ import { Icon } from '@iconify-icon/react';
 import styled from 'styled-components';
 import { useCalendar, useDateStore } from '../../store/calendar';
 import EditDetailPhoto from './EditDetailPhoto';
-import EditIsTaken from './EditIsTaken';
+import IsPillTaken from './calendarDetails/IsPillTaken';
 
 interface EditDetailTextBoxProps {
   title: string;
@@ -31,7 +31,12 @@ const EditDetailTextBox = ({ title }: EditDetailTextBoxProps) => {
           {label}: &nbsp;
         </Text>
       )}
-      <TextInput value={value ?? ''} onChange={onChange} />
+      <TextInput
+        value={value ?? ''}
+        onChange={onChange}
+        type='number'
+        step='any'
+      />
       <Unit>&nbsp;{unit}</Unit>
       <Icon
         icon='iconoir:delete-circle'
@@ -47,7 +52,7 @@ const EditDetailTextBox = ({ title }: EditDetailTextBoxProps) => {
         return (
           <UnitContainer>
             <PillCheck>
-              <EditIsTaken />
+              <IsPillTaken pillData={calendarData?.pillData} edit={true} />
             </PillCheck>
           </UnitContainer>
         );
@@ -132,17 +137,21 @@ const EditDetailTextBox = ({ title }: EditDetailTextBoxProps) => {
       <ContentTitle>
         {title}
         {isPill ? (
-          <Icon icon='f7:plus-app' onClick={() => setAddTaken(true)} />
+          <Icon
+            icon='f7:plus-app'
+            width='25px'
+            onClick={() => setAddTaken(true)}
+          />
         ) : null}
       </ContentTitle>
       {handleContent(title)}
-      {isPill && !calendarData?.pillData ? (
+      {isPill &&
+      (!calendarData?.pillData || calendarData?.pillData.length === 0) ? (
         <div
           style={{
             textAlign: 'center',
             fontSize: '10pt',
-            color: '#a9a9a9',
-            marginTop: '10px'
+            color: '#a9a9a9'
           }}
         >
           복용 여부를 확인할 약을 추가해주세요
@@ -182,10 +191,7 @@ const TextContainer = styled.div`
   flex-direction: column;
 `;
 
-const TextInput = styled.input.attrs({
-  type: 'number',
-  step: 'any'
-})`
+const TextInput = styled.input`
   width: 50px;
   font-size: 15pt;
   border: #d9d9d9 solid;

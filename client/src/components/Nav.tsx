@@ -1,96 +1,91 @@
-import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import styled from 'styled-components';
 import TimeChecker from './TimeChecker';
 
 interface NavItem {
   name: string;
   label: string;
-  icon: string;
+  icon: object;
   style?: React.CSSProperties;
 }
 
-const setUrl = (path: string, label: string): NavItem | null => {
-  let url = '';
-  switch (label) {
-    case '상담':
-      url =
-        path === 'chatbot' ? '/img/nav/talkClicked.png' : '/img/nav/talk.png';
-      return {
-        name: 'chatbot',
-        label: '상담',
-        icon: url,
-        style: { color: 'FDE72E' }
-      };
-    case '캘린더':
-      url =
-        path === 'calendar'
-          ? '/img/nav/calendarClicked.png'
-          : '/img/nav/calender.png';
-      return {
-        name: 'calendar',
-        label: '캘린더',
-        icon: url,
-        style: { marginRight: '15px' }
-      };
-    case '홈':
-      url = path === '' ? '/img/nav/homeClicked.png' : '/img/nav/home.png';
-      return {
-        name: '',
-        label: '홈',
-        icon: url,
-        style: { position: 'absolute', top: '-20px', width: '50px' }
-      };
-    case '알람설정':
-      url = path === 'alarm' ? '/img/nav/bellClicked.png' : '/img/nav/bell.svg';
-      return {
-        name: 'alarm',
-        label: '알람설정',
-        icon: url,
-        style: { marginLeft: '10px' }
-      };
-    case '마이페이지':
-      url =
-        path === 'myPage' ? '/img/nav/userClicked.png' : '/img/nav/user.png';
-      return { name: 'myPage', label: '마이페이지', icon: url };
-    default:
-      console.log('일치하는 라벨이 없음');
-      return null;
-  }
-};
-
-const navItems: string[] = ['상담', '캘린더', '홈', '알람설정', '마이페이지'];
-
 const Nav = () => {
-  const [content, setContent] = useState<NavItem[]>([]);
-  const [path, setPath] = useState<string>('');
+  const navItems: NavItem[] = [
+    {
+      name: 'chatbot',
+      label: '상담',
+      icon: {
+        default: '/img/nav/talk.png',
+        active: '/img/nav/talkClicked.png'
+      },
+      style: { color: 'FDE72E' }
+    },
+    {
+      name: 'calendar',
+      label: '캘린더',
+      icon: {
+        default: '/img/nav/calender.png',
+        active: '/img/nav/calendarClicked.png'
+      },
+      style: { marginRight: '15px' }
+    },
+    {
+      name: 'home',
+      label: '홈',
+      icon: {
+        default: '/img/nav/home.png',
+        active: '/img/nav/homeClicked.png'
+      },
+      style: { position: 'absolute', top: '-20px', width: '50px' }
+    },
+    {
+      name: 'alarm',
+      label: '알람설정',
+      icon: {
+        default: '/img/nav/bell.svg',
+        active: '/img/nav/bellClicked.png'
+      },
+      style: { marginLeft: '10px' }
+    },
+    {
+      name: 'myPage',
+      label: '마이페이지',
+      icon: {
+        default: '/img/nav/user.png',
+        active: '/img/nav/userClicked.png'
+      }
+    }
+  ];
 
-  useEffect(() => {
-    setPath(window.location.pathname.slice(1));
-
-    const updatedContent = navItems
-      .map((item) => setUrl(path, item))
-      .filter(Boolean) as NavItem[];
-    setContent(updatedContent);
-  }, [path]);
+  const { pathname: locationPathname } = useLocation();
 
   return (
     <NavContainer>
       <ul>
-        {content.map((item) => (
-          <li key={item.name} style={item.style}>
-            <StyledLink to={`/${item.name}`}>
-              <img src={item.icon} alt={item.label} />
-              <p>{item.label}</p>
-            </StyledLink>
-          </li>
-        ))}
+        {navItems.map((item) => {
+          const { name, style, label, icon } = item;
+          const isHomePage = name === 'home';
+          const navPathname = isHomePage ? '/' : `/${name}`;
+          const isActive =
+            locationPathname !== '/'
+              ? !isHomePage && locationPathname.startsWith(navPathname)
+              : isHomePage;
+          const iconSrc = !isActive ? icon.default : icon.active;
+
+          return (
+            <li key={name} style={style}>
+              <StyledLink to={navPathname}>
+                <img src={iconSrc} alt={label} />
+                <p>{label}</p>
+              </StyledLink>
+            </li>
+          );
+        })}
       </ul>
       <TimeChecker />
     </NavContainer>
   );
 };
-
 export default Nav;
 
 const NavContainer = styled.nav`

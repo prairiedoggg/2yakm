@@ -14,6 +14,7 @@ interface Store {
   posted: Array<{ date?: string; post?: boolean }>;
   addPosted: (newPost: { date: string; post: boolean }) => void;
   setPosted: (date: string, post: boolean) => void;
+  clearPosted: () => void;
 }
 
 export const useDateStore = create<Store>((set) => ({
@@ -37,6 +38,10 @@ export const useDateStore = create<Store>((set) => ({
       posted: state.posted.map((item) =>
         item.date === date ? { ...item, post } : item
       )
+    })),
+  clearPosted: () =>
+    set(() => ({
+      posted: []
     }))
 }));
 
@@ -61,6 +66,7 @@ interface Calendar {
   setCalendarData: (calendarData: CalendarData | null) => void;
   setPillData: (pillData: PillData[]) => void;
   addPillData: (newPillData: PillData) => void;
+  updatePillData: (newPillData: PillData) => void;
   setBloodSugarBefore: (bloodsugarbefore: number | null) => void;
   setBloodSugarAfter: (bloodsugarafter: number | null) => void;
   setTemp: (temp: number | null) => void;
@@ -86,6 +92,16 @@ export const useCalendar = create<Calendar>((set) => ({
       calendarData: {
         ...state.calendarData,
         pillData: [...(state.calendarData?.pillData || []), newPillData]
+      }
+    })),
+
+  updatePillData: (newPillData) =>
+    set((state) => ({
+      calendarData: {
+        ...state.calendarData,
+        pillData: state.calendarData?.pillData?.map((pill) =>
+          pill.name === newPillData.name ? newPillData : pill
+        ) || [newPillData]
       }
     })),
 
