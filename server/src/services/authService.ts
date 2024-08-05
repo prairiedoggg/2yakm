@@ -84,10 +84,7 @@ interface googleUserInfoResponse {
 
 const SECRET_KEY = process.env.SECRET_KEY;
 const REFRESH_TOKEN_SECRET_KEY = process.env.REFRESH_TOKEN_SECRET_KEY;
-const BASE_URL = 
-  process.env.NODE_ENV === 'development'
-    ? 'http://localhost:3000'
-    : process.env.CORS_ORIGIN;
+const BASE_URL = process.env.BASE_URL || 'http://localhost:3000';
 
 if (!SECRET_KEY || !REFRESH_TOKEN_SECRET_KEY) {
   throw new Error('SECRET_KEY 또는 REFRESH_TOKEN_SECRET_KEY 확인바람.');
@@ -317,6 +314,7 @@ export const kakaoAuthService = async (
 ): Promise<{ token?: string, refreshToken?: string, message?: string }> => {
   const redirectUri = `${BASE_URL}/api/auth/kakao/callback`;
   const kakaoTokenUrl = `https://kauth.kakao.com/oauth/token`;
+  
   try {
     const tokenResponse = await axios.post<kakaoTokenResponse>(kakaoTokenUrl, null, {
       params: {

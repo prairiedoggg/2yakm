@@ -10,7 +10,6 @@ import iconv from 'iconv-lite';
 import { QueryResult } from 'pg';
 import { stopwords } from '../utils/stopwords';
 
-
 const client = new vision.ImageAnnotatorClient({
   keyFilename: process.env.GOOGLE_APPLICATION_CREDENTIALS
 });
@@ -88,36 +87,41 @@ export const getPills = async (
 
 export const getPillById = async (id: number): Promise<Pills | null> => {
   const query =
-    'SELECT id, name, engname, companyname, ingredientname, efficacy, dosage, caution, storagemethod, imgurl FROM pills WHERE id = $1';
+    'SELECT id, name, engname, companyname, ingredientname, efficacy, dosage, caution, storagemethod, source, imgurl, boxurl FROM pills WHERE id = $1';
   const result = await pool.query(query, [id]);
   return result.rows[0] || null;
 };
 
-const getImportantWords = (text: string): string[] => {
+interface ImportantWord {
+  word: string;
+  department: string;
+}
+
+const getImportantWords = (text: string): ImportantWord[] => {
   console.log(`Original text: ${text}`);
   const wordFrequency: { [key: string]: number } = {};
-  const priorityWordsSet = new Set(stopwords);
+
   const words = text
     .toLowerCase()
     .split(/[\s,.;:ㆍ()]+/)
     .filter((word) => {
-      const isValid = word && priorityWordsSet.has(word);
+      const isValid = word && Object.keys(stopwords).some(stopword => word.startsWith(stopword));
       console.log(`Word: ${word}, isValid: ${isValid}`);
       return isValid;
     });
 
   words.forEach((word) => {
-    if (!wordFrequency[word]) {
-      wordFrequency[word] = 0;
+    const stopword = Object.keys(stopwords).find(sw => word.startsWith(sw));
+    if (stopword) {
+      wordFrequency[stopword] = (wordFrequency[stopword] || 0) + 1;
     }
-    wordFrequency[word]++;
   });
 
-  console.log(`Word frequency: ${JSON.stringify(wordFrequency)}`);
-
   const sortedWords = Object.entries(wordFrequency).sort((a, b) => b[1] - a[1]);
-  const importantWords = sortedWords.slice(0, 3).map((entry) => entry[0]);
-  console.log(`Important words: ${importantWords}`);
+  const importantWords = sortedWords.slice(0, 3).map(([word]) => ({
+    word,
+    department: stopwords[word]
+  }));
   return importantWords;
 };
 
@@ -126,7 +130,9 @@ export const searchPillsbyName = async (
   limit: number,
   offset: number
 ): Promise<GetPillsResult> => {
-  const query = `SELECT id, name, engname, companyname, ingredientname, efficacy, dosage, caution, storagemethod, imgurl FROM pills WHERE name ILIKE $1 OR engname ILIKE $1 
+  const query = `SELECT id, name, engname, companyname, ingredientname, efficacy, dosage, caution, storagemethod, source, imgurl, boxurl 
+                 FROM pills 
+                 WHERE name ILIKE $1 OR engname ILIKE $1 
                  LIMIT $2 OFFSET $3`;
   const values = [`${name}%`, limit, offset];
 
@@ -134,29 +140,36 @@ export const searchPillsbyName = async (
     const result = await pool.query(query, values);
 
     const pills = result.rows.map((pill: Pills) => {
-      const importantWords = getImportantWords(pill.efficacy);
-      console.log(`Pill ID: ${pill.id}, Important Words: ${importantWords}`);
+      const importantWordsWithDepartments = getImportantWords(pill.efficacy);
+      const importantWords = importantWordsWithDepartments.map(iw => iw.word).join(', ');
+      const departments = importantWordsWithDepartments.map(iw => iw.department).filter(dep => dep).join(', ');
+      console.log(`Pill ID: ${pill.id}, Important Words: ${importantWords}, Departments: ${departments}`);
       return {
         ...pill,
-        importantWords: importantWords.join(', ')
+        importantWords,
+        departments
       };
     });
 
+    const totalCount = result.rowCount ?? 0;
+
     return {
       pills,
-      totalCount: result.rowCount ?? 0,
-      totalPages: Math.ceil((result.rowCount ?? 0) / limit),
+      totalCount,
+      totalPages: Math.ceil(totalCount / limit),
       limit,
       offset
     };
   } catch (error: unknown) {
     if (error instanceof Error) {
+      console.error('DatabaseError', error)
       throw createError(
         'DatabaseError',
         `Failed to search pills by name: ${error.message}`,
         500
       );
     } else {
+      console.error('UnknownError', error)
       throw createError(
         'UnknownError',
         `Failed to search pills by name: An unknown error occurred`,
@@ -173,7 +186,7 @@ export const searchPillsbyEfficacy = async (
 ): Promise<GetPillsResult> => {
   const efficacyArray = efficacy.split(',').map((eff) => `%${eff.trim()}%`);
   const query = `
-    SELECT id, name, engname, companyname, ingredientname, efficacy, dosage, caution, storagemethod, imgurl
+    SELECT id, name, engname, companyname, ingredientname, efficacy, dosage, caution, storagemethod, source, imgurl, boxurl
     FROM pills 
     WHERE ${efficacyArray
       .map((_, index) => `efficacy ILIKE $${index + 1}`)
@@ -185,10 +198,13 @@ export const searchPillsbyEfficacy = async (
     const result = await pool.query(query, values);
 
     const pills = result.rows.map((pill: Pills) => {
-      const importantWords = getImportantWords(pill.efficacy);
+      const importantWordsWithDepartments = getImportantWords(pill.efficacy);
+      const importantWords = importantWordsWithDepartments.map(iw => iw.word).join(', ');
+      const departments = importantWordsWithDepartments.map(iw => iw.department).filter(dep => dep).join(', ');
       return {
         ...pill,
-        importantWords: importantWords.join(', ')
+        importantWords,
+        departments
       };
     });
 
@@ -201,12 +217,14 @@ export const searchPillsbyEfficacy = async (
     };
   } catch (error: unknown) {
     if (error instanceof Error) {
+      console.error('DatabaseError', error)
       throw createError(
         'DatabaseError',
         `Failed to search pills by efficacy: ${error.message}`,
         500
       );
     } else {
+      console.error('UnknownError', error)
       throw createError(
         'UnknownError',
         'Failed to search pills by efficacy: An unknown error occurred',
@@ -241,8 +259,10 @@ const searchPillsByFrontAndBack = async (
     };
   } catch (error: unknown) {
     if (error instanceof Error) {
+      console.error('DatabaseError', error)
       throw createError('DatabaseError', `${error.message}`, 500);
     } else {
+      console.error('UnknownError', error)
       throw createError('UnknownError', 'An unknown error occurred', 500);
     }
   }
@@ -254,7 +274,7 @@ const searchPillsByNameFromText = async (
   offset: number
 ): Promise<GetPillsResult> => {
   const query = `
-    SELECT id, name, engname, companyname, ingredientname, efficacy, dosage, caution, storagemethod, imgurl
+    SELECT id, name, engname, companyname, ingredientname, efficacy, dosage, caution, storagemethod, source, imgurl, boxurl
     FROM pills 
     WHERE engname ILIKE $1
     LIMIT $2 OFFSET $3`;
@@ -272,8 +292,10 @@ const searchPillsByNameFromText = async (
     };
   } catch (error: unknown) {
     if (error instanceof Error) {
+      console.error('DatabaseError', error)
       throw createError('DatabaseError', `${error.message}`, 500);
     } else {
+      console.error('UnknownError', error)
       throw createError('UnknownError', 'An unknown error occurred', 500);
     }
   }
@@ -283,22 +305,43 @@ const searchPillsByNameFromText = async (
 const execFilePromise = promisify(execFile);
 
 const preprocessImage = async (
-  imageBuffer: Buffer
+  imageBuffer: Buffer[]
 ): Promise<{ processedImageBuffer: Buffer; processedImagePath: string }> => {
-  const uniqueId = uuidv4();
+  const preprocessId = uuidv4();
   const uploadsDir = path.join(__dirname, '..', 'uploads');
-  const inputPath = path.join(uploadsDir, `input_image_${uniqueId}.jpg`);
-  const outputPath = path.join(uploadsDir, `processed_image_${uniqueId}.png`);
+  const inputPath = imageBuffer.map((_, idx) =>
+    path.join(uploadsDir, `input_image_${preprocessId}_${idx + 1}.png`)
+  );
+  const mergedInputPath = path.join(
+    uploadsDir,
+    `merged_image_${preprocessId}.png`
+  );
+  const outputPath = path.join(
+    uploadsDir,
+    `processed_image_${preprocessId}.png`
+  );
 
-  // Ensure the uploads directory exists
   if (!fs.existsSync(uploadsDir)) {
     fs.mkdirSync(uploadsDir);
   }
 
-  fs.writeFileSync(inputPath, imageBuffer);
+  // 따로 객체를 반환할 필요가 없으므로 forEach를 사용함 (forEach의 반환값은 언제나 undefined)
+  imageBuffer.forEach((buffer, idx) => {
+    const filePath = inputPath[idx];
+    fs.writeFileSync(filePath, buffer); // buffer 이미지를 filePath에 저장함
+  });
+
+  let command: string[];
 
   const pyPath = path.join(__dirname, '..', 'python', 'removeBackground.py');
-  const command = [pyPath, inputPath, outputPath]; // 파이썬 command 생성
+
+  if (imageBuffer.length === 2) {
+    command = [pyPath, ...inputPath, outputPath];
+  } else if (imageBuffer.length === 1) {
+    command = [pyPath, inputPath[0], outputPath];
+  } else {
+    throw new Error('이미지 개수를 확인해주세요.');
+  }
 
   const startTime = Date.now();
   try {
@@ -308,7 +351,7 @@ const preprocessImage = async (
       {
         encoding: 'buffer'
       }
-    ); // execFilePromise를 사용하여 Python 스크립트를 실행함
+    ); // execFilePromise를 사용하여 Python 스크립트를 실행함, buffer 형태로 인코딩해야 iconv로 변환할 수 있음
 
     // stdout, stderr 한글 깨짐 현상 수정
     const decodedStdout = iconv.decode(stdout, 'euc-kr');
@@ -327,13 +370,20 @@ const preprocessImage = async (
     console.error('이미지 전처리 중 에러가 발생했습니다.', error);
     throw createError('Preprocessing Failed', '이미지 전처리 실패', 500);
   } finally {
-    fs.unlinkSync(inputPath); // 입력 파일을 삭제함
+    inputPath.forEach((path) => {
+      if (fs.existsSync(path)) {
+        fs.unlinkSync(path);
+      }
+    });
+    if (fs.existsSync(mergedInputPath)) {
+      fs.unlinkSync(mergedInputPath);
+    }
   }
 };
 
 // 유사도 검색 결과에서 받아온 id를 이용해 DB에서 정보를 받아오는 함수
 const searchSimilarImageByIds = async (ids: string[]): Promise<Pills[]> => {
-  const query = `SELECT id, name, engname, companyname, ingredientname, efficacy, dosage, caution, storagemethod, imgurl FROM pills WHERE id = ANY($1)`;
+  const query = `SELECT id, name, engname, companyname, ingredientname, efficacy, dosage, caution, storagemethod, source, imgurl, boxurl FROM pills WHERE id = ANY($1)`;
   const result: QueryResult<Pills> = await pool.query(query, [ids]);
   return result.rows;
 };
@@ -413,11 +463,7 @@ const detectTextInImage = async (
     if (detections && detections.length > 0) {
       const filteredText = detections
         .map((text) => text?.description ?? '')
-        .filter(
-          (text) =>
-            !text.match(/[\.()]/) &&
-            !text.includes('-')    
-        );
+        .filter((text) => !text.match(/[\.()]/) && !text.includes('-'));
 
       console.log('Filtered text:', filteredText);
       return filteredText;
@@ -435,7 +481,7 @@ const detectTextInImage = async (
 };
 
 export const searchPillsByImage = async (
-  imageBuffer: Buffer,
+  imageBuffer: Buffer[],
   limit: number,
   offset: number
 ): Promise<GetPillsResult> => {
@@ -489,13 +535,13 @@ export const searchPillsByImage = async (
       };
     }
 
-    if (detectedText[0].includes('\n')){
-      const temp = detectedText[0].split('\n')
-      detectedText[0] = temp[0]
-      detectedText[1] = temp[1]
+    if (detectedText[0].includes('\n')) {
+      const temp = detectedText[0].split('\n');
+      detectedText[0] = temp[0];
+      detectedText[1] = temp[1];
     }
 
-    console.log('Detected Text:',detectedText)
+    console.log('Detected Text:', detectedText);
 
     let pills: Pills[] = [];
     let total = 0;
@@ -597,6 +643,7 @@ export const getPillFavoriteCountService = async (
 
     return parseInt(rows[0].count, 10);
   } catch (error: any) {
+    console.error('DatabaseError', error)
     throw createError(
       'DatabaseError',
       `Failed to get favorite count: ${error.message}`,
@@ -619,6 +666,7 @@ export const getPillReviewCountService = async (
 
     return parseInt(rows[0].count, 10);
   } catch (error: any) {
+    console.error('DatabaseError', error)
     throw createError(
       'DatabaseError',
       `Failed to get review count: ${error.message}`,

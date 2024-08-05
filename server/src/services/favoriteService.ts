@@ -2,12 +2,46 @@ import { pool } from '../db';
 import { Favorite } from '../entity/favorite';
 import { createError } from '../utils/error';
 import { QueryResult } from 'pg';
+import { stopwords } from '../utils/stopwords';
 
 interface TotalCountAndData {
   totalCount: number;
   totalPages: number;
   data: Favorite[];
 }
+
+interface ImportantWord {
+  word: string;
+  department: string;
+}
+
+const getImportantWords = (text: string): ImportantWord[] => {
+  const wordFrequency: { [key: string]: number } = {};
+
+  const words = text
+    .toLowerCase()
+    .split(/[\s,.;:ㆍ()]+/)
+    .filter((word) => {
+      const isValid =
+        word &&
+        Object.keys(stopwords).some((stopword) => word.startsWith(stopword));
+      return isValid;
+    });
+
+  words.forEach((word) => {
+    const stopword = Object.keys(stopwords).find((sw) => word.startsWith(sw));
+    if (stopword) {
+      wordFrequency[stopword] = (wordFrequency[stopword] || 0) + 1;
+    }
+  });
+
+  const sortedWords = Object.entries(wordFrequency).sort((a, b) => b[1] - a[1]);
+  const importantWords = sortedWords.slice(0, 3).map(([word]) => ({
+    word,
+    department: stopwords[word]
+  }));
+  return importantWords;
+};
 
 // 즐겨 찾는 약 검색 서비스
 export const searchFavoritePillService = async (
@@ -18,7 +52,7 @@ export const searchFavoritePillService = async (
   order: string
 ): Promise<TotalCountAndData> => {
   try {
-    // 전체 리뷰 개수 조회
+    // 전체 즐겨찾는 약 개수 조회
     const countQuery = `
     SELECT COUNT(*) AS total
     FROM favorites
@@ -36,6 +70,7 @@ export const searchFavoritePillService = async (
       favorites.pillid,
       pills.name,
       pills.efficacy,
+      pills.boxurl,
       favorites.createdAt
     FROM
       favorites
@@ -49,12 +84,31 @@ export const searchFavoritePillService = async (
     const values = [userid, limit, offset];
     const result: QueryResult<Favorite> = await pool.query(query, values);
 
+    const favoriteWithTag = result.rows.map((favorite: Favorite) => {
+      const importantWordsWithDepartments = getImportantWords(
+        favorite.efficacy
+      );
+      const importantWords = importantWordsWithDepartments
+        .map((iw) => iw.word)
+        .join(', ');
+      const departments = importantWordsWithDepartments
+        .map((iw) => iw.department)
+        .filter((dep) => dep)
+        .join(', ');
+      return {
+        ...favorite,
+        importantWords,
+        departments
+      };
+    });
+
     return {
       totalCount,
       totalPages,
-      data: result.rows
+      data: favoriteWithTag
     };
   } catch (error: any) {
+    console.error('DB error:', error);
     throw createError(
       'DBError',
       '즐겨찾는 약 검색 중 데이터베이스 오류가 발생했습니다.',
@@ -106,6 +160,7 @@ export const addCancelFavoritePillService = async (
       data: addResult.rows[0]
     };
   } catch (error: any) {
+    console.error('DB error:', error);
     throw createError(
       'DBError',
       '좋아요를 추가, 삭제 중 데이터베이스 오류가 발생했습니다.',
@@ -129,6 +184,7 @@ export const userFavoriteStatusService = async (
 
     return result.rows.length > 0;
   } catch (error: any) {
+    console.error('DB error:', error);
     throw createError(
       'DBError',
       '좋아요 상태를 확인 중 데이터베이스 오류가 발생했습니다.',
@@ -136,22 +192,3 @@ export const userFavoriteStatusService = async (
     );
   }
 };
-
-// // 해당 약의 좋아요 수를 확인하는 서비스
-// export const getPillFavoriteCountService = async (
-//   pillid: number
-// ): Promise<number> => {
-//   try {
-//     const query = `
-//   SELECT COUNT(*) AS count
-//   FROM favorites
-//   WHERE pillid = $1
-//   `;
-//     const values = [pillid];
-//     const { rows } = await pool.query(query, values);
-
-//     return parseInt(rows[0].count, 10);
-//   } catch (error: any) {
-//     throw error;
-//   }
-// };

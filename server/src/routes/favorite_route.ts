@@ -69,18 +69,28 @@ const router = Router();
  *                       pillid:
  *                         type: integer
  *                         description: pill id
- *                         example: 199800355
+ *                         example: 202106092
  *                       name:
  *                         type: string
  *                         description: pill name
- *                         example: "데카미솔연고"
+ *                         example: "타이레놀정500밀리그람(아세트아미노펜)"
  *                       efficacy:
  *                         type: string
  *                         description: pill efficacy(효능)
- *                         example: "이 약은 네오마이신 감수성 세균에 의해 2차 감염된 코르티코이드 반응성 피부질환의 초기 치료(피부염, 감염된 상처)에 사용합니다."
+ *                         example: "1. 주효능·효과\n감기로 인한 발열 및 동통(통증), 두통, 신경통, 근육통, 월경통, 염좌통(삔 통증)\n2. 다음 질환에도 사용할 수 있다.\n치통, 관절통, 류마티양 동통(통증)"
+ *                       boxurl:
+ *                         type: string
+ *                         description: 약 상자 사진 url
+ *                         example: "https://res.cloudinary.com/dnxyampqy/image/upload/v1722529384/boximg/eyakmoyak/198500207.jpg"
  *                       createdat:
  *                         type: string
  *                         format: date-time
+ *                       importantWords:
+ *                         type: string
+ *                         description: 증상 태그
+ *                         example: "두통, 신경통, 근육통"
+ *       400:
+ *         description: limit, offset 값을 다시 확인해 주세요.
  *       401:
  *         description: 토큰이 없습니다
  *       500:

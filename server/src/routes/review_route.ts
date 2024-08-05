@@ -46,7 +46,11 @@ const router = Router();
  *                   type: integer
  *                 pillid:
  *                   type: integer
+ *                 name:
+ *                   type: string
  *                 userid:
+ *                   type: string
+ *                 username:
  *                   type: string
  *                 content:
  *                   type: string
@@ -56,7 +60,9 @@ const router = Router();
  *               example:
  *                 id: 1
  *                 pillid: 197000037
+ *                 name: 아로나민골드정
  *                 userid: "0190caa1-0c81-7fa2-9e4d-ed3c8ec93d7a"
+ *                 username: "test"
  *                 content: "전 이거 먹고 힘을 내요! 완전 추천합니다!"
  *                 createdat: "2024-07-16T20:37:08.325Z"
  *       400:
@@ -218,6 +224,8 @@ router.delete('/:id', authByToken, deleteReview);
  *                       createdat:
  *                         type: string
  *                         format: date-time
+ *       400:
+ *         description: limit, offset 값을 다시 확인해 주세요.
  *       401:
  *         description: 토큰이 없습니다
  *       500:
@@ -283,6 +291,8 @@ router.get('/users/', authByToken, getUserAllReview);
  *                         type: string
  *                       role:
  *                         type: boolean
+ *                       profileimg:
+ *                         type: string
  *                       content:
  *                         type: string
  *                       createdat:
@@ -291,6 +301,8 @@ router.get('/users/', authByToken, getUserAllReview);
  *                 nextCursor:
  *                   type: integer
  *                   description: 다음 페이지를 가져오기 위한 커서 값 (마지막으로 반환된 리뷰의 id)
+ *       400:
+ *         description: initialLimit, cursorLimit 값을 다시 확인해 주세요.
  *       500:
  *         description: Internal Server Error
  */

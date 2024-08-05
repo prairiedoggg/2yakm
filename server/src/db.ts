@@ -1,4 +1,4 @@
-import { Pool } from 'pg';
+import { Pool, PoolClient } from 'pg';
 import fs from 'fs';
 import path from 'path';
 import { createError } from './utils/error';
@@ -44,3 +44,21 @@ const connectDB = async (): Promise<void> => {
 connectDB();
 
 export { pool };
+
+// ResultType은 Generic variable, 즉 아래의 transaction의 결과물의 type(리턴 type)
+export async function withTransaction<ResultType>(
+  task: (connection: PoolClient) => Promise<ResultType>
+): Promise<ResultType> {
+  const client = await pool.connect(); // client connect
+  try {
+    await client.query('BEGIN');
+    const result = await task(client);
+    await client.query('COMMIT'); // transaction commit
+    return result;
+  } catch (error) {
+    await client.query('ROLLBACK'); // transaction rollback
+    throw error;
+  } finally {
+    client.release(); // connection end
+  }
+}
