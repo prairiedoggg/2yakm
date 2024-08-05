@@ -16,7 +16,7 @@ const SearchHistory = () => {
           .slice()
           .reverse()
           .map((item, index) => (
-            <HistoryItem to={`/search/name?q=${item}`} key={index} className='listItem'>
+            <HistoryItem to={`/search/name?q=${encodeURIComponent(item)}`} key={index} className='listItem'>
               {item}
             </HistoryItem>
           ))}

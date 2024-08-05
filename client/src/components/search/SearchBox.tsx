@@ -3,9 +3,10 @@ import {
   Dispatch,
   KeyboardEvent,
   SetStateAction,
-  useState
+  useState,
+  useEffect
 } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import styled from 'styled-components';
 import {
   fetchAutocompleteSuggestions,
@@ -22,17 +23,23 @@ interface SearchBoxProps {
 
 const SearchBox = ({ setImageResults }: SearchBoxProps) => {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const query = searchParams.get('q') || '';
   const {
-    setSearchQuery,
     setImageQuery,
     searchType,
     setSuggestions,
     setIsImageSearch,
-    isImageSearch,
+    isImageSearch
   } = useSearchStore();
-  const [query, setQuery] = useState<string>('');
   const [bottomSheet, setBottomSheet] = useState(false);
   const addHistory = useSearchHistoryStore((state) => state.addHistory);
+
+  useEffect(() => {
+    if (query && searchType !== 'efficacy') {
+      fetchSuggestions(query);
+    }
+  }, [query, searchType]);
 
   const fetchSuggestions = async (newQuery: string) => {
     if (newQuery === '') return;
@@ -47,8 +54,7 @@ const SearchBox = ({ setImageResults }: SearchBoxProps) => {
 
   const handleChange = async (e: ChangeEvent<HTMLInputElement>) => {
     const newQuery = e.target.value;
-    setQuery(newQuery);
-    setSearchQuery(newQuery);
+     setSearchParams({ q: newQuery });
 
     if (searchType !== 'efficacy') {
       await fetchSuggestions(newQuery);
@@ -61,13 +67,10 @@ const SearchBox = ({ setImageResults }: SearchBoxProps) => {
 
   const handleSearch = () => {
     if (query.trim()) {
-      setSearchQuery(query);
       addHistory(query);
-
       navigate(`/search/${searchType}?q=${query}`);
     } else {
-      setSearchQuery('');
-      setQuery('');
+      setSearchParams({ q: '' });
     }
   };
 

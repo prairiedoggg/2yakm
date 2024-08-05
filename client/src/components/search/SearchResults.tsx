@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { Icon } from '@iconify-icon/react';
 import informationOutline from '@iconify/icons-mdi/information-outline';
 import styled from 'styled-components';
@@ -13,12 +13,12 @@ import {
 import { fetchPillDataByName } from '../../api/searchApi';
 import { useFavoriteStore } from '../../store/favorite';
 import { usePillStore } from '../../store/pill';
-import { useSearchStore } from '../../store/search';
 import PillExp from './PillExp';
 import Review from './Review';
 
 const SearchResults = () => {
-  const { searchQuery } = useSearchStore();
+  const [searchParams] = useSearchParams();
+   const query = searchParams.get('q') || '';
   const { pillData, setPillData } = usePillStore();
   const { isFavorite, setIsFavorite, favoriteCount, setFavoriteCount } =
     useFavoriteStore();
@@ -44,7 +44,7 @@ const SearchResults = () => {
     const fetchData = async () => {
       setLoading(true);
       try {
-        const data = await fetchPillDataByName(searchQuery, 1, 0);
+        const data = await fetchPillDataByName(query, 1, 0);
         if (data) {
           setPillId(data.id);
           setPillData(data);
@@ -65,7 +65,7 @@ const SearchResults = () => {
       }
     };
     fetchData();
-  }, [searchQuery, setIsFavorite, setPillData]);
+  }, [query, setIsFavorite, setPillData]);
 
   const handleToggleFavorite = async () => {
     if (!pillId) return;

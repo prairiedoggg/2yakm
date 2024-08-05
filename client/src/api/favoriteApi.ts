@@ -1,8 +1,9 @@
+import { PillData } from '../store/pill';
 import { get, post } from './api';
 
-export const fetchFavoriteStatusApi = async (pillId: string) => {
+export const fetchFavoriteStatusApi = async (pill: Pick<PillData, 'id'>) => {
   try {
-    const data = await get(`/api/favorites/${pillId}/status`);
+    const data = await get(`/api/favorites/${pill.id}/status`);
     console.log('좋아요 get:', data);
     return data.isFavorite;
   } catch (error) {
@@ -11,20 +12,24 @@ export const fetchFavoriteStatusApi = async (pillId: string) => {
   }
 };
 
-export const fetchFavoriteCount = async (pillId: string) => {
+export const fetchFavoriteCount = async (pill: Pick<PillData, 'id'>) => {
   try {
-    const data = await get(`/api/pills/${pillId}/favoritecount`)
-    console.log('좋아요 수:', data)
-    return data.count
+    const data = await get(`/api/pills/${pill.id}/favoritecount`);
+    console.log('좋아요 수:', data);
+    return data.count;
   } catch (error) {
     console.error('즐겨찾기 수 가져오기 실패:', error);
     throw error;
   }
 };
 
-export const toggleFavoriteApi = async (pillId: string, onSuccess?: (arg0: any) => void, onFailure?: (arg0: any) => void) => {
+export const toggleFavoriteApi = async (
+  pill: Pick<PillData, 'id'>,
+  onSuccess?: (arg0: any) => void,
+  onFailure?: (arg0: any) => void
+) => {
   try {
-    const data = await post(`/api/favorites/${pillId}`, pillId);
+    const data = await post(`/api/favorites/${pill.id}`, { pillId: pill.id });
     console.log('좋아요 post:', data);
     if (onSuccess) onSuccess(data);
     return data;
@@ -55,6 +60,5 @@ export const fetchMyFavorites = async (
   } catch (error) {
     console.error('fetchMyFavorites failed', error);
     if (onFailure) onFailure(error);
-
   }
 };

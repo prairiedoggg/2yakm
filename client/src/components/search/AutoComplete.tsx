@@ -1,13 +1,13 @@
-import styled from 'styled-components';
 import { Link } from 'react-router-dom';
+import styled from 'styled-components';
 import { useSearchStore } from '../../store/search';
 
 const AutoComplete = () => {
-  const { suggestions, setSearchQuery, setSuggestions } = useSearchStore();
+  const { suggestions, setSuggestions } = useSearchStore();
 
   const handleSelectSuggestion = (suggestion: string) => {
-    setSearchQuery(suggestion);
     setSuggestions([]);
+    console.log(`Selected suggestion: ${suggestion}`);
   };
 
   return (
@@ -33,5 +33,4 @@ const AutoComplete = () => {
 
 export default AutoComplete;
 
-const AutoCompleteItem = styled(Link)`
-`;
+const AutoCompleteItem = styled(Link)``;
