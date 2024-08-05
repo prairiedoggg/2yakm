@@ -1,12 +1,19 @@
 import { get, post, put, del, patch } from './api';
 import Cookies from 'js-cookie';
-import { Alarm } from '../store/alarm';
+import { Alarm, useAlarmStore} from '../store/alarm';
+
 
 export const getAlarms = async (): Promise<Alarm[]> => {
   try {
+
     console.log(Cookies.get('token'));
     const data = await get('/api/alarms');
     console.log('알람 Get:', data);
+
+    useAlarmStore
+    .getState()
+    .setAlarms(data);
+
     return data;
   } catch (error) {
     console.error('알람 Get:', error);

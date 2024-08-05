@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import styled from 'styled-components';
+import TimeChecker from './TimeChecker';
 
 interface NavItem {
   name: string;
@@ -85,6 +86,7 @@ const Nav = () => {
           </li>
         ))}
       </ul>
+      <TimeChecker />
     </NavContainer>
   );
 };

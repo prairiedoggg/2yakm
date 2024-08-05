@@ -1,6 +1,7 @@
 import styled from 'styled-components';
 import { Icon } from '@iconify-icon/react';
 import { ChangeEvent, FormEvent, useState } from 'react';
+import Loading from '../Loading';
 
 interface FormData {
   number: string;
@@ -14,7 +15,7 @@ enum InputType {
   Date = 'date'
 }
 
-const EditPharmacist = ({ onEdit }: { onEdit: () => void }) => {
+const EditPharmacist = () => {
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState<FormData>({
     number: '',
@@ -162,6 +163,7 @@ const EditPharmacist = ({ onEdit }: { onEdit: () => void }) => {
           </button>
         </form>
       </StyledContent>
+      {loading && <Loading />}
     </MyPageContainer>
   );
 };

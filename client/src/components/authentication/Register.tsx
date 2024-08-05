@@ -57,7 +57,7 @@ const Register = () => {
         setLoading(false);
         setPopupType(PopupType.RegistrationSuccess);
       },
-      (error) => {
+      () => {
         setLoading(false);
         setPopupType(PopupType.RegistrationFailure);
       }
@@ -184,7 +184,7 @@ const Register = () => {
                   setLoading(false);
                   setPopupType(PopupType.VerificationEmailSentSuccess);
                 },
-                (error) => {
+                () => {
                   setLoading(false);
                   setPopupType(PopupType.VerificationEmailSentFailure);
                 }

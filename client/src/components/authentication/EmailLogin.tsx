@@ -120,7 +120,7 @@ const EmailLogin = ({
                 window.location.reload();
               });
             },
-            (error) => {
+            () => {
               setLoading(false);
               setPopupMessage(
                 '로그인에 실패했습니다. 이메일 또는 비밀번호를 확인해주세요.'

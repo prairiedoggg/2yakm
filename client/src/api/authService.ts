@@ -32,6 +32,8 @@ export const fetchUserInformation = async (
     else if (data.naverid !== null) loginType = LoginType.naver;
     else if (data.googleid !== null) loginType = LoginType.google;
 
+    console.log(data);
+
     useUserStore
       .getState()
       .setUser(
@@ -71,7 +73,7 @@ export const signup = async (
   username: string,
   password: string,
   confirmPassword: string,
-  onSuccess: () => void,
+  onSuccess: (arg0: any) => void,
   onFailure?: (arg0: any) => void
 ) => {
   try {
@@ -82,7 +84,7 @@ export const signup = async (
       confirmPassword: confirmPassword
     });
 
-    if (onSuccess) onSuccess();
+    if (onSuccess) onSuccess(data);
   } catch (error) {
     console.error('signup failed', error);
     if (onFailure) onFailure(error);
@@ -158,13 +160,13 @@ export const changePassword = async (
 
 export const resetPasswordRequest = async (
   email: string,
-  onSuccess?: () => void,
+  onSuccess?: (arg0: any) => void,
   onFailure?: (arg0: any) => void
 ) => {
   try {
     const data = await post('/api/auth/request-password', { email: email });
 
-    if (onSuccess) onSuccess();
+    if (onSuccess) onSuccess(data);
   } catch (error) {
     console.error('reset Password failed', error);
     if (onFailure) onFailure(error);
@@ -174,7 +176,7 @@ export const resetPasswordRequest = async (
 export const resetPassword = async (
   password: string,
   token: string,
-  onSuccess?: () => void,
+  onSuccess?: (arg0: any) => void,
   onFailure?: (arg0: any) => void
 ) => {
   try {
@@ -183,7 +185,7 @@ export const resetPassword = async (
       newPassword: password
     });
 
-    if (onSuccess) onSuccess();
+    if (onSuccess) onSuccess(data);
   } catch (error) {
     console.error('reset Password failed', error);
     if (onFailure) onFailure(error);
