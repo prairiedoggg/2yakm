@@ -38,6 +38,7 @@ export enum PopupType {
   DeleteMyPill, // src\components\myPage\MyMedications.tsx
   DeleteMyPillSuccess,
   DeleteMyPillFailure,
+  FinishChatBot,
 
   None
 }
@@ -131,6 +132,14 @@ const PopupContent = (
       case PopupType.DeleteMyPillFailure:
         return (
           <div>나의 약 삭제에 실패했습니다. 잠시 후 다시 시도해주세요.</div>
+        );
+
+      case PopupType.FinishChatBot:
+        return (
+          <div>
+            채팅을 종료하시면 기존 내용은 삭제돼요. <br />
+            삭제하시겠어요?
+          </div>
         );
     }
   };
