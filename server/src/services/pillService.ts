@@ -92,28 +92,36 @@ export const getPillById = async (id: number): Promise<Pills | null> => {
   return result.rows[0] || null;
 };
 
-const getImportantWords = (text: string): string[] => {
+interface ImportantWord {
+  word: string;
+  department: string;
+}
+
+const getImportantWords = (text: string): ImportantWord[] => {
   console.log(`Original text: ${text}`);
   const wordFrequency: { [key: string]: number } = {};
-  const priorityWordsSet = new Set(stopwords);
+
   const words = text
     .toLowerCase()
     .split(/[\s,.;:ㆍ()]+/)
     .filter((word) => {
-      const isValid = word && priorityWordsSet.has(word);
+      const isValid = word && Object.keys(stopwords).some(stopword => word.startsWith(stopword));
       console.log(`Word: ${word}, isValid: ${isValid}`);
       return isValid;
     });
 
   words.forEach((word) => {
-    if (!wordFrequency[word]) {
-      wordFrequency[word] = 0;
+    const stopword = Object.keys(stopwords).find(sw => word.startsWith(sw));
+    if (stopword) {
+      wordFrequency[stopword] = (wordFrequency[stopword] || 0) + 1;
     }
-    wordFrequency[word]++;
   });
 
   const sortedWords = Object.entries(wordFrequency).sort((a, b) => b[1] - a[1]);
-  const importantWords = sortedWords.slice(0, 3).map((entry) => entry[0]);
+  const importantWords = sortedWords.slice(0, 3).map(([word]) => ({
+    word,
+    department: stopwords[word]
+  }));
   return importantWords;
 };
 
@@ -122,7 +130,9 @@ export const searchPillsbyName = async (
   limit: number,
   offset: number
 ): Promise<GetPillsResult> => {
-  const query = `SELECT id, name, engname, companyname, ingredientname, efficacy, dosage, caution, storagemethod, source, imgurl, boxurl FROM pills WHERE name ILIKE $1 OR engname ILIKE $1 
+  const query = `SELECT id, name, engname, companyname, ingredientname, efficacy, dosage, caution, storagemethod, source, imgurl, boxurl 
+                 FROM pills 
+                 WHERE name ILIKE $1 OR engname ILIKE $1 
                  LIMIT $2 OFFSET $3`;
   const values = [`${name}%`, limit, offset];
 
@@ -130,18 +140,23 @@ export const searchPillsbyName = async (
     const result = await pool.query(query, values);
 
     const pills = result.rows.map((pill: Pills) => {
-      const importantWords = getImportantWords(pill.efficacy);
-      console.log(`Pill ID: ${pill.id}, Important Words: ${importantWords}`);
+      const importantWordsWithDepartments = getImportantWords(pill.efficacy);
+      const importantWords = importantWordsWithDepartments.map(iw => iw.word).join(', ');
+      const departments = importantWordsWithDepartments.map(iw => iw.department).filter(dep => dep).join(', ');
+      console.log(`Pill ID: ${pill.id}, Important Words: ${importantWords}, Departments: ${departments}`);
       return {
         ...pill,
-        importantWords: importantWords.join(', ')
+        importantWords,
+        departments
       };
     });
 
+    const totalCount = result.rowCount ?? 0;
+
     return {
       pills,
-      totalCount: result.rowCount ?? 0,
-      totalPages: Math.ceil((result.rowCount ?? 0) / limit),
+      totalCount,
+      totalPages: Math.ceil(totalCount / limit),
       limit,
       offset
     };
@@ -181,10 +196,13 @@ export const searchPillsbyEfficacy = async (
     const result = await pool.query(query, values);
 
     const pills = result.rows.map((pill: Pills) => {
-      const importantWords = getImportantWords(pill.efficacy);
+      const importantWordsWithDepartments = getImportantWords(pill.efficacy);
+      const importantWords = importantWordsWithDepartments.map(iw => iw.word).join(', ');
+      const departments = importantWordsWithDepartments.map(iw => iw.department).filter(dep => dep).join(', ');
       return {
         ...pill,
-        importantWords: importantWords.join(', ')
+        importantWords,
+        departments
       };
     });
 

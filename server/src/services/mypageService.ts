@@ -94,12 +94,21 @@ export const addCertification = async (userId: string, name: string, date: strin
       throw createError("이미 등록된 사업자등록증입니다", "Already registered", 403)
     } 
 
+    const verifiedResult = await pool.query(
+      `UPDATE users SET isverified = true WHERE userid = $1 RETURNING isverified`,
+      [userId]
+    );
+
     const result = await pool.query(
       `INSERT INTO certification (userid, name, date, number) values ($1, $2, $3, $4) returning name, date, number`, 
       [userId, name, date, number]
     );
 
-    const certification = result.rows[0];
+    const certification: Certification = {
+      ...result.rows[0],
+      isverified: verifiedResult.rows[0].isverified
+    };
+
     return certification;
   } catch (error) {
     console.error('Error adding certification:', error);

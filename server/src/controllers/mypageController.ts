@@ -83,8 +83,8 @@ export const getCert = async (req: AuthenticatedRequest, res: Response, next: Ne
     if (!user) {
       return next(createError('UnauthorizedError', 'Unauthorized', 401));
     }
-  const userId = user.id
-  const getCertifiedUser = await getCertification(userId)
+  const userId = user.id;
+  const getCertifiedUser = await getCertification(userId);
   res.status(200).json(getCertifiedUser);
   }
 catch(error) {
@@ -100,13 +100,13 @@ export const addCert = async (req: AuthenticatedRequest, res: Response, next: Ne
       return next(createError('UnauthorizedError', 'Unauthorized', 401));
     }
 
-  const userId = user.id
+  const userId = user.id;
   const CertData = req.body;
-  const name = CertData.name
-  const date = CertData.date
-  const number = CertData.number
+  const name = CertData.name;
+  const date = CertData.date;
+  const number = CertData.number;
 
-  const certifiedUser = await addCertification(userId, name, date, number)
+  const certifiedUser = await addCertification(userId, name, date, number);
   res.status(200).json(certifiedUser);
   }
 catch(error) {
@@ -120,9 +120,9 @@ export const deleteCert = async (req: AuthenticatedRequest, res: Response, next:
     if (!user) {
       return next(createError('UnauthorizedError', 'Unauthorized', 401));
     }
-  const userId = user.id
-  const name = req.body.name
-  const deleteCertifiedUser = await deleteCertification(userId, name)
+  const userId = user.id;
+  const name = req.body.name;
+  const deleteCertifiedUser = await deleteCertification(userId, name);
   res.status(200).json(deleteCertifiedUser);
   }
 catch(error) {
