@@ -1,4 +1,4 @@
-import { Icon } from '@iconify-icon/react/dist/iconify.mjs';
+import { Icon } from '@iconify-icon/react';
 import { Button, Input, TimePicker } from 'antd';
 import dayjs, { Dayjs } from 'dayjs';
 import { useEffect, useState } from 'react';
@@ -7,7 +7,7 @@ import { useCalendar, useDateStore } from '../../store/calendar';
 import CalendarToast from './CalendarToast';
 
 const EditPill = () => {
-  const { updatePillData, calendarData } = useCalendar();
+  const { updatePillData, calendarData, removePillData } = useCalendar();
   const { edit, setEditTaken } = useDateStore();
   const [pillName, setPillName] = useState<string>('');
   const [alarmTimes, setAlarmTimes] = useState<
@@ -82,11 +82,22 @@ const EditPill = () => {
     setAlarmTimes(newAlarmTimes);
   };
 
+  const handleDeletePillData = () => {
+    removePillData(pillName);
+    setEditTaken(false);
+  };
+
   return (
     <>
       <AddPillContainer>
-        <Title>약 추가하기</Title>
+        <Title>약 정보 수정하기</Title>
         <hr />
+        <DeleteContainer>
+          <Delete onClick={() => handleDeletePillData()}>
+            <Icon icon='ph:trash-bold' width='20px' />
+            삭제
+          </Delete>
+        </DeleteContainer>
         <SubTitle>
           <Pill>💊 복용 여부를 확인할 약 이름</Pill>
           <StyledAntdInput
@@ -165,6 +176,25 @@ const AddPillContainer = styled.div`
   margin-bottom: 80px;
 `;
 
+const DeleteContainer = styled.div`
+  display: flex;
+  justify-content: flex-end;
+
+  color: #ff3d00;
+`;
+
+const Delete = styled.button`
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 10px;
+  color: #ff3d00;
+  border: none;
+  border-radius: 5px;
+  background-color: #ffe6de;
+  padding: 5px 10px;
+  line-height: 20px;
+`;
+
 const Title = styled.div`
   text-align: center;
   font-size: 15pt;
@@ -173,7 +203,7 @@ const Title = styled.div`
 `;
 
 const SubTitle = styled.div`
-  margin: 25px 0;
+  margin-bottom: 20px;
 
   &.time {
     margin-top: 50px;

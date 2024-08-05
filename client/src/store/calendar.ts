@@ -74,6 +74,7 @@ interface Calendar {
   setPillData: (pillData: PillData[] | null) => void;
   addPillData: (newPillData: PillData) => void;
   updatePillData: (newPillData: PillData) => void;
+  removePillData: (pillName: string) => void;
   setBloodSugarBefore: (bloodsugarbefore: number | null) => void;
   setBloodSugarAfter: (bloodsugarafter: number | null) => void;
   setTemp: (temp: number | null) => void;
@@ -108,7 +109,17 @@ export const useCalendar = create<Calendar>((set) => ({
         ...state.calendarData,
         pillData: state.calendarData?.pillData?.map((pill) =>
           pill.name === newPillData.name ? newPillData : pill
-        ) || [newPillData] // 빈 배열로 초기화
+        ) || [newPillData]
+      }
+    })),
+
+  removePillData: (pillName) =>
+    set((state) => ({
+      calendarData: {
+        ...state.calendarData,
+        pillData: state.calendarData?.pillData?.filter(
+          (pill) => pill.name !== pillName
+        )
       }
     })),
 

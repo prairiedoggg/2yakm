@@ -70,7 +70,7 @@ const AddPill = () => {
   return (
     <>
       <AddPillContainer>
-        <Title>약 추가하기</Title>
+        <Title>약 정보 추가하기</Title>
         <hr />
         <SubTitle>
           <Pill>💊 복용 여부를 확인할 약 이름</Pill>
