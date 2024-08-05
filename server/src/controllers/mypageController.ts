@@ -97,22 +97,22 @@ export const addCert = async (req: AuthenticatedRequest, res: Response, next: Ne
   try {
     const user = req.user;
     if (!user) {
+      console.log('Unauthorized');
       return next(createError('UnauthorizedError', 'Unauthorized', 401));
     }
 
-  const userId = user.id;
-  const CertData = req.body;
-  const name = CertData.name;
-  const date = CertData.date;
-  const number = CertData.number;
+    const { name, date, number } = req.body;
+    if (!name || !date || !number) {
+      return next(createError('ValidationError', 'Missing required fields', 400));
+    }
 
-  const certifiedUser = await addCertification(userId, name, date, number);
-  res.status(200).json(certifiedUser);
+    const userId = user.id;
+    const certifiedUser = await addCertification(userId, name, date, number);
+    res.status(201).json(certifiedUser);
+  } catch (error) {
+    next(error);
   }
-catch(error) {
-  next(error)
-}
-}
+};
 
 export const deleteCert = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
   try {
@@ -120,12 +120,15 @@ export const deleteCert = async (req: AuthenticatedRequest, res: Response, next:
     if (!user) {
       return next(createError('UnauthorizedError', 'Unauthorized', 401));
     }
-  const userId = user.id;
-  const name = req.body.name;
-  const deleteCertifiedUser = await deleteCertification(userId, name);
-  res.status(200).json(deleteCertifiedUser);
+    const { name } = req.body;
+    if (!name) {
+      return next(createError('ValidationError', 'Missing required field: name', 400));
+    }
+
+    const userId = user.id;
+    const deletedCertification = await deleteCertification(userId, name);
+    res.status(200).json(deletedCertification);
+  } catch (error) {
+    next(error);
   }
-catch(error) {
-  next(error)
-}
-}
+};

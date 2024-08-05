@@ -26,6 +26,9 @@ dotenv.config();
 const app = express();
 
 const port = process.env.PORT ?? 3000;
+const BASE_URL = process.env.NODE_ENV === 'development'
+  ? `http://localhost:${port}`
+  : process.env.CORS_ORIGIN;
 
 // Helmet
 app.use(helmet());
@@ -33,7 +36,7 @@ app.use(helmet());
 // CORS
 app.use(
   cors({
-    origin: true,
+    origin: BASE_URL,
     credentials: true
   })
 );
@@ -57,7 +60,7 @@ app.use('/api/pills', pillRouter);
 app.use(notFoundHandler);
 app.use(errorHandler);
 app.listen(port, () => {
-  console.log(`Server is running ${port}`);
+  console.log(`Server is running ${BASE_URL}`);
   rescheduleAllAlarms();
 });
 

@@ -84,7 +84,10 @@ interface googleUserInfoResponse {
 
 const SECRET_KEY = process.env.SECRET_KEY;
 const REFRESH_TOKEN_SECRET_KEY = process.env.REFRESH_TOKEN_SECRET_KEY;
-const BASE_URL = process.env.BASE_URL || 'http://localhost:3000';
+const BASE_URL = 
+  process.env.NODE_ENV === 'development'
+    ? `http://localhost:${process.env.PORT ?? 3000}`
+    : process.env.CORS_ORIGIN;
 
 if (!SECRET_KEY || !REFRESH_TOKEN_SECRET_KEY) {
   throw new Error('SECRET_KEY 또는 REFRESH_TOKEN_SECRET_KEY 확인바람.');
@@ -125,7 +128,7 @@ export const login = async (
     );
 
     return { token, refreshToken };
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('Login Error:', error);
     throw createError('DBError', '데이터베이스 오류가 발생했습니다.', 500);
   }
@@ -261,7 +264,7 @@ export const verifyEmailService = async (token: string): Promise<void> => {
     } else {
       throw createError('InvalidToken', '유효하지 않은 토큰입니다.', 400);
     }
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('verifyEmailService Error:', error);
     if (error instanceof jwt.TokenExpiredError) {
       throw createError('TokenExpired', '토큰이 만료됨', 400);
@@ -301,7 +304,7 @@ export const refreshTokenService = async (
     } else {
       throw createError('InvalidToken', '유효하지 않은 토큰입니다.', 400);
     }
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('refreshToken Error:', error);
     throw createError('InvalidRefreshToken', '유효하지 않은 토큰입니다.', 403);
   }
@@ -314,7 +317,7 @@ export const kakaoAuthService = async (
 ): Promise<{ token?: string, refreshToken?: string, message?: string }> => {
   const redirectUri = `${BASE_URL}/api/auth/kakao/callback`;
   const kakaoTokenUrl = `https://kauth.kakao.com/oauth/token`;
-  
+
   try {
     const tokenResponse = await axios.post<kakaoTokenResponse>(kakaoTokenUrl, null, {
       params: {
@@ -396,11 +399,11 @@ export const kakaoAuthService = async (
       );
 
       return { token, refreshToken };
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('DB error:', error);
       throw createError('DBError', '데이터베이스 오류가 발생했습니다.', 500);
     }
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('kakao athentication error:', error );
     throw createError('KakaoAuthError', '카카오 인증 실패', 500);
   }
@@ -491,11 +494,11 @@ export const naverAuthService = async (
       );
 
       return { token, refreshToken };
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('DBError:', error);
       throw createError('DBError', '데이터베이스 오류가 발생했습니다.', 500);
     }
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('naver authentication error:', error);
     throw createError('NaverAuthError', '네이버 인증 실패', 500);
   }
@@ -586,11 +589,11 @@ export const googleAuthService = async (
       );
 
       return { token, refreshToken };
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('DBError:', error);
       throw createError('DBError', '데이터베이스 오류가 발생했습니다.', 500);
     }
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('google athentication error:', error);
     throw createError('GoogleAuthError', '구글 인증 실패', 500);
   }
@@ -639,7 +642,7 @@ export const changePasswordService = async (
     const updateQuery = 'UPDATE users SET password = $1 WHERE email = $2';
     const updateValues = [hashedNewPassword, email];
     await pool.query(updateQuery, updateValues);
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('changePassword Error:', error);
     throw createError('DBError', '데이터베이스 오류가 발생했습니다.', 500);
   }
@@ -683,7 +686,7 @@ export const requestPasswordService = async (email: string): Promise<void> => {
     const updateUserQuery = 'UPDATE users SET lastPasswordResetRequest = $1 WHERE email = $2';
     const updateUserValues = [new Date(), email];
     await pool.query(updateUserQuery, updateUserValues);
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('requestPassword Error:', error);
     throw createError('DBError', '데이터베이스 오류가 발생했습니다.', 500);
   }
@@ -719,13 +722,13 @@ export const resetPasswordService = async (
         const updateQuery = 'UPDATE users SET password = $1 WHERE userid = $2';
         const updateValues = [hashedNewPassword, decoded.id];
         await pool.query(updateQuery, updateValues);
-      } catch (error) {
+      } catch (error: unknown) {
         throw createError('DBError', '데이터베이스 오류가 발생했습니다.', 500);
       }
     } else {
       throw createError('InvalidToken', '유효하지 않은 토큰입니다.', 400);
     }
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('resetPassword Error:', error);
     if (error instanceof jwt.TokenExpiredError) {
       throw createError('TokenExpired', '토큰이 만료되었습니다.', 400);
@@ -796,7 +799,7 @@ export const linkSocialAccountService = async (userId: string, accessToken: stri
       const updateValues = [socialId, defaultPassword, userId];
       await pool.query(updateQuery, updateValues);
     }
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('Error in linkSocialAccountService:', error);
     throw createError('DBError', '데이터베이스 오류가 발생했습니다.', 500);
   }
@@ -808,7 +811,7 @@ export const changeUsernameService = async (email: string, newUsername: string):
     const query = 'UPDATE users SET username = $1 WHERE email = $2';
     const values = [newUsername, email];
     await pool.query(query, values);
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('changeUsername Error:', error);
     throw createError('DBError', '데이터베이스 오류가 발생했습니다.', 500);
   }
@@ -837,7 +840,7 @@ export const deleteAccountService = async (userId: string): Promise<void> => {
 
     const deleteQuery = 'DELETE FROM users WHERE userid = $1';
     await pool.query(deleteQuery, values);
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('deleteAccount Error:', error);
     throw createError('DBError', '데이터베이스 오류 발생', 500);
   }
@@ -854,7 +857,7 @@ const unlinkKakaoAccount = async (kakaoId: string): Promise<void> => {
         'Authorization': `Bearer ${kakaoId}`
       }
     });
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('unlink kakao Error:', error);
     throw createError('kakaoUnlinkError', '카카오 연동 해제 실패', 500);
   }
@@ -868,7 +871,7 @@ const unlinkGoogleAccount = async (googleId: string): Promise<void> => {
       method: 'post',
       url: unlinkUrl
     });
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('unlink google Error:', error);
     throw createError('GoogleUnlinkError', '구글 계정 연동 해제 실패', 500);
   }
@@ -882,7 +885,7 @@ const unlinkNaverAccount = async (naverId: string): Promise<void> => {
       method: 'post',
       url: unlinkUrl
     });
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('unlink naver Error:', error);
     throw createError('NaverUnlinkError', '네이버 계정 연동 해제 실패', 500);
   }
@@ -901,7 +904,7 @@ export const getUserInfo = async (userId: string): Promise<userResponse> => {
 
     const user = result.rows[0];
     return { id: user.userid, email: user.email, username: user.username, role: user.role, kakaoid: user.kakaoid, naverid: user.naverid, googleid: user.googleid, profileimg: user.profileimg };
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('getUserInfo Error:', error);
     throw createError('DB Error', '데이터베이스 오류 발생', 500);
   }
