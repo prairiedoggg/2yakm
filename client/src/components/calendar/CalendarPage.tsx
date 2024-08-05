@@ -24,8 +24,8 @@ const CalendarPage: React.FC = () => {
   };
 
   const handleModal = () => {
-    setAddTaken(false);
     setEdit(false);
+    setAddTaken(false);
     setArrow(false);
   };
 
@@ -37,10 +37,10 @@ const CalendarPage: React.FC = () => {
         <CalendarSection />
         <EntireDetail expanded={arrow}>
           <CalandarDatailContainer>
-            <ImgContainer onClick={() => setArrow(true)}>
+            <ImgContainer onClick={() => setArrow(!arrow)}>
               <Line />
             </ImgContainer>
-            <TopContainer>
+            <TopContainer onClick={() => setArrow(true)}>
               <DateBox>{days}</DateBox>
               {!edit ? (
                 <Icon

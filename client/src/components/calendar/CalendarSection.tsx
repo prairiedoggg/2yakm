@@ -26,7 +26,8 @@ interface TileContentProps {
 
 const CalendarSection: React.FC = () => {
   const login = Cookies.get('login');
-  const { value, onChange, edit, addPosted, posted } = useDateStore();
+  const { value, onChange, edit, addPosted, posted, setPosted } =
+    useDateStore();
   const [postArray, setPostArray] = useState<Set<string>>(new Set());
   const [calendarData, setData] = useState<CalendarDate[]>([]);
 
@@ -56,7 +57,7 @@ const CalendarSection: React.FC = () => {
         addPosted({ date: postDate, post: true });
       }
     });
-  }, [calendarData, addPosted, posted]);
+  }, [calendarData, addPosted, posted, setPosted]);
 
   const addContent = ({ date, view }: TileContentProps) => {
     if (view === 'month' && postArray.has(date.toDateString())) {
