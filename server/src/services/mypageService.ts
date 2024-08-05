@@ -55,14 +55,9 @@ export const updateUsername = async (userId: string, updateData: UpdateUsernameD
     }
 
     return result.rows[0];
-  } catch (err) {
-    if (err instanceof Error) {
-      console.error('Error executing query', err.stack);
-      throw createError('QueryError', 'Failed to update username', 500);
-    } else {
-      console.error('Unknown error', err);
-      throw createError('UnknownError', 'Failed to update username due to an unknown error', 500);
-    }
+  } catch (error) {
+    console.error('Error updating username:', error);
+    throw createError('DatabaseError', 'Failed to update username', 500);
   }
 };
 
