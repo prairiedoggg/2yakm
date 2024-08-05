@@ -1,5 +1,6 @@
 import { pool } from '../db';
 import { createError } from '../utils/error';
+import axiosRequest from '../utils/axios';
 
 // Define the types for the returned user profile data
 interface UserProfile {
@@ -12,6 +13,16 @@ interface Certification {
   name: string;
   date: string;
   number: string;
+  role: boolean;
+}
+
+interface CertificationResponse {
+  status_code: string;
+  data: Array<{
+    b_no: string;
+    valid: string;
+    valid_msg: string;
+  }>;
 }
 
 // Function to get user profile
@@ -82,12 +93,50 @@ export const updateProfilePicture = async (userId: string, profilePicture: strin
 
 export const addCertification = async (userId: string, name: string, date: string, number: string): Promise<Certification> => {
   try {
+    const check = await pool.query(`SELECT * from certification where number = $1`, [number]);
 
-    const check = await pool.query(`SELECT * from certification where number = $1`, [number])
+    if (check.rows.length !== 0) {
+      throw createError("이미 등록된 사업자등록증입니다", "Already registered", 403);
+    }
 
-    if (check.rows.length !=0) {
-      throw createError("이미 등록된 사업자등록증입니다", "Already registered", 403)
-    } 
+    const apiUrl = process.env.CERTIFICATION_API_URL;
+    const apiKey = process.env.CERTIFICATION_API_KEY;
+
+    if (!apiUrl || !apiKey) {
+      throw new Error('API URL 또는 API Key가 설정되지 않았습니다.');
+    }
+
+    const requestData = {
+      businesses: [
+        {
+          b_no: number,
+          start_dt: date,
+          p_nm: name,
+        }
+      ]
+    };
+
+    let response;
+    try {
+      response = await axiosRequest<CertificationResponse>({
+        method: 'post',
+        url: `${apiUrl}?serviceKey=${apiKey}`,
+        data: requestData,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+    } catch (apiError) {
+      console.error('API 요청 실패:', apiError);
+      throw createError('APIError', 'Failed to validate certification', 500);
+    }
+
+    const { status_code, data } = response;
+
+    if (status_code !== 'OK' || data[0].valid !== '01') {
+      throw createError('Invalid certification number', '유효하지 않은 사업자등록증 번호입니다.', 400);
+    }
 
     const verifiedResult = await pool.query(
       `UPDATE users SET role = true WHERE userid = $1 RETURNING role`,
@@ -95,7 +144,7 @@ export const addCertification = async (userId: string, name: string, date: strin
     );
 
     const result = await pool.query(
-      `INSERT INTO certification (userid, name, date, number) values ($1, $2, $3, $4) returning name, date, number`, 
+      `INSERT INTO certification (userid, name, date, number) values ($1, $2, $3, $4) returning name, date, number`,
       [userId, name, date, number]
     );
 
@@ -106,10 +155,10 @@ export const addCertification = async (userId: string, name: string, date: strin
 
     return certification;
   } catch (error) {
-    console.error('추가 실패:', error);
+    console.error('addCertification Error:', error);
     throw createError('DatabaseError', 'Failed to add certification', 500);
   }
-}
+};
 
 export const getCertification = async (userId: string): Promise<Certification[]> => {
   try {
@@ -121,7 +170,8 @@ export const getCertification = async (userId: string): Promise<Certification[]>
 
     return result.rows;
   } catch (error) {
-    console.error('사업자등록증을 찾을 수 없습니다:', error);
+    if (error instanceof Error)
+    console.error('사업자등록증을 찾을 수 없습니다:', error.message);
     throw createError('DatabaseError', 'Failed to get certification', 500);
   }
 }
