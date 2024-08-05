@@ -14,7 +14,7 @@ const MyInformation = ({
       <div className='thumbnail'>
         <img
           className='thumbnailImage'
-          src={`img/user.svg`}
+          src={user?.profileImg ?? `img/user.svg`}
           alt='프로필 이미지'
         />
       </div>
@@ -62,6 +62,9 @@ const InformationLayout = styled.div`
     .thumbnailImage {
       width: 100%;
       height: 100%;
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
     }
   }
 

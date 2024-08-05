@@ -147,6 +147,15 @@ router.post('/signup', signupController);
  *               properties:
  *                 message:
  *                   type: string
+ *       429:
+ *         description: 비밀번호 재설정 요청 쿨타임이 지나지 않았습니다. 잠시 후 다시 시도해주세요.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
  */
 router.post('/request-email-verification', requestEmailVerificationController);
 
@@ -330,6 +339,15 @@ router.patch('/change-password', authByToken, changePasswordController);
  *     responses:
  *       200:
  *         description: 비밀번호 재설정 이메일이 전송되었습니다.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *       429:
+ *         description: 이메일 인증 요청 쿨타임이 지나지 않았습니다. 잠시 후 다시 시도해주세요.
  *         content:
  *           application/json:
  *             schema:
@@ -565,6 +583,8 @@ router.delete('/delete-account', authByToken, deleteAccountController);
  *                 googleid:
  *                   type: string
  *                   nullable: true
+ *                 profileimg:
+ *                   type: string
  *       401:
  *         description: 인증 실패
  */

@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import styled from 'styled-components';
-import { useCalendar } from '../../../store/store';
+import { useCalendar } from '../../../store/calendar';
 
 interface photoSrc {
   photo?: string;

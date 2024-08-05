@@ -1,4 +1,4 @@
-import { get, post, put, del } from './api';
+import { get, post, put, del, patch } from './api';
 import Cookies from 'js-cookie';
 import { Alarm } from '../store/alarm';
 
@@ -45,3 +45,15 @@ export const deleteAlarm = async (
     throw error;
   }
 };
+
+export const updateAlarmStatus = async (
+  id: string,
+  alarmStatus: boolean
+): Promise<Alarm> => { 
+  try {
+    return await patch(`/api/alarms/${id}/status`, { alarmStatus })
+  } catch (error) { 
+    console.log('알람 상태 업데이트 에러:', error)
+    throw error
+  }
+}

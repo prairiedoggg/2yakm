@@ -3,12 +3,11 @@ import styled from 'styled-components';
 import { Icon } from '@iconify-icon/react';
 import Header from '../Header';
 import { Alarm, useAlarmStore } from '../../store/alarm';
-import { getAlarms, deleteAlarm } from '../../api/alarmApi';
+import { getAlarms, deleteAlarm, updateAlarmStatus } from '../../api/alarmApi';
 
 const AlarmPage = () => {
   const { alarms, setCurrentPage, setCurrentAlarm, setAlarms } =
     useAlarmStore();
-  const [isToggled, setIsToggled] = useState<boolean[]>([]);
   const [isDeleteMode, setIsDeleteMode] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -17,7 +16,6 @@ const AlarmPage = () => {
       try {
         const data = await getAlarms();
         setAlarms(data);
-        setIsToggled(Array(data.length).fill(true));
       } catch (error) {
         console.error('알람을 불러오는 도중 에러 발생:', error);
       } finally {
@@ -28,25 +26,39 @@ const AlarmPage = () => {
     fetchAlarms();
   }, [setAlarms]);
 
-  const handleToggle = (index: number) => {
-    const newToggledState = [...isToggled];
-    newToggledState[index] = !newToggledState[index];
-    setIsToggled(newToggledState);
+  const handleToggle = async (id: string) => {
+    const updatedAlarms = alarms.map((alarm) => {
+      if (alarm.id === id) {
+        return { ...alarm, alarmStatus: !alarm.alarmStatus };
+      }
+      return alarm;
+    });
+
+    const updatedAlarm = updatedAlarms.find((alarm) => alarm.id === id);
+
+    if (updatedAlarm && updatedAlarm.alarmStatus !== undefined) {
+      try {
+        await updateAlarmStatus(updatedAlarm.id, updatedAlarm.alarmStatus);
+        console.log('알람상태:', updatedAlarm.alarmStatus)
+        setAlarms(updatedAlarms);
+      } catch (error) {
+        console.error('알람 상태 업데이트 에러:', error);
+      }
+    }
   };
 
   const handleDeleteMode = () => {
     setIsDeleteMode(!isDeleteMode);
   };
 
-const handleDelete = async (id: string) => {
-  try {
-    await deleteAlarm(id);
-    setAlarms(alarms.filter((alarm) => alarm.id !== id));
-    setIsToggled(isToggled.filter((_, i) => alarms[i].id !== id));
-  } catch (error) {
-    console.error('에러:', error);
-  }
-};
+  const handleDelete = async (id: string) => {
+    try {
+      await deleteAlarm(id);
+      setAlarms(alarms.filter((alarm) => alarm.id !== id));
+    } catch (error) {
+      console.error('에러:', error);
+    }
+  };
 
   const handleEditAlarm = (alarm: Alarm) => {
     setCurrentAlarm(alarm);
@@ -65,16 +77,16 @@ const handleDelete = async (id: string) => {
           <Icon icon='mdi:pencil' onClick={handleDeleteMode} />
         </IconContainer>
         <AlarmList>
-          {alarms.map((alarm, index) => (
-            <AlarmItemContainer key={index}>
+          {alarms.map((alarm) => (
+            <AlarmItemContainer key={alarm.id}>
               <AlarmItem onClick={() => handleEditAlarm(alarm)}>
                 <AlarmHeader>
                   <AlarmName>{alarm.name}</AlarmName>
                   <ToggleSwitch onClick={(event) => event.stopPropagation()}>
                     <input
                       type='checkbox'
-                      checked={isToggled[index]}
-                      onChange={() => handleToggle(index)}
+                      checked={alarm.alarmStatus}
+                      onChange={() => handleToggle(alarm.id)}
                     />
                     <Slider />
                   </ToggleSwitch>

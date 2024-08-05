@@ -1,4 +1,4 @@
-import { get, post, put, del } from './api';
+import { del, get, post, put } from './api';
 
 // 사용자 일정 전체보기
 export const calendarAllGet = async () => {
@@ -32,7 +32,7 @@ export const calendarPost = async (requestBody: object) => {
   }
 };
 
-export const calendarPut = async (date: string, requestBody: any) => {
+export const calendarPut = async (date: string, requestBody: FormData) => {
   try {
     console.log('요청값', requestBody);
     const res = await put(`/api/calendars/${date}`, requestBody);
@@ -46,7 +46,7 @@ export const calendarPut = async (date: string, requestBody: any) => {
 export const calendarDelete = async (date: string) => {
   try {
     const res = await del(`/api/calendars/${date}`);
-    console.log(`${date} 캘린더 delete`, res.data);
+    console.log(`${date} 캘린더 delete`, res);
     return res;
   } catch (err) {
     console.log('Delete Calendar Data failed', err);

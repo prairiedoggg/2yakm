@@ -1,18 +1,19 @@
+import { Icon } from '@iconify-icon/react';
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Icon } from '@iconify-icon/react';
 import styled from 'styled-components';
+import SearchHeader from './SearchHeader';
+import {
+  fetchFavoriteCount,
+  fetchFavoriteStatusApi,
+  toggleFavoriteApi
+} from '../../api/favoriteApi';
+import { fetchPillDataByName } from '../../api/searchApi';
+import { useFavoriteStore } from '../../store/favorite';
+import { usePillStore } from '../../store/pill';
+import { useSearchStore } from '../../store/search';
 import PillExp from './PillExp';
 import Review from './Review';
-import { fetchPillDataByName } from '../../api/search';
-import {
-  toggleFavoriteApi,
-  fetchFavoriteStatusApi,
-  fetchFavoriteCount
-} from '../../api/favoriteApi';
-import { useSearchStore } from '../../store/search';
-import { usePillStore } from '../../store/pill';
-import { useFavoriteStore } from '../../store/favorite';
 
 const SearchResults = () => {
   const { searchQuery } = useSearchStore();
@@ -36,7 +37,7 @@ const SearchResults = () => {
           console.log('좋아요 수', count);
           setFavoriteCount(count);
           const status = await fetchFavoriteStatusApi(data.id);
-          setIsFavorite(!status);
+          setIsFavorite(status);
         } else {
           setPillData(null);
           setPillId(null);
@@ -75,61 +76,64 @@ const SearchResults = () => {
   }
 
   return (
-    <SearchResultsContainer>
-      <PillInfo>
-        <img src={`/img/pill.png`} alt='pill' />
-        <section>
-          <PillHeader>
-            <PillTitle>
-              <h3>{pillData.name}</h3>
-              <HeartButton onClick={handleToggleFavorite}>
-                <Icon
-                  icon='mdi:heart'
-                  style={{
-                    color: isFavorite ? 'red' : 'gray'
-                  }}
-                  width='24'
-                  height='24'
-                />
-                <p>{favoriteCount}</p>
-              </HeartButton>
-            </PillTitle>
-            <span>{pillData.engname}</span>
-            <p>{pillData.companyname}</p>
-          </PillHeader>
-          <TagContainer>
-            {pillData.importantWords &&
-              pillData.importantWords.trim() &&
-              pillData.importantWords.split(', ').map((word) => (
-                <Tag to={`/search/tag/${word}`} key={word}>
-                  {word}
-                </Tag>
-              ))}
-          </TagContainer>
-        </section>
-      </PillInfo>
-      <Exp>※ 태그들을 클릭해 관련 증상들을 모아보세요.</Exp>
-      <PillMore>
-        <Menu>
-          {tabs.map((tab) => (
-            <button
-              key={tab.key}
-              className={activeTab === tab.key ? 'active' : ''}
-              onClick={() => setActiveTab(tab.key)}
-            >
-              {tab.label}
-            </button>
-          ))}
-        </Menu>
-        <Contants>
-          {activeTab === 'effectiveness' ? (
-            <PillExp />
-          ) : (
-            <Review pillId={pillId!} />
-          )}
-        </Contants>
-      </PillMore>
-    </SearchResultsContainer>
+    <>
+      <SearchHeader/>
+      <SearchResultsContainer>
+        <PillInfo>
+          <img src={`/img/pill.png`} alt='pill' />
+          <section>
+            <PillHeader>
+              <PillTitle>
+                <h3>{pillData.name}</h3>
+                <HeartButton onClick={handleToggleFavorite}>
+                  <Icon
+                    icon='mdi:heart'
+                    style={{
+                      color: isFavorite ? 'red' : 'gray'
+                    }}
+                    width='24'
+                    height='24'
+                  />
+                  <p>{favoriteCount}</p>
+                </HeartButton>
+              </PillTitle>
+              <span>{pillData.engname}</span>
+              <p>{pillData.companyname}</p>
+            </PillHeader>
+            <TagContainer>
+              {pillData.importantWords &&
+                pillData.importantWords.trim() &&
+                pillData.importantWords.split(', ').map((word) => (
+                  <Tag to={`/search/efficacy?q=${word}`} key={word}>
+                    {word}
+                  </Tag>
+                ))}
+            </TagContainer>
+          </section>
+        </PillInfo>
+        <Exp>※ 태그들을 클릭해 관련 증상들을 모아보세요.</Exp>
+        <PillMore>
+          <Menu>
+            {tabs.map((tab) => (
+              <button
+                key={tab.key}
+                className={activeTab === tab.key ? 'active' : ''}
+                onClick={() => setActiveTab(tab.key)}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </Menu>
+          <Contants>
+            {activeTab === 'effectiveness' ? (
+              <PillExp />
+            ) : (
+              <Review pillId={pillId!} />
+            )}
+          </Contants>
+        </PillMore>
+      </SearchResultsContainer>
+    </>
   );
 };
 
@@ -155,6 +159,7 @@ const PillHeader = styled.div`
     font-size: 12px;
     font-weight: 300;
   }
+
   & span {
     color: #696969;
     font-size: 10px;

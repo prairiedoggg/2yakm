@@ -1,11 +1,11 @@
 import styled from 'styled-components';
-import SnsLogin from './SnsLogin';
 import EmailLogin from './EmailLogin';
 import EmailVerification from './EmailVerification';
+import SnsLogin from './SnsLogin';
 
-import { useNavigate } from 'react-router-dom';
 import { Icon } from '@iconify-icon/react';
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 enum pageState {
   SnsLogin,
@@ -25,7 +25,7 @@ const Login = () => {
       case pageState.EmailLogin:
         return (
           <EmailLogin
-            onResetPasswordClick={() => navigate('/password/reset')}
+            onResetPasswordClick={() => navigate('/password/reset/request')}
             onRegisterClick={() => navigate('/register')}
           />
         );

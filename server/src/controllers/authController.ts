@@ -27,7 +27,7 @@ interface Decoded {
 }
 
 const SECRET_KEY = process.env.SECRET_KEY;
-const FRONTEND_URL = process.env.DOMAIN || 'http://localhost:5173';
+const FRONTEND_URL = 'http://localhost:5173';
 
 // 로그인
 export const loginController = async (req: Request, res: Response, next: NextFunction) => {
@@ -52,7 +52,11 @@ export const requestEmailVerificationController = async (req: Request, res: Resp
     await requestEmailVerification(email);
     res.status(200).json({ message: '이메일 인증 링크가 전송되었습니다.' });
   } catch (error) {
-    next(error)
+    if (error instanceof Error && error.name === 'TooManyRequests') {
+      res.status(429).json({ message: '이메일 인증 요청 쿨타임이 지나지 않았습니다. 잠시 후 다시 시도해주세요.' });
+    } else {
+      next(error);
+    }
   }
 };
 
@@ -108,7 +112,6 @@ export const refreshTokenController = async (req: Request, res: Response, next: 
 export const kakaoAuthController = async (req: Request<{ query: { code: string } }>, res: Response, next: NextFunction) => {
   try {
     const { code } = req.query;
-    console.log({code});
     if (!code || typeof code !== 'string') {
       throw createError('Invalid Code', '유효하지 않은 코드입니다.', 400);
     }
@@ -135,7 +138,7 @@ export const naverAuthController = async (req: Request<{ query: { code: string, 
     const result = await naverAuthService(code, state);
     
     if (result.message) {
-      res.status(400).json({message: '네이버 로그인에 실패했습니다.'}).redirect(`${FRONTEND_URL}/login`);
+      res.status(400).json({message: result.message});
     } else {
       res.cookie('jwt', result.token, { httpOnly: true });
       res.cookie('refreshToken', result.refreshToken, { httpOnly: true });
@@ -171,7 +174,7 @@ export const googleAuthController = async (req: Request<{ query: { code: string 
 // 카카오 리디렉션
 export const kakaoRedirectController = (req: Request, res: Response, next: NextFunction) => {
   try {
-    const kakaoAuthUrl = `https://kauth.kakao.com/oauth/authorize?client_id=${process.env.KAKAO_CLIENT_ID}&redirect_uri=${process.env.DOMAIN}/api/auth/kakao/callback&response_type=code`;
+    const kakaoAuthUrl = `https://kauth.kakao.com/oauth/authorize?client_id=${process.env.KAKAO_CLIENT_ID}&redirect_uri=${process.env.BASE_URL}/api/auth/kakao/callback&response_type=code`;
     res.redirect(kakaoAuthUrl);
   } catch (error) {
     next(error);
@@ -182,7 +185,7 @@ export const kakaoRedirectController = (req: Request, res: Response, next: NextF
 export const naverRedirectController = (req: Request, res: Response, next: NextFunction) => {
   try {
     const state = Math.random().toString(36).substring(7); // 랜덤 문자열로 만들었음
-    const naverAuthUrl = `https://nid.naver.com/oauth2.0/authorize?client_id=${process.env.NAVER_CLIENT_ID}&redirect_uri=${process.env.DOMAIN}/api/auth/naver/callback&response_type=code&state=${state}`;
+    const naverAuthUrl = `https://nid.naver.com/oauth2.0/authorize?client_id=${process.env.NAVER_CLIENT_ID}&redirect_uri=${process.env.BASE_URL}/api/auth/naver/callback&response_type=code&state=${state}`;
     res.redirect(naverAuthUrl);
   } catch (error) {
     next(error);
@@ -192,7 +195,7 @@ export const naverRedirectController = (req: Request, res: Response, next: NextF
 // 구글 리디렉션
 export const googleRedirectController = (req: Request, res: Response, next: NextFunction) => {
   try {
-    const googleAuthUrl = `https://accounts.google.com/o/oauth2/auth?client_id=${process.env.GOOGLE_CLIENT_ID}&redirect_uri=${process.env.DOMAIN}/api/auth/google/callback&response_type=code&scope=email profile`;
+    const googleAuthUrl = `https://accounts.google.com/o/oauth2/auth?client_id=${process.env.GOOGLE_CLIENT_ID}&redirect_uri=${process.env.BASE_URL}/api/auth/google/callback&response_type=code&scope=email profile`;
     res.redirect(googleAuthUrl);
   } catch (error) {
     next(error);
@@ -228,7 +231,11 @@ export const requestPasswordController = async (req: Request, res: Response, nex
     await requestPasswordService(email);
     res.status(200).json({ message: '비밀번호 재설정 이메일이 전송되었습니다.' });
   } catch (error) {
-    next(error);
+    if (error instanceof Error && error.name === 'TooManyRequests') {
+      res.status(429).json({ message: '비밀번호 재설정 요청 쿨타임이 지나지 않았습니다. 잠시 후 다시 시도해주세요.' });
+    } else {
+      next(error);
+    }
   }
 };
 
@@ -237,7 +244,7 @@ export const resetPasswordController = async (req: Request, res: Response, next:
   try {
     const { token, newPassword } = req.body;
     await resetPasswordService(token, newPassword);
-    res.redirect(`${FRONTEND_URL}/verification/email`);
+    res.redirect(`${FRONTEND_URL}/password/reset`);
   } catch (error) {
     next(error);
   }

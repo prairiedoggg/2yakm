@@ -1,6 +1,6 @@
 import styled from 'styled-components';
 import { Icon } from '@iconify-icon/react';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { fetchMyFavorites, toggleFavoriteApi } from '../../api/favoriteApi';
 import Loading from '../Loading';
@@ -21,14 +21,18 @@ const FavoriteMedications = () => {
   const [loading, setLoading] = useState(false);
   const [items, setItems] = useState<MedicationItem[]>([]);
   const [popupType, setPopupType] = useState(PopupType.None);
+  const [offset, setOffset] = useState(0);
+  const [limit] = useState(10);
+  const [hasMore, setHasMore] = useState(true);
+  const containerRef = useRef<HTMLDivElement | null>(null);
   const navigate = useNavigate();
 
   const fetchDatas = () => {
     setLoading(true);
 
     fetchMyFavorites(
-      0,
-      10,
+      offset,
+      limit,
       'createdAt',
       'DESC',
       (data) => {
@@ -44,7 +48,11 @@ const FavoriteMedications = () => {
           })
         }));
         setLoading(false);
-        setItems(temp);
+
+        setItems((prevData) => [...prevData, ...temp]);
+        setOffset((prevOffset) => prevOffset + temp.length);
+        setHasMore(temp.length === limit);
+
         setItemCount(data.totalCount);
       },
       () => {
@@ -53,46 +61,71 @@ const FavoriteMedications = () => {
     );
   };
 
+  const handleScroll = useCallback(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    const bottom =
+      container.scrollHeight === container.scrollTop + container.clientHeight;
+
+    if (bottom && !loading && hasMore) {
+      fetchDatas();
+    }
+  }, [loading, hasMore, offset]);
+
   useEffect(() => {
     fetchDatas();
   }, []);
+
+  useEffect(() => {
+    const container = containerRef.current;
+    if (container) container.addEventListener('scroll', handleScroll);
+
+    return () => {
+      if (container) container.removeEventListener('scroll', handleScroll);
+    };
+  }, [handleScroll]);
 
   const renderItems = (item: MedicationItem, index: number) => {
     console.log(item);
     return (
       <Item key={index}>
         <div className='title'>
-          {item.title}
-          <Icon
-            icon='ep:arrow-right-bold'
-            width='1.2em'
-            height='1.2em'
-            style={{ color: 'black' }}
-          />
-        </div>
-        {deleteItem ? (
-          <div
-            className='delete-button'
-            onClick={() => {
-              setLoading(true);
-              toggleFavoriteApi(
-                item.pillid,
-                () => {
-                  setLoading(false);
-                  fetchDatas();
-                },
-                () => {
-                  setPopupType(PopupType.DeleteFavoriteFailure);
-                  setLoading(false);
-                }
-              );
-            }}
-          >
-            삭제
+          <div className='title2'>
+            {item.title}
+            <Icon
+              icon='ep:arrow-right-bold'
+              width='1.2em'
+              height='1.2em'
+              style={{ color: 'black' }}
+            />
           </div>
-        ) : (
-          ''
-        )}
+
+          {deleteItem ? (
+            <div
+              className='delete-button'
+              onClick={() => {
+                setLoading(true);
+                toggleFavoriteApi(
+                  item.pillid,
+                  () => {
+                    setLoading(false);
+                    fetchDatas();
+                  },
+                  () => {
+                    setPopupType(PopupType.DeleteFavoriteFailure);
+                    setLoading(false);
+                  }
+                );
+              }}
+            >
+              삭제
+            </div>
+          ) : (
+            ''
+          )}
+        </div>
+
         <div className='registration'>등록일 {item.registrationDate}</div>
         <TagContainer>
           {item.tags.slice(0, 3)?.map((tag, index) => (
@@ -159,6 +192,7 @@ const StyledContent = styled.div`
     flex-direction: column;
     gap: 30px;
     padding: 0px 20px 0px 20px;
+    overflow: auto;
   }
 `;
 
@@ -172,6 +206,12 @@ const Item = styled.div`
     display: flex;
     font-weight: bold;
     font-size: 1.2em;
+    justify-content: space-between;
+  }
+
+  .title2 {
+    display: flex;
+    justify-content: space-between;
   }
 
   .registration {
