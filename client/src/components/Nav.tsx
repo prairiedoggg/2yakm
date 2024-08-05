@@ -1,6 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
 import styled from 'styled-components';
-import TimeChecker from './TimeChecker';
 
 interface Icon {
   default: string;
@@ -87,7 +86,6 @@ const Nav = () => {
           );
         })}
       </ul>
-      <TimeChecker />
     </NavContainer>
   );
 };
