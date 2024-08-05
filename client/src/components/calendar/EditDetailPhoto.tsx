@@ -12,6 +12,7 @@ const EditDetailPhoto = () => {
   const [isDeniedCameraPermission, setIsDeniedCameraPermission] =
     useState(false);
 
+  console.log(isDeniedCameraPermission);
   useEffect(() => {
     const startCamera = async () => {
       try {
@@ -62,7 +63,7 @@ const EditDetailPhoto = () => {
 
   const handleClick = () => photoInput.current?.click();
   const deletePhoto = () => {
-    setCalImg(null);
+    setCalImg(new FormData());
     setPhoto(null);
   };
 

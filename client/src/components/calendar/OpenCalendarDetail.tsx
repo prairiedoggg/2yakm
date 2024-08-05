@@ -31,7 +31,7 @@ const OpenCalendarDetail: React.FC = () => {
     : false;
 
   useEffect(() => {
-    if (isPosted === true) {
+    if (isPosted) {
       const fetchPillData = async () => {
         try {
           const data = await calendarGet(today);
@@ -77,14 +77,14 @@ const OpenCalendarDetail: React.FC = () => {
           }
         }
       } catch (err) {
-        console.error('일정 등록/수정 오류:', err);
+        console.log('일정 등록/수정 오류:', err);
       }
     };
     putData();
   }, [edit]);
 
   useEffect(() => {
-    if (formattedDate !== undefined && isPosted === true) {
+    if (formattedDate !== undefined && isPosted) {
       const fetchPillData = async () => {
         try {
           const data = await calendarGet(formattedDate);
@@ -96,10 +96,10 @@ const OpenCalendarDetail: React.FC = () => {
       };
 
       fetchPillData();
-    } else if (isPosted === false) {
+    } else if (!isPosted) {
       setData(null);
     }
-  }, [formattedDate, login]);
+  }, [formattedDate, edit]);
 
   const hasContent = (name: string) => {
     switch (name) {
