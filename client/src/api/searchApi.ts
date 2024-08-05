@@ -1,4 +1,3 @@
-import axios from 'axios';
 import { get, post } from './api';
 
 export const fetchPillDataByName = async (
@@ -42,26 +41,25 @@ export const fetchPillDataByImage = async (
   image: File,
   limit: number = 10,
   offset: number = 0
-) => { 
+) => {
   const formData = new FormData();
-  formData.append('image', image)
-  formData.append('limit', limit.toString())
-  formData.append('offset', offset.toString())
+  formData.append('image', image);
+  formData.append('limit', limit.toString());
+  formData.append('offset', offset.toString());
 
   try {
     const data = await post(`/api/pills/search/image`, formData, {
       headers: {
         'Content-Type': 'multipart/form-data'
       }
-    })
-    console.log('이미지로 검색 Post', data)
-    return data.pills
-  } catch (error) { 
-    console.error('이미지로 약 데이터 가져오기 실패', error)
-    throw error
+    });
+    console.log('이미지로 검색 Post', data);
+    return data.pills;
+  } catch (error) {
+    console.error('이미지로 약 데이터 가져오기 실패', error);
+    throw error;
   }
-}
-
+};
 
 export const fetchAutocompleteSuggestions = async (name: string) => {
   try {

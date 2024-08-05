@@ -76,9 +76,12 @@ const AlarmSettings = () => {
     return current && current < dayjs().startOf('day');
   };
 
-  const disabledEndDate = (current: Dayjs) => {
-    return current && (current < dayjs().startOf('day') || current < startDate);
+  const disabledEndDate = (current: Dayjs): boolean => {
+    if (!current) return false;
+    const today = dayjs().startOf('day');
+    return current < today || (startDate !== null && current < startDate);
   };
+
   return (
     <>
       <AlarmSettingsContainer>

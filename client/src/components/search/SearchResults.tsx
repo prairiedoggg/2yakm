@@ -1,10 +1,8 @@
-import React, { useEffect, useState } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
 import { Icon } from '@iconify-icon/react';
 import informationOutline from '@iconify/icons-mdi/information-outline';
+import React, { useEffect, useState } from 'react';
+import { Link, useSearchParams } from 'react-router-dom';
 import styled from 'styled-components';
-import SearchHeader from './SearchHeader';
-import Nav from '../Nav';
 import {
   fetchFavoriteCount,
   fetchFavoriteStatusApi,
@@ -13,12 +11,14 @@ import {
 import { fetchPillDataByName } from '../../api/searchApi';
 import { useFavoriteStore } from '../../store/favorite';
 import { usePillStore } from '../../store/pill';
+import Nav from '../Nav';
 import PillExp from './PillExp';
 import Review from './Review';
+import SearchHeader from './SearchHeader';
 
 const SearchResults = () => {
   const [searchParams] = useSearchParams();
-   const query = searchParams.get('q') || '';
+  const query = searchParams.get('q') || '';
   const { pillData, setPillData } = usePillStore();
   const { isFavorite, setIsFavorite, favoriteCount, setFavoriteCount } =
     useFavoriteStore();
@@ -26,6 +26,9 @@ const SearchResults = () => {
   const [pillId, setPillId] = useState<number | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [showInfo, setShowInfo] = useState<boolean>(false);
+  const [searchType, setSearchType] = useState<string>('name');
+  const [activeType, setActiveType] = useState<string>(searchType);
+
 
   const formatTextWithLineBreaks = (text: string) => {
     return text.split('(').map((part, index, array) => (
@@ -70,14 +73,27 @@ const SearchResults = () => {
   const handleToggleFavorite = async () => {
     if (!pillId) return;
     try {
-      await toggleFavoriteApi(pillId!.toString());
-      setIsFavorite(!isFavorite);
-      const count = await fetchFavoriteCount(pillId!.toString());
+      await toggleFavoriteApi(
+        { id: pillId },
+        (response) => {
+          setIsFavorite(!isFavorite);
+          console.log(response.message);
+        },
+        (error) => {
+          console.error('좋아요 상태 업데이트 에러:', error);
+        }
+      );
+      const count = await fetchFavoriteCount(pillId);
       setFavoriteCount(count);
     } catch (error) {
       console.error('좋아요상태 실패:', error);
     }
   };
+
+   const handleTypeClick = (type: string) => {
+     setSearchType(type);
+     setActiveType(type);
+   };
 
   const tabs = [
     { key: 'effectiveness', label: '효능•용법' },
@@ -93,7 +109,11 @@ const SearchResults = () => {
 
   return (
     <>
-      <SearchHeader />
+      <SearchHeader
+        activeType={activeType}
+        handleTypeClick={handleTypeClick}
+        setImageResults={() => {}}
+      />
       <SearchResultsContainer>
         <PillInfo>
           <img src={pillData.imgurl} alt='pill' />
@@ -138,7 +158,12 @@ const SearchResults = () => {
             </TagContainer>
           </section>
         </PillInfo>
-        <Exp>출처 : <a target='_blank' href={pillData.source}>{pillData.source}</a></Exp>
+        <Exp>
+          출처 :{' '}
+          <a target='_blank' href={pillData.source}>
+            {pillData.source}
+          </a>
+        </Exp>
         <PillMore>
           <Menu>
             {tabs.map((tab) => (
@@ -243,7 +268,7 @@ const Exp = styled.p`
   color: #696969;
   font-size: 14px;
 
-  & a{
+  & a {
     color: inherit;
   }
 `;

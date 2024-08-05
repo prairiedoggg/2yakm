@@ -1,10 +1,10 @@
 import { Alarm } from '../store/alarm';
 import { del, get, patch, post, put } from './api';
 
-export const getAlarms = async (): Promise<void> => {
+export const getAlarms = async (): Promise<Alarm[]> => {
   try {
     const data = await get('/api/alarms');
-    console.log('알람 Get:', data);
+    return data;
   } catch (error) {
     console.error('알람 Get:', error);
     throw error;

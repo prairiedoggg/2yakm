@@ -1,9 +1,37 @@
 import { PillData } from '../store/pill';
 import { get, post } from './api';
 
-export const fetchFavoriteStatusApi = async (pill: Pick<PillData, 'id'>) => {
+interface ToggleFavoriteResponse {
+  success: boolean;
+  message: string;
+}
+
+export const toggleFavoriteApi = async (
+  pill: Pick<PillData, 'id'>,
+  onSuccess?: (response: ToggleFavoriteResponse) => void,
+  onFailure?: (error: Error) => void
+): Promise<ToggleFavoriteResponse> => {
   try {
-    const data = await get(`/api/favorites/${pill.id}/status`);
+    const data = await post(`/api/favorites/${pill.id}`, { pillId: pill.id });
+    console.log('좋아요 post:', data);
+    if (onSuccess) onSuccess(data);
+    return data;
+  } catch (error) {
+    console.error('좋아요토글 실패:', error);
+    if (onFailure) {
+      if (error instanceof Error) {
+        onFailure(error);
+      } else {
+        onFailure(new Error('Unknown error'));
+      }
+    }
+    throw error;
+  }
+};
+
+export const fetchFavoriteStatusApi = async (pillId: number) => {
+  try {
+    const data = await get(`/api/favorites/${pillId}/status`);
     console.log('좋아요 get:', data);
     return data.isFavorite;
   } catch (error) {
@@ -12,9 +40,9 @@ export const fetchFavoriteStatusApi = async (pill: Pick<PillData, 'id'>) => {
   }
 };
 
-export const fetchFavoriteCount = async (pill: Pick<PillData, 'id'>) => {
+export const fetchFavoriteCount = async (pillId: number) => {
   try {
-    const data = await get(`/api/pills/${pill.id}/favoritecount`);
+    const data = await get(`/api/pills/${pillId}/favoritecount`);
     console.log('좋아요 수:', data);
     return data.count;
   } catch (error) {
@@ -23,22 +51,7 @@ export const fetchFavoriteCount = async (pill: Pick<PillData, 'id'>) => {
   }
 };
 
-export const toggleFavoriteApi = async (
-  pill: Pick<PillData, 'id'>,
-  onSuccess?: (arg0: any) => void,
-  onFailure?: (arg0: any) => void
-) => {
-  try {
-    const data = await post(`/api/favorites/${pill.id}`, { pillId: pill.id });
-    console.log('좋아요 post:', data);
-    if (onSuccess) onSuccess(data);
-    return data;
-  } catch (error) {
-    console.error('좋아요토글 실패:', error);
-    if (onFailure) onFailure(error);
-    throw error;
-  }
-};
+
 
 export const fetchMyFavorites = async (
   offset: number,
