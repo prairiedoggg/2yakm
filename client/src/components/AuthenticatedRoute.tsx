@@ -17,7 +17,7 @@ const AuthenticatedRoute = ({
         const login = Cookies.get('login');
         console.log(login);
 
-        if (login === '로그인 성공') {
+        if (login) {
           setIsAuthenticated(true);
         } else {
           setIsAuthenticated(false);

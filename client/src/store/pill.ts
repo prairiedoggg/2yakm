@@ -1,6 +1,6 @@
-import create from 'zustand';
+import { create } from 'zustand';
 
-interface PillData {
+export interface PillData {
   id: number;
   name: string;
   engname: string;
@@ -9,7 +9,6 @@ interface PillData {
   efficacy: string;
   importantWords: string;
 }
-
 
 interface PillState {
   pillData: PillData | null;

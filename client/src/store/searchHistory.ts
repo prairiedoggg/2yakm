@@ -1,4 +1,4 @@
-import create, { StateCreator } from 'zustand';
+import { create, StateCreator } from 'zustand';
 import { persist, PersistOptions } from 'zustand/middleware';
 
 interface SearchHistoryState {
@@ -26,8 +26,7 @@ const useSearchHistoryStore = create<SearchHistoryState>(
       clearHistory: () => set({ history: [] })
     }),
     {
-      name: 'searchHistory',
-      getStorage: () => localStorage
+      name: 'searchHistory'
     }
   )
 );

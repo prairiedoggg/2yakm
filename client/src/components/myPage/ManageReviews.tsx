@@ -1,5 +1,5 @@
 import { Icon } from '@iconify-icon/react';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
 import { fetchUserAllReview, deleteReview } from '../../api/reviewApi';
 import Loading from '../Loading';
@@ -21,14 +21,18 @@ const ManageReviews = () => {
   const [items, setItems] = useState<MedicationItem[]>([]);
   const [selected, setSelected] = useState<MedicationItem>();
   const [popupType, setPopupType] = useState(PopupType.None);
+  const [offset, setOffset] = useState(0);
+  const [limit] = useState(10);
+  const [hasMore, setHasMore] = useState(true);
+  const containerRef = useRef<HTMLDivElement | null>(null);
   const navigate = useNavigate();
 
   const fetchDatas = () => {
     setLoading(true);
 
     fetchUserAllReview(
-      10,
-      0,
+      limit,
+      offset,
       'createdAt',
       'DESC',
       (data) => {
@@ -40,7 +44,11 @@ const ManageReviews = () => {
           createdAt: new Date(d.createdat).toDateString()
         }));
         setLoading(false);
-        setItems(temp);
+
+        setItems((prevData) => [...prevData, ...temp]);
+        setOffset((prevOffset) => prevOffset + temp.length);
+        setHasMore(temp.length === limit);
+
         setItemCount(data.totalCount);
       },
       () => {
@@ -49,9 +57,30 @@ const ManageReviews = () => {
     );
   };
 
+  const handleScroll = useCallback(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    const bottom =
+      container.scrollHeight === container.scrollTop + container.clientHeight;
+
+    if (bottom && !loading && hasMore) {
+      fetchDatas();
+    }
+  }, [loading, hasMore, offset]);
+
   useEffect(() => {
     fetchDatas();
   }, []);
+
+  useEffect(() => {
+    const container = containerRef.current;
+    if (container) container.addEventListener('scroll', handleScroll);
+
+    return () => {
+      if (container) container.removeEventListener('scroll', handleScroll);
+    };
+  }, [handleScroll]);
 
   const getPopupContent = (type: PopupType) => {
     switch (type) {
@@ -93,8 +122,10 @@ const ManageReviews = () => {
     return (
       <Item key={key}>
         <div className='title'>
-          <div className='name_ko'>{item.name}</div>
-          <div className='name_en'>{item.createdAt}</div>
+          <div className='title2'>
+            <div className='name_ko'>{item.name}</div>
+            <div className='name_en'>{item.createdAt}</div>
+          </div>
           {deleteItem ? (
             <div
               className='delete-button'
@@ -170,6 +201,7 @@ const StyledContent = styled.div`
     display: flex;
     flex-direction: column;
     gap: 10px;
+    overflow: auto;
   }
 `;
 
@@ -185,6 +217,12 @@ const Item = styled.div`
   .title {
     display: flex;
     gap: 5px;
+    justify-content: space-between;
+  }
+
+  .title2 {
+    display: flex;
+    justify-content: space-between;
   }
 
   .name_ko {

@@ -1,27 +1,31 @@
 import { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import Layout from '../Layout';
-import { useSearchStore } from '../../store/search';
-import { fetchPillListByEfficacy } from '../../api/search';
+import { fetchPillListByEfficacy } from '../../api/searchApi';
 import { fetchFavoriteCount } from '../../api/favoriteApi';
 import { fetchReviewCount } from '../../api/reviewApi';
-import { usePillStore } from '../../store/pill';
 import { useFavoriteStore } from '../../store/favorite';
 import { useReviewStore } from '../../store/review';
+import { useSearchParams } from 'react-router-dom';
 
+export interface PillData {
+  id: number;
+  name: string;
+}
 
 const TagPage = () => {
-  const { searchQuery } = useSearchStore();
-  const { pillData, setPillData } = usePillStore();
+  const [searchParams] = useSearchParams();
+  const query = searchParams.get('q') || '';
   const { favoriteCount, setFavoriteCount } = useFavoriteStore();
   const { reviewCount, setReviewCount } = useReviewStore();
+  const [pillData, setPillData] = useState<PillData[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
 
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
       try {
-        const data = await fetchPillListByEfficacy(searchQuery, 10, 0);
+        const data = await fetchPillListByEfficacy(query, 10, 10);
         console.log('효능 데이터:', data);
         setPillData(data);
 
@@ -38,7 +42,7 @@ const TagPage = () => {
       }
     };
     fetchData();
-  }, [searchQuery, setFavoriteCount, setReviewCount]);
+  }, [query, setFavoriteCount, setReviewCount]);
 
   if (loading) {
     return <div>데이터 검색중입니다.</div>;
@@ -51,11 +55,11 @@ const TagPage = () => {
   return (
     <>
       <Layout />
-      <TagTitle>{searchQuery}</TagTitle>
+      <TagTitle>{query}</TagTitle>
       <ListContainer>
         <p>좋아요 개수로 정렬되었습니다.</p>
         <PillList>
-          {pillData.map((pill: Pill) => (
+          {pillData.map((pill: PillData) => (
             <PillItem key={pill.id}>
               <PillImg src={`/img/pill.png`} alt={pill.name}></PillImg>
               <PillText>

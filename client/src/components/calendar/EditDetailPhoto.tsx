@@ -1,50 +1,51 @@
+import { Icon } from '@iconify-icon/react';
 import { useEffect, useRef, useState } from 'react';
 import { FiXCircle } from 'react-icons/fi';
-import { useCalendar } from '../../store/store';
+import styled from 'styled-components';
+import { useCalendar } from '../../store/calendar';
 
 const EditDetailPhoto = () => {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const [isCameraOn, setIsCameraOn] = useState(false);
-  const { setPhoto, setCalImg, calendarData, calImg } = useCalendar();
+  const { setPhoto, setCalImg, calendarData } = useCalendar();
+
+  const [isDeniedCameraPermission, setIsDeniedCameraPermission] =
+    useState(false);
 
   useEffect(() => {
-    const initCamera = async () => {
+    const startCamera = async () => {
       try {
-        if (isCameraOn) {
-          const stream = await navigator.mediaDevices.getUserMedia({
-            video: true
-          });
-          if (videoRef.current) {
-            videoRef.current.srcObject = stream;
-            videoRef.current.play();
-          }
-        } else {
-          if (videoRef.current && videoRef.current.srcObject) {
-            const tracks = (
-              videoRef.current.srcObject as MediaStream
-            ).getTracks();
-            tracks.forEach((track) => track.stop());
-            videoRef.current.srcObject = null;
-          }
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: true
+        });
+        if (videoRef.current) {
+          videoRef.current.srcObject = stream;
+          await videoRef.current.play();
+          setIsDeniedCameraPermission(false);
         }
       } catch (error) {
-        console.error('Error accessing camera:', error);
+        console.error('Error accessing camera: ', error);
+        setIsDeniedCameraPermission(true);
+        setIsCameraOn(false);
       }
     };
 
-    initCamera();
-
-    return () => {
+    const stopCamera = () => {
       if (videoRef.current && videoRef.current.srcObject) {
-        const tracks = (videoRef.current.srcObject as MediaStream).getTracks();
-        tracks.forEach((track) => track.stop());
+        const stream = videoRef.current.srcObject as MediaStream;
+        stream.getTracks().forEach((track) => track.stop());
+        videoRef.current.srcObject = null;
       }
     };
-  }, [isCameraOn]);
 
-  const toggleCamera = () => {
-    setIsCameraOn((prevState) => !prevState);
-  };
+    if (isCameraOn) {
+      startCamera();
+    } else {
+      stopCamera();
+    }
+
+    return () => stopCamera();
+  }, [isCameraOn]);
 
   const photoInput = useRef<HTMLInputElement | null>(null);
   const onChangeImage = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -56,64 +57,71 @@ const EditDetailPhoto = () => {
 
       setPhoto(imageUrl);
       setCalImg(formData);
-
-      console.log(imageUrl);
-      console.log(formData.get('file'));
     }
   };
 
-  const handleClick = () => {
-    if (photoInput.current) {
-      photoInput.current.click();
-    }
-  };
-
+  const handleClick = () => photoInput.current?.click();
   const deletePhoto = () => {
     setCalImg(null);
     setPhoto(null);
   };
 
   return (
-    <div style={{ width: '150px' }}>
-      <button onClick={toggleCamera}>
-        {isCameraOn ? 'Turn Off Camera' : 'Turn On Camera'}
-      </button>
-      <video
-        ref={videoRef}
-        style={{
-          display: isCameraOn ? 'block' : 'none',
-          width: '100%',
-          height: 'auto'
-        }}
-        autoPlay
-        playsInline
-      />
-      <button onClick={() => handleClick()}>
-        사진 업로드
-        <input
-          type='file'
-          accept='image/jpg, image/jpeg, image/png'
-          multiple
-          ref={photoInput}
-          onChange={onChangeImage}
-          style={{ display: 'none' }}
-        />
-      </button>
+    <Container>
+      <IconContainer>
+        <Icon
+          icon='solar:gallery-send-linear'
+          width='23px'
+          onClick={handleClick}
+        >
+          사진 업로드
+          <HiddenInput
+            type='file'
+            accept='image/*'
+            capture='environment'
+            multiple
+            ref={photoInput}
+            onChange={onChangeImage}
+          />
+        </Icon>
+      </IconContainer>
       {calendarData?.photo && (
-        <div>
+        <ImageContainer>
+          <DeleteIcon onClick={deletePhoto} />
           <img
             src={calendarData?.photo}
             alt='기록 이미지'
             style={{ width: '100%', height: 'auto' }}
           />
-          <FiXCircle
-            style={{ color: '#777777', margin: '5px 5px' }}
-            onClick={() => deletePhoto()}
-          />
-        </div>
+        </ImageContainer>
       )}
-    </div>
+    </Container>
   );
 };
 
 export default EditDetailPhoto;
+
+const Container = styled.div`
+  width: 150px;
+`;
+
+const IconContainer = styled.div`
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+`;
+
+const ImageContainer = styled.div`
+  position: relative;
+  margin-top: 10px;
+`;
+
+const DeleteIcon = styled(FiXCircle)`
+  color: #777777;
+  margin: 5px 5px;
+  cursor: pointer;
+`;
+
+const HiddenInput = styled.input`
+  display: none;
+`;

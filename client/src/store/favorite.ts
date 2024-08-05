@@ -1,4 +1,4 @@
-import create from 'zustand';
+import { create } from 'zustand';
 
 interface FavoriteState {
   isFavorite: boolean;
@@ -6,6 +6,7 @@ interface FavoriteState {
   favoriteCount: number;
   setFavoriteCount: (count: number) => void;
 }
+
 const useFavoriteStore = create<FavoriteState>((set) => ({
   isFavorite: false,
   setIsFavorite: (status) => set({ isFavorite: status }),

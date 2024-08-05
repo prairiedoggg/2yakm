@@ -1,8 +1,8 @@
-import { FiXCircle } from 'react-icons/fi';
+import { Icon } from '@iconify-icon/react';
 import styled from 'styled-components';
-import { useCalendar } from '../../store/store';
+import { useCalendar, useDateStore } from '../../store/calendar';
 import EditDetailPhoto from './EditDetailPhoto';
-import { convertToArray } from './calendarDetails/IsPillTaken';
+import IsPillTaken from './calendarDetails/IsPillTaken';
 
 interface EditDetailTextBoxProps {
   title: string;
@@ -16,15 +16,7 @@ const EditDetailTextBox = ({ title }: EditDetailTextBoxProps) => {
     setTemp,
     setWeight
   } = useCalendar();
-
-  const handleIsTakenPill = (times: string[], takenStatuses: boolean[]) => {
-    return times.map((time, index) => (
-      <StyledLabel key={index}>
-        <StyledInput type='checkbox' checked={takenStatuses[index]} />
-        <Time>{time}</Time>
-      </StyledLabel>
-    ));
-  };
+  const { setAddTaken } = useDateStore();
 
   const renderSimpleInput = (
     label: string,
@@ -39,10 +31,16 @@ const EditDetailTextBox = ({ title }: EditDetailTextBoxProps) => {
           {label}: &nbsp;
         </Text>
       )}
-      <TextInput value={value ?? ''} onChange={onChange} />
+      <TextInput
+        value={value ?? ''}
+        onChange={onChange}
+        type='number'
+        step='any'
+      />
       <Unit>&nbsp;{unit}</Unit>
-      <FiXCircle
-        style={{ color: '#777777', margin: '5px 5px' }}
+      <Icon
+        icon='iconoir:delete-circle'
+        style={{ marginTop: '5px', marginLeft: '5px' }}
         onClick={() => handleDelete(label)}
       />
     </UnitContainer>
@@ -54,23 +52,7 @@ const EditDetailTextBox = ({ title }: EditDetailTextBoxProps) => {
         return (
           <UnitContainer>
             <PillCheck>
-              {calendarData?.pillData?.map((pill, index) => {
-                const times = convertToArray(pill.time) as string[];
-                const takenStatuses = convertToArray(pill.taken) as boolean[];
-
-                return (
-                  <PillRow key={index}>
-                    <div>{pill.name}</div>
-                    <PillTimeContainer>
-                      {times.length && takenStatuses.length ? (
-                        handleIsTakenPill(times, takenStatuses)
-                      ) : (
-                        <div>시간 데이터 없음</div>
-                      )}
-                    </PillTimeContainer>
-                  </PillRow>
-                );
-              })}
+              <IsPillTaken pillData={calendarData?.pillData} edit={true} />
             </PillCheck>
           </UnitContainer>
         );
@@ -154,18 +136,33 @@ const EditDetailTextBox = ({ title }: EditDetailTextBoxProps) => {
     <Container isPill={isPill}>
       <ContentTitle>
         {title}
-        {isPill && calendarData?.pillData ? (
-          <StyledButton>수정하기</StyledButton>
-        ) : isPill && !calendarData?.pillData ? (
-          <StyledButton>추가하기</StyledButton>
+        {isPill ? (
+          <Icon
+            icon='f7:plus-app'
+            width='25px'
+            onClick={() => setAddTaken(true)}
+          />
         ) : null}
       </ContentTitle>
       {handleContent(title)}
+      {isPill &&
+      (!calendarData?.pillData || calendarData?.pillData.length === 0) ? (
+        <div
+          style={{
+            textAlign: 'center',
+            fontSize: '10pt',
+            color: '#a9a9a9'
+          }}
+        >
+          복용 여부를 확인할 약을 추가해주세요
+        </div>
+      ) : null}
     </Container>
   );
 };
 
 export default EditDetailTextBox;
+
 const Container = styled.div<{ isPill?: boolean }>`
   border: 0.5px #d9d9d9 solid;
   border-radius: 10px;
@@ -178,6 +175,7 @@ const Container = styled.div<{ isPill?: boolean }>`
 const ContentTitle = styled.div`
   font-size: 14pt;
   display: flex;
+  justify-content: space-between;
 `;
 
 const UnitContainer = styled.div`
@@ -193,10 +191,7 @@ const TextContainer = styled.div`
   flex-direction: column;
 `;
 
-const TextInput = styled.input.attrs({
-  type: 'number',
-  step: 'any'
-})`
+const TextInput = styled.input`
   width: 50px;
   font-size: 15pt;
   border: #d9d9d9 solid;
@@ -209,40 +204,8 @@ const Unit = styled.div`
   line-height: 25px;
 `;
 
-const StyledLabel = styled.label`
-  display: flex;
-`;
-
 const Text = styled.div`
   font-size: 15pt;
-`;
-
-const StyledInput = styled.input`
-  appearance: none;
-  border: 1.5px solid gainsboro;
-  border-radius: 0.35rem;
-  width: 1.5rem;
-  height: 1.5rem;
-  cursor: pointer;
-  background-size: 120% 120%;
-  background-position: 50%;
-  background-repeat: no-repeat;
-  background-image: url("data:image/svg+xml,%3csvg viewBox='0 0 16 16' fill='white' xmlns='http://www.w3.org/2000/svg'%3e%3cpath d='M5.707 7.293a1 1 0 0 0-1.414 1.414l2 2a1 1 0 0 0 1.414 0l4-4a1 1 0 0 0-1.414-1.414L7 8.586 5.707 7.293z'/%3e%3c/svg%3e");
-
-  &:checked {
-    border-color: transparent;
-    background-color: #72bf44;
-  }
-
-  &:not(:checked) {
-    border-color: transparent;
-    background-color: #d9d9d9;
-  }
-`;
-
-const Time = styled.div`
-  display: flex;
-  align-items: center;
 `;
 
 const PillCheck = styled.div`
@@ -250,26 +213,4 @@ const PillCheck = styled.div`
   display: flex;
   flex-direction: column;
   width: 100%;
-`;
-
-const PillRow = styled.div`
-  display: flex;
-  align-items: center;
-  margin-top: 10px;
-  justify-content: space-between;
-`;
-
-const PillTimeContainer = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin-left: 10px;
-`;
-
-const StyledButton = styled.button`
-  width: 70px;
-  text-align: center;
-  border-radius: 10px;
-  border: none;
-  background-color: #d9d9d9;
 `;

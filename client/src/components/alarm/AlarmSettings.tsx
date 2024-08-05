@@ -12,11 +12,11 @@ const AlarmSettings = () => {
   const setCurrentAlarm = useAlarmStore((state) => state.setCurrentAlarm);
   const [alarmName, setAlarmName] = useState<string>('');
   const [alarmTimes, setAlarmTimes] = useState<
-    { time: Dayjs; status: string }[]
+    { time: Dayjs;}[]
   >([
-    { time: dayjs('09:00', 'HH:mm'), status: 'active' },
-    { time: dayjs('13:00', 'HH:mm'), status: 'active' },
-    { time: dayjs('20:00', 'HH:mm'), status: 'active' }
+    { time: dayjs('09:00', 'HH:mm') },
+    { time: dayjs('13:00', 'HH:mm') },
+    { time: dayjs('20:00', 'HH:mm') }
   ]);
   const [startDate, setStartDate] = useState<Dayjs | null>(dayjs());
   const [endDate, setEndDate] = useState<Dayjs | null>(dayjs());
@@ -26,17 +26,16 @@ const AlarmSettings = () => {
       setAlarmName(currentAlarm.name);
       setAlarmTimes(
         currentAlarm.times.map((t) => ({
-          time: dayjs(t.time, 'HH:mm'),
-          status: t.status
+          time: dayjs(t.time, 'HH:mm')
         }))
       );
       setStartDate(dayjs(currentAlarm.startDate));
       setEndDate(dayjs(currentAlarm.endDate));
     }
-  }, [currentAlarm]);
+}, [currentAlarm]);
 
   const handleAddTime = () => {
-    setAlarmTimes([...alarmTimes, { time: dayjs(), status: 'active' }]);
+    setAlarmTimes([...alarmTimes, { time: dayjs() } ]);
   };
 
   const handleRemoveTime = (index: number) => {
@@ -55,8 +54,7 @@ const handleSave = async () => {
     id: currentAlarm?.id || '',
     name: alarmName,
     times: alarmTimes.map((t) => ({
-      time: t.time.format('HH:mm'),
-      status: t.status
+      time: t.time.format('HH:mm')
     })),
     startDate: startDate?.toISOString() || '',
     endDate: endDate?.toISOString() || '',

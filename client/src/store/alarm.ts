@@ -6,7 +6,7 @@ export interface Alarm {
   name: string;
   startDate: string;
   endDate?: string;
-  times: { time: string; status: string }[];
+  times: { time: string }[];
   alarmStatus?: boolean;
 }
 
@@ -38,9 +38,15 @@ export const useAlarmStore = create<AlarmState>((set) => ({
         alarm.id === updatedAlarm.id ? updatedAlarm : alarm
       )
     })),
-  deleteAlarm: (id) =>
+  deleteAlarm: (id: string) =>
     set((state) => ({
       alarms: state.alarms.filter((alarm) => alarm.id !== id)
+    })),
+  updateAlarmStatus: (id: string, status: boolean) =>
+    set((state) => ({
+      alarms: state.alarms.map((alarm) =>
+        alarm.id === id ? { ...alarm, alarmStatus: status } : alarm
+      )
     })),
   currentPage: 'main',
   setCurrentPage: (page) => set({ currentPage: page }),
