@@ -106,7 +106,7 @@ export const addCertification = async (userId: string, name: string, date: strin
 
     return certification;
   } catch (error) {
-    console.error('Error adding certification:', error);
+    console.error('추가 실패:', error);
     throw createError('DatabaseError', 'Failed to add certification', 500);
   }
 }
@@ -121,7 +121,7 @@ export const getCertification = async (userId: string): Promise<Certification[]>
 
     return result.rows;
   } catch (error) {
-    console.error('Error getting certification:', error);
+    console.error('사업자등록증을 찾을 수 없습니다:', error);
     throw createError('DatabaseError', 'Failed to get certification', 500);
   }
 }
@@ -137,7 +137,7 @@ export const deleteCertification = async (userId: string, name: string): Promise
     const certification = result.rows[0];
     return certification;
   } catch (error) {
-    console.error('Error deleting certification:', error);
+    console.error('삭제 실패:', error);
     throw createError('DatabaseError', 'Failed to delete certification', 500);
   }
 }
