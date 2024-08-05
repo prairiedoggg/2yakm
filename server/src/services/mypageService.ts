@@ -90,7 +90,7 @@ export const addCertification = async (userId: string, name: string, date: strin
     } 
 
     const verifiedResult = await pool.query(
-      `UPDATE users SET isverified = true WHERE userid = $1 RETURNING isverified`,
+      `UPDATE users SET role = true WHERE userid = $1 RETURNING role`,
       [userId]
     );
 
@@ -101,7 +101,7 @@ export const addCertification = async (userId: string, name: string, date: strin
 
     const certification: Certification = {
       ...result.rows[0],
-      isverified: verifiedResult.rows[0].isverified
+      role: verifiedResult.rows[0].role
     };
 
     return certification;
