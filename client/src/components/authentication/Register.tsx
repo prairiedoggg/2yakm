@@ -136,7 +136,7 @@ const Register = () => {
 
   const renderInput = (type: InputType, showHr: boolean) => {
     return (
-      <div className='input-container'>
+      <div className='input-container' key={type}>
         <input
           style={{ paddingRight: `${getInputRightPadding(type)}px` }}
           type={getInputType(type)}
