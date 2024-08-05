@@ -2,13 +2,12 @@ import styled from 'styled-components';
 import BottomPictureSheet from './BottomPictureSheet';
 import { Icon } from '@iconify-icon/react';
 import { useState } from 'react';
-import { logout, deleteAccount } from '../../api/authService';
-import { useNavigate } from 'react-router-dom';
 import useUserStore, { LoginType } from '../../store/user';
 import Loading from '../Loading';
 import Popup from '../popup/Popup';
-import PopupContent, { PopupType } from '../popup/PopupMessages';
 import { changeProfileImage, fetchUserProfile } from '../../api/myPageService';
+import PopupContent, { PopupType } from '../popup/PopupMessages';
+import { useNavigate } from 'react-router-dom';
 
 interface Info {
   info: string;
@@ -78,39 +77,6 @@ const EditMyInformation = ({
     }
   };
 
-  const getPopupContent = (type: PopupType) => {
-    switch (type) {
-      case PopupType.DeleteAccount:
-        return (
-          <div>
-            이약뭐약 서비스 회원탈퇴를 하시겠어요?
-            <button
-              className='bottomClose'
-              onClick={() => {
-                setLoading(true);
-                deleteAccount(
-                  user?.id ?? '',
-                  () => {
-                    setLoading(false);
-                    setPopupType(PopupType.DeleteAccountSuccess);
-                  },
-                  () => {
-                    setLoading(false);
-                    setPopupType(PopupType.DeleteAccountFailure);
-                  }
-                );
-              }}
-            >
-              회원탈퇴
-            </button>
-          </div>
-        );
-
-      default:
-        return PopupContent(type, navigate);
-    }
-  };
-
   const generateItems = (infos: Info[]) => {
     const items = [];
     for (let i = 0; i < infos.length; i++) {
@@ -150,23 +116,6 @@ const EditMyInformation = ({
         <div className='informations'>{generateItems(infos1)}</div>
 
         <div className='informations'>{generateItems(infos2)}</div>
-
-        <div className='bottom-menu'>
-          <div
-            onClick={() =>
-              logout(() => {
-                navigate('/', { replace: true });
-                window.location.reload();
-              })
-            }
-          >
-            로그아웃
-          </div>{' '}
-          |{' '}
-          <div onClick={() => setPopupType(PopupType.DeleteAccount)}>
-            회원탈퇴
-          </div>
-        </div>
       </StyledContent>
 
       <BottomPictureSheet
@@ -175,19 +124,6 @@ const EditMyInformation = ({
         onClose={(file) => {
           if (file !== null) {
             setLoading(true);
-
-            // 파일데이터 확인용 테스트 코드. 프로필 이미지 업로드 구현 완료 후 삭제 예정
-            // const testBuffer = pic.arrayBuffer().then((data) => {
-            //   console.log(data);
-
-            //   let arr = new Uint8Array(data);
-            //   console.log(arr);
-
-            //   var imgsrc =
-            //     'data:image/png;base64,' +
-            //     btoa(String.fromCharCode.apply(null, Array.from(arr)));
-            //   console.log(imgsrc);
-            // });
 
             const formData = new FormData();
             formData.append('profileImg', file);
@@ -211,7 +147,7 @@ const EditMyInformation = ({
 
       {popupType !== PopupType.None && (
         <Popup onClose={() => setPopupType(PopupType.None)}>
-          {getPopupContent(popupType)}
+          {PopupContent(popupType, navigate)}
         </Popup>
       )}
       {loading && <Loading />}

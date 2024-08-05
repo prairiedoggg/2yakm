@@ -6,8 +6,8 @@ const SearchHistory = () => {
   const { history, clearHistory } = useSearchHistoryStore();
 
   return (
-    <HistoryInner>
-      <HistoryTitle>
+    <div className='searchInner'>
+      <HistoryTitle className='listTitle'>
         <span>최근 검색어</span>
         <span onClick={clearHistory}>전체삭제</span>
       </HistoryTitle>
@@ -16,36 +16,27 @@ const SearchHistory = () => {
           .slice()
           .reverse()
           .map((item, index) => (
-            <HistoryItem to={`/search/name?q=${item}`} key={index}>
+            <HistoryItem to={`/search/name?q=${encodeURIComponent(item)}`} key={index} className='listItem'>
               {item}
             </HistoryItem>
           ))}
       </HistoryList>
-    </HistoryInner>
+    </div>
   );
 };
 
 export default SearchHistory;
 
-const HistoryInner = styled.div`
-  width: 85vw;
-  margin: auto;
-`;
 
 const HistoryTitle = styled.div`
   display: flex;
   justify-content: space-between;
-  color: #686868;
-  font-size: 15px;
-  font-weight: 500;
+
 `;
 
 const HistoryList = styled.div`
-  margin-top: 10px;
 `;
 
 const HistoryItem = styled(Link)`
-  display: block;
-  padding: 5px 0;
-  color: #333;
+
 `;

@@ -1,19 +1,17 @@
-import { useState, useEffect } from 'react';
-import styled from 'styled-components';
-import { Button, Input, DatePicker, TimePicker } from 'antd';
 import { Icon } from '@iconify-icon/react';
-import { useAlarmStore, Alarm } from '../../store/alarm';
-import { createAlarm, updateAlarm } from '../../api/alarmApi';
+import { Button, DatePicker, Input, TimePicker } from 'antd';
 import dayjs, { Dayjs } from 'dayjs';
+import { useEffect, useState } from 'react';
+import styled from 'styled-components';
+import { createAlarm, updateAlarm } from '../../api/alarmApi';
+import { Alarm, useAlarmStore } from '../../store/alarm';
 
 const AlarmSettings = () => {
   const setCurrentPage = useAlarmStore((state) => state.setCurrentPage);
   const currentAlarm = useAlarmStore((state) => state.currentAlarm);
   const setCurrentAlarm = useAlarmStore((state) => state.setCurrentAlarm);
   const [alarmName, setAlarmName] = useState<string>('');
-  const [alarmTimes, setAlarmTimes] = useState<
-    { time: Dayjs;}[]
-  >([
+  const [alarmTimes, setAlarmTimes] = useState<{ time: Dayjs }[]>([
     { time: dayjs('09:00', 'HH:mm') },
     { time: dayjs('13:00', 'HH:mm') },
     { time: dayjs('20:00', 'HH:mm') }
@@ -32,10 +30,10 @@ const AlarmSettings = () => {
       setStartDate(dayjs(currentAlarm.startDate));
       setEndDate(dayjs(currentAlarm.endDate));
     }
-}, [currentAlarm]);
+  }, [currentAlarm]);
 
   const handleAddTime = () => {
-    setAlarmTimes([...alarmTimes, { time: dayjs() } ]);
+    setAlarmTimes([...alarmTimes, { time: dayjs() }]);
   };
 
   const handleRemoveTime = (index: number) => {
@@ -49,32 +47,40 @@ const AlarmSettings = () => {
     setAlarmTimes(newAlarmTimes);
   };
 
-const handleSave = async () => {
-  const alarmData: Alarm = {
-    id: currentAlarm?.id || '',
-    name: alarmName,
-    times: alarmTimes.map((t) => ({
-      time: t.time.format('HH:mm')
-    })),
-    startDate: startDate?.toISOString() || '',
-    endDate: endDate?.toISOString() || '',
-    alarmStatus: true
+  const handleSave = async () => {
+    const alarmData: Alarm = {
+      id: currentAlarm?.id || '',
+      name: alarmName,
+      times: alarmTimes.map((t) => ({
+        time: t.time.format('HH:mm')
+      })),
+      startDate: startDate?.toISOString() || '',
+      endDate: endDate?.toISOString() || '',
+      alarmStatus: true
+    };
+
+    try {
+      if (currentAlarm && currentAlarm.id) {
+        await updateAlarm(currentAlarm.id, alarmData);
+      } else {
+        await createAlarm(alarmData);
+      }
+      setCurrentPage('main');
+      setCurrentAlarm(null);
+    } catch (error) {
+      console.error('에러:', error);
+    }
   };
 
- try {
-   if (currentAlarm && currentAlarm.id) {
-     await updateAlarm(currentAlarm.id, alarmData);
-   } else {
-     await createAlarm(alarmData);
-   }
-   setCurrentPage('main');
-   setCurrentAlarm(null);
- } catch (error) {
-   console.error('에러:', error);
- }
-};
+  const disabledStartDate = (current: Dayjs) => {
+    return current && current < dayjs().startOf('day');
+  };
 
-
+  const disabledEndDate = (current: Dayjs): boolean => {
+    if (!current) return false;
+    const today = dayjs().startOf('day');
+    return current < today || (startDate !== null && current < startDate);
+  };
 
   return (
     <>
@@ -94,11 +100,16 @@ const handleSave = async () => {
             <DatePicker
               value={startDate}
               onChange={(date) => setStartDate(date)}
+              disabledDate={disabledStartDate}
             />
           </AlarmStartDate>
           <AlarmEndDate>
             <h4>언제까지 약을 드시나요?</h4>
-            <DatePicker value={endDate} onChange={(date) => setEndDate(date)} />
+            <DatePicker
+              value={endDate}
+              onChange={(date) => setEndDate(date)}
+              disabledDate={disabledEndDate}
+            />
           </AlarmEndDate>
           <AlarmTime>
             <h4>알람 시간</h4>

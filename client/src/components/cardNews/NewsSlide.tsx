@@ -1,8 +1,8 @@
-import styled from 'styled-components';
 import { useEffect, useState } from 'react';
 import Slider from 'react-slick';
-import 'slick-carousel/slick/slick.css';
 import 'slick-carousel/slick/slick-theme.css';
+import 'slick-carousel/slick/slick.css';
+import styled from 'styled-components';
 
 const Card = styled.img`
   width: 100%;
@@ -16,6 +16,7 @@ interface NewsNumber {
 const NewsSlide = ({ num }: NewsNumber) => {
   const [images, setImages] = useState<string[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
+  console.log(loading);
 
   useEffect(() => {
     const loadImages = async () => {

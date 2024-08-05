@@ -1,15 +1,14 @@
-import styled from 'styled-components';
 import { Icon } from '@iconify-icon/react';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import styled from 'styled-components';
 import { fetchMyFavorites, toggleFavoriteApi } from '../../api/favoriteApi';
 import Loading from '../Loading';
 import Popup from '../popup/Popup';
 import PopupContent, { PopupType } from '../popup/PopupMessages';
-import { useNavigate } from 'react-router-dom';
 
 interface MedicationItem {
-  pillid: string;
+  pillid: number;
   title: string;
   registrationDate: string;
   tags: string[];
@@ -39,7 +38,7 @@ const FavoriteMedications = () => {
         console.log(data);
         const favorites = data.data;
         const temp: MedicationItem[] = favorites.map((d: any) => ({
-          pillid: d.pillid,
+          pillid: Number(d.pillid),
           title: d.name,
           registrationDate: new Date(d.createdat).toDateString(),
           tags: d.efficacy.split(' ').map((text: string) => {
@@ -107,7 +106,7 @@ const FavoriteMedications = () => {
               onClick={() => {
                 setLoading(true);
                 toggleFavoriteApi(
-                  item.pillid,
+                  { id: item.pillid },
                   () => {
                     setLoading(false);
                     fetchDatas();

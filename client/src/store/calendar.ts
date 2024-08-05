@@ -1,8 +1,8 @@
 import { create } from 'zustand';
 
 interface Store {
-  value: Date;
-  onChange: (date: Date) => void;
+  value: Date | null;
+  onChange: (date: Date | null) => void;
   edit: boolean;
   setEdit: (edit: boolean) => void;
   arrow: boolean;
@@ -14,12 +14,12 @@ interface Store {
   posted: Array<{ date?: string; post?: boolean }>;
   addPosted: (newPost: { date: string; post: boolean }) => void;
   setPosted: (date: string, post: boolean) => void;
-  clearPosted: () => void;
+  removePostedByDate: (date: string) => void;
 }
 
 export const useDateStore = create<Store>((set) => ({
   value: new Date(),
-  onChange: (date: Date) => set({ value: date }),
+  onChange: (date: Date | null) => set({ value: date }),
   edit: false,
   setEdit: (edit) => set({ edit }),
   arrow: false,
@@ -30,25 +30,32 @@ export const useDateStore = create<Store>((set) => ({
   setAddTaken: (addTaken) => set({ addTaken }),
   posted: [],
   addPosted: (newPost) =>
-    set((state) => ({
-      posted: [...state.posted, newPost]
-    })),
+    set((state) => {
+      const exists = state.posted.some((item) => item.date === newPost.date);
+      if (!exists) {
+        return {
+          posted: [...state.posted, newPost]
+        };
+      } else {
+        return state;
+      }
+    }),
   setPosted: (date, post) =>
     set((state) => ({
       posted: state.posted.map((item) =>
         item.date === date ? { ...item, post } : item
       )
     })),
-  clearPosted: () =>
-    set(() => ({
-      posted: []
+  removePostedByDate: (date) =>
+    set((state) => ({
+      posted: state.posted.filter((item) => item.date !== date)
     }))
 }));
 
 interface PillData {
-  name?: string;
-  time?: string[];
-  taken?: boolean[];
+  name?: string | null;
+  time?: string | string[];
+  taken?: boolean | boolean[];
 }
 
 interface CalendarData {
@@ -64,9 +71,10 @@ interface Calendar {
   calendarData: CalendarData | null;
   calImg?: FormData | null;
   setCalendarData: (calendarData: CalendarData | null) => void;
-  setPillData: (pillData: PillData[]) => void;
+  setPillData: (pillData: PillData[] | null) => void;
   addPillData: (newPillData: PillData) => void;
   updatePillData: (newPillData: PillData) => void;
+  removePillData: (pillName: string) => void;
   setBloodSugarBefore: (bloodsugarbefore: number | null) => void;
   setBloodSugarAfter: (bloodsugarafter: number | null) => void;
   setTemp: (temp: number | null) => void;
@@ -83,7 +91,7 @@ export const useCalendar = create<Calendar>((set) => ({
     set((state) => ({
       calendarData: {
         ...state.calendarData,
-        pillData
+        pillData: pillData || []
       }
     })),
 
@@ -102,6 +110,16 @@ export const useCalendar = create<Calendar>((set) => ({
         pillData: state.calendarData?.pillData?.map((pill) =>
           pill.name === newPillData.name ? newPillData : pill
         ) || [newPillData]
+      }
+    })),
+
+  removePillData: (pillName) =>
+    set((state) => ({
+      calendarData: {
+        ...state.calendarData,
+        pillData: state.calendarData?.pillData?.filter(
+          (pill) => pill.name !== pillName
+        )
       }
     })),
 

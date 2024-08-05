@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import styled from 'styled-components';
 import Layout from '../Layout';
 import { fetchPillListByEfficacy } from '../../api/searchApi';
@@ -11,6 +12,7 @@ import { useSearchParams } from 'react-router-dom';
 export interface PillData {
   id: number;
   name: string;
+  importantWords: string;
 }
 
 const TagPage = () => {
@@ -60,7 +62,10 @@ const TagPage = () => {
         <p>좋아요 개수로 정렬되었습니다.</p>
         <PillList>
           {pillData.map((pill: PillData) => (
-            <PillItem key={pill.id}>
+            <PillItem
+              to={`/search/name?q=${encodeURIComponent(pill.name)}`}
+              key={pill.id}
+            >
               <PillImg src={`/img/pill.png`} alt={pill.name}></PillImg>
               <PillText>
                 <PillTitle>
@@ -71,10 +76,14 @@ const TagPage = () => {
                   <p>즐겨찾기 {favoriteCount}</p>
                   <p>리뷰 {reviewCount}</p>
                 </FavoritesCount>
-                <TagContainer>
-                  <Tag>두통</Tag>
-                  <Tag>신경통</Tag>
-                  <Tag>근육통</Tag>
+                <TagContainer className='tagContainer'>
+                  {pill.importantWords &&
+                    pill.importantWords.trim() &&
+                    pill.importantWords.split(', ').map((word) => (
+                      <Tag to={`/search/efficacy?q=${word}`} key={word} className='tag'>
+                        {word}
+                      </Tag>
+                    ))}
                 </TagContainer>
               </PillText>
             </PillItem>
@@ -109,9 +118,11 @@ const ListContainer = styled.div`
 
 const PillList = styled.ul``;
 
-const PillItem = styled.li`
+const PillItem = styled(Link)`
   display: flex;
   margin-top: 20px;
+  color: black;
+  text-decoration: none;
 `;
 
 const PillImg = styled.img`
@@ -146,20 +157,9 @@ const FavoritesCount = styled.div`
 `;
 
 const TagContainer = styled.div`
-  display: flex;
-  width: 100%;
-  height: 30px;
+
 `;
 
-const Tag = styled.p`
-  width: 48px;
-  height: 25px;
-  margin-right: 10px;
-  font-size: 12px;
-  font-weight: 500;
-  text-align: center;
-  line-height: 25px;
-  border-radius: 5px;
-  background-color: var(--main-color);
-  cursor: pointer;
+const Tag = styled(Link)`
+
 `;

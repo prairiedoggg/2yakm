@@ -1,5 +1,6 @@
 import styled from 'styled-components';
 import { useDateStore } from '../../store/calendar';
+import Info from '../Info';
 import BloodSugar from './calendarDetails/BloodSugar';
 import IsPillTaken from './calendarDetails/IsPillTaken';
 import Photo from './calendarDetails/Photo';
@@ -30,6 +31,40 @@ const DetailTextBox = ({
   photo
 }: DetailTextBoxProps) => {
   const { setEdit, setArrow } = useDateStore();
+
+  const handleInfoText = () => {
+    switch (title) {
+      case '혈당':
+        return (
+          <Info
+            text={
+              '정상 : <br /> 공복 혈당 100미만, 식후 혈당 140미만 <br /> <br />관리 필요: <br /> 공복혈당 100이상 126미만, 식후혈당 140이상 200미만<br/> <br />당뇨:  <br />공복혈당 126이상, 식후혈당 200이상 '
+            }
+            category='혈당'
+          />
+        );
+      case '체온':
+        return (
+          <Info
+            text={
+              '정상: 35.8 ~ 37.2도  <br /> <br />미열: 37.2 ~ 37.9도 <br /> <br />중등도열: 38 ~ 38.9도  <br /> <br />고열: 39도 이상 '
+            }
+            category='체온'
+          />
+        );
+      case '사진 기록':
+        return (
+          <Info
+            text={
+              '피부 염증처럼 상태를 기록하고 싶은 부분의 사진을 등록해보세요.<br /> 이후 병원 진료에 도움을 받을 수 있어요.'
+            }
+            category='사진 기록'
+          />
+        );
+      default:
+        return null;
+    }
+  };
 
   const handleContent = () => {
     switch (title) {
@@ -78,7 +113,10 @@ const DetailTextBox = ({
 
   return isRender ? (
     <PillContainer isPill={isPill} onClick={() => setArrow(true)}>
-      <ContentTitle>{title}</ContentTitle>
+      <ContentTitle>
+        {title}
+        {handleInfoText()}
+      </ContentTitle>
       <UnitContainer>{handleContent()}</UnitContainer>
     </PillContainer>
   ) : isEmpty ? (
@@ -100,6 +138,7 @@ const PillContainer = styled.div<{ isPill?: boolean }>`
 
 const ContentTitle = styled.div`
   font-size: 14pt;
+  display: flex;
 `;
 
 const UnitContainer = styled.div`

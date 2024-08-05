@@ -57,7 +57,7 @@ const Register = () => {
         setLoading(false);
         setPopupType(PopupType.RegistrationSuccess);
       },
-      (error) => {
+      () => {
         setLoading(false);
         setPopupType(PopupType.RegistrationFailure);
       }
@@ -136,7 +136,7 @@ const Register = () => {
 
   const renderInput = (type: InputType, showHr: boolean) => {
     return (
-      <div className='input-container'>
+      <div className='input-container' key={type}>
         <input
           style={{ paddingRight: `${getInputRightPadding(type)}px` }}
           type={getInputType(type)}
@@ -184,7 +184,7 @@ const Register = () => {
                   setLoading(false);
                   setPopupType(PopupType.VerificationEmailSentSuccess);
                 },
-                (error) => {
+                () => {
                   setLoading(false);
                   setPopupType(PopupType.VerificationEmailSentFailure);
                 }

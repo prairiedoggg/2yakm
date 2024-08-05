@@ -1,42 +1,36 @@
+import { Link } from 'react-router-dom';
 import styled from 'styled-components';
 import { useSearchStore } from '../../store/search';
 
 const AutoComplete = () => {
-  const { suggestions, setSearchQuery, setSuggestions } = useSearchStore();
+  const { suggestions, setSuggestions } = useSearchStore();
 
   const handleSelectSuggestion = (suggestion: string) => {
-    setSearchQuery(suggestion);
     setSuggestions([]);
+    console.log(`Selected suggestion: ${suggestion}`);
   };
 
   return (
-    <AutoCompleteContainer>
-      <p>자동완성 페이지</p>
+    <div className='searchInner'>
+      <p className='listTitle'>추천 검색어</p>
       {suggestions.map((suggestion) => {
         const { name, id } = suggestion;
 
         return (
           <AutoCompleteItem
+            to={`/search/name?q=${name}`}
             key={id}
             onClick={() => handleSelectSuggestion(name)}
+            className='listItem'
           >
             {name}
           </AutoCompleteItem>
         );
       })}
-    </AutoCompleteContainer>
+    </div>
   );
 };
 
 export default AutoComplete;
 
-const AutoCompleteContainer = styled.div``;
-
-const AutoCompleteItem = styled.div`
-  padding: 10px;
-  cursor: pointer;
-
-  &:hover {
-    background: #f0f0f0;
-  }
-`;
+const AutoCompleteItem = styled(Link)``;

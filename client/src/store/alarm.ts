@@ -4,7 +4,7 @@ export interface Alarm {
   id: string;
   userId?: string;
   name: string;
-  startDate: string;
+  startDate?: string;
   endDate?: string;
   times: { time: string }[];
   alarmStatus?: boolean;
