@@ -12,12 +12,15 @@ export const fetchReviews = async ({
   cursor?: string | null;
 }) => {
   try {
-    const params = new URLSearchParams();
-    if (initialLimit) params.append('initialLimit', initialLimit.toString());
-    if (cursorLimit) params.append('cursorLimit', cursorLimit.toString());
-    if (cursor) params.append('cursor', cursor);
+   
+   const data = await get(`/api/reviews/pills/${pillId}`, {
+     params: {
+       initialLimit,
+       cursorLimit,
+       cursor
+     }
+   });
 
-    const data = await get(`/api/reviews/pills/${pillId}?${params.toString()}`);
     console.log('리뷰 get:', data);
     return data;
   } catch (error) {
@@ -26,18 +29,15 @@ export const fetchReviews = async ({
   }
 };
 
-export const createReview = async (review: {
+export const createReview = async ({
+  content,
+  pillId
+}: {
   content: string;
   pillId: number;
 }) => {
   try {
-    const payload = {
-      content: review.content,
-      pillid: review.pillId
-    };
-    console.log('리뷰 생성 요청:', payload);
-    const data = await post(`/api/reviews`, payload);
-    console.log('리뷰 post 성공:', data);
+    const data = await post(`/api/reviews`, { content, pillId });
     return data;
   } catch (error) {
     console.error('리뷰생성 에러:', error);

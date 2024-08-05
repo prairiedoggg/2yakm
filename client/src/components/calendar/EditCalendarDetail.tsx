@@ -1,7 +1,7 @@
 import dayjs from 'dayjs';
 import styled from 'styled-components';
 import { calendarDelete } from '../../api/calendarApi';
-import { useDateStore } from '../../store/calendar';
+import { useCalendar, useDateStore } from '../../store/calendar';
 import EditDetailTextBox from './EditDetailTextBox';
 
 const ContentContainer = styled.div`
@@ -9,16 +9,19 @@ const ContentContainer = styled.div`
 `;
 
 const OpenCalendarDetail: React.FC = () => {
-  const { value, setEdit, setArrow, clearPosted, posted } = useDateStore();
+  const { value, setEdit, setArrow, removePostedByDate } = useDateStore();
+  const { setCalendarData, setCalImg } = useCalendar();
   const formattedDate = dayjs(value).format('YYYY-MM-DD');
 
   const handleDeleteCalender = async () => {
-    clearPosted();
     try {
       const res = await calendarDelete(formattedDate);
       setEdit(false);
       setArrow(false);
-      console.log(posted);
+      setCalendarData(null);
+      setCalImg(new FormData());
+      removePostedByDate(formattedDate);
+      console.log(res);
     } catch (err) {
       console.log(err);
     }

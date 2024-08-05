@@ -1,5 +1,5 @@
-import { create, StateCreator } from 'zustand';
-import { persist, PersistOptions } from 'zustand/middleware';
+import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
 
 interface SearchHistoryState {
   history: string[];
@@ -7,13 +7,8 @@ interface SearchHistoryState {
   clearHistory: () => void;
 }
 
-type MyPersist = (
-  config: StateCreator<SearchHistoryState>,
-  options: PersistOptions<SearchHistoryState>
-) => StateCreator<SearchHistoryState>;
-
-const useSearchHistoryStore = create<SearchHistoryState>(
-  (persist as MyPersist)(
+const useSearchHistoryStore = create(
+  persist<SearchHistoryState>(
     (set, get) => ({
       history: [],
       addHistory: (query) => {

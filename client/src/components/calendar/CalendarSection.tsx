@@ -1,4 +1,5 @@
 import dayjs from 'dayjs';
+import 'dayjs/locale/ko';
 import Cookies from 'js-cookie';
 import { useEffect, useState } from 'react';
 import Calendar from 'react-calendar';
@@ -21,7 +22,6 @@ interface CalendarDate {
 interface TileContentProps {
   date: Date;
   view: string;
-  calendarData: CalendarDate;
 }
 
 const CalendarSection: React.FC = () => {
@@ -109,13 +109,35 @@ const CalendarSection: React.FC = () => {
     return '';
   };
 
+  const formatDate = (
+    date: Date,
+    format: string,
+    locale: string | undefined
+  ) => {
+    return dayjs(date)
+      .locale(locale ?? 'en')
+      .format(format);
+  };
+
+  const handleDateChange = (
+    newDate: Date | Date[] | [Date | null, Date | null] | null
+  ) => {
+    if (Array.isArray(newDate)) {
+      if (newDate.length > 0 && newDate[0] instanceof Date) {
+        onChange(newDate[0]);
+      }
+    } else if (newDate instanceof Date || newDate === null) {
+      onChange(newDate);
+    }
+  };
+
   return (
     <CalendarContainer>
       <Calendar
-        onChange={onChange}
+        onChange={handleDateChange}
         value={value}
         calendarType='gregory'
-        formatDay={(locale, date) => dayjs(date).format('D')}
+        formatDay={(locale, date) => formatDate(date, 'D', locale)}
         tileContent={addContent}
         showNeighboringMonth={true}
         tileClassName={getDayClassName}

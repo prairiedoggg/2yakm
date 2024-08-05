@@ -21,7 +21,7 @@ enum InputType {
   NewPasswordConfirm = 'newPasswordConfirm'
 }
 
-const EditPassword = ({ onEdit }: { onEdit: () => void }) => {
+const EditPassword = () => {
   const navigate = useNavigate();
   const [popupType, setPopupType] = useState<PopupType>(PopupType.None);
   const user = useUserStore((state) => state.user);
@@ -49,7 +49,7 @@ const EditPassword = ({ onEdit }: { onEdit: () => void }) => {
       formData.email,
       formData.oldPassword,
       formData.newPassword,
-      (data) => {
+      () => {
         setLoading(false);
         setPopupType(PopupType.changePasswordSuccess);
         console.log(`비밀번호 변경 완료`);

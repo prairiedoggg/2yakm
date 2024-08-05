@@ -12,6 +12,7 @@ const EditDetailPhoto = () => {
   const [isDeniedCameraPermission, setIsDeniedCameraPermission] =
     useState(false);
 
+  console.log(isDeniedCameraPermission);
   useEffect(() => {
     const startCamera = async () => {
       try {
@@ -62,7 +63,7 @@ const EditDetailPhoto = () => {
 
   const handleClick = () => photoInput.current?.click();
   const deletePhoto = () => {
-    setCalImg(null);
+    setCalImg(new FormData());
     setPhoto(null);
   };
 
@@ -85,16 +86,16 @@ const EditDetailPhoto = () => {
           />
         </Icon>
       </IconContainer>
-      {calendarData?.photo && (
-        <ImageContainer>
-          <DeleteIcon onClick={deletePhoto} />
+      <ImageContainer>
+        {calendarData?.photo && (
           <img
             src={calendarData?.photo}
             alt='기록 이미지'
             style={{ width: '100%', height: 'auto' }}
           />
-        </ImageContainer>
-      )}
+        )}
+        <DeleteIcon onClick={deletePhoto} />
+      </ImageContainer>
     </Container>
   );
 };
@@ -114,12 +115,15 @@ const IconContainer = styled.div`
 const ImageContainer = styled.div`
   position: relative;
   margin-top: 10px;
+  margin-right: 20px;
 `;
 
 const DeleteIcon = styled(FiXCircle)`
   color: #777777;
   margin: 5px 5px;
   cursor: pointer;
+  position: absolute;
+  top: 50px;
 `;
 
 const HiddenInput = styled.input`

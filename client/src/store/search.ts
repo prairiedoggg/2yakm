@@ -2,8 +2,6 @@ import { create } from 'zustand';
 import { PillData } from './pill.ts';
 
 interface SearchState {
-  searchQuery: string;
-  setSearchQuery: (query: string) => void;
   imageQuery: File | null;
   setImageQuery: (image: File | null) => void;
   searchType: string;
@@ -15,8 +13,6 @@ interface SearchState {
 }
 
 export const useSearchStore = create<SearchState>((set) => ({
-  searchQuery: '',
-  setSearchQuery: (query) => set({ searchQuery: query }),
   imageQuery: null,
   setImageQuery: (image) => set({ imageQuery: image }),
   searchType: 'name',

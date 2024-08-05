@@ -9,10 +9,15 @@ import FavoriteMedications from './FavoriteMedications';
 import ManageReviews from './ManageReviews';
 import MyMedications from './MyMedications';
 
-import Toast from '../Toast';
 import Nav from '../Nav';
 import { Icon } from '@iconify-icon/react';
 import { useState } from 'react';
+import { deleteAccount, logout } from '../../api/authService';
+import PopupContent, { PopupType } from '../popup/PopupMessages';
+import useUserStore from '../../store/user';
+import { useNavigate } from 'react-router-dom';
+import Popup from '../popup/Popup';
+import Loading from '../Loading';
 
 enum pageState {
   Main,
@@ -27,6 +32,10 @@ enum pageState {
 
 const MyPage = () => {
   const [currentState, setCurrentState] = useState(pageState.Main);
+  const { user } = useUserStore.getState();
+  const [popupType, setPopupType] = useState(PopupType.None);
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
   const renderContent = () => {
     switch (currentState) {
@@ -56,6 +65,30 @@ const MyPage = () => {
               <hr />
               {renderMenuItems()}
             </div>
+
+            <div className='bottom-menu'>
+              <div
+                onClick={() =>
+                  logout(() => {
+                    navigate('/', { replace: true });
+                    window.location.reload();
+                  })
+                }
+              >
+                로그아웃
+              </div>{' '}
+              |{' '}
+              <div onClick={() => setPopupType(PopupType.DeleteAccount)}>
+                회원탈퇴
+              </div>
+            </div>
+
+            {popupType !== PopupType.None && (
+              <Popup onClose={() => setPopupType(PopupType.None)}>
+                {getPopupContent(popupType)}
+              </Popup>
+            )}
+            {loading && <Loading />}
           </StyledContent>
         );
     }
@@ -84,22 +117,10 @@ const MyPage = () => {
         );
 
       case pageState.EditPassword:
-        return (
-          <EditPassword
-            onEdit={() => {
-              setCurrentState(pageState.EditInfo);
-            }}
-          />
-        );
+        return <EditPassword />;
 
       case pageState.EditPharmacist:
-        return (
-          <EditPharmacist
-            onEdit={() => {
-              setCurrentState(pageState.EditInfo);
-            }}
-          />
-        );
+        return <EditPharmacist />;
 
       case pageState.MyMedications:
         return <MyMedications />;
@@ -184,11 +205,45 @@ const MyPage = () => {
     ));
   };
 
+  const getPopupContent = (type: PopupType) => {
+    switch (type) {
+      case PopupType.DeleteAccount:
+        return (
+          <div>
+            이약뭐약 서비스 회원탈퇴를 하시겠어요?
+            <button
+              className='bottomClose'
+              onClick={() => {
+                setLoading(true);
+                deleteAccount(
+                  user?.id ?? '',
+                  () => {
+                    setLoading(false);
+                    setPopupType(PopupType.DeleteAccountSuccess);
+                  },
+                  () => {
+                    setLoading(false);
+                    setPopupType(PopupType.DeleteAccountFailure);
+                  }
+                );
+              }}
+            >
+              회원탈퇴
+            </button>
+          </div>
+        );
+
+      default:
+        return PopupContent(type, navigate);
+    }
+  };
+
   return (
     <MyPageContainer>
       <Header />
       {renderContent()}
       {/* <Toast str="이름 변경이 완료되었어요" /> */}
+
       <Nav />
     </MyPageContainer>
   );
@@ -235,6 +290,14 @@ const StyledContent = styled.div`
 
   hr {
     width: 90%;
+  }
+
+  .bottom-menu {
+    color: gray;
+    margin-top: 50px;
+    display: flex;
+    gap: 10px;
+    justify-content: center;
   }
 
   .entries {

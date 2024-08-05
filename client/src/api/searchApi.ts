@@ -1,5 +1,4 @@
-import axios from 'axios';
-import { get } from './api';
+import { get, post } from './api';
 
 export const fetchPillDataByName = async (
   name: string,
@@ -38,42 +37,26 @@ export const fetchPillListByEfficacy = async (
   }
 };
 
-const toBase64 = (file: File): Promise<string> =>
-  new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
-    reader.onload = () => resolve(reader.result as string);
-    reader.onerror = (error) => reject(error);
-  });
-
 export const fetchPillDataByImage = async (
   image: File,
   limit: number = 10,
   offset: number = 0
 ) => {
+  const formData = new FormData();
+  formData.append('image', image);
+  formData.append('limit', limit.toString());
+  formData.append('offset', offset.toString());
+
   try {
-    const base64Image = await toBase64(image);
-    const params = new URLSearchParams();
-    params.append('image', base64Image);
-    params.append('limit', limit.toString());
-    params.append('offset', offset.toString());
-
-    const response = await axios.get(
-      `/api/pills/search/image?${params.toString()}`,
-      {
-        headers: {
-          'Content-Type': 'application/json'
-        }
+    const data = await post(`/api/pills/search/image`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
       }
-    );
-
-    if (response.status === 200 && response.data.pills) {
-      return response.data.pills;
-    } else {
-      throw new Error('Invalid response from server');
-    }
+    });
+    console.log('이미지로 검색 Post', data);
+    return data.pills;
   } catch (error) {
-    console.error('Error fetching pill data by image:', error);
+    console.error('이미지로 약 데이터 가져오기 실패', error);
     throw error;
   }
 };
