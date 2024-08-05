@@ -43,7 +43,8 @@ export default BotChat;
 
 const BotChattingContainer = styled.div`
   display: flex;
-  margin-bottom: 30px;
+  margin-bottom: 20px;
+  flex: 1;
 `;
 
 const BotChatting = styled.div`

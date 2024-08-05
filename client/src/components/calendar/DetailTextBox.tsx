@@ -29,12 +29,12 @@ const DetailTextBox = ({
   weight,
   photo
 }: DetailTextBoxProps) => {
-  const { setAddTaken, setEdit, setArrow } = useDateStore();
+  const { setEdit, setArrow } = useDateStore();
 
   const handleContent = () => {
     switch (title) {
       case '약 복용 여부':
-        return <IsPillTaken pillData={pillData} />;
+        return <IsPillTaken pillData={pillData} edit={false} />;
       case '혈당':
         return (
           <BloodSugar
@@ -77,12 +77,12 @@ const DetailTextBox = ({
   };
 
   return isRender ? (
-    <PillContainer isPill={isPill}>
+    <PillContainer isPill={isPill} onClick={() => setArrow(true)}>
       <ContentTitle>{title}</ContentTitle>
       <UnitContainer>{handleContent()}</UnitContainer>
     </PillContainer>
   ) : isEmpty ? (
-    <Empty onClick={() => openEdit}>
+    <Empty onClick={() => openEdit()}>
       {title} 정보 없음. 추가하려면 탭 하세요.
     </Empty>
   ) : null;

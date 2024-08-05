@@ -1,16 +1,21 @@
 import { Icon } from '@iconify-icon/react';
 import { useEffect, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
-import { chatBot } from '../../api/chatbot';
+import { chatBot, endChatBot } from '../../api/chatbot';
 import { useChatBot } from '../../store/chatbot';
+import Popup from '../popup/Popup';
+import PopupContent, { PopupType } from '../popup/PopupMessages';
 import BotChat from './BotChat';
 import UserChat from './UserChat';
 
 const ChatBotBox: React.FC = () => {
-  const { chatList, addBotChat, addUserChat } = useChatBot();
+  const navigate = useNavigate();
+  const { chatList, addBotChat, addUserChat, deleteChat } = useChatBot();
   const [text, setText] = useState<string>('');
   const chattingContainerRef = useRef<HTMLDivElement>(null);
   const [loading, setLoading] = useState<boolean>(false);
+  const [popupType, setPopupType] = useState<PopupType>(PopupType.None);
 
   // 스크롤 항상 허용
   useEffect(() => {
@@ -30,7 +35,7 @@ const ChatBotBox: React.FC = () => {
     try {
       const res = await chatBot(text);
       console.log('챗봇 대답', res);
-      addBotChat(res.reply);
+      addBotChat(res);
     } catch (err) {
       console.log('챗봇 대화 실패', err);
     } finally {
@@ -43,9 +48,47 @@ const ChatBotBox: React.FC = () => {
     setText(e.target.value);
   };
 
+  const handleFinish = async () => {
+    try {
+      const res = await endChatBot();
+      console.log('채팅 종료 성공', res);
+    } catch (err) {
+      console.error('채팅 종료 실패', err);
+    }
+  };
+
+  const getPopupContent = (type: PopupType) => {
+    switch (type) {
+      case PopupType.FinishChatBot:
+        return (
+          <div style={{ textAlign: 'center' }}>
+            채팅을 종료하시면 기존 내용은 삭제됩니다. <br />
+            종료하시겠습니까?
+            <button
+              className='bottomClose'
+              onClick={() => {
+                setLoading(true);
+                setPopupType(PopupType.None);
+                handleFinish();
+                deleteChat();
+              }}
+            >
+              확인
+            </button>
+          </div>
+        );
+
+      default:
+        return PopupContent(type, navigate);
+    }
+  };
+
   return (
     <ChatBotBoxContainer>
       <Box>
+        <FinishButton onClick={() => setPopupType(PopupType.FinishChatBot)}>
+          채팅 종료
+        </FinishButton>
         <ChattingContainer ref={chattingContainerRef}>
           {chatList.map((chat, index) =>
             chat.sender === 'user' ? (
@@ -70,6 +113,11 @@ const ChatBotBox: React.FC = () => {
           </SubmitButton>
         </ChattingInputContainer>
       </Box>
+      {popupType !== PopupType.None && (
+        <Popup onClose={() => setPopupType(PopupType.None)}>
+          {getPopupContent(popupType)}
+        </Popup>
+      )}
     </ChatBotBoxContainer>
   );
 };
@@ -93,7 +141,7 @@ const Box = styled.div`
 `;
 
 const ChattingContainer = styled.div`
-  margin-top: 10px;
+  margin-top: 15px;
   overflow-y: auto;
   overflow-x: hidden;
   height: 90%;
@@ -133,4 +181,19 @@ const Chatting = styled.input`
 const SubmitButton = styled.button`
   border: none;
   background: none;
+`;
+
+const FinishButton = styled.button`
+  position: absolute;
+  z-index: 100;
+  right: 10px;
+  width: 90px;
+  height: 30px;
+  margin-top: 5px;
+  border-radius: 10px;
+  border: none;
+  background-color: #72bf44;
+  color: white;
+  font-weight: 500;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 `;

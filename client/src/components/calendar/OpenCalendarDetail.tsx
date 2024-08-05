@@ -30,20 +30,17 @@ const OpenCalendarDetail: React.FC = () => {
     ? true
     : false;
 
-  console.log(isPosted);
   useEffect(() => {
     if (isPosted === true) {
       const fetchPillData = async () => {
         try {
           const data = await calendarGet(today);
-          console.log(data);
           setData(data);
           addPosted({ date: formattedDate, post: true });
         } catch (err) {
           console.log('해당하는 약복용여부 정보 없음', err);
         }
       };
-
       fetchPillData();
     }
   }, [login]);
@@ -73,11 +70,9 @@ const OpenCalendarDetail: React.FC = () => {
           if (isPosted) {
             const res = await calendarPut(formattedDate, formData);
             setData(res);
-            console.log('일정 수정 성공:', res);
           } else {
             const res = await calendarPost(formData);
             setData(res);
-            console.log('일정 등록 성공', res);
             addPosted({ date: formattedDate, post: true });
           }
         }
@@ -93,7 +88,6 @@ const OpenCalendarDetail: React.FC = () => {
       const fetchPillData = async () => {
         try {
           const data = await calendarGet(formattedDate);
-          console.log(data);
           setData(data);
           addPosted({ date: formattedDate, post: true });
         } catch (err) {
@@ -107,17 +101,72 @@ const OpenCalendarDetail: React.FC = () => {
     }
   }, [formattedDate, login]);
 
+  const hasContent = (name: string) => {
+    switch (name) {
+      case 'medications':
+        return data?.medications && data.medications.length > 0;
+      case 'bloodsugarBefore':
+        return (
+          data?.bloodsugarBefore !== undefined && data.bloodsugarBefore !== 0
+        );
+      case 'bloodsugarAfter':
+        return (
+          data?.bloodsugarAfter !== undefined && data.bloodsugarAfter !== 0
+        );
+      case 'temperature':
+        return data?.temperature !== undefined && data.temperature !== 0;
+      case 'weight':
+        return data?.weight !== undefined && data.weight !== 0;
+      case 'calImg':
+        return data?.calImg !== undefined && data.calImg !== null;
+      default:
+        return false;
+    }
+  };
+
+  const detailBoxes = [
+    {
+      title: '약 복용 여부',
+      name: 'medications',
+      component: (
+        <DetailTextBox title='약 복용 여부' pillData={data?.medications} />
+      )
+    },
+    {
+      title: '혈당',
+      name: 'bloodsugarBefore',
+      component: (
+        <DetailTextBox
+          title='혈당'
+          bloodsugarbefore={data?.bloodsugarBefore}
+          bloodsugarafter={data?.bloodsugarAfter}
+        />
+      )
+    },
+    {
+      title: '체온',
+      name: 'temperature',
+      component: <DetailTextBox title='체온' temp={data?.temperature} />
+    },
+    {
+      title: '체중',
+      name: 'weight',
+      component: <DetailTextBox title='체중' weight={data?.weight} />
+    },
+    {
+      title: '사진 기록',
+      name: 'calImg',
+      component: <DetailTextBox title='사진 기록' photo={data?.calImg} />
+    }
+  ];
+
+  const withContent = detailBoxes.filter((box) => hasContent(box.name));
+  const withoutContent = detailBoxes.filter((box) => !hasContent(box.name));
+
   return (
     <ContentContainer>
-      <DetailTextBox title='약 복용 여부' pillData={data?.medications} />
-      <DetailTextBox
-        title='혈당'
-        bloodsugarbefore={data?.bloodsugarBefore}
-        bloodsugarafter={data?.bloodsugarAfter}
-      />
-      <DetailTextBox title='체온' temp={data?.temperature} />
-      <DetailTextBox title='체중' weight={data?.weight} />
-      <DetailTextBox title='사진 기록' photo={data?.calImg} />
+      {withContent.map((box) => box.component)}
+      {withoutContent.map((box) => box.component)}
     </ContentContainer>
   );
 };

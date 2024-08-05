@@ -17,12 +17,13 @@ export default UserChat;
 const UserChattingContainer = styled.div`
   display: flex;
   justify-content: flex-end;
-  margin-bottom: 30px;
+  margin-bottom: 25px;
 `;
 
 const UserChatting = styled.div`
   background-color: #72bf44;
   width: auto;
+  min-width: 100px;
   border-radius: 20px;
   padding: 15px 15px;
   line-height: 18px;
@@ -36,7 +37,7 @@ const UserChatting = styled.div`
   &::after {
     content: '';
     position: absolute;
-    top: 4px;
+    top: 3px;
     left: 90%;
     border-width: 15px;
     border-style: solid;

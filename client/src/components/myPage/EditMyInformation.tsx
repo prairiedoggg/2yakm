@@ -35,13 +35,13 @@ const EditMyInformation = ({
     { info: '이름', onClick: onEditNameClick }
   ];
 
+  let infos2: Info[] = [{ info: '약사 인증', onClick: onEditPharmacistClick }];
+
   if (user?.loginType == LoginType.none)
     infos1.push({ info: '비밀번호 변경', onClick: onEditPasswordClick });
 
-  const infos2: Info[] = [
-    { info: '약사 인증', onClick: onEditPharmacistClick },
-    { info: '연동된 소셜계정', onClick: undefined }
-  ];
+  if (user?.loginType != LoginType.none)
+    infos2.push({ info: '연동된 소셜계정', onClick: undefined });
 
   const getInfoValue = (type: string) => {
     switch (type) {
@@ -172,8 +172,8 @@ const EditMyInformation = ({
       <BottomPictureSheet
         title={'사진 등록'}
         isVisible={bottomSheet}
-        onClose={(pic) => {
-          if (pic !== null) {
+        onClose={(file) => {
+          if (file !== null) {
             setLoading(true);
 
             // 파일데이터 확인용 테스트 코드. 프로필 이미지 업로드 구현 완료 후 삭제 예정
@@ -190,11 +190,13 @@ const EditMyInformation = ({
             // });
 
             const formData = new FormData();
-            formData.append('profilePicture', pic);
+            formData.append('profileImg', file);
             changeProfileImage(
               formData,
               () => {
-                fetchUserProfile(() => {});
+                fetchUserProfile((data) => {
+                  console.log(data);
+                });
                 setLoading(false);
               },
               () => {
