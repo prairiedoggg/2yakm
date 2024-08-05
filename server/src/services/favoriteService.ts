@@ -10,26 +10,36 @@ interface TotalCountAndData {
   data: Favorite[];
 }
 
-const getImportantWords = (text: string): string[] => {
+interface ImportantWord {
+  word: string;
+  department: string;
+}
+
+const getImportantWords = (text: string): ImportantWord[] => {
   const wordFrequency: { [key: string]: number } = {};
-  const priorityWordsSet = new Set(stopwords);
+
   const words = text
     .toLowerCase()
     .split(/[\s,.;:ㆍ()]+/)
     .filter((word) => {
-      const isValid = word && priorityWordsSet.has(word);
+      const isValid =
+        word &&
+        Object.keys(stopwords).some((stopword) => word.startsWith(stopword));
       return isValid;
     });
 
   words.forEach((word) => {
-    if (!wordFrequency[word]) {
-      wordFrequency[word] = 0;
+    const stopword = Object.keys(stopwords).find((sw) => word.startsWith(sw));
+    if (stopword) {
+      wordFrequency[stopword] = (wordFrequency[stopword] || 0) + 1;
     }
-    wordFrequency[word]++;
   });
 
   const sortedWords = Object.entries(wordFrequency).sort((a, b) => b[1] - a[1]);
-  const importantWords = sortedWords.slice(0, 3).map((entry) => entry[0]);
+  const importantWords = sortedWords.slice(0, 3).map(([word]) => ({
+    word,
+    department: stopwords[word]
+  }));
   return importantWords;
 };
 
@@ -75,10 +85,20 @@ export const searchFavoritePillService = async (
     const result: QueryResult<Favorite> = await pool.query(query, values);
 
     const favoriteWithTag = result.rows.map((favorite: Favorite) => {
-      const importantWords = getImportantWords(favorite.efficacy);
+      const importantWordsWithDepartments = getImportantWords(
+        favorite.efficacy
+      );
+      const importantWords = importantWordsWithDepartments
+        .map((iw) => iw.word)
+        .join(', ');
+      const departments = importantWordsWithDepartments
+        .map((iw) => iw.department)
+        .filter((dep) => dep)
+        .join(', ');
       return {
         ...favorite,
-        importantWords: importantWords.join(', ')
+        importantWords,
+        departments
       };
     });
 
@@ -88,6 +108,7 @@ export const searchFavoritePillService = async (
       data: favoriteWithTag
     };
   } catch (error: any) {
+    console.error('DB error:', error);
     throw createError(
       'DBError',
       '즐겨찾는 약 검색 중 데이터베이스 오류가 발생했습니다.',
@@ -139,6 +160,7 @@ export const addCancelFavoritePillService = async (
       data: addResult.rows[0]
     };
   } catch (error: any) {
+    console.error('DB error:', error);
     throw createError(
       'DBError',
       '좋아요를 추가, 삭제 중 데이터베이스 오류가 발생했습니다.',
@@ -162,6 +184,7 @@ export const userFavoriteStatusService = async (
 
     return result.rows.length > 0;
   } catch (error: any) {
+    console.error('DB error:', error);
     throw createError(
       'DBError',
       '좋아요 상태를 확인 중 데이터베이스 오류가 발생했습니다.',

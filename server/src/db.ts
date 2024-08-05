@@ -44,3 +44,22 @@ const connectDB = async (): Promise<void> => {
 connectDB();
 
 export { pool };
+
+// // ResultType은 Generic variable, 즉 아래의 transaction의 결과물의 type(리턴 type)
+// export async function withTransaction<ResultType>(
+//   task: (connection: Client) => Promise<ResultType>
+// ): Promise<ResultType | undefined> {
+//   const dbClient = new Client(connectionConfig);
+//   await dbClient.connect(); // client connect
+//   try {
+//     await dbClient.query('BEGIN');
+//     const result = await task(dbClient);
+//     await dbClient.query('COMMIT'); // transaction commit
+//     return result;
+//   } catch (error) {
+//     await dbClient.query('ROLLBACK'); // transaction rollback
+//     throw error;
+//   } finally {
+//     dbClient.end(); // connection end
+//   }
+// }
