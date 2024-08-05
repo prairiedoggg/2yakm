@@ -5,14 +5,14 @@ import { useNavigate } from 'react-router-dom';
 const Redirect = () => {
   const navigate = useNavigate();
 
-  const loginSuccess = () => {
-    const success: string = '로그인 성공';
-    Cookies.set('login', success);
-  };
-
   useEffect(() => {
+    const loginSuccess = () => {
+      const success = '로그인 성공';
+      Cookies.set('login', success);
+    };
+
     loginSuccess();
-    navigate('/', { state: { showBottomSheet: true } });
+    navigate('/');
   }, [navigate]);
 
   return null;

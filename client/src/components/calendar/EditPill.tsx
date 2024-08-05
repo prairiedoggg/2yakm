@@ -83,6 +83,7 @@ const EditPill = () => {
   };
 
   const handleDeletePillData = () => {
+    
     removePillData(pillName);
     setEditTaken(false);
   };
