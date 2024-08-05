@@ -1,7 +1,7 @@
-import { pool } from '../db';
+import { pool, withTransaction } from '../db';
 import { Review } from '../entity/review';
 import { createError } from '../utils/error';
-import { QueryResult } from 'pg';
+import { QueryResult, PoolClient } from 'pg';
 
 interface TotalCountAndData {
   totalCount: number;
@@ -20,62 +20,55 @@ export const createReviewService = async (
   userid: string,
   content: string
 ): Promise<Review | null> => {
-  const client = await pool.connect(); // transaction에서 사용하기 위해 client 인스턴스 정의
-
   try {
     // transaction 시작
-    await client.query('BEGIN');
+    const result = await withTransaction(async (client: PoolClient) => {
+      // 매개변수화된 쿼리 (SQL 인젝션 공격을 방지할 수 있음)
+      const insertQuery = `
+    INSERT INTO reviews (pillid, userid, content) 
+    VALUES ($1, $2, $3)
+    RETURNING *;
+  `;
+      const insertValues = [pillid, userid, content];
+      const insertResult: QueryResult<Review> = await client.query(
+        insertQuery,
+        insertValues
+      );
 
-    // 매개변수화된 쿼리 (SQL 인젝션 공격을 방지할 수 있음)
-    const insertQuery = `
-      INSERT INTO reviews (pillid, userid, content) 
-      VALUES ($1, $2, $3)
-      RETURNING *;
-    `;
-    const insertValues = [pillid, userid, content];
-    const insertResult: QueryResult<Review> = await client.query(
-      insertQuery,
-      insertValues
-    );
+      const insertedid = insertResult.rows[0].id;
 
-    const insertedid = insertResult.rows[0].id;
+      const query = `
+    SELECT 
+      reviews.id,
+      reviews.pillid,
+      pills.name,
+      reviews.userid,
+      users.username,
+      reviews.content,
+      reviews.createdAt
+    FROM 
+      reviews
+    JOIN 
+      pills ON reviews.pillid = pills.id
+    JOIN 
+      users ON reviews.userid = users.userid
+    WHERE 
+      reviews.id = $1
+  `;
+      const values = [insertedid];
+      const result: QueryResult<Review> = await client.query(query, values);
 
-    const query = `
-      SELECT 
-        reviews.id,
-        reviews.pillid,
-        pills.name,
-        reviews.userid,
-        users.username,
-        reviews.content,
-        reviews.createdAt
-      FROM 
-        reviews
-      JOIN 
-        pills ON reviews.pillid = pills.id
-      JOIN 
-        users ON reviews.userid = users.userid
-      WHERE 
-        reviews.id = $1
-    `;
-    const values = [insertedid];
-    const result: QueryResult<Review> = await client.query(query, values);
+      return result.rows.length ? result.rows[0] : null;
+    });
 
-    // transaction 종료
-    await client.query('COMMIT');
-
-    return result.rows.length ? result.rows[0] : null;
+    return result;
   } catch (error: any) {
-    // transaction 롤백
-    await client.query('ROLLBACK');
     console.error('DB error:', error);
     throw createError(
       'DBError',
       '리뷰 생성 중 데이터베이스 오류가 발생했습니다.',
       500
     );
-  } finally {
-    client.release();
   }
 };
 
