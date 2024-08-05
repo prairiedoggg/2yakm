@@ -160,6 +160,7 @@ export const getPillsAllReviewService = async (
         reviews.userid,
         users.username,
         users.role,
+        users.profileimg,
         reviews.content,
         reviews.createdAt
       FROM 

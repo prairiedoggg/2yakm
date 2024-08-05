@@ -291,6 +291,8 @@ router.get('/users/', authByToken, getUserAllReview);
  *                         type: string
  *                       role:
  *                         type: boolean
+ *                       profileimg:
+ *                         type: string
  *                       content:
  *                         type: string
  *                       createdat:
