@@ -1,5 +1,5 @@
 import axios, { AxiosRequestConfig, AxiosResponse } from 'axios';
-import { createError } from '../utils/error';
+import { createError } from './error';
 
 const axiosRequest = async <T>(config: AxiosRequestConfig): Promise<T> => {
     try {
