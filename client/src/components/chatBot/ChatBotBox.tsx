@@ -11,10 +11,10 @@ import UserChat from './UserChat';
 
 const ChatBotBox: React.FC = () => {
   const navigate = useNavigate();
-  const { chatList, addBotChat, addUserChat, deleteChat } = useChatBot();
+  const { chatList, addBotChat, addUserChat, deleteChat, updateLastBotChat } =
+    useChatBot();
   const [text, setText] = useState<string>('');
   const chattingContainerRef = useRef<HTMLDivElement>(null);
-  const [loading, setLoading] = useState<boolean>(false);
   const [popupType, setPopupType] = useState<PopupType>(PopupType.None);
 
   // 스크롤 항상 허용
@@ -30,16 +30,16 @@ const ChatBotBox: React.FC = () => {
     if (text.trim() === '') return;
 
     addUserChat(text);
-    setLoading(true);
+    addBotChat('', true);
 
     try {
       const res = await chatBot(text);
       console.log('챗봇 대답', res);
-      addBotChat(res);
+      const formattedRes = res.replace(/\n/g, '<br />');
+      updateLastBotChat(formattedRes);
     } catch (err) {
       console.log('챗봇 대화 실패', err);
-    } finally {
-      setLoading(false);
+      updateLastBotChat('챗봇 대화 실패');
     }
     setText('');
   };
@@ -67,7 +67,6 @@ const ChatBotBox: React.FC = () => {
             <button
               className='bottomClose'
               onClick={() => {
-                setLoading(true);
                 setPopupType(PopupType.None);
                 handleFinish();
                 deleteChat();
@@ -94,7 +93,11 @@ const ChatBotBox: React.FC = () => {
             chat.sender === 'user' ? (
               <UserChat key={index} text={chat.text} />
             ) : (
-              <BotChat key={index} text={chat.text} loading={loading} />
+              <BotChat
+                key={index}
+                text={chat.text}
+                loading={chat.loading || false}
+              />
             )
           )}
         </ChattingContainer>

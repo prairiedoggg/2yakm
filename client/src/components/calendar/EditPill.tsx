@@ -18,14 +18,19 @@ const EditPill = () => {
   const [timeError, setTimeError] = useState<boolean>(false);
 
   useEffect(() => {
-    const pillData = calendarData?.pillData ?? [];
-    if (pillData.length > 0) {
-      setPillName(pillData[0].name ?? '');
-      const initialTimes = pillData[0].time.map((time, index) => ({
+    if (calendarData?.pillData?.length) {
+      const pillData = calendarData.pillData[0];
+      setPillName(pillData.name ?? '');
+
+      const timesArray = Array.isArray(pillData.time) ? pillData.time : [];
+      const initialTimes = timesArray.map((time, index) => ({
         time: dayjs(time, 'HH:mm'),
         status: 'active',
-        checked: pillData[0].taken[index]
+        checked: Array.isArray(pillData.taken)
+          ? pillData.taken[index] ?? false
+          : false
       }));
+
       setAlarmTimes(initialTimes);
     }
   }, [calendarData]);

@@ -2,10 +2,15 @@ import { Link, useLocation } from 'react-router-dom';
 import styled from 'styled-components';
 import TimeChecker from './TimeChecker';
 
+interface Icon {
+  default: string;
+  active: string;
+}
+
 interface NavItem {
   name: string;
   label: string;
-  icon: object;
+  icon: Icon;
   style?: React.CSSProperties;
 }
 
