@@ -162,12 +162,14 @@ export const searchPillsbyName = async (
     };
   } catch (error: unknown) {
     if (error instanceof Error) {
+      console.error('DatabaseError', error)
       throw createError(
         'DatabaseError',
         `Failed to search pills by name: ${error.message}`,
         500
       );
     } else {
+      console.error('UnknownError', error)
       throw createError(
         'UnknownError',
         `Failed to search pills by name: An unknown error occurred`,
@@ -215,12 +217,14 @@ export const searchPillsbyEfficacy = async (
     };
   } catch (error: unknown) {
     if (error instanceof Error) {
+      console.error('DatabaseError', error)
       throw createError(
         'DatabaseError',
         `Failed to search pills by efficacy: ${error.message}`,
         500
       );
     } else {
+      console.error('UnknownError', error)
       throw createError(
         'UnknownError',
         'Failed to search pills by efficacy: An unknown error occurred',
@@ -255,8 +259,10 @@ const searchPillsByFrontAndBack = async (
     };
   } catch (error: unknown) {
     if (error instanceof Error) {
+      console.error('DatabaseError', error)
       throw createError('DatabaseError', `${error.message}`, 500);
     } else {
+      console.error('UnknownError', error)
       throw createError('UnknownError', 'An unknown error occurred', 500);
     }
   }
@@ -286,8 +292,10 @@ const searchPillsByNameFromText = async (
     };
   } catch (error: unknown) {
     if (error instanceof Error) {
+      console.error('DatabaseError', error)
       throw createError('DatabaseError', `${error.message}`, 500);
     } else {
+      console.error('UnknownError', error)
       throw createError('UnknownError', 'An unknown error occurred', 500);
     }
   }
@@ -638,6 +646,7 @@ export const getPillFavoriteCountService = async (
 
     return parseInt(rows[0].count, 10);
   } catch (error: any) {
+    console.error('DatabaseError', error)
     throw createError(
       'DatabaseError',
       `Failed to get favorite count: ${error.message}`,
@@ -660,6 +669,7 @@ export const getPillReviewCountService = async (
 
     return parseInt(rows[0].count, 10);
   } catch (error: any) {
+    console.error('DatabaseError', error)
     throw createError(
       'DatabaseError',
       `Failed to get review count: ${error.message}`,
