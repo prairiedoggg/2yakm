@@ -22,18 +22,17 @@ const BotChat = ({ text, loading }: BotChatting) => {
       />
       <Bot>
         <BotName>머약</BotName>
-        <BotChatting>
-          {/* {loading ? (
+        {loading ? (
+          <LoadingContainer>
             <Icon
               icon='eos-icons:three-dots-loading'
               width='30'
               style={{ textAlign: 'center' }}
             />
-          ) : (
-            text
-          )} */}
-          {text}
-        </BotChatting>
+          </LoadingContainer>
+        ) : (
+          <BotChatting dangerouslySetInnerHTML={{ __html: text }} />
+        )}
       </Bot>
     </BotChattingContainer>
   );
@@ -76,4 +75,28 @@ const Bot = styled.div`
 const BotName = styled.div`
   font-weight: 500;
   padding: 5px 5px;
+`;
+
+const LoadingContainer = styled.div`
+  background-color: white;
+  width: 250px;
+  border-radius: 20px;
+  padding: 15px 15px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 50px; /* Adjust height to ensure consistent size with regular messages */
+  margin-left: 5px;
+  position: relative;
+  z-index: 80;
+
+  &::after {
+    content: '';
+    position: absolute;
+    top: 6px;
+    left: -4%;
+    border-width: 15px;
+    border-style: solid;
+    border-color: white transparent transparent transparent;
+  }
 `;

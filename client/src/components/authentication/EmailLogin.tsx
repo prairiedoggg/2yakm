@@ -1,6 +1,6 @@
 import styled from 'styled-components';
 import { Icon } from '@iconify-icon/react';
-import { ChangeEvent, useEffect, useState } from 'react';
+import { ChangeEvent, FormEvent, useEffect, useState } from 'react';
 import { login, fetchUserInformation } from '../../api/authService';
 import { useNavigate } from 'react-router-dom';
 import Popup from '../popup/Popup';
@@ -42,95 +42,105 @@ const EmailLogin = ({
     return () => {};
   }, [email, password]);
 
+  const handleSubmit = (e: FormEvent) => {
+    e.preventDefault();
+
+    setLoading(true);
+    login(
+      email,
+      password,
+      () => {
+        console.log('ddd2');
+        fetchUserInformation(() => {
+          console.log('ddd3');
+
+          setLoading(false);
+          navigate('/', { replace: true });
+          window.location.reload();
+        });
+      },
+      () => {
+        setLoading(false);
+        setPopupMessage(
+          '로그인에 실패했습니다. 이메일 또는 비밀번호를 확인해주세요.'
+        );
+      }
+    );
+  };
+
   return (
     <Content>
       <Logo src='/img/logo.svg' alt='이약뭐약' />
-      <div className='login-inputs'>
-        <div className='input-container'>
-          <input
-            type='email'
-            placeholder='이메일 주소'
-            value={email}
-            onChange={handleEmailChange}
-          />
-          <Icon
-            className='input-left-btn'
-            icon='pajamas:clear'
-            width='1rem'
-            height='1rem'
-            style={{
-              color: 'gray',
-              display: isEmailButtonEnabled ? '' : 'none'
-            }}
-            onClick={() => setEmail('')}
-          />
+      <form onSubmit={handleSubmit}>
+        <div className='login-inputs'>
+          <div className='input-container'>
+            <input
+              type='email'
+              placeholder='이메일 주소'
+              value={email}
+              onChange={handleEmailChange}
+            />
+            <Icon
+              className='input-left-btn'
+              icon='pajamas:clear'
+              width='1rem'
+              height='1rem'
+              style={{
+                color: 'gray',
+                display: isEmailButtonEnabled ? '' : 'none'
+              }}
+              onClick={() => setEmail('')}
+            />
+          </div>
+
+          <hr />
+
+          <div className='input-container'>
+            <input
+              className='password'
+              type={showPassword ? 'text' : 'password'}
+              placeholder='비밀번호'
+              value={password}
+              onChange={handlePasswordChange}
+            />
+            <Icon
+              className='input-left-btn'
+              icon='pajamas:clear'
+              width='1rem'
+              height='1rem'
+              style={{
+                color: 'gray',
+                display: isPasswordButtonEnabled ? '' : 'none'
+              }}
+              onClick={() => setPassword('')}
+            />
+            <Icon
+              className='input-left-btn input-left-second'
+              icon={showPassword ? 'mdi:show' : 'mdi:hide'}
+              width='1.2rem'
+              height='1.2rem'
+              style={{
+                color: 'gray',
+                display: isPasswordButtonEnabled ? '' : 'none'
+              }}
+              onClick={() => setShowPassword(!showPassword)}
+            />
+          </div>
         </div>
 
-        <hr />
-
-        <div className='input-container'>
-          <input
-            className='password'
-            type={showPassword ? 'text' : 'password'}
-            placeholder='비밀번호'
-            value={password}
-            onChange={handlePasswordChange}
-          />
-          <Icon
-            className='input-left-btn'
-            icon='pajamas:clear'
-            width='1rem'
-            height='1rem'
-            style={{
-              color: 'gray',
-              display: isPasswordButtonEnabled ? '' : 'none'
-            }}
-            onClick={() => setPassword('')}
-          />
-          <Icon
-            className='input-left-btn input-left-second'
-            icon={showPassword ? 'mdi:show' : 'mdi:hide'}
-            width='1.2rem'
-            height='1.2rem'
-            style={{
-              color: 'gray',
-              display: isPasswordButtonEnabled ? '' : 'none'
-            }}
-            onClick={() => setShowPassword(!showPassword)}
-          />
+        <div className='other'>
+          <div onClick={onResetPasswordClick}>비밀번호 찾기</div>
+          <div onClick={onRegisterClick}>이메일로 회원가입</div>
         </div>
-      </div>
 
-      <div className='other'>
-        <div onClick={onResetPasswordClick}>비밀번호 찾기</div>
-        <div onClick={onRegisterClick}>이메일로 회원가입</div>
-      </div>
-      <button
-        className='submitButton'
-        disabled={!isEmailButtonEnabled || !isPasswordButtonEnabled}
-        onClick={() => {
-          setLoading(true);
-          login(
-            email,
-            password,
-            () => {
-              fetchUserInformation(() => {
-                setLoading(false);
-                navigate('/', { replace: true });
-                window.location.reload();
-              });
-            },
-            () => {
-              setLoading(false);
-              setPopupMessage(
-                '로그인에 실패했습니다. 이메일 또는 비밀번호를 확인해주세요.'
-              );
-            }
-          );
-        }}
-      >
-        시작하기
-      </button>
+        <button
+          className='submitButton'
+          disabled={!isEmailButtonEnabled || !isPasswordButtonEnabled}
+          type='submit'
+        >
+          시작하기
+        </button>
+      </form>
 
       {popupMessage !== '' && (
         <Popup onClose={() => setPopupMessage('')}>{popupMessage}</Popup>
@@ -216,6 +226,17 @@ const Content = styled.div`
 .submitButton:disabled{
   background-color: #C7C7C7;
 }
+
+form{
+width:100%;
+  justify-content: center;
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  align-content: center;
+  gap:20px;
+  }
+
 }`;
 
 export default EmailLogin;

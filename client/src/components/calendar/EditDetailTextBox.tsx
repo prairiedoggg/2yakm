@@ -4,6 +4,14 @@ import { useCalendar, useDateStore } from '../../store/calendar';
 import EditDetailPhoto from './EditDetailPhoto';
 import IsPillTaken from './calendarDetails/IsPillTaken';
 
+interface CalendarData {
+  bloodsugarbefore: number | null;
+  bloodsugarafter: number | null;
+  temp: number | null;
+  weight: number | null;
+  pillData?: [];
+}
+
 interface EditDetailTextBoxProps {
   title: string;
 }
@@ -15,12 +23,18 @@ const EditDetailTextBox = ({ title }: EditDetailTextBoxProps) => {
     setBloodSugarBefore,
     setTemp,
     setWeight
-  } = useCalendar();
+  } = useCalendar() as {
+    calendarData: CalendarData;
+    setBloodSugarAfter: (value: number | null) => void;
+    setBloodSugarBefore: (value: number | null) => void;
+    setTemp: (value: number | null) => void;
+    setWeight: (value: number | null) => void;
+  };
   const { setAddTaken } = useDateStore();
 
   const renderSimpleInput = (
     label: string,
-    value: string | null,
+    value: number | null,
     onChange: (e: React.ChangeEvent<HTMLInputElement>) => void,
     unit: string,
     handleDelete: (label: string) => void

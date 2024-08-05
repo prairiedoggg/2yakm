@@ -4,7 +4,7 @@ import { useCalendar, useDateStore } from '../../../store/calendar';
 
 interface IsPillTakenProps {
   pillData?: {
-    name?: string;
+    name?: string | null;
     time?: string | string[];
     taken?: boolean | boolean[];
   }[];
@@ -12,8 +12,11 @@ interface IsPillTakenProps {
 }
 
 export const convertToArray = (
-  value: string | string[] | boolean | boolean[]
+  value: string | string[] | boolean | boolean[] | undefined
 ): string[] | boolean[] => {
+  if (value === undefined) {
+    return [];
+  }
   if (typeof value === 'string') {
     return [value];
   }
@@ -26,6 +29,7 @@ export const convertToArray = (
 const IsPillTaken = ({ pillData = [], edit }: IsPillTakenProps) => {
   const { setEditTaken } = useDateStore();
   const { setPillData } = useCalendar();
+
   useEffect(() => {
     if (pillData !== undefined) {
       setPillData(pillData);
