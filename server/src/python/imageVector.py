@@ -2,75 +2,71 @@ import os
 import sys
 import numpy as np
 import torch
-from torchvision import models, transforms
 from PIL import Image
-import faiss
+import timm
 import time
+from pinecone.grpc import PineconeGRPC as Pinecone
 
 # OpenMP libiomp5md.dll 에러 방지용 코드
 os.environ['KMP_DUPLICATE_LIB_OK'] = 'TRUE'
 
-# efficientnet_b7 모델을 불러옴 (가볍고 높은 성능이라 모바일에 최적화되어 있음)
-model = models.efficientnet_b7(weights=models.EfficientNet_B7_Weights.IMAGENET1K_V1) # 가중치로 IMAGENET1K_V1을 사용함
+# GPU 사용 여부 확인
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+
+# Big Transfer(BiT) R50x1 모델 불러옴
+model = timm.create_model('resnetv2_50x1_bit.goog_in21k_ft_in1k', pretrained=True, num_classes=0, global_pool='')
+model.to(device)
 model.eval()
 
 # 모델 입력 전 전처리 과정 정의
-preprocess = transforms.Compose([
-    transforms.Resize(256),
-    transforms.CenterCrop(224),
-    transforms.ToTensor(),
-    transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]), # 이미지의 각 채널(RGB)을 정규화함
-])
+config = timm.data.resolve_data_config({}, model=model)
+preprocess = timm.data.create_transform(**config)
 
 # 이미지 벡터를 추출하는 함수
 def extract_image_vector(image_path):
-    image = Image.open(image_path)
-    if image.mode == 'RGBA':
-        image = image.convert('RGB')  # RGBA 모드인 경우 RGB로 변환 (투명도 Alpha 채널 제거)
-    image = preprocess(image) # 위에서 정의했던 대로 이미지를 전처리함
-    image = image.unsqueeze(0) # 차원 사이즈가 1인 새로운 축을 추가 (batch_size = 1, channels, height, width)
+    image = Image.open(image_path).convert('RGB') # 이미지 모드를 RGB 모드로 변환함
+    tensor = preprocess(image).unsqueeze(0).to(device) # 전처리를 한 후에 차원을 추가하고 텐서를 device로 이동함
     
-    # 메모리 사용량을 줄이기 위해서 torch.no_grad()로 감싸서 gradient를 계산 안함
-    with torch.no_grad(): 
-        features = model(image)
-    
-    return features.squeeze().numpy() # 위에서 추가해준 차원을 제거하고, numpy array로 변환함
+    with torch.no_grad(): # gradient 계산을 비활성화
+        features = model.forward_features(tensor)
 
-# 유사도를 구하는 함수
-def calculate_similarity(distances):
-    max_distance = np.max(distances)
-    similarities = 100 * (1 - distances / max_distance) # 최대 거리를 이용해서 정규화 (거리가 가까울 수록 1에 가까워짐)
-    return similarities
+    return features.squeeze().cpu().numpy() # 결과를 CPU로 이동하고 numpy 배열로 변환함
+
+# SPoC Pooling 함수 (width + height) 
+def spoc_pooling(features):
+    pooled_vector = np.sum(features, axis=(1, 2))
+    return pooled_vector
+
+# Pinecone 연결
+pc = Pinecone(api_key=os.getenv('PINECONE_API_KEY'))
+index_name = 'image-search'
+index = pc.Index(index_name)
 
 if __name__ == "__main__":
     image_path = sys.argv[1] # const command = [pyPath, imagePath, outputResultPath];의 1번 인자
     output_path = sys.argv[2] # const command = [pyPath, imagePath, outputResultPath];의 2번 인자
 
-    # 이미지 벡터를 추출
+    # 이미지 벡터를 추출함
     image_vector = extract_image_vector(image_path)
 
-    # 스크립트의 디렉터리에서 FAISS index와 벡터 데이터를 로드함
-    script_dir = os.path.dirname(os.path.realpath(__file__))
-    faiss_index_path = os.path.join(script_dir, 'vector', 'faiss_index.bin')
-    vectors_path = os.path.join(script_dir, 'vector', 'image_vectors.npy')
-    image_paths_path = os.path.join(script_dir, 'vector', 'image_paths.npy')
-
-    index = faiss.read_index(faiss_index_path)
-    vectors = np.load(vectors_path)
-    image_paths = np.load(image_paths_path, allow_pickle=True) # numpy array를 로드할 때 직렬화를 할 수 있도록 허용함
+    # SPoC Pooling 적용함
+    image_vector = spoc_pooling(image_vector)
 
     # 유사 이미지 검색 (검색 결과 개수 설정 : 현재 5개)
     start_search = time.time()
-    D, I = index.search(np.array([image_vector]), 5) # FAISS index에서 검색을 수행함, image_vector를 2차원 배열로 변환, D(유사한 이미지와의 거리), I(index) 
+    query_response = index.query(vector=image_vector.tolist(), top_k=5, include_metadata=True) # numpy array를 list로 변환
     end_search = time.time()
 
-    similar_image_paths = [image_paths[i] for i in I[0]] # 유사한 이미지와의 거리를 저장함
-    similarities = calculate_similarity(D[0]) # 위에서 정의한 유사도를 구하는 함수를 이용해서 유사도를 구함
+    # pinecone 검색 결과
+    matches = query_response['matches']
+    similar_image_paths = [match['metadata']['image_path'] for match in matches] # 결과들의 meta data에서 pill id를 추출함
+    similarities = [match['score'] for match in matches] # 결과들의 score 값을 추출함
 
     # 유사도를 파일로 저장함
     with open(output_path, 'w') as f:
         for path, similarity in zip(similar_image_paths, similarities):
-            f.write(f"{path} ({similarity:.2f}%)\n")
+            similarity_percentage = similarity * 100
+            f.write(f"{path} ({similarity_percentage:.2f}%)\n")
 
     print("이미지 유사도 검색을 완료했습니다.") # stdout
     print(f"작업 시간: {end_search - start_search}\n")
