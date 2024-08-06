@@ -14,8 +14,10 @@ RUN cd client && npm install
 # 소스 코드 복사
 COPY . .
 
-# certs 폴더 생성 (비어있더라도)
-RUN mkdir -p /chicken_pharm/server/certs
+# 인증서 코드 복스
+COPY server/certs /chicken_pharm/server/certs
+
+RUN mkdir -p /chicken_pharm/certs
 
 # 클라이언트 빌드
 RUN cd client && npm run build || echo "Client build failed, but continuing..."
@@ -27,8 +29,11 @@ RUN cd server && npm run build
 RUN apt-get update && \
     apt-get install -y python3 python3-pip build-essential libssl-dev libffi-dev python3-dev
 
+# NGINX 설정 복사
+COPY nginx.conf /etc/nginx/nginx.conf
+
 # 포트 설정
-EXPOSE 3000 5173
+EXPOSE  3000 5173
 
 # 인증서 생성 스크립트 복사 및 권한 설정
 COPY create_certs.sh /chicken_pharm/
