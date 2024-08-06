@@ -17,7 +17,7 @@ const ChatBotBox: React.FC = () => {
   const chattingContainerRef = useRef<HTMLDivElement>(null);
   const [popupType, setPopupType] = useState<PopupType>(PopupType.None);
 
-  // 스크롤 항상 허용
+  // 스크롤 항상 아래로
   useEffect(() => {
     if (chattingContainerRef.current) {
       chattingContainerRef.current.scrollTop =
@@ -31,6 +31,7 @@ const ChatBotBox: React.FC = () => {
 
     addUserChat(text);
     addBotChat('', true);
+    setText('');
 
     try {
       const res = await chatBot(text);
@@ -41,7 +42,6 @@ const ChatBotBox: React.FC = () => {
       console.log('챗봇 대화 실패', err);
       updateLastBotChat('챗봇 대화 실패');
     }
-    setText('');
   };
 
   const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {

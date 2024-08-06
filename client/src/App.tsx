@@ -1,7 +1,7 @@
-import './App.css';
 import loadable from '@loadable/component';
 import 'dayjs/locale/ko';
 import { Route, BrowserRouter as Router, Routes } from 'react-router-dom';
+import './App.css';
 import AuthenticatedRoute from './components/AuthenticatedRoute';
 
 const Home = loadable(() => import('./components/home/Home'));
@@ -59,7 +59,7 @@ const App = () => {
           path='/chatbot'
           element={<AuthenticatedRoute element={ChatBot} />}
         />
-        <Route path='/snsLogin/callback ' element={<Redirect />} />
+        <Route path='/snsLogin/callback' element={<Redirect />} />
       </Routes>
     </Router>
   );

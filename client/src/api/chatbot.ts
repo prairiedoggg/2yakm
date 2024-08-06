@@ -1,11 +1,11 @@
 import { post } from './api';
 
-const url = import.meta.env.VITE_APP_SERVER_BASE_URL;
+const url = 'http://localhost:3000';
 
 export const chatBot = async (question: string) => {
   try {
     const res = await post(
-      `${url}api/chatbot/chat`,
+      `${url}/api/chatbot/chat`,
       { message: question },
       {
         withCredentials: true
@@ -20,7 +20,7 @@ export const chatBot = async (question: string) => {
 export const endChatBot = async () => {
   try {
     const res = await post(
-      `${url}api/chatbot/end`,
+      `${url}/api/chatbot/end`,
       {},
       {
         withCredentials: true
