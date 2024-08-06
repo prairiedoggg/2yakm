@@ -32,6 +32,6 @@ EXPOSE  3000 5173
 
 # 시작 스크립트 권한 설정
 RUN chmod +x /chicken_pharm/start.sh
-
+     RUN chmod +x /chicken_pharm/create_certs.sh /chicken_pharm/start.sh
 # 시작 명령 설정
 CMD ["/bin/bash", "-c", "/chicken_pharm/create_certs.sh && /chicken_pharm/start.sh"]
