@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 
 export interface PillData {
-  imgurl:string;
+  imgurl: string;
   id: number;
   name: string;
   engname: string;
@@ -12,14 +12,19 @@ export interface PillData {
   dosage: string;
   caution: string;
   source: string;
+  similarity:string;
 }
 
 interface PillState {
   pillData: PillData | null;
   setPillData: (data: PillData | null) => void;
+  loading: boolean;
+  setLoading: (loading: boolean) => void;
 }
 
 export const usePillStore = create<PillState>((set) => ({
   pillData: null,
-  setPillData: (data: PillData | null) => set({ pillData: data })
+  setPillData: (data: PillData | null) => set({ pillData: data }),
+  loading: false,
+  setLoading: (loading: boolean) => set({ loading })
 }));

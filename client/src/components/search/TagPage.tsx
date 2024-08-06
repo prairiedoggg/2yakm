@@ -8,6 +8,7 @@ import { fetchReviewCount } from '../../api/reviewApi';
 import { useFavoriteStore } from '../../store/favorite';
 import { useReviewStore } from '../../store/review';
 import { useSearchParams } from 'react-router-dom';
+import Loading from '../Loading';
 
 export interface PillData {
   id: number;
@@ -47,11 +48,11 @@ const TagPage = () => {
   }, [query, setFavoriteCount, setReviewCount]);
 
   if (loading) {
-    return <div>데이터 검색중입니다.</div>;
+    return <Loading />;
   }
 
   if (!pillData || pillData.length === 0) {
-    return <div>검색 결과가 없습니다.</div>;
+    return <div className='searchInner'>검색 결과가 없습니다.</div>;
   }
 
   return (
