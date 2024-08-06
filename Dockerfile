@@ -14,6 +14,9 @@ RUN cd client && npm install
 # 소스 코드 복사
 COPY . .
 
+# certs 폴더 생성 (비어있더라도)
+RUN mkdir -p /chicken_pharm/server/certs
+
 # 클라이언트 빌드
 RUN cd client && npm run build || echo "Client build failed, but continuing..."
 
@@ -24,24 +27,15 @@ RUN cd server && npm run build
 RUN apt-get update && \
     apt-get install -y python3 python3-pip build-essential libssl-dev libffi-dev python3-dev
 
-# 무거운 Python 패키지 개별 설치
-#RUN pip3 install --no-cache-dir torch==1.13.1
-#RUN pip3 install --no-cache-dir torchvision
-#RUN pip3 install --no-cache-dir transformers
-#RUN pip3 install --no-cache-dir faiss-cpu
-#RUN apt-get update && apt-get install -y \
- #   libblas-dev \
-  #  liblapack-dev \
-   # gfortran
-
-# 나머지 Python 의존성 설치
-#RUN pip3 install --no-cache-dir -r server/requirements.txt
-
 # 포트 설정
 EXPOSE 3000 5173
+
+# 인증서 생성 스크립트 복사 및 권한 설정
+COPY create_certs.sh /chicken_pharm/
+RUN chmod +x /chicken_pharm/create_certs.sh
 
 # 시작 스크립트 권한 설정
 RUN chmod +x /chicken_pharm/start.sh
 
 # 시작 명령 설정
-CMD ["/chicken_pharm/start.sh"]
+CMD ["/bin/bash", "-c", "/chicken_pharm/create_certs.sh && /chicken_pharm/start.sh"]
