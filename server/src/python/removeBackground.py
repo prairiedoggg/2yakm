@@ -106,7 +106,7 @@ def merge_images(image_paths: list, output_path: str):
 if __name__ == "__main__":
     input_paths = sys.argv[1:-1]
     final_output_path = sys.argv[-1]
-    num_passes = 5  # 총 전처리 횟수 (배포 후 서버 성능 고려해서 수정할 것)
+    num_passes = 3  # 총 전처리 횟수 (배포 후 서버 성능 고려해서 수정할 것)
 
     # 이미지 개수가 2개면 합친 후 전처리를 시행, 1개일 경우에는 그냥 전처리를 시행함
     if len(input_paths) == 2:
