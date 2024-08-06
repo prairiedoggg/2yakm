@@ -10,6 +10,7 @@ import { useNavigate } from 'react-router-dom';
 const EditName = ({ onEdit }: { onEdit: () => void }) => {
   const { user } = useUserStore.getState();
   const [name, setName] = useState('');
+  const [blur, setBlur] = useState(false);
   const [popupType, setPopupType] = useState<PopupType>(PopupType.None);
   const navigate = useNavigate();
 
@@ -30,6 +31,10 @@ const EditName = ({ onEdit }: { onEdit: () => void }) => {
             onChange={handleChange}
             minLength={3}
             maxLength={20}
+            onBlur={() => setBlur(true)}
+            onFocus={() => {
+              if (name.length > 2) setBlur(false);
+            }}
           />
           <Icon
             className='clearButton'
@@ -42,6 +47,15 @@ const EditName = ({ onEdit }: { onEdit: () => void }) => {
             }}
             onClick={() => setName('')}
           />
+        </div>
+        <div
+          style={{
+            color: 'red',
+            fontSize: '0.9rem',
+            display: blur && name.length < 3 ? 'initial' : 'none'
+          }}
+        >
+          <b>!</b> 이름은 3글자 이상 입력해주세요.
         </div>
         <button
           className='submitButton'
