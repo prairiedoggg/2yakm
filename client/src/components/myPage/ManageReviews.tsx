@@ -26,6 +26,7 @@ const ManageReviews = () => {
   const [hasMore, setHasMore] = useState(true);
   const containerRef = useRef<HTMLDivElement | null>(null);
   const navigate = useNavigate();
+  const maxTextLength = 15;
 
   const fetchDatas = () => {
     setLoading(true);
@@ -96,9 +97,12 @@ const ManageReviews = () => {
                 deleteReview(
                   selected?.id ?? -1,
                   () => {
+                    setItems((prevItems) =>
+                      prevItems.filter((item) => item.id !== selected?.id)
+                    );
+                    setItemCount(itemCount - 1);
                     setLoading(false);
                     setSelected(undefined);
-                    fetchDatas();
                   },
                   () => {
                     setPopupType(PopupType.DeleteFavoriteFailure);
@@ -123,7 +127,12 @@ const ManageReviews = () => {
       <Item key={key}>
         <div className='title'>
           <div className='title2'>
-            <div className='name_ko'>{item.name}</div>
+            <div className='name_ko'>
+              {' '}
+              {item.name.length > maxTextLength
+                ? item.name.substring(0, maxTextLength) + '...'
+                : item.name}
+            </div>
             <div className='name_en'>{item.createdAt}</div>
           </div>
           {deleteItem ? (
@@ -202,6 +211,7 @@ const StyledContent = styled.div`
     flex-direction: column;
     gap: 10px;
     overflow: auto;
+    padding-right: 10px;
   }
 `;
 
@@ -221,13 +231,12 @@ const Item = styled.div`
   }
 
   .title2 {
-    display: flex;
     justify-content: space-between;
   }
 
   .name_ko {
     font-weight: bold;
-    font-size: 1.2em;
+    font-size: 1em;
   }
 
   .name_en {
@@ -236,14 +245,14 @@ const Item = styled.div`
   }
 
   .delete-button {
-    position: absolute;
     right: 30px;
     background-color: #d9d9d9;
     border: none;
     border-radius: 25px;
     padding: 3px 8px;
     cursor: pointer;
-    font-size: 0.9em;
+    font-size: 0.8em;
+    height: 22px;
   }
 `;
 

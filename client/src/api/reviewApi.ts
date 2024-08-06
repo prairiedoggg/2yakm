@@ -51,7 +51,7 @@ export const deleteReview = async (
   onFailure?: (arg0: any) => void
 ) => {
   try {
-    const data = await del('/api/reviews', { id: id });
+    const data = await del(`/api/reviews/${id}`);
     if (onSuccess) onSuccess(data);
   } catch (error) {
     console.error('change ProfileImage failed', error);
