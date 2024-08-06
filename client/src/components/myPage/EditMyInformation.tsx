@@ -34,7 +34,7 @@ const EditMyInformation = ({
     { info: '이름', onClick: onEditNameClick }
   ];
 
-  let infos2: Info[] = [{ info: '약사 인증', onClick: onEditPharmacistClick }];
+  let infos2: Info[] = [];
 
   if (user?.loginType == LoginType.none)
     infos1.push({ info: '비밀번호 변경', onClick: onEditPasswordClick });
@@ -42,8 +42,19 @@ const EditMyInformation = ({
   if (user?.loginType != LoginType.none)
     infos2.push({ info: '연동된 소셜계정', onClick: undefined });
 
+  if (user?.role) infos2.push({ info: '약사 인증 완료', onClick: undefined });
+  else infos2.push({ info: '약사 인증', onClick: onEditPharmacistClick });
+
   const getInfoValue = (type: string) => {
     switch (type) {
+      case '약사 인증 완료':
+        return (
+          <img
+            src={`/img/pharm.png`}
+            style={{ height: '1.5rem' }}
+            alt='약사인증'
+          />
+        );
       case '이름':
         return user?.userName;
       case '이메일':

@@ -21,13 +21,15 @@ const EditName = ({ onEdit }: { onEdit: () => void }) => {
   return (
     <MyPageContainer>
       <StyledContent>
-        <div className='title'>새로운 이름을 입력해주세요 (3글자 이상)</div>
+        <div className='title'>새로운 이름을 입력해주세요 (3~20글자)</div>
         <div className='input-container'>
           <input
             type='text'
             placeholder={user?.userName ?? ''}
             value={name}
             onChange={handleChange}
+            minLength={3}
+            maxLength={20}
           />
           <Icon
             className='clearButton'
