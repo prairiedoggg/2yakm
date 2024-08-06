@@ -1,23 +1,24 @@
 import styled from 'styled-components';
 import Header from '../Header';
-import MyInformation from './MyInformation';
 import EditMyInformation from './EditMyInformation';
 import EditName from './EditName';
 import EditPassword from './EditPassword';
 import EditPharmacist from './EditPharmacist';
 import FavoriteMedications from './FavoriteMedications';
 import ManageReviews from './ManageReviews';
+import MyInformation from './MyInformation';
 import MyMedications from './MyMedications';
 
-import Nav from '../Nav';
 import { Icon } from '@iconify-icon/react';
 import { useState } from 'react';
-import { deleteAccount, logout } from '../../api/authService';
-import PopupContent, { PopupType } from '../popup/PopupMessages';
-import useUserStore from '../../store/user';
 import { useNavigate } from 'react-router-dom';
-import Popup from '../popup/Popup';
+import { deleteAccount, logout } from '../../api/authService';
+import { useChatBot } from '../../store/chatbot';
+import useUserStore from '../../store/user';
 import Loading from '../Loading';
+import Nav from '../Nav';
+import Popup from '../popup/Popup';
+import PopupContent, { PopupType } from '../popup/PopupMessages';
 
 enum pageState {
   Main,
@@ -35,6 +36,7 @@ const MyPage = () => {
   const { user } = useUserStore.getState();
   const [popupType, setPopupType] = useState(PopupType.None);
   const [loading, setLoading] = useState(false);
+  const { deleteChat } = useChatBot();
   const navigate = useNavigate();
 
   const renderContent = () => {
@@ -72,6 +74,7 @@ const MyPage = () => {
                   logout(() => {
                     navigate('/', { replace: true });
                     window.location.reload();
+                    deleteChat();
                   })
                 }
               >

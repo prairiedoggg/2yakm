@@ -2,8 +2,11 @@ import { Icon } from '@iconify-icon/react';
 import { Button, Input, TimePicker } from 'antd';
 import dayjs, { Dayjs } from 'dayjs';
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import { useCalendar, useDateStore } from '../../store/calendar';
+import Popup from '../popup/Popup';
+import PopupContent, { PopupType } from '../popup/PopupMessages';
 import CalendarToast from './CalendarToast';
 
 const EditPill = () => {
@@ -16,6 +19,8 @@ const EditPill = () => {
   const [maxTime, setMaxTime] = useState<boolean>(false);
   const [nameError, setNameError] = useState<boolean>(false);
   const [timeError, setTimeError] = useState<boolean>(false);
+  const [popupType, setPopupType] = useState<PopupType>(PopupType.None);
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (calendarData?.pillData?.length) {
@@ -83,18 +88,39 @@ const EditPill = () => {
   };
 
   const handleDeletePillData = () => {
-    
     removePillData(pillName);
     setEditTaken(false);
   };
 
+  const getPopupContent = (type: PopupType) => {
+    switch (type) {
+      case PopupType.DeleteData:
+        return (
+          <div style={{ textAlign: 'center' }}>
+            삭제하시겠습니까?
+            <button
+              className='bottomClose'
+              onClick={() => {
+                setPopupType(PopupType.None);
+                handleDeletePillData();
+              }}
+            >
+              확인
+            </button>
+          </div>
+        );
+
+      default:
+        return PopupContent(type, navigate);
+    }
+  };
   return (
     <>
       <AddPillContainer>
         <Title>약 정보 수정하기</Title>
         <hr />
         <DeleteContainer>
-          <Delete onClick={() => handleDeletePillData()}>
+          <Delete onClick={() => setPopupType(PopupType.DeleteData)}>
             <Icon icon='ph:trash-bold' width='20px' />
             삭제
           </Delete>
@@ -165,6 +191,11 @@ const EditPill = () => {
         <RunButton onClick={() => setEditTaken(false)}>취소</RunButton>
         <RunButton onClick={handleSaveEditedPill}>저장</RunButton>
       </ButtonContainer>
+      {popupType !== PopupType.None && (
+        <Popup onClose={() => setPopupType(PopupType.None)}>
+          {getPopupContent(popupType)}
+        </Popup>
+      )}
     </>
   );
 };
