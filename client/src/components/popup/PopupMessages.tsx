@@ -42,6 +42,11 @@ export enum PopupType {
   DeleteMyPill, // src\components\myPage\MyMedications.tsx
   DeleteMyPillSuccess,
   DeleteMyPillFailure,
+
+  AddMyPill, // src\components\myPage\MyMedications.tsx
+  AddMyPillSuccess,
+  AddMyPillFailure,
+
   FinishChatBot,
 
   ImageSearchInfo, // src\components\search\SearchBox.tsx
@@ -159,6 +164,11 @@ const PopupContent = (
       case PopupType.DeleteMyPillFailure:
         return (
           <div>나의 약 삭제에 실패했습니다. 잠시 후 다시 시도해주세요.</div>
+        );
+
+      case PopupType.AddMyPillFailure:
+        return (
+          <div>나의 약 추가에 실패했습니다. 잠시 후 다시 시도해주세요.</div>
         );
 
       case PopupType.FinishChatBot:

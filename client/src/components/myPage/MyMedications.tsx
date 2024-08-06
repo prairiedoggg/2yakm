@@ -195,6 +195,10 @@ const MyMedications = () => {
     );
   };
 
+  const isFormValid = (): boolean => {
+    return name != '' && date != '';
+  };
+
   return (
     <MyPageContainer>
       <StyledContent>
@@ -234,7 +238,6 @@ const MyMedications = () => {
             onClose={() => setBottomSheet(false)}
           >
             <div className='title'>내 약 추가</div>
-
             <div className='info-box'>
               <div className='title2'>약 이름</div>
 
@@ -256,6 +259,7 @@ const MyMedications = () => {
                       style={{
                         padding: '8px',
                         cursor: 'pointer',
+                        fontSize: '0.9rem',
                         borderBottom: '1px solid #ddd'
                       }}
                     >
@@ -283,16 +287,25 @@ const MyMedications = () => {
 
             <button
               className='bottomClose'
+              disabled={!isFormValid()}
               onClick={() => {
                 setLoading(true);
-                addMyPills(name, date.toString(), () => {
-                  setBottomSheet(false);
-                  setLoading(false);
-                  fetchDatas();
+                addMyPills(
+                  name,
+                  date.toString(),
+                  () => {
+                    setBottomSheet(false);
+                    setLoading(false);
+                    fetchDatas();
 
-                  setName('');
-                  setDate('');
-                });
+                    setName('');
+                    setDate('');
+                  },
+                  () => {
+                    setLoading(false);
+                    setPopupType(PopupType.AddMyPillFailure);
+                  }
+                );
               }}
             >
               등록 완료
@@ -349,8 +362,14 @@ const Sheet = styled.div`
     padding: 12px;
     box-sizing: border-box;
   }
+
   .bottomClose {
     margin-top: 20px;
+  }
+
+  .bottomClose:disabled {
+    color: gray;
+    background-color: #c7c7c7;
   }
 `;
 
