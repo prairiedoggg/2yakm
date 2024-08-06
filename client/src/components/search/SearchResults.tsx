@@ -11,11 +11,11 @@ import {
 import { fetchPillDataByName } from '../../api/searchApi';
 import { useFavoriteStore } from '../../store/favorite';
 import { usePillStore } from '../../store/pill';
+import Loading from '../Loading';
 import Nav from '../Nav';
 import PillExp from './PillExp';
 import Review from './Review';
 import SearchHeader from './SearchHeader';
-import Loading from '../Loading'; 
 
 const SearchResults = () => {
   const [searchParams] = useSearchParams();
@@ -28,7 +28,6 @@ const SearchResults = () => {
   const [showInfo, setShowInfo] = useState<boolean>(false);
   const [searchType, setSearchType] = useState<string>('name');
   const [activeType, setActiveType] = useState<string>(searchType);
-
 
   const formatTextWithLineBreaks = (text: string) => {
     return text.split('(').map((part, index, array) => (
@@ -90,10 +89,10 @@ const SearchResults = () => {
     }
   };
 
-   const handleTypeClick = (type: string) => {
-     setSearchType(type);
-     setActiveType(type);
-   };
+  const handleTypeClick = (type: string) => {
+    setSearchType(type);
+    setActiveType(type);
+  };
 
   const tabs = [
     { key: 'effectiveness', label: '효능•용법' },
@@ -117,7 +116,10 @@ const SearchResults = () => {
       />
       <SearchResultsContainer>
         <PillInfo>
-          <img src={pillData.imgurl} alt='알약' />
+          <PillImgs>
+            <img src={pillData.boxurl} alt='약 박스' />
+            <img src={pillData.imgurl} alt='알약' />
+          </PillImgs>
           <section>
             <PillHeader>
               <PillText>
@@ -208,6 +210,16 @@ const PillInfo = styled.div`
   & section {
     flex: 1;
     padding-left: 15px;
+  }
+`;
+
+const PillImgs = styled.div`
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+
+  & img{
+    width: 100%;
   }
 `;
 

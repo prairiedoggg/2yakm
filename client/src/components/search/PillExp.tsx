@@ -81,7 +81,7 @@ const PillExp = () => {
       </PillExpBox>
       <p className='notice'>
         증상이 더 악화된다면
-        <br />'<span>내과, 이비인후과</span>'를 방문해
+        <br />'<span>{pillData.departments}</span>'를 방문해
         <br />
         처방약을 복용해보세요!
       </p>

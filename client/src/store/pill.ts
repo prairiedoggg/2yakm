@@ -12,7 +12,9 @@ export interface PillData {
   dosage: string;
   caution: string;
   source: string;
-  similarity:string;
+  similarity: string;
+  boxurl: string;
+  departments:string;
 }
 
 interface PillState {
