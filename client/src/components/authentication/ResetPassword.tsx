@@ -62,7 +62,7 @@ const ResetPasswordRequest = () => {
   const getPlaceholder = (type: InputType) => {
     switch (type) {
       case InputType.NewPassword:
-        return '새로운 비밀번호';
+        return '새로운 비밀번호 (특수문자 포함 8자리 이상)';
       case InputType.NewPasswordConfirm:
         return '비밀번호 확인';
     }
@@ -91,7 +91,14 @@ const ResetPasswordRequest = () => {
 
   const isFormValid = (): boolean => {
     const { newPassword, newPasswordConfirm } = formData;
-    return newPassword !== '' && newPassword === newPasswordConfirm;
+    const specialCharPattern = /[!@#$%^&*(),.?":{}|<>]/;
+
+    return (
+      newPassword !== '' &&
+      newPassword === newPasswordConfirm &&
+      newPassword.length >= 8 &&
+      specialCharPattern.test(newPassword)
+    );
   };
 
   const renderInput = (type: InputType) => {

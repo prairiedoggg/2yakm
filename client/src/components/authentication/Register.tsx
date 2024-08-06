@@ -74,11 +74,11 @@ const Register = () => {
   const getPlaceholder = (type: InputType) => {
     switch (type) {
       case InputType.Name:
-        return '이름';
+        return '이름 (3~20자)';
       case InputType.Email:
         return '이메일 주소';
       case InputType.Password:
-        return '비밀번호';
+        return '비밀번호 (특수문자 포함 8자리 이상)';
       case InputType.ConfirmPassword:
         return '비밀번호 확인';
     }
@@ -113,12 +113,18 @@ const Register = () => {
 
   const isFormValid = (): boolean => {
     const { email, name, password, confirmPassword } = formData;
+    const specialCharPattern = /[!@#$%^&*(),.?":{}|<>]/;
+
     return (
       email !== '' &&
       name !== '' &&
       password !== '' &&
       confirmPassword !== '' &&
-      password === confirmPassword
+      password === confirmPassword &&
+      name.length >= 3 &&
+      name.length < 20 &&
+      password.length >= 8 &&
+      specialCharPattern.test(password)
     );
   };
 

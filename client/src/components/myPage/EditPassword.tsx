@@ -75,7 +75,7 @@ const EditPassword = () => {
       case InputType.OldPassword:
         return '현재 비밀번호';
       case InputType.NewPassword:
-        return '새로운 비밀번호';
+        return '새로운 비밀번호 (특수문자 포함 8자리 이상)';
       case InputType.NewPasswordConfirm:
         return '비밀번호 확인';
     }
@@ -107,10 +107,14 @@ const EditPassword = () => {
 
   const isFormValid = (): boolean => {
     const { oldPassword, newPassword, newPasswordConfirm } = formData;
+    const specialCharPattern = /[!@#$%^&*(),.?":{}|<>]/;
+
     return (
       oldPassword !== '' &&
       newPassword !== '' &&
-      newPassword === newPasswordConfirm
+      newPassword === newPasswordConfirm &&
+      newPassword.length >= 8 &&
+      specialCharPattern.test(newPassword)
     );
   };
 
