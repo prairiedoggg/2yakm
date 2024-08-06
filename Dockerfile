@@ -14,11 +14,6 @@ RUN cd client && npm install
 # 소스 코드 복사
 COPY . .
 
-# 인증서 코드 복스
-COPY server/certs /chicken_pharm/server/certs
-
-RUN mkdir -p /chicken_pharm/certs
-
 # 클라이언트 빌드
 RUN cd client && npm run build || echo "Client build failed, but continuing..."
 
@@ -34,9 +29,6 @@ COPY nginx.conf /etc/nginx/nginx.conf
 
 # 포트 설정
 EXPOSE  3000 5173
-
-# 인증서 생성 스크립트 복사 및 권한 설정
-RUN chmod +x /chicken_pharm/create_certs.sh
 
 # 시작 스크립트 권한 설정
 RUN chmod +x /chicken_pharm/start.sh
