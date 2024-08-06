@@ -35,4 +35,4 @@ EXPOSE  3000 5173
    RUN chmod +x /chicken_pharm/create_certs.sh
 RUN chmod +x /chicken_pharm/start.sh
 # 시작 명령 설정
-CMD ["/bin/bash", "-c", "/chicken_pharm/create_certs.sh"]
+CMD ["/bin/bash", "-c", "/chicken_pharm/start.sh"]
