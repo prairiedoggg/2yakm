@@ -124,10 +124,10 @@ router.get('/certifications', getCert)
  *                 type: string
  *               date:
  *                 type: string
- *                 format: date(YYYYMMDD)
+ *                 description: date(YYYYMMDD)
  *               number:
  *                 type: string
- *                 format: 숫자로 이루어진 10자리 값만 가능 ('-' 등의 기호 반드시 제거 후 호출)
+ *                 description: 숫자로 이루어진 10자리 값만 가능 ('-' 등의 기호 반드시 제거 후 호출)
  *     responses:
  *       '200':
  *         description: 성공적으로 생성되었습니다
