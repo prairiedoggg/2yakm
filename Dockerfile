@@ -25,7 +25,7 @@ RUN apt-get update && \
     apt-get install -y python3 python3-pip build-essential libssl-dev libffi-dev python3-dev
 
 # NGINX 설정 복사
-COPY nginx.conf /etc/nginx/nginx.conf
+COPY nginx.conf    /etc/nginx/sites-available/default
 
 # 포트 설정
 EXPOSE  3000 5173
