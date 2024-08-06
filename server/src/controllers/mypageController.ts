@@ -97,7 +97,6 @@ export const addCert = async (req: AuthenticatedRequest, res: Response, next: Ne
   try {
     const user = req.user;
     if (!user) {
-      console.log('Unauthorized');
       return next(createError('UnauthorizedError', 'Unauthorized', 401));
     }
 
