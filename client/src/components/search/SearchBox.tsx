@@ -88,7 +88,7 @@ const SearchBox = ({ setImageResults }: SearchBoxProps) => {
   const handleCameraClick = () => {
     setBottomSheet(true);
     setPopupVisible(true);
-    setPopupType(PopupType.RegistrationSuccess); 
+    setPopupType(PopupType.ImageSearchInfo); 
   };
 
   const handleImageUpload = async (image: File | null) => {
@@ -134,9 +134,11 @@ const SearchBox = ({ setImageResults }: SearchBoxProps) => {
         isVisible={bottomSheet}
         onClose={handleImageUpload}
       />
-      {/* <Popup onClose={() => setPopupVisible(false)} isVisible={popupVisible}>
-        {PopupContent(popupType, navigate)}
-      </Popup> */}
+      {popupVisible && (
+        <Popup onClose={() => setPopupVisible(false)}>
+          {PopupContent(popupType, navigate)}
+        </Popup>
+      )}
     </>
   );
 };
