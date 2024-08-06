@@ -21,11 +21,21 @@ const Overlay = styled.div`
   width: 100%;
   height: 100%;
   background: rgba(0, 0, 0, 0.5);
-  transition: opacity 0.3s ease;
+  opacity: 0;
+  animation: fadeIn 0.3s ease-in forwards;
   z-index: 999;
   display: flex;
   justify-content: center;
   align-items: center;
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
 `;
 
 export default Loading;
