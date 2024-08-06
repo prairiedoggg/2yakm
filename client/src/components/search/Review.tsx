@@ -88,7 +88,7 @@ const Review = ({ pillId }: { pillId: number }) => {
             }}
           >
             <User>
-              <Profile src={`/img/user.svg`} alt='유저' />
+              <Profile src={review.profileimg ?? `/img/user.svg`} alt='프로필 이미지' />
               <span>{review.username}</span>
             </User>
             <p>{review.content}</p>

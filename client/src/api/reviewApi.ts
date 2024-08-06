@@ -37,7 +37,7 @@ export const createReview = async ({
   pillId: number;
 }) => {
   try {
-    const data = await post(`/api/reviews`, { content, pillId });
+    const data = await post(`/api/reviews`, { content, pillid: pillId });
     return data;
   } catch (error) {
     console.error('리뷰생성 에러:', error);

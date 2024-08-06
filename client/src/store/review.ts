@@ -8,6 +8,7 @@ export interface Review {
   username?: string;
   role?: boolean;
   content: string;
+  profileimg?: string;
 }
 
 interface ReviewState {

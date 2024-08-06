@@ -1,3 +1,7 @@
+body {
+  max-width: 450px;
+}
+
 .ant-picker-input {
   margin: 0;
 }
@@ -36,7 +40,7 @@
   text-align: center;
   line-height: 25px;
   text-decoration: none;
-  color:inherit;
+  color: inherit;
   border-radius: 5px;
   background-color: var(--main-color);
   cursor: pointer;
