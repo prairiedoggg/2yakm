@@ -198,18 +198,12 @@ const EditPassword = () => {
               {renderInput(InputType.NewPasswordConfirm)}
               <ValidationError
                 condition={
-                  blurState.newPassword && formData.newPassword.length < 8
-                }
-              >
-                패스워드는 8자리 이상 입력해주세요.
-              </ValidationError>
-              <ValidationError
-                condition={
                   blurState.newPassword &&
-                  !checkSpecialCharPattern(formData.newPassword)
+                  (formData.newPassword.length < 8 ||
+                    !checkSpecialCharPattern(formData.newPassword))
                 }
               >
-                패스워드에 특수문자를 포함시켜주세요.
+                패스워드는 8자리 이상, 특수문자를 포함해 입력해주세요.
               </ValidationError>
               <ValidationError
                 condition={
