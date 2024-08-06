@@ -47,11 +47,12 @@ export enum PopupType {
   AddMyPillSuccess,
   AddMyPillFailure,
 
-  FinishChatBot,
+  FinishChatBot, // src\components\chatBot\Chatbot.tsx
 
   ImageSearchInfo, // src\components\search\SearchBox.tsx
 
   LoginRequired, // src\components\search\SearchResults.tsx
+  DeleteData, // src\components\calendar\EditCalendarDetail.tsx
 
   None
 }
@@ -205,6 +206,8 @@ const PopupContent = (
             </button>
           </div>
         );
+      case PopupType.DeleteData:
+        return <div>삭제하시겠어요?</div>;
     }
   };
 

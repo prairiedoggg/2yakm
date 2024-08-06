@@ -1,7 +1,11 @@
 import dayjs from 'dayjs';
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import { calendarDelete } from '../../api/calendarApi';
 import { useCalendar, useDateStore } from '../../store/calendar';
+import Popup from '../popup/Popup';
+import PopupContent, { PopupType } from '../popup/PopupMessages';
 import EditDetailTextBox from './EditDetailTextBox';
 
 const ContentContainer = styled.div`
@@ -12,6 +16,8 @@ const OpenCalendarDetail: React.FC = () => {
   const { value, setEdit, setArrow, removePostedByDate } = useDateStore();
   const { setCalendarData, setCalImg } = useCalendar();
   const formattedDate = dayjs(value).format('YYYY-MM-DD');
+  const [popupType, setPopupType] = useState<PopupType>(PopupType.None);
+  const navigate = useNavigate();
 
   const handleDeleteCalender = async () => {
     try {
@@ -21,16 +27,40 @@ const OpenCalendarDetail: React.FC = () => {
       setCalendarData(null);
       setCalImg(new FormData());
       removePostedByDate(formattedDate);
+      setPopupType(PopupType.DeleteData);
       console.log(res);
     } catch (err) {
       console.log(err);
     }
   };
 
+  const getPopupContent = (type: PopupType) => {
+    switch (type) {
+      case PopupType.DeleteData:
+        return (
+          <div style={{ textAlign: 'center' }}>
+            삭제하시겠습니까?
+            <button
+              className='bottomClose'
+              onClick={() => {
+                setPopupType(PopupType.None);
+                handleDeleteCalender();
+              }}
+            >
+              확인
+            </button>
+          </div>
+        );
+
+      default:
+        return PopupContent(type, navigate);
+    }
+  };
+
   return (
     <ContentContainer>
       <DeleteButtonContainer>
-        <DeleteButton onClick={() => handleDeleteCalender()}>
+        <DeleteButton onClick={() => setPopupType(PopupType.DeleteData)}>
           전체 삭제
         </DeleteButton>
       </DeleteButtonContainer>
@@ -39,6 +69,11 @@ const OpenCalendarDetail: React.FC = () => {
       <EditDetailTextBox title='체온' />
       <EditDetailTextBox title='체중' />
       <EditDetailTextBox title='사진 기록' />
+      {popupType !== PopupType.None && (
+        <Popup onClose={() => setPopupType(PopupType.None)}>
+          {getPopupContent(popupType)}
+        </Popup>
+      )}
     </ContentContainer>
   );
 };
