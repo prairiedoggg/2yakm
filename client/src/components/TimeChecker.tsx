@@ -34,8 +34,8 @@ const TimeChecker = () => {
       });
     };
 
-    // const intervalId = setInterval(checkTime, 60000);
-    const intervalId = setInterval(checkTime, 1000);
+    const intervalId = setInterval(checkTime, 60000);
+    //const intervalId = setInterval(checkTime, 1000);
 
     return () => clearInterval(intervalId);
   }, []);
