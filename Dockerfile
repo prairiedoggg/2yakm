@@ -36,7 +36,6 @@ COPY nginx.conf /etc/nginx/nginx.conf
 EXPOSE  3000 5173
 
 # 인증서 생성 스크립트 복사 및 권한 설정
-COPY create_certs.sh /chicken_pharm/
 RUN chmod +x /chicken_pharm/create_certs.sh
 
 # 시작 스크립트 권한 설정
