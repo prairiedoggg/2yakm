@@ -137,17 +137,6 @@ const EditPharmacist = () => {
   return (
     <MyPageContainer>
       <StyledContent>
-        {/* <div className='title'>
-          약사 인증을 위해 사업자 등록 정보를 입력 해 주세요
-        </div>
-        <button
-          className='submitButton'
-          disabled={!isButtonEnabled}
-          onClick={onEdit}
-        >
-          등록 완료
-        </button> */}
-
         <form onSubmit={handleSubmit}>
           <div>
             <div className='title'>

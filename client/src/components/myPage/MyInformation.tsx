@@ -22,6 +22,7 @@ const MyInformation = ({
       <div className='profile'>
         <div className='info'>
           <div className='nameArea' onClick={() => onEditClick()}>
+            {user?.role ? <img src={`/img/pharm.png`} alt='약사인증' /> : ''}
             {user?.userName ?? ''}
             <Icon icon='ic:baseline-edit' style={{ color: '#d1d1d1' }} />
           </div>
@@ -47,6 +48,10 @@ const InformationLayout = styled.div`
       justify-content: left;
       align-content: center;
       gap: 10px;
+
+      img {
+        height: 1.2rem;
+      }
     }
   }
 
