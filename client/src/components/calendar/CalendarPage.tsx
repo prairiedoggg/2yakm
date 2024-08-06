@@ -102,7 +102,7 @@ const EntireDetail = styled.div<{ expanded: boolean }>`
 `;
 
 const CalandarDatailContainer = styled.div`
-  padding: 5px 25px;
+  padding: 0px 25px;
 `;
 
 const ImgContainer = styled.div`
@@ -115,7 +115,7 @@ const Line = styled.div`
   height: 3px;
   background-color: #a9a9a9;
   border-radius: 10px;
-  margin: 10px;
+  margin-top: 10px;
 `;
 
 const DateBox = styled.div`

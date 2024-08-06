@@ -32,7 +32,7 @@ const Login = () => {
       default:
         return (
           <SnsLogin
-            onClose={() => navigate('/', { state: { showBottomSheet: true } })}
+            onClose={() => navigate('/', { state: { showBottomSheet: false } })}
             onEmailLoginClick={() => setCurrentState(pageState.EmailLogin)}
             onEmailRegisterClick={() => navigate('/register')}
           />
