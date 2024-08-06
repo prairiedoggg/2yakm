@@ -21,8 +21,8 @@ const SnsLogin = ({
   onEmailLoginClick: () => void;
   onEmailRegisterClick: () => void;
 }) => {
-  const SERVER_BASE_URL = import.meta.env.VITE_APP_SERVER_BASE_URL;
-  const AUTH_URLS = `${SERVER_BASE_URL}api/auth`;
+  const SERVER_BASE_URL = 'http://localhost:3000';
+  const AUTH_URLS = `${SERVER_BASE_URL}/api/auth`;
 
   const SNS_LOGINS = [
     {
