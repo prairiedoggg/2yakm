@@ -1,4 +1,4 @@
-import useUserStore, { LoginType } from '../store/user';
+import useUserStore from '../store/user';
 
 import { get, post } from './api';
 

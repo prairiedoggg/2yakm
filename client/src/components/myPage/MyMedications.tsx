@@ -10,9 +10,8 @@ import {
 import Loading from '../Loading';
 import Popup from '../popup/Popup';
 import PopupContent, { PopupType } from '../popup/PopupMessages';
-import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { fetchAutocompleteSuggestions } from '../../api/searchApi';
-import { useSearchStore } from '../../store/search';
 
 interface MedicationItem {
   id: string;
