@@ -6,6 +6,7 @@ import { changeUserName } from '../../api/myPageService';
 import PopupContent, { PopupType } from '../popup/PopupMessages';
 import Popup from '../popup/Popup';
 import { useNavigate } from 'react-router-dom';
+import ValidationError from '../ValidationError';
 
 const EditName = ({ onEdit }: { onEdit: () => void }) => {
   const { user } = useUserStore.getState();
@@ -48,15 +49,10 @@ const EditName = ({ onEdit }: { onEdit: () => void }) => {
             onClick={() => setName('')}
           />
         </div>
-        <div
-          style={{
-            color: 'red',
-            fontSize: '0.9rem',
-            display: blur && name.length < 3 ? 'initial' : 'none'
-          }}
-        >
-          <b>!</b> 이름은 3글자 이상 입력해주세요.
-        </div>
+
+        <ValidationError condition={blur && name.length < 3}>
+          이름은 3글자 이상 입력해주세요.
+        </ValidationError>
         <button
           className='submitButton'
           disabled={!(name.trim().length > 2)}
