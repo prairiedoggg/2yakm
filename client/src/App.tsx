@@ -27,6 +27,7 @@ const ResetPassword = loadable(
 );
 const ChatBot = loadable(() => import('./components/chatBot/ChatBot'));
 const Redirect = loadable(() => import('./components/authentication/Redirect'));
+const NotFound = loadable(() => import('./components/NotFound'));
 
 const App = () => {
   return (
@@ -54,12 +55,12 @@ const App = () => {
           element={<ResetPasswordRequest />}
         />
         <Route path='/reset-password' element={<ResetPassword />} />
-
         <Route
           path='/chatbot'
           element={<AuthenticatedRoute element={ChatBot} />}
         />
         <Route path='/snsLogin/callback' element={<Redirect />} />
+        <Route path='*' element={<NotFound />} />
       </Routes>
     </Router>
   );

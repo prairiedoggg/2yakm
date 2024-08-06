@@ -47,9 +47,12 @@ export enum PopupType {
   AddMyPillSuccess,
   AddMyPillFailure,
 
-  FinishChatBot,
+  FinishChatBot, // src\components\chatBot\Chatbot.tsx
 
   ImageSearchInfo, // src\components\search\SearchBox.tsx
+
+  LoginRequired, // src\components\search\SearchResults.tsx
+  DeleteData, // src\components\calendar\EditCalendarDetail.tsx
 
   None
 }
@@ -188,6 +191,23 @@ const PopupContent = (
             />
           </div>
         );
+      case PopupType.LoginRequired:
+        return (
+          <div>
+            로그인이 필요합니다.
+            <button
+              className='bottomClose'
+              onClick={() => {
+                navigate('/login', { replace: true });
+                window.location.reload();
+              }}
+            >
+              로그인 페이지로 이동
+            </button>
+          </div>
+        );
+      case PopupType.DeleteData:
+        return <div>삭제하시겠어요?</div>;
     }
   };
 
