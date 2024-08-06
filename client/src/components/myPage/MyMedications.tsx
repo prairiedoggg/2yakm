@@ -10,7 +10,9 @@ import {
 import Loading from '../Loading';
 import Popup from '../popup/Popup';
 import PopupContent, { PopupType } from '../popup/PopupMessages';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { fetchAutocompleteSuggestions } from '../../api/searchApi';
+import { useSearchStore } from '../../store/search';
 
 interface MedicationItem {
   id: string;
@@ -32,6 +34,7 @@ const MyMedications = () => {
   const [limit] = useState(10);
   const [hasMore, setHasMore] = useState(true);
   const containerRef = useRef<HTMLDivElement | null>(null);
+  const [suggestions, setSuggestions] = useState<string[]>([]);
 
   const navigate = useNavigate();
 
@@ -71,9 +74,27 @@ const MyMedications = () => {
     }
   };
 
-  const handleNameChange = (e: ChangeEvent<HTMLInputElement>) => {
+  const fetchSuggestions = async (newQuery: string) => {
+    if (newQuery === '') return;
+
+    try {
+      const results = await fetchAutocompleteSuggestions(newQuery);
+      setSuggestions(results.map((r: any) => r.name));
+    } catch (error) {
+      setSuggestions([]);
+    }
+  };
+
+  const handleNameChange = async (e: ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setName(value);
+
+    await fetchSuggestions(value);
+  };
+
+  const handleSuggestionClick = (suggestion: string) => {
+    setName(suggestion);
+    setSuggestions([]);
   };
 
   const handleDateChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -189,7 +210,7 @@ const MyMedications = () => {
         </div>
         <div className='info'>
           <a href='https://map.seoul.go.kr/smgis2/short/6OgWi'>
-            📍폐의약품 전용수거함 위치
+            📍<u>폐의약품 전용수거함 위치</u>
           </a>
         </div>
         <div className='items' ref={containerRef}>
@@ -216,6 +237,7 @@ const MyMedications = () => {
 
             <div className='info-box'>
               <div className='title2'>약 이름</div>
+
               <div className='input-container'>
                 <input
                   type='text'
@@ -224,6 +246,24 @@ const MyMedications = () => {
                   onChange={handleNameChange}
                 />
               </div>
+
+              {suggestions.length > 0 && (
+                <ul className='drop-down'>
+                  {suggestions.map((suggestion, index) => (
+                    <li
+                      key={index}
+                      onClick={() => handleSuggestionClick(suggestion)}
+                      style={{
+                        padding: '8px',
+                        cursor: 'pointer',
+                        borderBottom: '1px solid #ddd'
+                      }}
+                    >
+                      {suggestion}
+                    </li>
+                  ))}
+                </ul>
+              )}
             </div>
 
             <div className='info-box'>

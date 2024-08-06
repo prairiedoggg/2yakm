@@ -35,7 +35,6 @@ const FavoriteMedications = () => {
       'createdAt',
       'DESC',
       (data) => {
-        console.log(data);
         const favorites = data.data;
         const temp: MedicationItem[] = favorites.map((d: any) => ({
           pillid: Number(d.pillid),
