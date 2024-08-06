@@ -187,7 +187,11 @@ const MyMedications = () => {
             style={{ color: '#d1d1d1' }}
           />
         </div>
-        <div className='info'>📍폐의약품 전용수거함 위치</div>
+        <div className='info'>
+          <a href='https://map.seoul.go.kr/smgis2/short/6OgWi'>
+            📍폐의약품 전용수거함 위치
+          </a>
+        </div>
         <div className='items' ref={containerRef}>
           <Item>
             <div className='empty' onClick={() => setBottomSheet(true)}>
@@ -338,6 +342,11 @@ const StyledContent = styled.div`
     margin-bottom: 30px;
     font-weight: 500;
     margin-left: -5px;
+
+    a {
+      color: gray;
+      text-decoration: none;
+    }
   }
 
   .items {
