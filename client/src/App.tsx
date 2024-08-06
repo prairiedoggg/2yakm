@@ -53,7 +53,7 @@ const App = () => {
           path='/password/reset/request'
           element={<ResetPasswordRequest />}
         />
-        <Route path='/password/reset' element={<ResetPassword />} />
+        <Route path='/reset-password' element={<ResetPassword />} />
 
         <Route
           path='/chatbot'

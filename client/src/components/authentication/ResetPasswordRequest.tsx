@@ -20,11 +20,11 @@ const ResetPasswordRequest = () => {
       email,
       () => {
         setLoading(false);
-        setPopupType(PopupType.ResetPasswordSuccess);
+        setPopupType(PopupType.ResetPasswordRequestSuccess);
       },
       () => {
         setLoading(false);
-        setPopupType(PopupType.ResetPasswordFailure);
+        setPopupType(PopupType.ResetPasswordRequestFailure);
       }
     );
   };
