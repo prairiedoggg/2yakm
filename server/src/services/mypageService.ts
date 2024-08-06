@@ -1,5 +1,6 @@
 import { pool } from '../db';
 import { createError } from '../utils/error';
+import axios from 'axios';
 
 // Define the types for the returned user profile data
 interface UserProfile {
@@ -88,6 +89,24 @@ export const addCertification = async (userId: string, name: string, date: strin
     if (check.rows.length !=0) {
       throw createError("이미 등록된 사업자등록증입니다", "Already registered", 403)
     } 
+
+    // Make an HTTP request to validate the business
+    const url = 'http://api.odcloud.kr/api/nts-businessman/v1/validate?serviceKey=xqmNC3%2F9O0HH8sEhJU0ZjS5twTS4lOvadAXCXOijVj1h8EPAZ6h4knd5a0khMUqaR7vdjf9RxDn6Ie6bZNW%2Bvw%3D%3D';
+    const response = await axios.post(url, {
+      businesses: [
+        {
+          "b_no": number,
+          "start_dt": date,
+          "p_nm": name
+        }
+      ]
+    });
+
+    // Check if the business validation was successful
+    const validationStatus = response.data.data[0].valid;
+    if (validationStatus !== '01') { // Assuming '01' indicates a successful validation
+      throw createError("유효하지 않은 사업자등록증입니다", "Invalid business registration", 400);
+    }
 
     const verifiedResult = await pool.query(
       `UPDATE users SET role = true WHERE userid = $1 RETURNING role`,
