@@ -31,6 +31,10 @@ export enum PopupType {
   DeleteReviewSuccess,
   DeleteReviewFailure,
 
+  ResetPasswordRequest, // src\components\authentication\ResetPassword.tsx
+  ResetPasswordRequestSuccess,
+  ResetPasswordRequestFailure,
+
   ResetPassword, // src\components\authentication\ResetPassword.tsx
   ResetPasswordSuccess,
   ResetPasswordFailure,
@@ -38,6 +42,11 @@ export enum PopupType {
   DeleteMyPill, // src\components\myPage\MyMedications.tsx
   DeleteMyPillSuccess,
   DeleteMyPillFailure,
+
+  AddMyPill, // src\components\myPage\MyMedications.tsx
+  AddMyPillSuccess,
+  AddMyPillFailure,
+
   FinishChatBot,
 
   ImageSearchInfo, // src\components\search\SearchBox.tsx
@@ -108,7 +117,7 @@ const PopupContent = (
       case PopupType.DeleteReviewFailure:
         return <div>리뷰 삭제에 실패했습니다. 잠시 후 다시 시도해주세요.</div>;
 
-      case PopupType.ResetPasswordSuccess:
+      case PopupType.ResetPasswordRequestSuccess:
         return (
           <div>
             패스워드 재설정 이메일을 발송했습니다.
@@ -123,7 +132,7 @@ const PopupContent = (
           </div>
         );
 
-      case PopupType.ResetPasswordFailure:
+      case PopupType.ResetPasswordRequestFailure:
         return (
           <div>
             패스워드 재설정 이메일을 발송에 실패했습니다. 잠시 후 다시
@@ -131,9 +140,35 @@ const PopupContent = (
           </div>
         );
 
+      case PopupType.ResetPasswordSuccess:
+        return (
+          <div>
+            패스워드 재설정에 성공했습니다. 메인페이지로 돌아가 로그인을
+            시도해주세요.
+            <button
+              className='bottomClose'
+              onClick={() => {
+                navigate('/');
+              }}
+            >
+              확인
+            </button>
+          </div>
+        );
+
+      case PopupType.ResetPasswordFailure:
+        return (
+          <div>패스워드 재설정에 실패했습니다. 잠시 후 다시 시도해주세요.</div>
+        );
+
       case PopupType.DeleteMyPillFailure:
         return (
           <div>나의 약 삭제에 실패했습니다. 잠시 후 다시 시도해주세요.</div>
+        );
+
+      case PopupType.AddMyPillFailure:
+        return (
+          <div>나의 약 추가에 실패했습니다. 잠시 후 다시 시도해주세요.</div>
         );
 
       case PopupType.FinishChatBot:
@@ -144,9 +179,15 @@ const PopupContent = (
           </div>
         );
       case PopupType.ImageSearchInfo:
-        return <div><p>알약의 앞, 뒷면의 사진을 찍어주세요.</p>
-          <img src='/img/pill.webp' style={{width:'50%', marginTop:'10px'}}/>
-        </div>;
+        return (
+          <div>
+            <p>알약의 앞, 뒷면의 사진을 찍어주세요.</p>
+            <img
+              src='/img/pill.webp'
+              style={{ width: '50%', marginTop: '10px' }}
+            />
+          </div>
+        );
     }
   };
 

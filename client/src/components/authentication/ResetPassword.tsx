@@ -1,5 +1,5 @@
 import styled from 'styled-components';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { Icon } from '@iconify-icon/react';
 import { ChangeEvent, FormEvent, useState } from 'react';
 import { resetPassword } from '../../api/authService';
@@ -27,12 +27,20 @@ const ResetPasswordRequest = () => {
   });
   const [showPassword, setShowPassword] = useState<boolean>(false);
 
+  const useQuery = () => {
+    return new URLSearchParams(useLocation().search);
+  };
+
+  const query = useQuery();
+  const token = query.get('token');
+
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
     setLoading(true);
+
     resetPassword(
       formData.newPassword,
-      '',
+      token ?? '',
       () => {
         setLoading(false);
         setPopupType(PopupType.ResetPasswordSuccess);

@@ -35,16 +35,15 @@ const FavoriteMedications = () => {
       'createdAt',
       'DESC',
       (data) => {
-        console.log(data);
         const favorites = data.data;
         const temp: MedicationItem[] = favorites.map((d: any) => ({
           pillid: Number(d.pillid),
           title: d.name,
           registrationDate: new Date(d.createdat).toDateString(),
-          tags: d.efficacy.split(' ').map((text: string) => {
-            if (text.length > 3) return text.slice(0, 3) + '...';
-            else return text;
-          })
+          tags:
+            d.importantWords &&
+            d.importantWords.trim() &&
+            d.importantWords.split(', ')
         }));
         setLoading(false);
 
@@ -86,19 +85,23 @@ const FavoriteMedications = () => {
   }, [handleScroll]);
 
   const renderItems = (item: MedicationItem, index: number) => {
-    console.log(item);
     return (
       <Item key={index}>
         <div className='title'>
-          <div className='title2'>
-            {item.title}
-            <Icon
-              icon='ep:arrow-right-bold'
-              width='1.2em'
-              height='1.2em'
-              style={{ color: 'black' }}
-            />
-          </div>
+          <Link
+            to={`/search/name?q=${item.title}`}
+            style={{ color: 'black', textDecoration: 'none' }}
+          >
+            <div className='title2'>
+              {item.title}
+              <Icon
+                icon='ep:arrow-right-bold'
+                width='1.2em'
+                height='1.2em'
+                style={{ color: 'black' }}
+              />
+            </div>
+          </Link>
 
           {deleteItem ? (
             <div
@@ -128,7 +131,7 @@ const FavoriteMedications = () => {
         <div className='registration'>등록일 {item.registrationDate}</div>
         <TagContainer>
           {item.tags.slice(0, 3)?.map((tag, index) => (
-            <Tag key={index} to={`/search/tag/${tag}`}>
+            <Tag key={index} to={`/search/efficacy?q=${tag}`}>
               {tag}
             </Tag>
           ))}
