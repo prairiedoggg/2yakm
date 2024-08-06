@@ -302,7 +302,7 @@ const StyledContent = styled.div`
 
   .entries {
     display: flex;
-    gap: 10px;
+    gap: 5px;
     flex-direction: column;
     font-size: 1em;
 
@@ -312,7 +312,10 @@ const StyledContent = styled.div`
       align-content: center;
       width: 90%;
       margin-left: 20px;
-      margin-bottom: 15px;
+      margin-bottom: 10px;
+      padding-left: 10px;
+      padding-right: 10px;
+      font-size: 0.9rem;
     }
   }
 `;
