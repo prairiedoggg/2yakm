@@ -1,13 +1,3 @@
-/**
-File Name : SnsLogin
-Description : sns 로그인
-Author : 오선아
-
-History
-Date        Author   Status    Description
-2024.07.21  오선아   Created
-*/
-
 import { Icon } from '@iconify-icon/react';
 import { Link } from 'react-router-dom';
 import styled from 'styled-components';

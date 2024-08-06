@@ -2,6 +2,7 @@ import styled from 'styled-components';
 import { Icon } from '@iconify-icon/react';
 import { ChangeEvent, FormEvent, useState } from 'react';
 import Loading from '../Loading';
+import { registCertifications } from '../../api/certificationsApi';
 
 interface FormData {
   number: string;
@@ -47,9 +48,16 @@ const EditPharmacist = () => {
     )}-${numericValue.slice(5, 9)}`;
   };
 
-  const handleSubmit = (e: FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setLoading(true);
+
+    try {
+      await registCertifications(formData.name, formData.date, formData.number);
+      setLoading(false);
+    } catch {
+      setLoading(false);
+    }
   };
 
   const clearData = (name: string) => {
