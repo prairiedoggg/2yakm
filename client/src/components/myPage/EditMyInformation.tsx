@@ -220,7 +220,7 @@ const StyledContent = styled.div`
       .info-value {
         display: flex;
         gap: 10px;
-        font-align: right;
+        text-align: right;
         color: gray;
       }
     }

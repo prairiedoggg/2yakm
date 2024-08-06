@@ -3,8 +3,8 @@ import {
   Dispatch,
   KeyboardEvent,
   SetStateAction,
-  useState,
-  useEffect
+  useEffect,
+  useState
 } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import styled from 'styled-components';
@@ -16,8 +16,10 @@ import { PillData } from '../../store/pill.ts';
 import { useSearchStore } from '../../store/search';
 import { useSearchHistoryStore } from '../../store/searchHistory';
 import BottomPictureSheet from '../myPage/BottomPictureSheet';
+import Popup from '../popup/Popup';
+import PopupContent, { PopupType }  from '../popup/PopupMessages.tsx';
 
-interface SearchBoxProps {
+interface SearchBoxProps {  
   setImageResults?: Dispatch<SetStateAction<PillData[]>>;
 }
 
@@ -33,6 +35,9 @@ const SearchBox = ({ setImageResults }: SearchBoxProps) => {
     isImageSearch
   } = useSearchStore();
   const [bottomSheet, setBottomSheet] = useState(false);
+  const [popupVisible, setPopupVisible] = useState(false);
+  const [popupType, setPopupType] = useState<PopupType>(PopupType.None);
+
   const addHistory = useSearchHistoryStore((state) => state.addHistory);
 
   useEffect(() => {
@@ -54,7 +59,7 @@ const SearchBox = ({ setImageResults }: SearchBoxProps) => {
 
   const handleChange = async (e: ChangeEvent<HTMLInputElement>) => {
     const newQuery = e.target.value;
-     setSearchParams({ q: newQuery });
+    setSearchParams({ q: newQuery });
 
     if (searchType !== 'efficacy') {
       await fetchSuggestions(newQuery);
@@ -82,6 +87,8 @@ const SearchBox = ({ setImageResults }: SearchBoxProps) => {
 
   const handleCameraClick = () => {
     setBottomSheet(true);
+    setPopupVisible(true);
+    setPopupType(PopupType.RegistrationSuccess); 
   };
 
   const handleImageUpload = async (image: File | null) => {
@@ -96,6 +103,7 @@ const SearchBox = ({ setImageResults }: SearchBoxProps) => {
     }
     setIsImageSearch(true);
     setBottomSheet(false);
+    setPopupVisible(false);
   };
 
   return (
@@ -125,7 +133,10 @@ const SearchBox = ({ setImageResults }: SearchBoxProps) => {
         title={'사진 등록'}
         isVisible={bottomSheet}
         onClose={handleImageUpload}
-      ></BottomPictureSheet>
+      />
+      {/* <Popup onClose={() => setPopupVisible(false)} isVisible={popupVisible}>
+        {PopupContent(popupType, navigate)}
+      </Popup> */}
     </>
   );
 };
