@@ -40,6 +40,8 @@ export enum PopupType {
   DeleteMyPillFailure,
   FinishChatBot,
 
+  ImageSearchInfo, // src\components\search\SearchBox.tsx
+
   None
 }
 
@@ -141,6 +143,10 @@ const PopupContent = (
             삭제하시겠어요?
           </div>
         );
+      case PopupType.ImageSearchInfo:
+        return <div><p>알약의 앞, 뒷면의 사진을 찍어주세요.</p>
+          <img src='/img/pill.webp' style={{width:'50%', marginTop:'10px'}}/>
+        </div>;
     }
   };
 

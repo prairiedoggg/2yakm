@@ -3,7 +3,7 @@ import Cookies from 'js-cookie';
 
 const api = axios.create({
   baseURL: 'http://localhost:3000/', // import.meta.env.SERVER_BASE_URL,
-  timeout: 10000
+  timeout: 100000
 });
 
 const refreshApi = axios.create({
