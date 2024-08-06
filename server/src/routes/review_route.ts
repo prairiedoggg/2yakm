@@ -52,6 +52,8 @@ const router = Router();
  *                   type: string
  *                 username:
  *                   type: string
+  *                 profileimg:
+ *                   type: string
  *                 content:
  *                   type: string
  *                 createdat:
@@ -63,6 +65,7 @@ const router = Router();
  *                 name: 아로나민골드정
  *                 userid: "0190caa1-0c81-7fa2-9e4d-ed3c8ec93d7a"
  *                 username: "test"
+ *                 profileimg: "https://eyakmoyak.s3.ap-northeast-2.amazonaws.com/1722569018981-dog2.jpeg"
  *                 content: "전 이거 먹고 힘을 내요! 완전 추천합니다!"
  *                 createdat: "2024-07-16T20:37:08.325Z"
  *       400:

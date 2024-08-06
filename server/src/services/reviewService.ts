@@ -44,6 +44,7 @@ export const createReviewService = async (
       pills.name,
       reviews.userid,
       users.username,
+      users.profileimg,
       reviews.content,
       reviews.createdAt
     FROM 
