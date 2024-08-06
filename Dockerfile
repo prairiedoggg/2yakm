@@ -25,17 +25,17 @@ RUN apt-get update && \
     apt-get install -y python3 python3-pip build-essential libssl-dev libffi-dev python3-dev
 
 # 무거운 Python 패키지 개별 설치
-RUN pip3 install --no-cache-dir torch==1.13.1
-RUN pip3 install --no-cache-dir torchvision
-RUN pip3 install --no-cache-dir transformers
-RUN pip3 install --no-cache-dir faiss-cpu
-RUN apt-get update && apt-get install -y \
-    libblas-dev \
-    liblapack-dev \
-    gfortran
+#RUN pip3 install --no-cache-dir torch==1.13.1
+#RUN pip3 install --no-cache-dir torchvision
+#RUN pip3 install --no-cache-dir transformers
+#RUN pip3 install --no-cache-dir faiss-cpu
+#RUN apt-get update && apt-get install -y \
+ #   libblas-dev \
+  #  liblapack-dev \
+   # gfortran
 
 # 나머지 Python 의존성 설치
-RUN pip3 install --no-cache-dir -r server/requirements.txt
+#RUN pip3 install --no-cache-dir -r server/requirements.txt
 
 # 포트 설정
 EXPOSE 3000 5173
