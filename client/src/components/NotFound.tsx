@@ -27,7 +27,7 @@ const NotFound = () => {
 export default NotFound;
 
 const NotFoundContainer = styled.div`
-  padding: 36% 5%;
+  padding: 16vh 5vw;
   text-align: center;
 `;
 
