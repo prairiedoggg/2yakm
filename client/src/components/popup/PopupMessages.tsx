@@ -51,6 +51,8 @@ export enum PopupType {
 
   ImageSearchInfo, // src\components\search\SearchBox.tsx
 
+  LoginRequired, // src\components\search\SearchResults.tsx
+
   None
 }
 
@@ -186,6 +188,21 @@ const PopupContent = (
               src='/img/pill.webp'
               style={{ width: '50%', marginTop: '10px' }}
             />
+          </div>
+        );
+      case PopupType.LoginRequired:
+        return (
+          <div>
+            로그인이 필요합니다.
+            <button
+              className='bottomClose'
+              onClick={() => {
+                navigate('/login', { replace: true });
+                window.location.reload();
+              }}
+            >
+              로그인 페이지로 이동
+            </button>
           </div>
         );
     }

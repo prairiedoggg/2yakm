@@ -1,19 +1,32 @@
 import { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import { fetchReviews, createReview } from '../../api/reviewApi';
-import { useReviewStore } from '../../store/review';
+import { isUserLoggedIn } from '../../store/authService';
+import Popup from '../popup/Popup';
+import PopupContent, { PopupType } from '../popup/PopupMessages.tsx';
+
+export interface Review {
+  id: number;
+  pillId: number;
+  name?: string;
+  userid: string;
+  username?: string;
+  role?: boolean;
+  content: string;
+  profileimg?: string;
+}
 
 const Review = ({ pillId }: { pillId: number }) => {
-  const {
-    reviews,
-    setReviews,
-    nextCursor,
-    setNextCursor,
-    isWritingReview,
-    toggleReviewForm
-  } = useReviewStore();
-  const [newReview, setNewReview] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
+  const [reviews, setReviews] = useState<Review[]>([]);
+  const [nextCursor, setNextCursor] = useState<number | null>(null);
+  const [isWritingReview, setIsWritingReview] = useState<boolean>(false);
+  const [newReview, setNewReview] = useState<string>('');
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [showLoginPopup, setShowLoginPopup] = useState<boolean>(false);
+  const [popupType, setPopupType] = useState<PopupType>(PopupType.None);
+  const [reviewCount, setReviewCount] = useState<number>(0);
+  const navigate = useNavigate();
 
   const loadReviews = async (pillId: number, cursor: string | null) => {
     if (isLoading) return;
@@ -22,6 +35,7 @@ const Review = ({ pillId }: { pillId: number }) => {
       const data = await fetchReviews({ pillId, cursor });
       setReviews([...reviews, ...data.reviews]);
       setNextCursor(data.nextCursor || null);
+      setReviewCount(data.reviewCount || 0);
     } catch (error) {
       console.error('리뷰불러오기 에러:', error);
     } finally {
@@ -36,9 +50,9 @@ const Review = ({ pillId }: { pillId: number }) => {
     };
     try {
       const data = await createReview(newReviewItem);
-      setReviews([data, ...reviews]);
+      setReviews((prevReviews) => [data, ...prevReviews]);
       setNewReview('');
-      toggleReviewForm();
+      setIsWritingReview(false);
     } catch (error) {
       console.error('리뷰생성 에러:', error);
     }
@@ -66,9 +80,18 @@ const Review = ({ pillId }: { pillId: number }) => {
     loadReviews(pillId, null);
   }, [pillId]);
 
+  const handleWriteReviewClick = () => {
+    if (!isUserLoggedIn()) {
+      setPopupType(PopupType.LoginRequired);
+      setShowLoginPopup(true);
+      return;
+    }
+    setIsWritingReview(true);
+  };
+
   return (
     <ReviewContainer>
-      <WriteReview onClick={toggleReviewForm}>리뷰 작성하기</WriteReview>
+      <WriteReview onClick={handleWriteReviewClick}>리뷰 작성하기</WriteReview>
       {isWritingReview && (
         <ReviewForm>
           <textarea
@@ -88,13 +111,21 @@ const Review = ({ pillId }: { pillId: number }) => {
             }}
           >
             <User>
-              <Profile src={review.profileimg ?? `/img/user.svg`} alt='프로필 이미지' />
+              <Profile
+                src={review.profileimg ?? `/img/user.svg`}
+                alt='프로필 이미지'
+              />
               <span>{review.username}</span>
             </User>
             <p>{review.content}</p>
           </ReviewItem>
         ))}
       </ReviewList>
+      {showLoginPopup && (
+        <Popup onClose={() => setShowLoginPopup(false)}>
+          {PopupContent(popupType, navigate)}
+        </Popup>
+      )}
       {isLoading && <LoadingText>로딩 중...</LoadingText>}
     </ReviewContainer>
   );

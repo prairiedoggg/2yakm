@@ -1,7 +1,7 @@
 import { Icon } from '@iconify-icon/react';
 import informationOutline from '@iconify/icons-mdi/information-outline';
 import React, { useEffect, useState } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
+import { Link, useSearchParams, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import {
   fetchFavoriteCount,
@@ -16,6 +16,9 @@ import Nav from '../Nav';
 import PillExp from './PillExp';
 import Review from './Review';
 import SearchHeader from './SearchHeader';
+import { isUserLoggedIn } from '../../store/authService';
+import Popup from '../popup/Popup';
+import PopupContent, { PopupType } from '../popup/PopupMessages.tsx';
 
 const SearchResults = () => {
   const [searchParams] = useSearchParams();
@@ -28,6 +31,9 @@ const SearchResults = () => {
   const [showInfo, setShowInfo] = useState<boolean>(false);
   const [searchType, setSearchType] = useState<string>('name');
   const [activeType, setActiveType] = useState<string>(searchType);
+  const [showLoginPopup, setShowLoginPopup] = useState<boolean>(false);
+  const [popupType, setPopupType] = useState<PopupType>(PopupType.None);
+    const navigate = useNavigate();
 
   const formatTextWithLineBreaks = (text: string) => {
     return text.split('(').map((part, index, array) => (
@@ -46,6 +52,9 @@ const SearchResults = () => {
     const fetchData = async () => {
       setLoading(true);
       try {
+        const loggedIn = isUserLoggedIn();
+        console.log('로그인 상태:', loggedIn);
+
         const data = await fetchPillDataByName(query, 1, 0);
         if (data) {
           setPillId(data.id);
@@ -54,8 +63,10 @@ const SearchResults = () => {
           const count = await fetchFavoriteCount(data.id);
           console.log('좋아요 수', count);
           setFavoriteCount(count);
-          const status = await fetchFavoriteStatusApi(data.id);
-          setIsFavorite(status);
+          if (isUserLoggedIn()) {
+            const status = await fetchFavoriteStatusApi(data.id);
+            setIsFavorite(status);
+          }
         } else {
           setPillData(null);
           setPillId(null);
@@ -70,7 +81,15 @@ const SearchResults = () => {
   }, [query, setIsFavorite, setPillData]);
 
   const handleToggleFavorite = async () => {
+    if (!isUserLoggedIn()) {
+       setPopupType(PopupType.LoginRequired);
+      setShowLoginPopup(true);
+     
+      return;
+    }
+
     if (!pillId) return;
+
     try {
       await toggleFavoriteApi(
         { id: pillId },
@@ -189,6 +208,11 @@ const SearchResults = () => {
         </PillMore>
       </SearchResultsContainer>
       <Nav />
+      {showLoginPopup && (
+        <Popup onClose={() => setShowLoginPopup(false)}>
+          {PopupContent(popupType, navigate)}
+        </Popup>
+      )}
     </>
   );
 };
@@ -218,7 +242,7 @@ const PillImgs = styled.div`
   flex-direction: column;
   height: 100%;
 
-  & img{
+  & img {
     width: 100%;
   }
 `;
