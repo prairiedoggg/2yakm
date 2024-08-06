@@ -5,8 +5,10 @@ export interface User {
     nickName: string;
     profileImg: string;
     role: boolean;
-    kakaoId: string;
-    naverId: string;
-    googleId: string;
+    kakaoId?: string;
+    naverId?: string;
+    googleId?: string;
     createdAt: Date;
+    lastpasswordresetrequest?: Date;
+    lastemailverificationrequest?: Date;
 }

@@ -24,6 +24,7 @@ interface user {
   naverid?: string;
   profileimg: string;
   lastpasswordresetrequest?: Date;
+  lastemailverificationrequest?: Date;
 }
 
 interface userResponse {
@@ -88,6 +89,8 @@ const BASE_URL =
   process.env.NODE_ENV === 'development'
     ? `http://localhost:${process.env.PORT ?? 3000}`
     : process.env.CORS_ORIGIN;
+
+const FRONTEND_URL = 'http://localhost:5173';
 
 if (!SECRET_KEY || !REFRESH_TOKEN_SECRET_KEY) {
   throw new Error('SECRET_KEY 또는 REFRESH_TOKEN_SECRET_KEY 확인바람.');
@@ -679,7 +682,7 @@ export const requestPasswordService = async (email: string): Promise<void> => {
       from: process.env.EMAIL_USER,
       to: email,
       subject: '비밀번호 재설정',
-      text: `비밀번호를 재설정하려면 링크를 클릭하세요 (유효시간: 5분): ${BASE_URL}/reset-password?token=${token}`,
+      text: `비밀번호를 재설정하려면 링크를 클릭하세요 (유효시간: 5분): ${FRONTEND_URL}/reset-password?token=${token}`,
     };
     await transporter.sendMail(mailOptions);
 

@@ -93,7 +93,7 @@ export const updateProfilePicture = async (userId: string, profilePicture: strin
 
 export const addCertification = async (userId: string, name: string, date: string, number: string): Promise<Certification> => {
   try {
-    const check = await pool.query(`SELECT * from certification where number = $1`, [number]);
+    const check = await pool.query(`SELECT number from certification where number = $1`, [number]);
 
     if (check.rows.length !== 0) {
       throw createError("이미 등록된 사업자등록증입니다", "Already registered", 403);
