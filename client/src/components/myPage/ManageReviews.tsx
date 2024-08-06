@@ -6,6 +6,7 @@ import Loading from '../Loading';
 import Popup from '../popup/Popup';
 import PopupContent, { PopupType } from '../popup/PopupMessages';
 import { useNavigate } from 'react-router-dom';
+import Toast from '../Toast';
 
 interface MedicationItem {
   id: number;
@@ -25,6 +26,8 @@ const ManageReviews = () => {
   const [limit] = useState(10);
   const [hasMore, setHasMore] = useState(true);
   const containerRef = useRef<HTMLDivElement | null>(null);
+  const [toastMessage, setToastMessage] = useState('');
+
   const navigate = useNavigate();
   const maxTextLength = 15;
 
@@ -103,6 +106,7 @@ const ManageReviews = () => {
                     setItemCount(itemCount - 1);
                     setLoading(false);
                     setSelected(undefined);
+                    setToastMessage('리뷰 삭제 완료!');
                   },
                   () => {
                     setPopupType(PopupType.DeleteFavoriteFailure);
@@ -179,6 +183,9 @@ const ManageReviews = () => {
         <Popup onClose={() => setPopupType(PopupType.None)}>
           {getPopupContent(popupType)}
         </Popup>
+      )}
+      {toastMessage != '' && (
+        <Toast onEnd={() => setToastMessage('')}>{toastMessage}</Toast>
       )}
     </MyPageContainer>
   );

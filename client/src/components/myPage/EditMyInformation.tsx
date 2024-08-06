@@ -8,6 +8,7 @@ import Popup from '../popup/Popup';
 import { changeProfileImage, fetchUserProfile } from '../../api/myPageService';
 import PopupContent, { PopupType } from '../popup/PopupMessages';
 import { useNavigate } from 'react-router-dom';
+import Toast from '../Toast';
 
 interface Info {
   info: string;
@@ -26,6 +27,7 @@ const EditMyInformation = ({
   const { user } = useUserStore.getState();
   const [bottomSheet, setBottomSheet] = useState(false);
   const [popupType, setPopupType] = useState(PopupType.None);
+  const [toastMessage, setToastMessage] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
@@ -128,7 +130,6 @@ const EditMyInformation = ({
 
         <div className='informations'>{generateItems(infos2)}</div>
       </StyledContent>
-
       <BottomPictureSheet
         title={'사진 등록'}
         isVisible={bottomSheet}
@@ -141,8 +142,8 @@ const EditMyInformation = ({
             changeProfileImage(
               formData,
               () => {
-                fetchUserProfile((data) => {
-                  console.log(data);
+                fetchUserProfile(() => {
+                  setToastMessage('프로필사진 수정 완료!');
                 });
                 setLoading(false);
               },
@@ -155,13 +156,15 @@ const EditMyInformation = ({
           setBottomSheet(false);
         }}
       />
-
       {popupType !== PopupType.None && (
         <Popup onClose={() => setPopupType(PopupType.None)}>
           {PopupContent(popupType, navigate)}
         </Popup>
       )}
       {loading && <Loading />}
+      {toastMessage != '' && (
+        <Toast onEnd={() => setToastMessage('')}>{toastMessage}</Toast>
+      )}
     </MyPageContainer>
   );
 };

@@ -12,6 +12,7 @@ import Popup from '../popup/Popup';
 import PopupContent, { PopupType } from '../popup/PopupMessages';
 import { Link, useNavigate } from 'react-router-dom';
 import { fetchAutocompleteSuggestions } from '../../api/searchApi';
+import Toast from '../Toast';
 
 interface MedicationItem {
   id: string;
@@ -34,6 +35,8 @@ const MyMedications = () => {
   const [hasMore, setHasMore] = useState(true);
   const containerRef = useRef<HTMLDivElement | null>(null);
   const [suggestions, setSuggestions] = useState<string[]>([]);
+  const [toastMessage, setToastMessage] = useState('');
+
   const maxTextLength = 15;
 
   const navigate = useNavigate();
@@ -58,6 +61,7 @@ const MyMedications = () => {
                     setItemCount(itemCount - 1);
                     setLoading(false);
                     setSelected(undefined);
+                    setToastMessage('나의 약 삭제 완료!');
                   },
                   () => {
                     setPopupType(PopupType.DeleteMyPillFailure);
@@ -314,6 +318,7 @@ const MyMedications = () => {
                     fetchDatas(true);
                     setName('');
                     setDate('');
+                    setToastMessage('나의 약 등록 완료!');
                   },
                   () => {
                     setLoading(false);
@@ -332,6 +337,9 @@ const MyMedications = () => {
         <Popup onClose={() => setPopupType(PopupType.None)}>
           {getPopupContent(popupType)}
         </Popup>
+      )}
+      {toastMessage != '' && (
+        <Toast onEnd={() => setToastMessage('')}>{toastMessage}</Toast>
       )}
     </MyPageContainer>
   );

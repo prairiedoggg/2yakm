@@ -6,6 +6,7 @@ import { fetchMyFavorites, toggleFavoriteApi } from '../../api/favoriteApi';
 import Loading from '../Loading';
 import Popup from '../popup/Popup';
 import PopupContent, { PopupType } from '../popup/PopupMessages';
+import Toast from '../Toast';
 
 interface MedicationItem {
   pillid: number;
@@ -24,6 +25,8 @@ const FavoriteMedications = () => {
   const [limit] = useState(10);
   const [hasMore, setHasMore] = useState(true);
   const containerRef = useRef<HTMLDivElement | null>(null);
+  const [toastMessage, setToastMessage] = useState('');
+
   const navigate = useNavigate();
   const maxTextLength = 15;
 
@@ -121,6 +124,7 @@ const FavoriteMedications = () => {
                     );
                     setItemCount(itemCount - 1);
                     setLoading(false);
+                    setToastMessage('즐겨찾는 약 삭제 완료!');
                   },
                   () => {
                     setPopupType(PopupType.DeleteFavoriteFailure);
@@ -174,6 +178,9 @@ const FavoriteMedications = () => {
         <Popup onClose={() => setPopupType(PopupType.None)}>
           {PopupContent(popupType, navigate)}
         </Popup>
+      )}
+      {toastMessage != '' && (
+        <Toast onEnd={() => setToastMessage('')}>{toastMessage}</Toast>
       )}
     </MyPageContainer>
   );
