@@ -12,14 +12,14 @@ import {
   fetchAutocompleteSuggestions,
   fetchPillDataByImage
 } from '../../api/searchApi';
-import { PillData } from '../../store/pill.ts';
+import { PillData, usePillStore } from '../../store/pill.ts';
 import { useSearchStore } from '../../store/search';
 import { useSearchHistoryStore } from '../../store/searchHistory';
 import BottomPictureSheet from '../myPage/BottomPictureSheet';
 import Popup from '../popup/Popup';
-import PopupContent, { PopupType }  from '../popup/PopupMessages.tsx';
+import PopupContent, { PopupType } from '../popup/PopupMessages.tsx';
 
-interface SearchBoxProps {  
+interface SearchBoxProps {
   setImageResults?: Dispatch<SetStateAction<PillData[]>>;
 }
 
@@ -34,6 +34,7 @@ const SearchBox = ({ setImageResults }: SearchBoxProps) => {
     setIsImageSearch,
     isImageSearch
   } = useSearchStore();
+  const { setLoading } = usePillStore();
   const [bottomSheet, setBottomSheet] = useState(false);
   const [popupVisible, setPopupVisible] = useState(false);
   const [popupType, setPopupType] = useState<PopupType>(PopupType.None);
@@ -88,17 +89,20 @@ const SearchBox = ({ setImageResults }: SearchBoxProps) => {
   const handleCameraClick = () => {
     setBottomSheet(true);
     setPopupVisible(true);
-    setPopupType(PopupType.ImageSearchInfo); 
+    setPopupType(PopupType.ImageSearchInfo);
   };
 
   const handleImageUpload = async (image: File | null) => {
     if (image) {
       setImageQuery(image);
+      setLoading(true);
       try {
         const results = await fetchPillDataByImage(image, 10, 0);
         setImageResults?.(results);
       } catch (error) {
         console.error('이미지 검색 실패:', error);
+      } finally {
+        setLoading(false);
       }
     }
     setIsImageSearch(true);

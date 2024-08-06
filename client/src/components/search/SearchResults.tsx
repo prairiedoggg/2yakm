@@ -15,16 +15,16 @@ import Nav from '../Nav';
 import PillExp from './PillExp';
 import Review from './Review';
 import SearchHeader from './SearchHeader';
+import Loading from '../Loading'; 
 
 const SearchResults = () => {
   const [searchParams] = useSearchParams();
   const query = searchParams.get('q') || '';
-  const { pillData, setPillData } = usePillStore();
+  const { pillData, setPillData, loading, setLoading } = usePillStore();
   const { isFavorite, setIsFavorite, favoriteCount, setFavoriteCount } =
     useFavoriteStore();
   const [activeTab, setActiveTab] = useState<string>('effectiveness');
   const [pillId, setPillId] = useState<number | null>(null);
-  const [loading, setLoading] = useState<boolean>(false);
   const [showInfo, setShowInfo] = useState<boolean>(false);
   const [searchType, setSearchType] = useState<string>('name');
   const [activeType, setActiveType] = useState<string>(searchType);
@@ -99,12 +99,13 @@ const SearchResults = () => {
     { key: 'effectiveness', label: '효능•용법' },
     { key: 'review', label: '리뷰' }
   ];
+
   if (loading) {
-    return <div>데이터 검색중입니다.</div>;
+    return <Loading />;
   }
 
   if (!pillData) {
-    return <div>검색 결과가 없습니다.</div>;
+    return <div className='searchInner'>검색 결과가 없습니다.</div>;
   }
 
   return (
@@ -116,7 +117,7 @@ const SearchResults = () => {
       />
       <SearchResultsContainer>
         <PillInfo>
-          <img src={pillData.imgurl} alt='pill' />
+          <img src={pillData.imgurl} alt='알약' />
           <section>
             <PillHeader>
               <PillText>

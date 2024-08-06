@@ -1,31 +1,40 @@
+import { Link } from 'react-router-dom';
 import styled from 'styled-components';
 import { PillData, usePillStore } from '../../store/pill';
+import Loading from '../Loading';
 
 const ImageSearchList = ({ pills }: { pills: PillData[] }) => {
-  const { setPillData } = usePillStore();
+  const { setPillData, loading } = usePillStore();
 
   const handleItemClick = (pill: PillData) => {
     setPillData(pill);
   };
 
+  if (loading) {
+    return <Loading />;
+  }
+
   return (
-    <ListContainer>
+    <div className='searchInner'>
+      <p className='listTitle'>이미지로 검색결과</p>
       {pills.map((pill) => (
         <ListItem
+          to={`/search/name?q=${pill.name}`}
           key={pill.id}
           onClick={() => {
             handleItemClick(pill);
           }}
+          className='listItem'
         >
-          <p>{pill.name}</p>
+          <img src={pill.imgurl} alt='알약' />
+          <span>{pill.name}</span>
+          <span>{pill.similarity}</span>
         </ListItem>
       ))}
-    </ListContainer>
+    </div>
   );
 };
 
 export default ImageSearchList;
 
-const ListContainer = styled.div``;
-
-const ListItem = styled.div``;
+const ListItem = styled(Link)``;
