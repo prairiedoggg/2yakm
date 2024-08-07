@@ -153,6 +153,7 @@ export default AlarmSettings;
 const AlarmSettingsContainer = styled.div`
   margin: auto;
   padding: 20px 0;
+  margin-bottom: 160px;
   width: 80vw;
 
   & h2 {

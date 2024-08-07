@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import { Icon } from '@iconify-icon/react';
 import Header from '../Header';
-import Loading from '../Loading'
+import Loading from '../Loading';
 import { Alarm, useAlarmStore } from '../../store/alarm';
 import { getAlarms, deleteAlarm, updateAlarmStatus } from '../../api/alarmApi';
 import LoginCheck from '../LoginCheck';
@@ -80,6 +80,11 @@ const AlarmPage = () => {
             <IconContainer>
               <Icon
                 icon='mdi:pencil'
+                width='20px'
+                height='20px'
+                style={{
+                  color: isDeleteMode ? 'black' : 'gray'
+                }}
                 onClick={() => handleCheckLogin(handleDeleteMode)}
               />
             </IconContainer>
@@ -151,7 +156,10 @@ const IconContainer = styled.div`
   cursor: pointer;
 `;
 
-const NoAlarmsMessage = styled.p``
+const NoAlarmsMessage = styled.p`
+  color: #9c9a9a;
+  font-weight: 300;
+`;
 
 const AlarmList = styled.div`
   width: 100%;
