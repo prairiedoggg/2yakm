@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import styled from 'styled-components';
 import { fetchReviews, createReview } from '../../api/reviewApi';
 import LoginCheck from '../LoginCheck';
+import Toast from '../Toast';
 
 export interface Review {
   id: number;
@@ -20,6 +21,7 @@ const Review = ({ pillId }: { pillId: number }) => {
   const [isWritingReview, setIsWritingReview] = useState<boolean>(false);
   const [newReview, setNewReview] = useState<string>('');
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [showToast, setShowToast] = useState<boolean>(false);
 
   const loadReviews = async (pillId: number, cursor: string | null) => {
     if (isLoading) return;
@@ -45,6 +47,7 @@ const Review = ({ pillId }: { pillId: number }) => {
       setReviews((prevReviews) => [data, ...prevReviews]);
       setNewReview('');
       setIsWritingReview(false);
+      setShowToast(true);
     } catch (error) {
       console.error('리뷰생성 에러:', error);
     }
@@ -115,6 +118,11 @@ const Review = ({ pillId }: { pillId: number }) => {
         ))}
       </ReviewList>
       {isLoading && <LoadingText>로딩 중...</LoadingText>}
+      {showToast && (
+        <Toast onEnd={() => setShowToast(false)}>
+          리뷰가 성공적으로 작성되었습니다.
+        </Toast>
+      )}
     </ReviewContainer>
   );
 };

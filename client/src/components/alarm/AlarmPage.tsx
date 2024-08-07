@@ -6,12 +6,14 @@ import Loading from '../Loading';
 import { Alarm, useAlarmStore } from '../../store/alarm';
 import { getAlarms, deleteAlarm, updateAlarmStatus } from '../../api/alarmApi';
 import LoginCheck from '../LoginCheck';
+import Toast from '../Toast';
 
 const AlarmPage = () => {
   const { alarms, setCurrentPage, setCurrentAlarm, setAlarms } =
     useAlarmStore();
   const [isDeleteMode, setIsDeleteMode] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [showToast, setShowToast] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchAlarms = async () => {
@@ -24,7 +26,6 @@ const AlarmPage = () => {
         setIsLoading(false);
       }
     };
-
     fetchAlarms();
   }, [setAlarms]);
 
@@ -43,6 +44,7 @@ const AlarmPage = () => {
         await updateAlarmStatus(updatedAlarm.id, updatedAlarm.alarmStatus);
         console.log('알람상태:', updatedAlarm.alarmStatus);
         setAlarms(updatedAlarms);
+         setShowToast('알람 상태가 업데이트되었습니다.');
       } catch (error) {
         console.error('알람 상태 업데이트 에러:', error);
       }
@@ -57,6 +59,7 @@ const AlarmPage = () => {
     try {
       await deleteAlarm(id);
       setAlarms(alarms.filter((alarm) => alarm.id !== id));
+       setShowToast('알람이 삭제되었습니다.');
     } catch (error) {
       console.error('에러:', error);
     }
@@ -136,6 +139,7 @@ const AlarmPage = () => {
           </AlarmContainer>
         )}
       </LoginCheck>
+      {showToast && <Toast onEnd={() => setShowToast(null)}>{showToast}</Toast>}
     </>
   );
 };

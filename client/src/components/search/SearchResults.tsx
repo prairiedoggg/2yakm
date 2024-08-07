@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { Icon } from '@iconify-icon/react';
 import informationOutline from '@iconify/icons-mdi/information-outline';
-
 import styled from 'styled-components';
 import {
   fetchFavoriteCount,
@@ -10,7 +9,6 @@ import {
   toggleFavoriteApi
 } from '../../api/favoriteApi';
 import { fetchPillDataByName } from '../../api/searchApi';
-import { useFavoriteStore } from '../../store/favorite';
 import { usePillStore } from '../../store/pill';
 import Loading from '../Loading';
 import Nav from '../Nav';
@@ -18,18 +16,20 @@ import PillExp from './PillExp';
 import Review from './Review';
 import SearchHeader from './SearchHeader';
 import LoginCheck from '../LoginCheck';
+import Toast from '../Toast';
 
 const SearchResults = () => {
   const [searchParams] = useSearchParams();
   const query = searchParams.get('q') || '';
   const { pillData, setPillData, loading, setLoading } = usePillStore();
-  const { isFavorite, setIsFavorite, favoriteCount, setFavoriteCount } =
-    useFavoriteStore();
+  const [isFavorite, setIsFavorite] = useState<boolean>(false);
+  const [favoriteCount, setFavoriteCount] = useState<number>(0);
   const [activeTab, setActiveTab] = useState<string>('effectiveness');
   const [pillId, setPillId] = useState<number | null>(null);
   const [showInfo, setShowInfo] = useState<boolean>(false);
   const [searchType, setSearchType] = useState<string>('name');
   const [activeType, setActiveType] = useState<string>(searchType);
+  const [showToast, setShowToast] = useState<boolean>(false);
 
   const formatTextWithLineBreaks = (text: string) => {
     return text.split('(').map((part, index, array) => (
@@ -69,7 +69,7 @@ const SearchResults = () => {
       }
     };
     fetchData();
-  }, [query, setIsFavorite, setPillData]);
+  }, [query, setIsFavorite, setPillData, setFavoriteCount]);
 
   const handleToggleFavorite = async () => {
     if (!pillId) return;
@@ -78,8 +78,9 @@ const SearchResults = () => {
       await toggleFavoriteApi(
         { id: pillId },
         (response) => {
-          setIsFavorite(!isFavorite);
+          setIsFavorite((prevIsFavorite) => !prevIsFavorite);
           console.log(response.message);
+          setShowToast(true);
         },
         (error) => {
           console.error('좋아요 상태 업데이트 에러:', error);
@@ -198,6 +199,11 @@ const SearchResults = () => {
         </PillMore>
       </SearchResultsContainer>
       <Nav />
+      {showToast && (
+        <Toast onEnd={() => setShowToast(false)}>
+          {isFavorite ? '좋아요가 추가되었습니다.' : '좋아요가 취소되었습니다.'}
+        </Toast>
+      )}
     </>
   );
 };
