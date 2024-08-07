@@ -21,19 +21,6 @@ import Review from './Review';
 import LoginCheck from '../LoginCheck';
 import Toast from '../Toast';
 
-const customStyles = {
-  content: {
-    top: '50%',
-    left: '50%',
-    right: 'auto',
-    bottom: 'auto',
-    marginRight: '-50%',
-    transform: 'translate(-50%, -50%)',
-    maxHeight: '90vh',
-    overflow: 'auto'
-  }
-};
-
 const SearchResults = () => {
   const [searchParams] = useSearchParams();
   const query = searchParams.get('q') || '';
@@ -134,7 +121,16 @@ const SearchResults = () => {
   }
 
   if (!pillData) {
-    return <NotSearched/>;
+    return (
+      <>
+        <SearchHeader
+          activeType={activeType}
+          handleTypeClick={handleTypeClick}
+          setImageResults={() => {}}
+        />
+        <NotSearched />
+      </>
+    );
   }
 
   return (
@@ -257,6 +253,19 @@ const SearchResults = () => {
 };
 
 export default SearchResults;
+
+const customStyles = {
+  content: {
+    top: '50%',
+    left: '50%',
+    right: 'auto',
+    bottom: 'auto',
+    marginRight: '-50%',
+    transform: 'translate(-50%, -50%)',
+    maxHeight: '90vh',
+    overflow: 'auto'
+  }
+};
 
 const SearchResultsContainer = styled.div``;
 
