@@ -2,8 +2,10 @@ import { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import { Icon } from '@iconify-icon/react';
 import Header from '../Header';
+import Loading from '../Loading'
 import { Alarm, useAlarmStore } from '../../store/alarm';
 import { getAlarms, deleteAlarm, updateAlarmStatus } from '../../api/alarmApi';
+import LoginCheck from '../LoginCheck';
 
 const AlarmPage = () => {
   const { alarms, setCurrentPage, setCurrentAlarm, setAlarms } =
@@ -39,7 +41,7 @@ const AlarmPage = () => {
     if (updatedAlarm && updatedAlarm.alarmStatus !== undefined) {
       try {
         await updateAlarmStatus(updatedAlarm.id, updatedAlarm.alarmStatus);
-        console.log('알람상태:', updatedAlarm.alarmStatus)
+        console.log('알람상태:', updatedAlarm.alarmStatus);
         setAlarms(updatedAlarms);
       } catch (error) {
         console.error('알람 상태 업데이트 에러:', error);
@@ -66,54 +68,69 @@ const AlarmPage = () => {
   };
 
   if (isLoading) {
-    return <p>잠시만 기다려주세요..!</p>;
+    return <Loading />;
   }
 
   return (
     <>
       <Header />
-      <AlarmContainer>
-        <IconContainer>
-          <Icon icon='mdi:pencil' onClick={handleDeleteMode} />
-        </IconContainer>
-        <AlarmList>
-          {alarms.map((alarm) => (
-            <AlarmItemContainer key={alarm.id}>
-              <AlarmItem onClick={() => handleEditAlarm(alarm)}>
-                <AlarmHeader>
-                  <AlarmName>{alarm.name}</AlarmName>
-                  <ToggleSwitch onClick={(event) => event.stopPropagation()}>
-                    <input
-                      type='checkbox'
-                      checked={alarm.alarmStatus}
-                      onChange={() => handleToggle(alarm.id)}
-                    />
-                    <Slider />
-                  </ToggleSwitch>
-                </AlarmHeader>
-                <AlarmTimes>
-                  {alarm.times.map((timeObj, i) => (
-                    <AlarmTime key={i}>{timeObj.time}</AlarmTime>
-                  ))}
-                </AlarmTimes>
-              </AlarmItem>
-              {isDeleteMode && (
-                <DeleteButton onClick={() => handleDelete(alarm.id)}>
-                  삭제
-                </DeleteButton>
-              )}
-            </AlarmItemContainer>
-          ))}
-        </AlarmList>
-        <AddAlarm
-          onClick={() => {
-            setCurrentAlarm(null);
-            setCurrentPage('settings');
-          }}
-        >
-          <img src={`/img/plus.svg`} alt='알람추가' />
-        </AddAlarm>
-      </AlarmContainer>
+      <LoginCheck>
+        {(handleCheckLogin) => (
+          <AlarmContainer>
+            <IconContainer>
+              <Icon
+                icon='mdi:pencil'
+                onClick={() => handleCheckLogin(handleDeleteMode)}
+              />
+            </IconContainer>
+            {alarms.length === 0 ? (
+              <NoAlarmsMessage>알람을 추가해주세요</NoAlarmsMessage>
+            ) : (
+              <AlarmList>
+                {alarms.map((alarm) => (
+                  <AlarmItemContainer key={alarm.id}>
+                    <AlarmItem onClick={() => handleEditAlarm(alarm)}>
+                      <AlarmHeader>
+                        <AlarmName>{alarm.name}</AlarmName>
+                        <ToggleSwitch
+                          onClick={(event) => event.stopPropagation()}
+                        >
+                          <input
+                            type='checkbox'
+                            checked={alarm.alarmStatus}
+                            onChange={() => handleToggle(alarm.id)}
+                          />
+                          <Slider />
+                        </ToggleSwitch>
+                      </AlarmHeader>
+                      <AlarmTimes>
+                        {alarm.times.map((timeObj, i) => (
+                          <AlarmTime key={i}>{timeObj.time}</AlarmTime>
+                        ))}
+                      </AlarmTimes>
+                    </AlarmItem>
+                    {isDeleteMode && (
+                      <DeleteButton onClick={() => handleDelete(alarm.id)}>
+                        삭제
+                      </DeleteButton>
+                    )}
+                  </AlarmItemContainer>
+                ))}
+              </AlarmList>
+            )}
+            <AddAlarm
+              onClick={() =>
+                handleCheckLogin(() => {
+                  setCurrentAlarm(null);
+                  setCurrentPage('settings');
+                })
+              }
+            >
+              <img src={`/img/plus.svg`} alt='알람추가' />
+            </AddAlarm>
+          </AlarmContainer>
+        )}
+      </LoginCheck>
     </>
   );
 };
@@ -133,6 +150,8 @@ const IconContainer = styled.div`
   margin-bottom: 20px;
   cursor: pointer;
 `;
+
+const NoAlarmsMessage = styled.p``
 
 const AlarmList = styled.div`
   width: 100%;

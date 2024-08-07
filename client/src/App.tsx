@@ -42,9 +42,9 @@ const App = () => {
           path='/calendar'
           element={<AuthenticatedRoute element={Calendar} />}
         />
-        <Route path='/alarm' element={<AuthenticatedRoute element={Alarm} />} />
+        <Route path='/alarm' element={<Alarm/>} />
         <Route
-          path='/myPage'
+          path='/myPage' 
           element={<AuthenticatedRoute element={MyPage} />}
         />
         <Route path='/login' element={<Login />} />
