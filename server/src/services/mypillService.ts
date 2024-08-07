@@ -10,6 +10,7 @@ interface MyPill {
 interface UpdateData {
   name: string;
   expiredat: string;
+  alarmstatus: boolean;
 }
 
 interface MatchedPills {
@@ -47,10 +48,10 @@ const matchPill = async (name: string): Promise<MatchedPills> => {
 export const addPill = async (userId: string, updateData: UpdateData): Promise<{ newPill: MyPill; matchedPills: MatchedPills }> => {
   try {
     const query = `
-      INSERT INTO mypills (userid, pillname, expiredat)
-      VALUES ($1, $2, $3) RETURNING pillid, pillname, expiredat
+      INSERT INTO mypills (userid, pillname, expiredat, alarmstatus)
+      VALUES ($1, $2, $3, $4) RETURNING pillid, pillname, expiredat, alarmstatus
     `;
-    const values = [userId, updateData.name, updateData.expiredat];
+    const values = [userId, updateData.name, updateData.expiredat, updateData.alarmstatus];
     const result = await pool.query(query, values);
 
     if (result.rows.length === 0) {
@@ -75,10 +76,10 @@ export const addPill = async (userId: string, updateData: UpdateData): Promise<{
 export const updatePill = async (mypillId: string, updateData: UpdateData): Promise<{ updatedPill: MyPill; matchedPills: MatchedPills }> => {
   try {
     const query = `
-      UPDATE mypills SET pillname = $1, expiredat = $2 WHERE pillid = $3 
-      RETURNING pillid, pillname, expiredat
+      UPDATE mypills SET pillname = $1, expiredat = $2, alarmstatus = $3 WHERE pillid = $4 
+      RETURNING pillid, pillname, expiredat, alarmstatus
     `;
-    const values = [updateData.name, updateData.expiredat, mypillId];
+    const values = [updateData.name, updateData.expiredat, updateData.alarmstatus, mypillId];
     const result = await pool.query(query, values);
 
     if (result.rows.length === 0) {
@@ -142,7 +143,7 @@ export const deletePill = async (mypillId: string): Promise<MyPill> => {
   try {
     const query = `
       DELETE FROM mypills WHERE pillid = $1
-      RETURNING pillid, userid, pillname, expiredat
+      RETURNING pillid, userid, pillname, expiredat, alarmstatus
     `;
     const values = [mypillId];
     const result = await pool.query(query, values);

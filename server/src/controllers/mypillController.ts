@@ -13,12 +13,14 @@ import { ParsedQs } from 'qs';
 export const createPillSchema = Joi.object({
   name: Joi.string().required(),
   expiredat: Joi.string().required(),
+  alarmstatus: Joi.boolean().required()
 });
 
 export const updatePillSchema = Joi.object({
   mypillid: Joi.string().required(),
   name: Joi.string().required(),
   expiredat: Joi.string().required(),
+  alarmstatus: Joi.boolean().required()
 });
 
 // Define the request user interface

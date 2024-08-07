@@ -27,6 +27,9 @@ import {
  *                 type: string
  *                 format: date
  *                 example: 2023-12-31
+ *               alarmstatus:
+ *                 type: string
+ *               
  *     responses:
  *       200:
  *         description: 성공
