@@ -266,11 +266,6 @@ const PillInfo = styled.div`
   width: 80vw;
   margin: auto;
 
-  & img {
-    width: 35%;
-    cursor: pointer;
-  }
-
   & section {
     flex: 1;
     padding-left: 15px;
@@ -282,6 +277,8 @@ const PillImgs = styled.div`
   flex-direction: column;
   justify-content: center;
   height: 100%;
+  width: 35%;
+  cursor: pointer;
 
   & img {
     width: 100%;

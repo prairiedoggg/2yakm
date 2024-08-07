@@ -92,7 +92,7 @@ const AlarmPage = () => {
                 width='20px'
                 height='20px'
                 style={{
-                  color: isDeleteMode ? 'black' : 'gray'
+                  color: isDeleteMode ? '#72bf44' : 'gray'
                 }}
                 onClick={() => handleCheckLogin(handleDeleteMode)}
               />
