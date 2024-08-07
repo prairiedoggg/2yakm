@@ -29,7 +29,7 @@ import {
  *                 example: 2023-12-31
  *               alarmstatus:
  *                 type: boolean
- *               
+ *
  *     responses:
  *       200:
  *         description: 성공
@@ -63,7 +63,7 @@ router.post('/', addMyPill);
  *                 type: string
  *                 format: date
  *                 example: 2023-12-31
- *              alarmstatus:
+ *               alarmstatus:
  *                 type: boolean
  *     responses:
  *       200:
