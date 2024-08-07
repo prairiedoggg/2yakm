@@ -114,7 +114,7 @@ export const getPills = async (userId: string, limit: number, offset: number, so
     const totalPages = Math.ceil(totalCount / limit);
 
     const query = `
-      SELECT pillid, pillname, expiredat, createdat
+      SELECT pillid, pillname, expiredat, createdat, alarmstatus
       FROM mypills
       WHERE userid = $1
       ORDER BY ${sortedBy} ${order}
