@@ -28,11 +28,13 @@ RUN cd client && npm run build || echo "클라이언트 빌드 중 오류 발생
 # 서버 빌드
 RUN cd server && npm run build
 
-# NGINX 설정 복사 (필요한 경우)
+# NGINX 설정 복사
 # COPY nginx.conf /etc/nginx/nginx.conf
+COPY nginx.conf /etc/nginx/nginx.conf
+COPY default /etc/nginx/sites-available/default
 
 # 포트 설정
-EXPOSE 3000 5173
+EXPOSE 80 3000 5173
 
 # 시작 스크립트 권한 설정
 RUN chmod +x /chicken_pharm/start.sh
