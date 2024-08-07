@@ -9,7 +9,6 @@ import CalendarSection from './CalendarSection';
 
 const CalendarPage: React.FC = () => {
   const { value, arrow, setArrow, edit, setEdit, setAddTaken } = useDateStore();
-
   dayjs.locale('ko');
   const days = dayjs(value).format('D. ddd');
 
