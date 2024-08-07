@@ -67,10 +67,10 @@ const SearchBox = ({ setImageResults }: SearchBoxProps) => {
       }
       const newQuery = e.target.value.trim();
 
-      if (newQuery === '') {
-        setSearchParams({ q: '' });
-        return;
-      }
+      // if (newQuery === '') {
+      //   setSearchParams({ q: '' });
+      //   return;
+      // }
 
       setSearchParams({ q: newQuery });
 

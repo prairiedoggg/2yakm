@@ -25,7 +25,6 @@ const Review = ({ pillId }: { pillId: number }) => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [showLoginPopup, setShowLoginPopup] = useState<boolean>(false);
   const [popupType, setPopupType] = useState<PopupType>(PopupType.None);
-  const [reviewCount, setReviewCount] = useState<number>(0);
   const navigate = useNavigate();
 
   const loadReviews = async (pillId: number, cursor: string | null) => {
@@ -35,7 +34,6 @@ const Review = ({ pillId }: { pillId: number }) => {
       const data = await fetchReviews({ pillId, cursor });
       setReviews([...reviews, ...data.reviews]);
       setNextCursor(data.nextCursor || null);
-      setReviewCount(data.reviewCount || 0);
     } catch (error) {
       console.error('리뷰불러오기 에러:', error);
     } finally {
