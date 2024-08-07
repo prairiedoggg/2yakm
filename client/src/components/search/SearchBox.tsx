@@ -59,7 +59,13 @@ const SearchBox = ({ setImageResults }: SearchBoxProps) => {
   };
 
   const handleChange = async (e: ChangeEvent<HTMLInputElement>) => {
-    const newQuery = e.target.value;
+    const newQuery = e.target.value.trim();
+
+    if (newQuery === '') {
+      setSearchParams({ q: '' });
+      return;
+    }
+    
     setSearchParams({ q: newQuery });
 
     if (searchType !== 'efficacy') {
