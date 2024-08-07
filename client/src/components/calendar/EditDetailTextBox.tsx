@@ -142,6 +142,7 @@ const EditDetailTextBox = ({ title }: EditDetailTextBoxProps) => {
       default:
         break;
     }
+    console.log(`Deleted ${label}:`, calendarData);
   };
 
   const isPill = title === '약 복용 여부';
