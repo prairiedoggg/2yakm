@@ -19,6 +19,7 @@ import chatbotRouter from './routes/chatbot_route';
 import favoriteRouter from './routes/favorite_route';
 import mypillRouter from './routes/mypill_route';
 import pillRouter from './routes/pill_route';
+import path from 'path';
 
 dotenv.config();
 
@@ -42,11 +43,6 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieParser());
 
-//테스트 404
-app.get('/', (req, res) => {
-  res.send('Hello World! Welcome to the API');
-});
-
 app.use('/api/reviews', reviewRouter);
 app.use('/api/auth', authRouter);
 app.use('/api/favorites', favoriteRouter);
@@ -56,6 +52,13 @@ app.use('/api/chatbot', authByToken, chatbotRouter);
 app.use('/api/calendars', authByToken, calendarRouter);
 app.use('/api/alarms', authByToken, alarmRouter);
 app.use('/api/pills', pillRouter);
+
+// 정적 파일 서빙 (클라이언트 빌드 결과물)
+app.use(express.static(path.join(__dirname, '../public')));
+
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, '../public/index.html'));
+});
 
 app.use(notFoundHandler);
 app.use(errorHandler);
