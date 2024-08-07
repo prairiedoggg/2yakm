@@ -457,7 +457,6 @@ const Content = styled.div`
 
 .submitButton:disabled{
   background-color: #C7C7C7;
-}
 }`;
 
 export default Register;
