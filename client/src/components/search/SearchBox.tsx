@@ -60,27 +60,28 @@ const SearchBox = ({ setImageResults }: SearchBoxProps) => {
     }
   };
 
-  const handleChange = useCallback(
-    debounce((e: ChangeEvent<HTMLInputElement>) => {
-      if (isImageSearch) {
-        setIsImageSearch(false);
-      }
-      const newQuery = e.target.value.trim();
-
-      // if (newQuery === '') {
-      //   setSearchParams({ q: '' });
-      //   return;
-      // }
-
-      setSearchParams({ q: newQuery });
-
-      if (searchType !== 'efficacy') {
-        fetchSuggestions(newQuery);
-      }
+  const debouncedFetchSuggestions = useCallback(
+    debounce((newQuery: string) => {
+      fetchSuggestions(newQuery);
     }, 300),
-    [searchType, isImageSearch]
+    []
   );
 
+  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const newQuery = e.target.value.trim();
+
+    if (isImageSearch) {
+      setIsImageSearch(false);
+    }
+
+    setSearchParams({ q: newQuery });
+
+    if (newQuery === '') return;
+
+    if (searchType !== 'efficacy') {
+      debouncedFetchSuggestions(newQuery);
+    }
+  };
 
   const handleSearch = () => {
     if (query.trim()) {
