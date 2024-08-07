@@ -28,8 +28,8 @@ RUN cd client && npm run build || echo "클라이언트 빌드 중 오류 발생
 RUN cd server && npm run build
 
 # NGINX 설정 복사
-# COPY nginx.conf /etc/nginx/nginx.conf
-COPY nginx.conf /etc/nginx/nginx.conf
+
+COPY nginx.conf /etc/nginx
 COPY default /etc/nginx/sites-available/default
 
 # 포트 설정
