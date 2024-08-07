@@ -4,7 +4,8 @@ import {
   KeyboardEvent,
   SetStateAction,
   useEffect,
-  useState
+  useState,
+  useCallback
 } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import styled from 'styled-components';
@@ -18,6 +19,7 @@ import { useSearchHistoryStore } from '../../store/searchHistory';
 import BottomPictureSheet from '../myPage/BottomPictureSheet';
 import Popup from '../popup/Popup';
 import PopupContent, { PopupType } from '../popup/PopupMessages.tsx';
+import { debounce } from 'lodash-es';
 
 interface SearchBoxProps {
   setImageResults?: Dispatch<SetStateAction<PillData[]>>;
@@ -58,24 +60,27 @@ const SearchBox = ({ setImageResults }: SearchBoxProps) => {
     }
   };
 
-  const handleChange = async (e: ChangeEvent<HTMLInputElement>) => {
-    const newQuery = e.target.value.trim();
+  const handleChange = useCallback(
+    debounce((e: ChangeEvent<HTMLInputElement>) => {
+      if (isImageSearch) {
+        setIsImageSearch(false);
+      }
+      const newQuery = e.target.value.trim();
 
-    if (newQuery === '') {
-      setSearchParams({ q: '' });
-      return;
-    }
-    
-    setSearchParams({ q: newQuery });
+      if (newQuery === '') {
+        setSearchParams({ q: '' });
+        return;
+      }
 
-    if (searchType !== 'efficacy') {
-      await fetchSuggestions(newQuery);
-    }
+      setSearchParams({ q: newQuery });
 
-    if (isImageSearch) {
-      setIsImageSearch(false);
-    }
-  };
+      if (searchType !== 'efficacy') {
+        fetchSuggestions(newQuery);
+      }
+    }, 300),
+    [searchType, isImageSearch]
+  );
+
 
   const handleSearch = () => {
     if (query.trim()) {
