@@ -25,7 +25,6 @@ const SearchResults = () => {
   const [isFavorite, setIsFavorite] = useState<boolean>(false);
   const [favoriteCount, setFavoriteCount] = useState<number>(0);
   const [activeTab, setActiveTab] = useState<string>('effectiveness');
-  const [pillId, setPillId] = useState<number | null>(null);
   const [showInfo, setShowInfo] = useState<boolean>(false);
   const [searchType, setSearchType] = useState<string>('name');
   const [activeType, setActiveType] = useState<string>(searchType);
@@ -49,18 +48,18 @@ const SearchResults = () => {
       setLoading(true);
       try {
         const data = await fetchPillDataByName(query, 1, 0);
+
         if (data) {
-          setPillId(data.id);
           setPillData(data);
-          console.log('약데이터', data);
+
           const count = await fetchFavoriteCount(data.id);
-          console.log('좋아요 수', count);
           setFavoriteCount(count);
-          const status = await fetchFavoriteStatusApi(data.id);
+
+       const { status } = await fetchFavoriteStatusApi(data.id);
           setIsFavorite(status);
+
         } else {
           setPillData(null);
-          setPillId(null);
         }
       } catch (error) {
         console.error('검색결과페이지 실패:', error);
@@ -69,14 +68,14 @@ const SearchResults = () => {
       }
     };
     fetchData();
-  }, [query, setIsFavorite, setPillData, setFavoriteCount]);
+  }, [query, setIsFavorite, setPillData]);
 
   const handleToggleFavorite = async () => {
-    if (!pillId) return;
+    if (!pillData?.id) return;
 
     try {
       await toggleFavoriteApi(
-        { id: pillId },
+        { id: pillData.id },
         (response) => {
           setIsFavorite((prevIsFavorite) => !prevIsFavorite);
           console.log(response.message);
@@ -86,7 +85,7 @@ const SearchResults = () => {
           console.error('좋아요 상태 업데이트 에러:', error);
         }
       );
-      const count = await fetchFavoriteCount(pillId);
+      const count = await fetchFavoriteCount(pillData.id);
       setFavoriteCount(count);
     } catch (error) {
       console.error('좋아요상태 실패:', error);
@@ -193,7 +192,7 @@ const SearchResults = () => {
             {activeTab === 'effectiveness' ? (
               <PillExp />
             ) : (
-              <Review pillId={pillId!} />
+              <Review pillId={pillData.id} />
             )}
           </Contants>
         </PillMore>
