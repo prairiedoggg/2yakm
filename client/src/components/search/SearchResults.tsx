@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { Icon } from '@iconify-icon/react';
 import informationOutline from '@iconify/icons-mdi/information-outline';
-import Modal from 'react-modal'; 
+import Modal from 'react-modal';
 import styled from 'styled-components';
 import {
   fetchFavoriteCount,
@@ -12,10 +12,12 @@ import {
 import { fetchPillDataByName } from '../../api/searchApi';
 import { usePillStore } from '../../store/pill';
 import Loading from '../Loading';
+import NotSearched from './NotSearched';
+import SearchHeader from './SearchHeader';
 import Nav from '../Nav';
 import PillExp from './PillExp';
 import Review from './Review';
-import SearchHeader from './SearchHeader';
+
 import LoginCheck from '../LoginCheck';
 import Toast from '../Toast';
 
@@ -43,8 +45,8 @@ const SearchResults = () => {
   const [searchType, setSearchType] = useState<string>('name');
   const [activeType, setActiveType] = useState<string>(searchType);
   const [showToast, setShowToast] = useState<boolean>(false);
-   const [modalIsOpen, setModalIsOpen] = useState<boolean>(false);
-   const [modalImageSrc, setModalImageSrc] = useState<string>('');
+  const [modalIsOpen, setModalIsOpen] = useState<boolean>(false);
+  const [modalImageSrc, setModalImageSrc] = useState<string>('');
 
   const formatTextWithLineBreaks = (text: string) => {
     return text.split('(').map((part, index, array) => (
@@ -71,9 +73,8 @@ const SearchResults = () => {
           const count = await fetchFavoriteCount(data.id);
           setFavoriteCount(count);
 
-       const { status } = await fetchFavoriteStatusApi(data.id);
+          const { status } = await fetchFavoriteStatusApi(data.id);
           setIsFavorite(status);
-
         } else {
           setPillData(null);
         }
@@ -113,7 +114,6 @@ const SearchResults = () => {
     setActiveType(type);
   };
 
-
   const openModal = (src: string) => {
     setModalImageSrc(src);
     setModalIsOpen(true);
@@ -134,7 +134,7 @@ const SearchResults = () => {
   }
 
   if (!pillData) {
-    return <div className='searchInner'>검색 결과가 없습니다.</div>;
+    return <NotSearched/>;
   }
 
   return (
@@ -207,12 +207,12 @@ const SearchResults = () => {
             </TagContainer>
           </section>
         </PillInfo>
-        <Exp>
-          출처 :{' '}
+        <Source>
+          <span>출처</span>
           <a target='_blank' href={pillData.source}>
             {pillData.source}
           </a>
-        </Exp>
+        </Source>
         <PillMore>
           <Menu>
             {tabs.map((tab) => (
@@ -280,6 +280,7 @@ const PillInfo = styled.div`
 const PillImgs = styled.div`
   display: flex;
   flex-direction: column;
+  justify-content: center;
   height: 100%;
 
   & img {
@@ -340,18 +341,25 @@ const InfoBox = styled.div`
   font-size: 14px;
 `;
 
-const Exp = styled.p`
-  margin: 15px 20px;
-  color: #696969;
+const Source = styled.p`
+  display: flex;
+  align-items: center;
+  margin: 8px 20px;
   font-size: 14px;
 
   & a {
-    color: inherit;
+    display: inline-block;
+    max-width: 300px;
+    color: #696969;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    margin-left: 5px;
   }
 `;
 
 const PillMore = styled.div`
-  margin-top: 30px;
+  margin-top: 20px;
 `;
 
 const Menu = styled.div`
