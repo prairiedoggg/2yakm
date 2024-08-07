@@ -1,25 +1,20 @@
-/**
- * File Name : Toast
- * Description : 토스트메시지
- * Author : 오선아
- *
- * History
- * Date        Author   Status    Description
- * 2024.07.21  오선아   Created
- */
-
-import React, { useState } from 'react';
+import React, { useEffect } from 'react';
 import styled, { keyframes } from 'styled-components';
 
+const Toast = ({
+  children,
+  onEnd
+}: {
+  children: React.ReactNode;
+  onEnd: () => void;
+}) => {
+  useEffect(() => {
+    setTimeout(() => {
+      onEnd();
+    }, 2000);
+  }, []);
 
-
-const Toast = ({str}:{str:string}) => {
-      
-  return (
-    <ToastContainer>
-        {str}
-    </ToastContainer>
-  );
+  return <ToastContainer>{children}</ToastContainer>;
 };
 
 const toastAnimation = keyframes`
@@ -42,9 +37,12 @@ const toastAnimation = keyframes`
 `;
 
 const ToastContainer = styled.div`
-position: fixed;
+  position: fixed;
   top: 50%;
   left: 50%;
+  display: inline-block;
+  max-width: 300px;
+
   transform: translate(-50%, -50%);
   background-color: rgba(51, 51, 51, 0.8);
   color: #fff;
@@ -52,8 +50,7 @@ position: fixed;
   border-radius: 5px;
   z-index: 1000;
   animation: ${toastAnimation} 2s ease-out;
+  animation-fill-mode: forwards;
 `;
-
-
 
 export default Toast;

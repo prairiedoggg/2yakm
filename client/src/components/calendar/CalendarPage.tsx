@@ -1,63 +1,64 @@
-import styled from 'styled-components';
-import Header from '../Header';
+import { Icon } from '@iconify-icon/react/dist/iconify.mjs';
 import dayjs from 'dayjs';
+import styled from 'styled-components';
+import { useDateStore } from '../../store/calendar';
+import Header from '../Header';
+import Nav from '../Nav';
 import CalendarDetail from './CalendarDetail';
 import CalendarSection from './CalendarSection';
-import Nav from '../Nav';
-import { useDateStore } from '../../store/store';
-import { useAuthentication } from '../../store/authentication';
-import { useNavigate } from 'react-router-dom';
-import { useEffect } from 'react';
 
 const CalendarPage: React.FC = () => {
-  const { isAuthenticated } = useAuthentication();
-  const { value, arrow, setArrow, edit, setEdit } = useDateStore();
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    if (!isAuthenticated) {
-      navigate('/login');
-    }
-  }, [isAuthenticated]);
+  const { value, arrow, setArrow, edit, setEdit, setAddTaken } = useDateStore();
 
   dayjs.locale('ko');
   const days = dayjs(value).format('D. ddd');
 
-  const handleSrc = (img: 'edit' | 'arrow') => {
-    if (img === 'edit') {
-      return edit ? '/img/editing.png' : '/img/calendarEdit.png';
-    } else if (img === 'arrow') {
-      return arrow ? '/img/calendarArrowDown.png' : '/img/calendarArrow.png';
+  const openEdit = (open: boolean) => {
+    if (!open) {
+      setAddTaken(false);
+      setEdit(false);
+    } else {
+      setEdit(true);
     }
+    setArrow(true);
   };
 
-  const handleEdit = () => {
-    setEdit();
+  const handleModal = () => {
+    setEdit(false);
+    setAddTaken(false);
+    setArrow(false);
   };
 
-  return isAuthenticated ? (
+  return (
     <CalendarContainer>
-      <Modal expanded={arrow} onClick={setArrow} />
+      <Modal expanded={arrow} onClick={() => handleModal()} />
       <Header />
       <MainContent>
         <CalendarSection />
         <EntireDetail expanded={arrow}>
           <CalandarDatailContainer>
-            <ImgContainer>
-              <Arrow
-                src={handleSrc('arrow')}
-                alt='Arrow Icon'
-                onClick={setArrow}
-              />
+            <ImgContainer onClick={() => setArrow(!arrow)}>
+              <Line />
             </ImgContainer>
-            <DateContainer>
+            <TopContainer onClick={() => setArrow(true)}>
               <DateBox>{days}</DateBox>
-              <Edit
-                src={handleSrc('edit')}
-                alt='Edit Button'
-                onClick={handleEdit}
-              />
-            </DateContainer>
+              {!edit ? (
+                <Icon
+                  icon='uil:edit'
+                  width='20px'
+                  height='20px'
+                  onClick={() => openEdit(true)}
+                />
+              ) : (
+                <Icon
+                  icon='uil:edit'
+                  width='20px'
+                  height='20px'
+                  style={{ color: '#72bf44' }}
+                  onClick={() => openEdit(false)}
+                />
+              )}
+            </TopContainer>
           </CalandarDatailContainer>
           <DetailContainer>
             <CalendarDetail />
@@ -66,7 +67,7 @@ const CalendarPage: React.FC = () => {
       </MainContent>
       <Nav />
     </CalendarContainer>
-  ) : null;
+  );
 };
 
 const CalendarContainer = styled.div`
@@ -88,7 +89,7 @@ const EntireDetail = styled.div<{ expanded: boolean }>`
   position: ${({ expanded }) => (expanded ? 'absolute' : 'relative')};
   bottom: ${({ expanded }) => (expanded ? '80px' : '0')};
   width: 100%;
-  height: ${({ expanded }) => (expanded ? '60%' : 'auto')};
+  height: ${({ expanded }) => (expanded ? '65%' : 'auto')};
   margin-bottom: ${({ expanded }) => (expanded ? 'auto' : '80px')};
   background-color: #ffffff;
   display: flex;
@@ -101,34 +102,25 @@ const EntireDetail = styled.div<{ expanded: boolean }>`
 `;
 
 const CalandarDatailContainer = styled.div`
-  padding: 5px 25px;
+  padding: 0px 25px;
 `;
 
 const ImgContainer = styled.div`
-  text-align: center;
-  margin: 5px 0;
-`;
-
-const Arrow = styled.img`
-  width: 20px;
-  height: auto;
-  cursor: pointer;
-`;
-
-const DateContainer = styled.div`
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
+`;
+
+const Line = styled.div`
+  width: 80px;
+  height: 3px;
+  background-color: #a9a9a9;
+  border-radius: 10px;
+  margin-top: 10px;
 `;
 
 const DateBox = styled.div`
   font-weight: 500;
   font-size: 14pt;
-`;
-
-const Edit = styled.img`
-  width: 18px;
-  height: 18px;
-  cursor: pointer;
 `;
 
 const DetailContainer = styled.div`
@@ -146,6 +138,12 @@ const Modal = styled.div<{ expanded: boolean }>`
   background: rgba(0, 0, 0, 0.3);
   z-index: ${({ expanded }) => (expanded ? '10' : '-1')};
   opacity: ${({ expanded }) => (expanded ? '1' : '0')};
+`;
+
+const TopContainer = styled.div`
+  display: flex;
+  justify-content: space-between;
+  margin-top: 20px;
 `;
 
 export default CalendarPage;

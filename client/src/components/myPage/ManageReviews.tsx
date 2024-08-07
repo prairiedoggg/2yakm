@@ -1,54 +1,159 @@
-/**
-File Name : EditMyInformation
-Description : 내 정보 수정 페이지
-Author : 오선아
-
-History
-Date        Author   Status    Description
-2024.07.19  오선아   Created
-*/
-
 import { Icon } from '@iconify-icon/react';
-import { useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
+import { fetchUserAllReview, deleteReview } from '../../api/reviewApi';
+import Loading from '../Loading';
+import Popup from '../popup/Popup';
+import PopupContent, { PopupType } from '../popup/PopupMessages';
+import { useNavigate } from 'react-router-dom';
+import Toast from '../Toast';
 
-type MedicationItem = {
-  title: string;
-  titleEn: string;
-  desc: string;
-};
+interface MedicationItem {
+  id: number;
+  name: string;
+  createdAt: string;
+  content: string;
+}
 
 const ManageReviews = () => {
   const [deleteItem, setDeleteItem] = useState(false);
+  const [itemCount, setItemCount] = useState(0);
+  const [loading, setLoading] = useState(false);
+  const [items, setItems] = useState<MedicationItem[]>([]);
+  const [selected, setSelected] = useState<MedicationItem>();
+  const [popupType, setPopupType] = useState(PopupType.None);
+  const [offset, setOffset] = useState(0);
+  const [limit] = useState(10);
+  const [hasMore, setHasMore] = useState(true);
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  const [toastMessage, setToastMessage] = useState('');
 
-  const items: MedicationItem[] = [
-    // test
-    {
-      title: '타이레놀',
-      titleEn: 'Tylenol Tablet 500mg',
-      desc: '종합 감기약으로 타이레놀 좋습니다.'
-    },
-    {
-      title: '타이레놀',
-      titleEn: 'Tylenol Tablet 500mg',
-      desc: '종합 감기약으로 타이레놀 좋습니다.'
-    },
-    {
-      title: '타이레놀',
-      titleEn: 'Tylenol Tablet 500mg',
-      desc: '종합 감기약으로 타이레놀 좋습니다.'
+  const navigate = useNavigate();
+  const maxTextLength = 15;
+
+  const fetchDatas = () => {
+    setLoading(true);
+
+    fetchUserAllReview(
+      limit,
+      offset,
+      'createdAt',
+      'DESC',
+      (data) => {
+        const reviews = data.data;
+        const temp: MedicationItem[] = reviews.map((d: any) => ({
+          id: d.id,
+          name: d.name,
+          content: d.content,
+          createdAt: new Date(d.createdat).toDateString()
+        }));
+        setLoading(false);
+
+        setItems((prevData) => [...prevData, ...temp]);
+        setOffset((prevOffset) => prevOffset + temp.length);
+        setHasMore(temp.length === limit);
+
+        setItemCount(data.totalCount);
+      },
+      () => {
+        setLoading(false);
+      }
+    );
+  };
+
+  const handleScroll = useCallback(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    const bottom =
+      container.scrollHeight === container.scrollTop + container.clientHeight;
+
+    if (bottom && !loading && hasMore) {
+      fetchDatas();
     }
-  ];
+  }, [loading, hasMore, offset]);
 
-  const renderItems = (item: MedicationItem, showHr: boolean) => {
+  useEffect(() => {
+    fetchDatas();
+  }, []);
+
+  useEffect(() => {
+    const container = containerRef.current;
+    if (container) container.addEventListener('scroll', handleScroll);
+
+    return () => {
+      if (container) container.removeEventListener('scroll', handleScroll);
+    };
+  }, [handleScroll]);
+
+  const getPopupContent = (type: PopupType) => {
+    switch (type) {
+      case PopupType.DeleteReview:
+        return (
+          <div>
+            <b>{selected?.name}</b>해당 리뷰를 삭제하시겠어요?
+            <button
+              className='bottomClose'
+              onClick={() => {
+                setLoading(true);
+
+                deleteReview(
+                  selected?.id ?? -1,
+                  () => {
+                    setItems((prevItems) =>
+                      prevItems.filter((item) => item.id !== selected?.id)
+                    );
+                    setItemCount(itemCount - 1);
+                    setLoading(false);
+                    setSelected(undefined);
+                    setToastMessage('리뷰 삭제 완료!');
+                  },
+                  () => {
+                    setPopupType(PopupType.DeleteFavoriteFailure);
+                    setSelected(undefined);
+                    setLoading(false);
+                  }
+                );
+              }}
+            >
+              리뷰제거
+            </button>
+          </div>
+        );
+
+      default:
+        return PopupContent(type, navigate);
+    }
+  };
+
+  const renderItems = (item: MedicationItem, showHr: boolean, key: number) => {
     return (
-      <Item>
+      <Item key={key}>
         <div className='title'>
-          <div className='name_ko'>{item.title}</div>
-          <div className='name_en'>{item.titleEn}</div>
-          {deleteItem ? <div className='delete-button'>삭제</div> : ''}
+          <div className='title2'>
+            <div className='name_ko'>
+              {' '}
+              {item.name.length > maxTextLength
+                ? item.name.substring(0, maxTextLength) + '...'
+                : item.name}
+            </div>
+            <div className='name_en'>{item.createdAt}</div>
+          </div>
+          {deleteItem ? (
+            <div
+              className='delete-button'
+              onClick={() => {
+                setSelected(item);
+                setPopupType(PopupType.DeleteReview);
+              }}
+            >
+              삭제
+            </div>
+          ) : (
+            ''
+          )}
         </div>
-        <div className='desc'>{item.desc}</div>
+        <div className='desc'>{item.content}</div>
         {showHr ? <hr /> : ''}
       </Item>
     );
@@ -58,7 +163,7 @@ const ManageReviews = () => {
     <MyPageContainer>
       <StyledContent>
         <div className='totalCount'>
-          내가 쓴 총 리뷰 {items.length}개{' '}
+          내가 쓴 총 리뷰 {itemCount}개{' '}
           <Icon
             onClick={() => setDeleteItem(!deleteItem)}
             icon='ic:baseline-edit'
@@ -69,10 +174,19 @@ const ManageReviews = () => {
         </div>
         <div className='items'>
           {items.map((item, index) =>
-            renderItems(item, index < items.length - 1)
+            renderItems(item, index < items.length - 1, index)
           )}
         </div>
       </StyledContent>
+      {loading && <Loading />}
+      {popupType !== PopupType.None && (
+        <Popup onClose={() => setPopupType(PopupType.None)}>
+          {getPopupContent(popupType)}
+        </Popup>
+      )}
+      {toastMessage != '' && (
+        <Toast onEnd={() => setToastMessage('')}>{toastMessage}</Toast>
+      )}
     </MyPageContainer>
   );
 };
@@ -103,6 +217,8 @@ const StyledContent = styled.div`
     display: flex;
     flex-direction: column;
     gap: 10px;
+    overflow: auto;
+    padding-right: 10px;
   }
 `;
 
@@ -118,11 +234,16 @@ const Item = styled.div`
   .title {
     display: flex;
     gap: 5px;
+    justify-content: space-between;
+  }
+
+  .title2 {
+    justify-content: space-between;
   }
 
   .name_ko {
     font-weight: bold;
-    font-size: 1.2em;
+    font-size: 1em;
   }
 
   .name_en {
@@ -131,14 +252,14 @@ const Item = styled.div`
   }
 
   .delete-button {
-    position: absolute;
     right: 30px;
     background-color: #d9d9d9;
     border: none;
     border-radius: 25px;
     padding: 3px 8px;
     cursor: pointer;
-    font-size: 0.9em;
+    font-size: 0.8em;
+    height: 22px;
   }
 `;
 

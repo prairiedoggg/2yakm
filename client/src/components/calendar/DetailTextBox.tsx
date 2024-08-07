@@ -1,261 +1,161 @@
 import styled from 'styled-components';
-
-interface ColorTextProps {
-  temp?: number;
-  fasted?: number;
-  afterMeals?: number;
-  color: string;
-}
-
-// 색상 변화
-const ColorText = ({ color, temp, fasted, afterMeals }: ColorTextProps) => {
-  return (
-    <TextContainer>
-      {fasted !== undefined && (
-        <Text style={{ fontSize: '13pt', lineHeight: '25px' }}>
-          공복 혈당:&nbsp;
-        </Text>
-      )}
-      {afterMeals !== undefined && (
-        <Text style={{ fontSize: '13pt', lineHeight: '25px' }}>
-          식후 혈당:&nbsp;
-        </Text>
-      )}
-      <Text style={{ color, fontWeight: '600' }}>
-        {temp !== undefined && <Text>{temp}</Text>}
-        {fasted !== undefined && <Blood>{fasted}</Blood>}
-        {afterMeals !== undefined && <Blood>{afterMeals}</Blood>}
-      </Text>
-      {(fasted !== undefined || afterMeals !== undefined) && (
-        <Unit>&nbsp;mg/dL</Unit>
-      )}
-    </TextContainer>
-  );
-};
+import { useDateStore } from '../../store/calendar';
+import Info from '../Info';
+import BloodSugar from './calendarDetails/BloodSugar';
+import IsPillTaken from './calendarDetails/IsPillTaken';
+import Photo from './calendarDetails/Photo';
+import Temperature from './calendarDetails/Temperature';
+import Weight from './calendarDetails/Weight';
 
 interface DetailTextBoxProps {
   title: string;
-  time?: string[][];
-  pillName?: string[];
-  isPillTaken?: boolean[][]; // 배열로 수정
-  bloodSugar?: number[];
+  pillData?: {
+    name?: string;
+    time?: string[];
+    taken?: boolean[];
+  }[];
+  bloodsugarbefore?: number;
+  bloodsugarafter?: number;
   temp?: number;
   weight?: number;
-  photo?: boolean;
+  photo?: string;
 }
 
 const DetailTextBox = ({
   title,
-  pillName,
-  time,
-  isPillTaken,
-  bloodSugar,
+  pillData,
+  bloodsugarbefore,
+  bloodsugarafter,
   temp,
   weight,
   photo
 }: DetailTextBoxProps) => {
-  // 약 복용 여부
-  const handleIsTakenPill = (times: string[], takenStatuses: boolean[]) => {
-    return times.map((time, index) => (
-      <StyledLabel key={index}>
-        <StyledInput type='checkbox' checked={takenStatuses[index]} />
-        <Time>{time}</Time>
-      </StyledLabel>
-    ));
-  };
+  const { setEdit, setArrow } = useDateStore();
 
-  // 혈당에 따른 글자색 변화
-  const getBloodSugarColor = (value: number, isFasted: boolean) => {
-    if (isFasted) {
-      return value < 100 ? '#23AF51' : value < 126 ? '#F78500' : '#EE3610';
+  const handleInfoText = () => {
+    switch (title) {
+      case '혈당':
+        return (
+          <Info
+            text={
+              '정상 : <br /> 공복 혈당 100미만, 식후 혈당 140미만 <br /> <br />관리 필요: <br /> 공복혈당 100이상 126미만, 식후혈당 140이상 200미만<br/> <br />당뇨:  <br />공복혈당 126이상, 식후혈당 200이상 '
+            }
+            category='혈당'
+          />
+        );
+      case '체온':
+        return (
+          <Info
+            text={
+              '정상: 35.8 ~ 37.2도  <br /> <br />미열: 37.2 ~ 37.9도 <br /> <br />중등도열: 38 ~ 38.9도  <br /> <br />고열: 39도 이상 '
+            }
+            category='체온'
+          />
+        );
+      case '사진 기록':
+        return (
+          <Info
+            text={
+              '피부 염증처럼 상태를 기록하고 싶은 부분의 사진을 등록해보세요.<br /> 이후 병원 진료에 도움을 받을 수 있어요.'
+            }
+            category='사진 기록'
+          />
+        );
+      default:
+        return null;
     }
-    return value < 140 ? '#23AF51' : value < 200 ? '#F78500' : '#EE3610';
-  };
-
-  const handleBloodSugar = (isAfter: boolean) => {
-    if (!bloodSugar) return null;
-    const [fasted, afterMeals] = bloodSugar;
-    if ((isAfter && afterMeals === 0) || (!isAfter && fasted === 0))
-      return null;
-    const color = isAfter
-      ? getBloodSugarColor(afterMeals, false)
-      : getBloodSugarColor(fasted, true);
-    return (
-      <ColorText color={color} {...(isAfter ? { afterMeals } : { fasted })} />
-    );
-  };
-
-  // 온도에 따른 글씨색 변화
-  const handleTemperature = () => {
-    if (!temp) return <ColorText color='#000000' />;
-    const color =
-      temp >= 39
-        ? '#C20000'
-        : temp >= 38
-        ? '#F69999'
-        : temp >= 37.2
-        ? '#D8C100'
-        : temp >= 35.8
-        ? '#72BF44'
-        : '#000000';
-    return <ColorText temp={temp} color={color} />;
   };
 
   const handleContent = () => {
     switch (title) {
       case '약 복용 여부':
-        return (
-          <UnitContainer>
-            <PillCheck>
-              {pillName?.map((pill, index) => (
-                <PillRow key={index}>
-                  <div>{pill}</div>
-                  <PillTimeContainer>
-                    {time &&
-                      time[index] &&
-                      isPillTaken &&
-                      handleIsTakenPill(time[index], isPillTaken[index])}
-                  </PillTimeContainer>
-                </PillRow>
-              ))}
-            </PillCheck>
-          </UnitContainer>
-        );
+        return <IsPillTaken pillData={pillData} edit={false} />;
       case '혈당':
         return (
-          <UnitContainer>
-            <div>
-              {handleBloodSugar(false)}
-              {handleBloodSugar(true)}
-            </div>
-          </UnitContainer>
+          <BloodSugar
+            bloodsugarbefore={bloodsugarbefore}
+            bloodsugarafter={bloodsugarafter}
+          />
         );
       case '체온':
-        return (
-          <UnitContainer>
-            {handleTemperature()}
-            <Unit>&nbsp;°C</Unit>
-          </UnitContainer>
-        );
+        return <Temperature temp={temp} />;
       case '체중':
-        return (
-          <UnitContainer>
-            <Text style={{ fontWeight: '600' }}>{weight}</Text>
-            <Unit>&nbsp;kg</Unit>
-          </UnitContainer>
-        );
+        return <Weight weight={weight} />;
       case '사진 기록':
-        return <UnitContainer></UnitContainer>;
+        return <Photo photo={photo} />;
       default:
         return null;
     }
   };
 
   const isRender =
-    (time && time.length > 0) ||
-    (bloodSugar && bloodSugar.some((value) => value !== 0)) ||
-    (temp && temp !== 0) ||
-    (weight && weight !== 0) ||
-    photo;
+    (pillData && pillData.length > 0) ||
+    (bloodsugarbefore !== undefined && bloodsugarbefore !== 0) ||
+    (bloodsugarafter !== undefined && bloodsugarafter !== 0) ||
+    (temp !== undefined && temp !== 0) ||
+    (weight !== undefined && weight !== 0) ||
+    (photo !== undefined && photo !== null);
+
+  const isEmpty =
+    (!pillData || pillData.length === 0) &&
+    (bloodsugarbefore === undefined || bloodsugarbefore === 0) &&
+    (bloodsugarafter === undefined || bloodsugarafter === 0) &&
+    (temp === undefined || temp === 0) &&
+    (weight === undefined || weight === 0) &&
+    (photo === undefined || photo === null);
+
+  const isPill = title === '약 복용 여부';
+
+  const openEdit = () => {
+    setEdit(true);
+    setArrow(true);
+  };
 
   return isRender ? (
-    <Container isPill={title === '약 복용 여부'}>
-      <ContentTitle>{title}</ContentTitle>
-      {handleContent()}
-    </Container>
+    <PillContainer isPill={isPill} onClick={() => setArrow(true)}>
+      <ContentTitle>
+        {title}
+        {handleInfoText()}
+      </ContentTitle>
+      <UnitContainer>{handleContent()}</UnitContainer>
+    </PillContainer>
+  ) : isEmpty ? (
+    <Empty onClick={() => openEdit()}>
+      {title} 정보 없음. 추가하려면 탭 하세요.
+    </Empty>
   ) : null;
 };
 
-const Container = styled.div<{ isPill?: boolean }>`
+const PillContainer = styled.div<{ isPill?: boolean }>`
   border: 0.5px #d9d9d9 solid;
   border-radius: 10px;
   padding: 13px 10px;
   margin: 15px 0;
   display: ${({ isPill }) => (isPill ? 'block' : 'flex')};
   justify-content: ${({ isPill }) => (isPill ? 'normal' : 'space-between')};
+  cursor: pointer;
 `;
 
 const ContentTitle = styled.div`
   font-size: 14pt;
+  display: flex;
 `;
 
 const UnitContainer = styled.div`
   display: flex;
 `;
 
-const Text = styled.div`
-  font-size: 15pt;
-`;
-
-const Blood = styled.div`
-  font-size: 15pt;
-  width: 40px;
-  text-align: center;
-`;
-
-const TextContainer = styled.div`
-  display: flex;
-`;
-
-const Unit = styled.div`
-  font-size: 12pt;
-  line-height: 25px;
-`;
-
-const StyledLabel = styled.label`
-  display: flex;
-`;
-
-const StyledInput = styled.input`
-  appearance: none;
-  border: 1.5px solid gainsboro;
-  border-radius: 0.35rem;
-  width: 1.5rem;
-  height: 1.5rem;
-
-  &:checked {
-    border-color: transparent;
-    background-image: url("data:image/svg+xml,%3csvg viewBox='0 0 16 16' fill='white' xmlns='http://www.w3.org/2000/svg'%3e%3cpath d='M5.707 7.293a1 1 0 0 0-1.414 1.414l2 2a1 1 0 0 0 1.414 0l4-4a1 1 0 0 0-1.414-1.414L7 8.586 5.707 7.293z'/%3e%3c/svg%3e");
-    background-size: 120% 120%;
-    background-position: 50%;
-    background-repeat: no-repeat;
-    background-color: #72bf44;
-  }
-
-  &:not(:checked) {
-    border-color: transparent;
-    background-image: url("data:image/svg+xml,%3csvg viewBox='0 0 16 16' fill='white' xmlns='http://www.w3.org/2000/svg'%3e%3cpath d='M5.707 7.293a1 1 0 0 0-1.414 1.414l2 2a1 1 0 0 0 1.414 0l4-4a1 1 0 0 0-1.414-1.414L7 8.586 5.707 7.293z'/%3e%3c/svg%3e");
-    background-size: 120% 120%;
-    background-position: 50%;
-    background-repeat: no-repeat;
-    background-color: #d9d9d9;
-  }
-`;
-
-const Time = styled.div`
-  display: flex;
-  align-items: center;
-`;
-
-const PillCheck = styled.div`
+const Empty = styled.div`
+  border-radius: 10px;
+  background-color: #ececec;
+  border: #d9d9d9 solid 0.5px;
+  height: 50px;
+  padding-left: 10px;
+  line-height: 50px;
+  font-size: 10.5pt;
   margin-top: 10px;
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-`;
-
-const PillRow = styled.div`
-  display: flex;
-  align-items: center;
-  margin-top: 10px;
-  justify-content: space-between;
-`;
-
-const PillTimeContainer = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin-left: 10px;
+  color: #9b9a9a;
+  cursor: pointer;
 `;
 
 export default DetailTextBox;

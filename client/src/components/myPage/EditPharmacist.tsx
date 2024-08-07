@@ -1,65 +1,166 @@
-/**
-File Name : EditMyInformation
-Description : 내 정보 수정 페이지
-Author : 오선아
-
-History
-Date        Author   Status    Description
-2024.07.19  오선아   Created
-*/
-
 import styled from 'styled-components';
 import { Icon } from '@iconify-icon/react';
-import { useEffect, useState } from 'react';
-import BottomPictureSheet from './BottomPictureSheet';
+import { ChangeEvent, FormEvent, useState } from 'react';
+import Loading from '../Loading';
+import { registCertifications } from '../../api/certificationsApi';
 
-const EditPharmacist = ({ onEdit }: { onEdit: () => void }) => {
-  const [image, setImage] = useState('');
-  const [bottomSheet, setBottomSheet] = useState(false);
-  const [isButtonEnabled, setIsButtonEnabled] = useState<boolean>(false);
+interface FormData {
+  number: string;
+  name: string;
+  date: string;
+}
 
-  useEffect(() => {
-    setIsButtonEnabled(true);
-    return () => {};
-  }, [image]);
+enum InputType {
+  Number = 'number',
+  Name = 'name',
+  Date = 'date'
+}
+
+const EditPharmacist = () => {
+  const [loading, setLoading] = useState(false);
+  const [formData, setFormData] = useState<FormData>({
+    number: '',
+    name: '',
+    date: ''
+  });
+
+  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    const formattedValue = name === 'number' ? formatNumber(value) : value;
+
+    setFormData((prevState) => ({
+      ...prevState,
+      [name]: formattedValue
+    }));
+  };
+
+  const formatNumber = (value: string): string => {
+    const numericValue = value.replace(/\D/g, '');
+
+    if (numericValue.length <= 3) return numericValue;
+
+    if (numericValue.length <= 5)
+      return `${numericValue.slice(0, 3)}-${numericValue.slice(3)}`;
+
+    return `${numericValue.slice(0, 3)}-${numericValue.slice(
+      3,
+      5
+    )}-${numericValue.slice(5, 9)}`;
+  };
+
+  const handleSubmit = async (e: FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+
+    try {
+      await registCertifications(formData.name, formData.date, formData.number);
+      setLoading(false);
+    } catch {
+      setLoading(false);
+    }
+  };
+
+  const clearData = (name: string) => {
+    setFormData((prevState) => ({
+      ...prevState,
+      [name]: ''
+    }));
+  };
+
+  const getInputType = (type: InputType) => {
+    switch (type) {
+      case InputType.Date:
+        return 'date';
+      default:
+        return 'text';
+    }
+  };
+
+  const getValue = (type: InputType) => {
+    switch (type) {
+      case InputType.Name:
+        return formData.name;
+      case InputType.Date:
+        return formData.date;
+      case InputType.Number:
+        return formData.number;
+      default:
+        return '';
+    }
+  };
+
+  const isFormValid = (): boolean => {
+    const { number, name, date } = formData;
+    return number !== '' && name !== '' && date !== '';
+  };
+
+  const getPlaceholder = (type: InputType) => {
+    switch (type) {
+      case InputType.Name:
+        return '성명';
+      case InputType.Date:
+        return '등록일';
+      case InputType.Number:
+        return '등록번호';
+      default:
+        return '';
+    }
+  };
+
+  const renderInput = (type: InputType) => {
+    return (
+      <div className='input-container'>
+        <input
+          style={{ paddingRight: '30px' }}
+          type={getInputType(type)}
+          name={type}
+          placeholder={getPlaceholder(type)}
+          value={getValue(type)}
+          onChange={handleChange}
+          required
+        />
+        <Icon
+          className='input-left-btn'
+          icon='pajamas:clear'
+          width='1rem'
+          height='1rem'
+          style={{
+            color: 'gray',
+            display: getValue(type).trim().length > 0 ? '' : 'none'
+          }}
+          onClick={() => clearData(type)}
+        />
+      </div>
+    );
+  };
 
   return (
     <MyPageContainer>
       <StyledContent>
-        <div className='title'>
-          약사 인증을 위해 사업자 등록증을 등록해주세요
-        </div>
-        <div className='informations'>
-          <div
-            className='information-item'
-            onClick={() => setBottomSheet(true)}
-          >
-            <div className='info-key'>사업자 등록증 찾기</div>
-            <div className='info-value'>
-              {' '}
-              <Icon
-                icon='ep:arrow-right-bold'
-                width='1.1em'
-                height='1.1em'
-              />{' '}
+        <form onSubmit={handleSubmit}>
+          <div>
+            <div className='title'>
+              약사 인증을 위해 사업자 등록 정보를 입력 해 주세요
             </div>
+            <div className='login-inputs'>
+              {renderInput(InputType.Number)}
+              {renderInput(InputType.Name)}
+            </div>
+
+            <div className='title'>개업일을 입력해주세요</div>
+            <div className='login-inputs'>{renderInput(InputType.Date)}</div>
           </div>
-        </div>
-        <button
-          className='submitButton'
-          disabled={!isButtonEnabled}
-          onClick={onEdit}
-        >
-          등록 완료
-        </button>
+
+          <button
+            className='submitButton'
+            disabled={!isFormValid()}
+            type='submit'
+          >
+            변경완료
+          </button>
+        </form>
       </StyledContent>
-      <BottomPictureSheet
-        title={'사업자 등록증 등록'}
-        isVisible={bottomSheet}
-        onClose={() => {
-          setBottomSheet(false);
-        }}
-      />
+      {loading && <Loading />}
     </MyPageContainer>
   );
 };
@@ -81,8 +182,33 @@ const StyledContent = styled.div`
   gap: 20px;
   padding-top: 20px;
 
+  form {
+    height: 100%;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+
+    .input-left-btn {
+    position: absolute;
+    top: 50%;
+    right: 10px;
+    transform: translateY(-50%);
+    cursor: pointer;
+  }
+
   .title {
     font-weight: bold;
+  }
+
+  .login-inputs {
+    width: 100%;
+    padding: 10px 3px 10px 3px;
+    margin-bottom: 50px;
+    gap: 10px;
+    display: flex;
+    flex-direction: column;
   }
 
   .submitButton {
@@ -98,35 +224,27 @@ const StyledContent = styled.div`
     background-color: #c7c7c7;
   }
 
-  .informations {
+  .input-container {
+    position: relative;
+  }
+
+  input {
     width: 100%;
-    border: 1px solid #ccc;
-    border-radius: 10px;
-    padding: 10px;
+    background-color: #f0f0f0;
+    border: none;
+    border-radius: 4px;
+    padding: 12px;
+    padding-right: 60px;
+    box-sizing: border-box;
+  }
 
-    .information-item {
-      width: 100%;
-      display: flex;
-      justify-content: space-between;
-      height: 30px;
-      place-items: center;
-
-      .info-key {
-        font-size: 1.1em;
-        font-weight: 500;
-      }
-
-      .info-value {
-        display: flex;
-        gap: 10px;
-        font-align: right;
-        color: gray;
-      }
-    }
-
-    .information-item:hover {
-      cursor: pointer;
-    }
+  .clearButton {
+    position: absolute;
+    top: 50%;
+    right: 10px;
+    transform: translateY(-50%);
+    cursor: pointer;
+  }
   }
 `;
 

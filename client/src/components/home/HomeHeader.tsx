@@ -1,8 +1,8 @@
-import { useState } from 'react';
 import styled from 'styled-components';
-import SearchBox from '../SearchBox';
+import SearchBox from '../search/SearchBox';
 
 const MainHeaderContainer = styled.div`
+  position: relative;
   width: 100vw;
   height: 25vh;
   background-color: #ffeb41;
@@ -21,17 +21,17 @@ const Logo = styled.img.attrs({
 
 const SearchContainer = styled.div`
   position: absolute;
-  top: 20vh;
+  top: 0;
+  width: 100%;
+  height: 100%;
 `;
 
 const MainHeader: React.FC = () => {
-  const [searchQuery, setSearchQuery] = useState<String>('');
-
   return (
     <MainHeaderContainer>
       <Logo />
       <SearchContainer>
-        <SearchBox setSearchQuery={setSearchQuery} />
+        <SearchBox />
       </SearchContainer>
     </MainHeaderContainer>
   );

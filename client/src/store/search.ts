@@ -1,26 +1,24 @@
-import create from 'zustand';
+import { create } from 'zustand';
+import { PillData } from './pill.ts';
 
-interface SearchHistoryState {
-  history: string[];
-  addHistory: (query: string) => void;
-  clearHistory: () => void;
-  setHistory: (history: string[]) => void;
+interface SearchState {
+  imageQuery: File | null;
+  setImageQuery: (image: File | null) => void;
+  searchType: string;
+  setSearchType: (type: string) => void;
+  suggestions: PillData[];
+  setSuggestions: (suggestions: PillData[]) => void;
+  isImageSearch: boolean;
+  setIsImageSearch: (isImageSearch: boolean) => void;
 }
 
-const useSearchHistoryStore = create<SearchHistoryState>((set) => ({
-  history: [],
-  addHistory: (query) =>
-    set((state) => {
-      const updatedHistory = [...state.history, query];
-      localStorage.setItem('searchHistory', JSON.stringify(updatedHistory));
-      return { history: updatedHistory };
-    }),
-  clearHistory: () => {
-    localStorage.removeItem('searchHistory');
-    return set({ history: [] });
-  },
-  setHistory: (history) => set({ history }) 
+export const useSearchStore = create<SearchState>((set) => ({
+  imageQuery: null,
+  setImageQuery: (image) => set({ imageQuery: image }),
+  searchType: 'name',
+  setSearchType: (type) => set({ searchType: type }),
+  suggestions: [],
+  setSuggestions: (suggestions) => set({ suggestions }),
+  isImageSearch: false,
+  setIsImageSearch: (isImageSearch: boolean) => set({ isImageSearch })
 }));
-
-export { useSearchHistoryStore };
-

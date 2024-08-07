@@ -1,36 +1,51 @@
 import { useState } from 'react';
-import SearchBox from '../SearchBox';
-import SearchHistory from './SearchHistory';
-import SearchResults from './SearchResults';
-import Nav from '../Nav';
+import { useSearchParams } from 'react-router-dom';
 import styled from 'styled-components';
+import { PillData } from '../../store/pill.ts';
+import { useSearchStore } from '../../store/search.ts';
+import Nav from '../Nav';
+import AutoComplete from './AutoComplete.tsx';
+import ImageSearchList from './ImageSearchList.tsx';
+import SearchHeader from './SearchHeader.tsx';
+import SearchHistory from './SearchHistory.tsx';
 
 const Search = () => {
-  const [searchQuery, setSearchQuery] = useState<string>('');
+  const [searchParams] = useSearchParams();
+  const query = searchParams.get('q') || '';
+  const [imageResults, setImageResults] = useState<PillData[]>([]);
+  const { searchType, setSearchType, isImageSearch } = useSearchStore();
+  const [activeType, setActiveType] = useState<string>(searchType);
 
-  console.log(searchQuery)
+  const handleTypeClick = (type: string) => {
+    setSearchType(type);
+    setActiveType(type);
+  };
+
+  const renderer = () => {
+    if (isImageSearch) return <ImageSearchList pills={imageResults} />;
+
+    if (query && searchType !== 'efficacy') return <AutoComplete />;
+
+    return <SearchHistory />;
+  };
 
   return (
-    <>
-      <BackgroundHeader>
-        <SearchBox setSearchQuery={setSearchQuery} />
-      </BackgroundHeader>
-      {searchQuery ? (
-        <SearchResults searchQuery={searchQuery} />
-      ) : (
-        <SearchHistory />
-      )}
+    <SearchContainer>
+      <SearchHeader
+        activeType={activeType}
+        handleTypeClick={handleTypeClick}
+        setImageResults={setImageResults}
+      />
+      {renderer()}
       <Nav />
-    </>
+    </SearchContainer>
   );
 };
 
 export default Search;
 
-const BackgroundHeader = styled.div`
-  position: relative;
-  margin-bottom: 40px;
-  width: 100vw;
-  height: 55px;
-  background-color: var(--main-color);
+const SearchContainer = styled.div`
+  /* display: flex;
+  flex-direction: column;
+  justify-content: center; */
 `;

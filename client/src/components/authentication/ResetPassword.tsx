@@ -1,32 +1,174 @@
-/**
-File Name : Login
-Description : 로그인
-Author : 오선아
-
-History
-Date        Author   Status    Description
-2024.07.21  오선아   Created
-*/
-
 import styled from 'styled-components';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { Icon } from '@iconify-icon/react';
 import { ChangeEvent, FormEvent, useState } from 'react';
+import { resetPassword } from '../../api/authService';
+import PopupContent, { PopupType } from '../popup/PopupMessages';
+import Loading from '../Loading';
+import Popup from '../popup/Popup';
+import ValidationError from '../ValidationError';
 
-const ResetPassword = () => {
+interface FormData {
+  newPassword: string;
+  newPasswordConfirm: string;
+}
+
+enum InputType {
+  NewPassword = 'newPassword',
+  NewPasswordConfirm = 'newPasswordConfirm'
+}
+
+interface BlurState {
+  newPassword: boolean;
+  newPasswordConfirm: boolean;
+}
+
+const ResetPasswordRequest = () => {
   const navigate = useNavigate();
-  const [email, setEmail] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [popupType, setPopupType] = useState(PopupType.None);
+  const [formData, setFormData] = useState<FormData>({
+    newPassword: '',
+    newPasswordConfirm: ''
+  });
+  const [blurState, setBlurState] = useState<BlurState>({
+    newPassword: false,
+    newPasswordConfirm: false
+  });
+
+  const [showPassword, setShowPassword] = useState<boolean>(false);
+
+  const useQuery = () => {
+    return new URLSearchParams(useLocation().search);
+  };
+
+  const query = useQuery();
+  const token = query.get('token');
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
+    setLoading(true);
 
-    console.log('비번찾기');
-    navigate(-1);
+    resetPassword(
+      formData.newPassword,
+      token ?? '',
+      () => {
+        setLoading(false);
+        setPopupType(PopupType.ResetPasswordSuccess);
+      },
+      () => {
+        setLoading(false);
+        setPopupType(PopupType.ResetPasswordFailure);
+      }
+    );
   };
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    setEmail(value);
+    const { name, value } = e.target;
+    setFormData((prevState) => ({
+      ...prevState,
+      [name]: value
+    }));
+  };
+
+  const handleBlur = (e: ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setBlurState((prevState) => ({
+      ...prevState,
+      [name]: value
+    }));
+  };
+
+  const clearData = (name: string) => {
+    setFormData((prevState) => ({
+      ...prevState,
+      [name]: ''
+    }));
+  };
+
+  const getPlaceholder = (type: InputType) => {
+    switch (type) {
+      case InputType.NewPassword:
+        return '새로운 비밀번호 (특수문자 포함 8자리 이상)';
+      case InputType.NewPasswordConfirm:
+        return '비밀번호 확인';
+    }
+  };
+
+  const getInputType = (type: InputType) => {
+    switch (type) {
+      case InputType.NewPassword:
+      case InputType.NewPasswordConfirm:
+        return showPassword ? 'text' : 'password';
+      default:
+        return 'text';
+    }
+  };
+
+  const getValue = (type: InputType) => {
+    switch (type) {
+      case InputType.NewPassword:
+        return formData.newPassword;
+      case InputType.NewPasswordConfirm:
+        return formData.newPasswordConfirm;
+      default:
+        return '';
+    }
+  };
+
+  const isFormValid = (): boolean => {
+    const { newPassword, newPasswordConfirm } = formData;
+
+    return (
+      newPassword !== '' &&
+      newPassword === newPasswordConfirm &&
+      newPassword.length >= 8 &&
+      checkSpecialCharPattern(newPassword)
+    );
+  };
+
+  const checkSpecialCharPattern = (str: string): boolean => {
+    const specialCharPattern = /[!@#$%^&*(),.?":{}|<>]/;
+    return specialCharPattern.test(str);
+  };
+
+  const renderInput = (type: InputType) => {
+    return (
+      <div className='input-container'>
+        <input
+          type={getInputType(type)}
+          name={type}
+          placeholder={getPlaceholder(type)}
+          value={getValue(type)}
+          onChange={handleChange}
+          required
+          onBlur={handleBlur}
+        />
+        <Icon
+          className='input-left-btn'
+          icon='pajamas:clear'
+          width='1rem'
+          height='1rem'
+          style={{
+            color: 'gray',
+            display: getValue(type).trim().length > 0 ? '' : 'none'
+          }}
+          onClick={() => clearData(type)}
+        />
+
+        <Icon
+          className='input-left-btn input-left-second'
+          icon={showPassword ? 'mdi:show' : 'mdi:hide'}
+          width='1.2rem'
+          height='1.2rem'
+          style={{
+            color: 'gray',
+            display: getValue(type).trim().length > 0 ? '' : 'none'
+          }}
+          onClick={() => setShowPassword(!showPassword)}
+        />
+      </div>
+    );
   };
 
   return (
@@ -44,43 +186,51 @@ const ResetPassword = () => {
 
       <Content>
         <Logo src='/img/logo_not_chicken.svg' alt='이약뭐약' />
-        <div className='title'>
-          비밀번호를 찾기위해 <br /> 가입하신 이메일 주소를 입력해주세요.
-        </div>
+        <div className='title'>새로운 비밀번호를 입력해주세요.</div>
         <form onSubmit={handleSubmit}>
           <div className='login-inputs'>
             <div className='input-container'>
-              <input
-                type='email'
-                name='email'
-                placeholder='이메일 주소'
-                value={email}
-                onChange={handleChange}
-                required
-              />
-              <Icon
-                className='input-left-btn'
-                icon='pajamas:clear'
-                width='1rem'
-                height='1rem'
-                style={{
-                  color: 'gray',
-                  display: email.trim().length > 0 ? '' : 'none'
-                }}
-                onClick={() => setEmail('')}
-              />
+              {renderInput(InputType.NewPassword)}
+              <hr />
+              {renderInput(InputType.NewPasswordConfirm)}
             </div>
+          </div>
+          <div className='validation-error'>
+            <ValidationError
+              condition={
+                blurState.newPassword &&
+                (formData.newPassword.length < 8 ||
+                  !checkSpecialCharPattern(formData.newPassword))
+              }
+            >
+              패스워드는 8자리 이상, 특수문자를 포함해 입력해주세요.
+            </ValidationError>
+            <ValidationError
+              condition={
+                blurState.newPassword &&
+                blurState.newPasswordConfirm &&
+                formData.newPassword != formData.newPasswordConfirm
+              }
+            >
+              비밀번호와 비밀번호 확인이 동일하지않습니다.
+            </ValidationError>
           </div>
 
           <button
             className='submitButton'
-            disabled={!(email.trim().length > 0)}
+            disabled={!isFormValid()}
             type='submit'
           >
             다음
           </button>
         </form>
       </Content>
+      {loading && <Loading />}
+      {popupType !== PopupType.None && (
+        <Popup onClose={() => setPopupType(PopupType.None)}>
+          {PopupContent(popupType, navigate)}
+        </Popup>
+      )}
     </Overlay>
   );
 };
@@ -149,6 +299,12 @@ const Content = styled.div`
 
   }
 
+  .validation-error{
+    display: flex;
+  flex-direction: column;
+
+  }
+
   input{
     width: 100%;
     border: none; 
@@ -199,4 +355,4 @@ const Content = styled.div`
 }
 }`;
 
-export default ResetPassword;
+export default ResetPasswordRequest;

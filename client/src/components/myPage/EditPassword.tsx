@@ -1,81 +1,237 @@
-/**
-File Name : EditMyInformation
-Description : 내 정보 수정 페이지
-Author : 오선아
-
-History
-Date        Author   Status    Description
-2024.07.19  오선아   Created
-*/
-
 import styled from 'styled-components';
 import { Icon } from '@iconify-icon/react';
-import { ChangeEvent, useState } from 'react';
+import { ChangeEvent, FormEvent, useState } from 'react';
+import useUserStore from '../../store/user';
+import { changePassword } from '../../api/authService';
+import Loading from '../Loading';
+import Popup from '../popup/Popup';
+import PopupContent, { PopupType } from '../popup/PopupMessages';
+import { useNavigate } from 'react-router-dom';
+import ValidationError from '../ValidationError';
 
-const ConfirmPassword = ({ onEdit }: { onEdit: () => void }) => {
-  const [password, setPassword] = useState('');
-  const [password2, setPassword2] = useState('');
+interface FormData {
+  email: string;
+  oldPassword: string;
+  newPassword: string;
+  newPasswordConfirm: string;
+}
 
+interface BlurState {
+  newPassword: boolean;
+  newPasswordConfirm: boolean;
+}
+
+enum InputType {
+  OldPassword = 'oldPassword',
+  NewPassword = 'newPassword',
+  NewPasswordConfirm = 'newPasswordConfirm'
+}
+
+const EditPassword = () => {
+  const navigate = useNavigate();
+  const [popupType, setPopupType] = useState<PopupType>(PopupType.None);
+  const user = useUserStore((state) => state.user);
+  const [formData, setFormData] = useState<FormData>({
+    email: user?.email ?? '',
+    oldPassword: '',
+    newPassword: '',
+    newPasswordConfirm: ''
+  });
+
+  const [blurState, setBlurState] = useState<BlurState>({
+    newPassword: false,
+    newPasswordConfirm: false
+  });
+
+  const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState<boolean>(false);
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    setPassword(value);
+    const { name, value } = e.target;
+    setFormData((prevState) => ({
+      ...prevState,
+      [name]: value
+    }));
   };
 
-  const handleChange2 = (e: ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    setPassword2(value);
+  const handleBlur = (e: ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setBlurState((prevState) => ({
+      ...prevState,
+      [name]: value
+    }));
+  };
+
+  const handleSubmit = (e: FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    changePassword(
+      formData.email,
+      formData.oldPassword,
+      formData.newPassword,
+      () => {
+        setLoading(false);
+        setPopupType(PopupType.changePasswordSuccess);
+        console.log(`비밀번호 변경 완료`);
+      },
+      (error) => {
+        setLoading(false);
+        setPopupType(PopupType.changePasswordFailure);
+
+        console.log(error);
+      }
+    );
+  };
+
+  const clearData = (name: string) => {
+    setFormData((prevState) => ({
+      ...prevState,
+      [name]: ''
+    }));
+  };
+
+  const getPlaceholder = (type: InputType) => {
+    switch (type) {
+      case InputType.OldPassword:
+        return '현재 비밀번호';
+      case InputType.NewPassword:
+        return '새로운 비밀번호 (특수문자 포함 8자리 이상)';
+      case InputType.NewPasswordConfirm:
+        return '비밀번호 확인';
+    }
+  };
+
+  const getInputType = (type: InputType) => {
+    switch (type) {
+      case InputType.OldPassword:
+      case InputType.NewPassword:
+      case InputType.NewPasswordConfirm:
+        return showPassword ? 'text' : 'password';
+      default:
+        return 'text';
+    }
+  };
+
+  const getValue = (type: InputType) => {
+    switch (type) {
+      case InputType.OldPassword:
+        return formData.oldPassword;
+      case InputType.NewPassword:
+        return formData.newPassword;
+      case InputType.NewPasswordConfirm:
+        return formData.newPasswordConfirm;
+      default:
+        return '';
+    }
+  };
+
+  const isFormValid = (): boolean => {
+    const { oldPassword, newPassword, newPasswordConfirm } = formData;
+
+    return (
+      oldPassword !== '' &&
+      newPassword !== '' &&
+      newPassword === newPasswordConfirm &&
+      newPassword.length >= 8 &&
+      checkSpecialCharPattern(newPassword)
+    );
+  };
+
+  const checkSpecialCharPattern = (str: string): boolean => {
+    const specialCharPattern = /[!@#$%^&*(),.?":{}|<>]/;
+    return specialCharPattern.test(str);
+  };
+
+  const renderInput = (type: InputType) => {
+    return (
+      <div className='input-container'>
+        <input
+          type={getInputType(type)}
+          name={type}
+          placeholder={getPlaceholder(type)}
+          value={getValue(type)}
+          onChange={handleChange}
+          required
+          onBlur={handleBlur}
+        />
+        <Icon
+          className='input-left-btn'
+          icon='pajamas:clear'
+          width='1rem'
+          height='1rem'
+          style={{
+            color: 'gray',
+            display: getValue(type).trim().length > 0 ? '' : 'none'
+          }}
+          onClick={() => clearData(type)}
+        />
+
+        <Icon
+          className='input-left-btn input-left-second'
+          icon={showPassword ? 'mdi:show' : 'mdi:hide'}
+          width='1.2rem'
+          height='1.2rem'
+          style={{
+            color: 'gray',
+            display: getValue(type).trim().length > 0 ? '' : 'none'
+          }}
+          onClick={() => setShowPassword(!showPassword)}
+        />
+      </div>
+    );
   };
 
   return (
     <MyPageContainer>
       <StyledContent>
-        <div className='title'>새로운 비밀번호를 입력해주세요</div>
-        <div className='input-container'>
-          <input
-            type='password'
-            value={password}
-            onChange={handleChange}
-            placeholder='새로운 비밀번호'
-          />
-          <Icon
-            className='clearButton'
-            icon='pajamas:clear'
-            width='1rem'
-            height='1rem'
-            style={{
-              color: 'gray',
-              display: password.trim().length > 0 ? '' : 'none'
-            }}
-            onClick={() => setPassword('')}
-          />
-        </div>
-        <div className='input-container'>
-          <input
-            type='password'
-            value={password2}
-            onChange={handleChange2}
-            placeholder='비밀번호 확인'
-          />
-          <Icon
-            className='clearButton'
-            icon='pajamas:clear'
-            width='1rem'
-            height='1rem'
-            style={{
-              color: 'gray',
-              display: password2.trim().length > 0 ? '' : 'none'
-            }}
-            onClick={() => setPassword2('')}
-          />
-        </div>
-        <button
-          className='submitButton'
-          disabled={!(password.trim().length > 0) || password !== password2}
-          onClick={onEdit}
-        >
-          변경 완료
-        </button>
+        <form onSubmit={handleSubmit}>
+          <div>
+            <div className='title'>
+              안전한 변경을 위해 현재 비밀번호를 입력해 주세요
+            </div>
+            <div className='login-inputs'>
+              {renderInput(InputType.OldPassword)}
+            </div>
+            <div className='title'>새로운 비밀번호를 입력해주세요</div>
+
+            <div className='login-inputs'>
+              {renderInput(InputType.NewPassword)}
+              {renderInput(InputType.NewPasswordConfirm)}
+              <ValidationError
+                condition={
+                  blurState.newPassword &&
+                  (formData.newPassword.length < 8 ||
+                    !checkSpecialCharPattern(formData.newPassword))
+                }
+              >
+                패스워드는 8자리 이상, 특수문자를 포함해 입력해주세요.
+              </ValidationError>
+              <ValidationError
+                condition={
+                  blurState.newPassword &&
+                  blurState.newPasswordConfirm &&
+                  formData.newPassword != formData.newPasswordConfirm
+                }
+              >
+                비밀번호와 비밀번호 확인이 동일하지않습니다.
+              </ValidationError>
+            </div>
+          </div>
+
+          <button
+            className='submitButton'
+            disabled={!isFormValid()}
+            type='submit'
+          >
+            변경완료
+          </button>
+        </form>
       </StyledContent>
+      {loading && <Loading />}
+      {popupType !== PopupType.None && (
+        <Popup onClose={() => setPopupType(PopupType.None)}>
+          {PopupContent(popupType, navigate)}
+        </Popup>
+      )}
     </MyPageContainer>
   );
 };
@@ -97,8 +253,25 @@ const StyledContent = styled.div`
   gap: 20px;
   padding-top: 20px;
 
+  form {
+    height: 100%;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+
   .title {
     font-weight: bold;
+  }
+
+  .login-inputs {
+    width: 100%;
+    padding: 10px 3px 10px 3px;
+    margin-bottom: 50px;
+    gap: 10px;
+    display: flex;
+    flex-direction: column;
   }
 
   .submitButton {
@@ -124,7 +297,7 @@ const StyledContent = styled.div`
     border: none;
     border-radius: 4px;
     padding: 12px;
-    padding-right: 30px;
+    padding-right: 60px;
     box-sizing: border-box;
   }
 
@@ -135,6 +308,22 @@ const StyledContent = styled.div`
     transform: translateY(-50%);
     cursor: pointer;
   }
+
+  .password {
+    padding-right: 60px;
+  }
+
+  .input-left-btn {
+    position: absolute;
+    top: 50%;
+    right: 10px;
+    transform: translateY(-50%);
+    cursor: pointer;
+  }
+
+  .input-left-second {
+    right: 35px;
+  }
 `;
 
-export default ConfirmPassword;
+export default EditPassword;

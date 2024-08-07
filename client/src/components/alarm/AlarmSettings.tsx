@@ -1,76 +1,85 @@
-import { useState, useEffect } from 'react'; 
-import styled from 'styled-components';
-import { Select, Button, Input } from 'antd';
 import { Icon } from '@iconify-icon/react';
-import { useAlarmStore } from '../../store/alarm';
-
-const { Option } = Select;
+import { Button, DatePicker, Input, TimePicker } from 'antd';
+import dayjs, { Dayjs } from 'dayjs';
+import { useEffect, useState } from 'react';
+import styled from 'styled-components';
+import { createAlarm, updateAlarm } from '../../api/alarmApi';
+import { Alarm, useAlarmStore } from '../../store/alarm';
 
 const AlarmSettings = () => {
-  const addAlarm = useAlarmStore((state) => state.addAlarm);
-  const updateAlarm = useAlarmStore((state) => state.updateAlarm);
   const setCurrentPage = useAlarmStore((state) => state.setCurrentPage);
   const currentAlarm = useAlarmStore((state) => state.currentAlarm);
-  const alarms = useAlarmStore((state) => state.alarms);
-
+  const setCurrentAlarm = useAlarmStore((state) => state.setCurrentAlarm);
   const [alarmName, setAlarmName] = useState<string>('');
-  const [frequency, setFrequency] = useState<string>('하루 3번');
-  const [alarmTimes, setAlarmTimes] = useState<string[]>([
-    '오전 9:00',
-    '오후 1:00',
-    '오후 8:00'
+  const [alarmTimes, setAlarmTimes] = useState<{ time: Dayjs }[]>([
+    { time: dayjs('09:00', 'HH:mm') },
+    { time: dayjs('13:00', 'HH:mm') },
+    { time: dayjs('20:00', 'HH:mm') }
   ]);
+  const [startDate, setStartDate] = useState<Dayjs | null>(dayjs());
+  const [endDate, setEndDate] = useState<Dayjs | null>(dayjs());
 
-  // 초기 상태 설정
   useEffect(() => {
     if (currentAlarm) {
       setAlarmName(currentAlarm.name);
-      setFrequency(currentAlarm.frequency);
-      setAlarmTimes(currentAlarm.times);
+      setAlarmTimes(
+        currentAlarm.times.map((t) => ({
+          time: dayjs(t.time, 'HH:mm')
+        }))
+      );
+      setStartDate(dayjs(currentAlarm.startDate));
+      setEndDate(dayjs(currentAlarm.endDate));
     }
   }, [currentAlarm]);
 
-  // 빈도 변경
-  const handleFrequencyChange = (value: string) => {
-    setFrequency(value);
-  };
-
-  // 알람 시간 추가
   const handleAddTime = () => {
-    setAlarmTimes([...alarmTimes, '']);
+    setAlarmTimes([...alarmTimes, { time: dayjs() }]);
   };
 
-  // 특정 알람 시간 제거
   const handleRemoveTime = (index: number) => {
     const newAlarmTimes = alarmTimes.filter((_, i) => i !== index);
     setAlarmTimes(newAlarmTimes);
   };
 
-  // 특정 알람 시간 변경
-  const handleTimeChange = (value: string, index: number) => {
+  const handleTimeChange = (time: Dayjs, index: number) => {
     const newAlarmTimes = [...alarmTimes];
-    newAlarmTimes[index] = value;
+    newAlarmTimes[index] = { ...newAlarmTimes[index], time };
     setAlarmTimes(newAlarmTimes);
   };
 
-  // 알람 저장후 메인 알람 페이지로 이동
-  const handleSave = () => {
-    if (currentAlarm) {
-      const alarmIndex = alarms.findIndex(
-        (alarm) =>
-          alarm.name === currentAlarm.name &&
-          alarm.frequency === currentAlarm.frequency &&
-          alarm.times.join(',') === currentAlarm.times.join(',')
-      );
-      updateAlarm(alarmIndex, {
-        name: alarmName,
-        frequency,
-        times: alarmTimes
-      });
-    } else {
-      addAlarm({ name: alarmName, frequency, times: alarmTimes });
+  const handleSave = async () => {
+    const alarmData: Alarm = {
+      id: currentAlarm?.id || '',
+      name: alarmName,
+      times: alarmTimes.map((t) => ({
+        time: t.time.format('HH:mm')
+      })),
+      startDate: startDate?.toISOString() || '',
+      endDate: endDate?.toISOString() || '',
+      alarmStatus: true
+    };
+
+    try {
+      if (currentAlarm && currentAlarm.id) {
+        await updateAlarm(currentAlarm.id, alarmData);
+      } else {
+        await createAlarm(alarmData);
+      }
+      setCurrentPage('main');
+      setCurrentAlarm(null);
+    } catch (error) {
+      console.error('에러:', error);
     }
-    setCurrentPage('main');
+  };
+
+  const disabledStartDate = (current: Dayjs) => {
+    return current && current < dayjs().startOf('day');
+  };
+
+  const disabledEndDate = (current: Dayjs): boolean => {
+    if (!current) return false;
+    const today = dayjs().startOf('day');
+    return current < today || (startDate !== null && current < startDate);
   };
 
   return (
@@ -79,39 +88,43 @@ const AlarmSettings = () => {
         <h2>알람 설정</h2>
         <SettingList>
           <AlarmName>
-            <h4>알람이름</h4>
+            <h4>어떤 약을 드시고 계신가요?</h4>
             <Input
-              placeholder='약이름'
+              placeholder='알르레기 약'
               value={alarmName}
               onChange={(e) => setAlarmName(e.target.value)}
             />
           </AlarmName>
-          <AlarmFrequency>
-            <h4>빈도</h4>
-            <Select
-              defaultValue='하루 3번'
-              style={{ width: 150 }}
-              onChange={handleFrequencyChange}
-            >
-              <Option value='하루 3번'>하루 3번</Option>
-              <Option value='하루 2번'>하루 2번</Option>
-              <Option value='하루 1번'>하루 1번</Option>
-            </Select>
-          </AlarmFrequency>
+          <AlarmStartDate>
+            <h4>언제부터 약을 드시나요?</h4>
+            <DatePicker
+              value={startDate}
+              onChange={(date) => setStartDate(date)}
+              disabledDate={disabledStartDate}
+            />
+          </AlarmStartDate>
+          <AlarmEndDate>
+            <h4>언제까지 약을 드시나요?</h4>
+            <DatePicker
+              value={endDate}
+              onChange={(date) => setEndDate(date)}
+              disabledDate={disabledEndDate}
+            />
+          </AlarmEndDate>
           <AlarmTime>
             <h4>알람 시간</h4>
-            {alarmTimes.map((time, index) => (
+            {alarmTimes.map((timeObj, index) => (
               <div key={index}>
                 <Button
                   icon={
                     <Icon icon='mdi:minus-circle' style={{ color: 'red' }} />
-                  } // 변경된 부분
+                  }
                   onClick={() => handleRemoveTime(index)}
                 />
-                <Input
-                  value={time}
-                  onChange={(e) => handleTimeChange(e.target.value, index)}
-                  placeholder='시간 입력'
+                <TimePicker
+                  value={timeObj.time}
+                  onChange={(time) => handleTimeChange(time!, index)}
+                  format='HH:mm'
                   style={{ width: '100px', margin: '0 10px' }}
                 />
               </div>
@@ -119,7 +132,7 @@ const AlarmSettings = () => {
             <Button
               type='dashed'
               onClick={handleAddTime}
-              icon={<Icon icon='mdi:plus-circle' style={{ color: 'green' }} />} // 변경된 부분
+              icon={<Icon icon='mdi:plus-circle' style={{ color: 'green' }} />}
               style={{ marginTop: '10px' }}
             >
               시간 추가
@@ -164,7 +177,9 @@ const SettingList = styled.div`
 
 const AlarmName = styled.section``;
 
-const AlarmFrequency = styled.section``;
+const AlarmStartDate = styled.section``;
+
+const AlarmEndDate = styled.section``;
 
 const AlarmTime = styled.section`
   div {

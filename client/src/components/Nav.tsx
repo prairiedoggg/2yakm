@@ -1,54 +1,94 @@
-
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import styled from 'styled-components';
+
+interface Icon {
+  default: string;
+  active: string;
+}
 
 interface NavItem {
   name: string;
   label: string;
-  icon: string;
+  icon: Icon;
   style?: React.CSSProperties;
 }
 
-const navItems: NavItem[] = [
-  { name: 'chatbot', label: '상담', icon: '/img/nav/talk.png' },
-  {
-    name: 'calendar',
-    label: '캘린더',
-    icon: '/img/nav/calender.png',
-    style: { marginRight: '15px' }
-  },
-  {
-    name: '',
-    label: '홈',
-    icon: '/img/nav/home.png',
-    style: { position: 'absolute', top: '-20px', width: '50px' }
-  },
-  {
-    name: 'alarm',
-    label: '알람설정',
-    icon: '/img/nav/bell.svg',
-    style: { marginLeft: '10px' }
-  },
-  { name: 'myPage', label: '마이페이지', icon: '/img/nav/user.png' }
-];
-
 const Nav = () => {
+  const navItems: NavItem[] = [
+    {
+      name: 'chatbot',
+      label: '상담',
+      icon: {
+        default: '/img/nav/talk.png',
+        active: '/img/nav/talkClicked.png'
+      },
+      style: { color: 'FDE72E' }
+    },
+    {
+      name: 'calendar',
+      label: '캘린더',
+      icon: {
+        default: '/img/nav/calender.png',
+        active: '/img/nav/calendarClicked.png'
+      },
+      style: { marginRight: '15px' }
+    },
+    {
+      name: 'home',
+      label: '홈',
+      icon: {
+        default: '/img/nav/home.png',
+        active: '/img/nav/homeClicked.png'
+      },
+      style: { position: 'absolute', top: '-20px', width: '50px' }
+    },
+    {
+      name: 'alarm',
+      label: '알람설정',
+      icon: {
+        default: '/img/nav/bell.svg',
+        active: '/img/nav/bellClicked.png'
+      },
+      style: { marginLeft: '10px' }
+    },
+    {
+      name: 'myPage',
+      label: '마이페이지',
+      icon: {
+        default: '/img/nav/user.png',
+        active: '/img/nav/userClicked.png'
+      }
+    }
+  ];
+
+  const { pathname: locationPathname } = useLocation();
+
   return (
     <NavContainer>
       <ul>
-        {navItems.map((item) => (
-          <li key={item.name} style={item.style}>
-            <StyledLink to={`/${item.name}`}>
-              <img src={item.icon} alt={item.label} />
-              <p>{item.label}</p>
-            </StyledLink>
-          </li>
-        ))}
+        {navItems.map((item) => {
+          const { name, style, label, icon } = item;
+          const isHomePage = name === 'home';
+          const navPathname = isHomePage ? '/' : `/${name}`;
+          const isActive =
+            locationPathname !== '/'
+              ? !isHomePage && locationPathname.startsWith(navPathname)
+              : isHomePage;
+          const iconSrc = !isActive ? icon.default : icon.active;
+
+          return (
+            <li key={name} style={style}>
+              <StyledLink to={navPathname}>
+                <img src={iconSrc} alt={label} />
+                <p>{label}</p>
+              </StyledLink>
+            </li>
+          );
+        })}
       </ul>
     </NavContainer>
   );
 };
-
 export default Nav;
 
 const NavContainer = styled.nav`
@@ -71,7 +111,6 @@ const NavContainer = styled.nav`
       justify-content: space-between;
       align-items: center;
       list-style: none;
-
       &:hover {
         cursor: pointer;
         & img {
@@ -95,7 +134,7 @@ const NavContainer = styled.nav`
 `;
 
 const StyledLink = styled(Link)`
-  text-decoration: none; 
+  text-decoration: none;
   display: flex;
   flex-direction: column;
   align-items: center;

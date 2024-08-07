@@ -1,27 +1,94 @@
+import dayjs from 'dayjs';
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
+import { calendarDelete } from '../../api/calendarApi';
+import { useCalendar, useDateStore } from '../../store/calendar';
+import Popup from '../popup/Popup';
+import PopupContent, { PopupType } from '../popup/PopupMessages';
 import EditDetailTextBox from './EditDetailTextBox';
 
-const ContentContainer = styled.div``;
+const ContentContainer = styled.div`
+  overflow: hidden;
+`;
 
 const OpenCalendarDetail: React.FC = () => {
-  // // 사용자 캘린더 데이터 받아오기
-  // const {data, isloading, error} = useQuery('calendar', () => fetch(url))
+  const { value, setEdit, setArrow, removePostedByDate } = useDateStore();
+  const { setCalendarData, setCalImg } = useCalendar();
+  const formattedDate = dayjs(value).format('YYYY-MM-DD');
+  const [popupType, setPopupType] = useState<PopupType>(PopupType.None);
+  const navigate = useNavigate();
+
+  const handleDeleteCalender = async () => {
+    try {
+      const res = await calendarDelete(formattedDate);
+      setEdit(false);
+      setArrow(false);
+      setCalendarData(null);
+      setCalImg(new FormData());
+      removePostedByDate(formattedDate);
+      setPopupType(PopupType.DeleteData);
+      console.log(res);
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  const getPopupContent = (type: PopupType) => {
+    switch (type) {
+      case PopupType.DeleteData:
+        return (
+          <div style={{ textAlign: 'center' }}>
+            삭제하시겠습니까?
+            <button
+              className='bottomClose'
+              onClick={() => {
+                setPopupType(PopupType.None);
+                handleDeleteCalender();
+              }}
+            >
+              확인
+            </button>
+          </div>
+        );
+
+      default:
+        return PopupContent(type, navigate);
+    }
+  };
+
   return (
     <ContentContainer>
-      {/* title을 배열로 관리 -> map */}
-      <EditDetailTextBox
-        title='약 복용 여부'
-        pillName={['타이레놀', '처방약']}
-        time={[['11시', '15시', '19시'], ['20시']]}
-        isPillTaken={[[true, false, true], [true]]}
-      />
-      {/* 혈당 null 값은 0으로 바꾸기*/}
-      <EditDetailTextBox title='혈당' bloodSugar={[100, 200]} />
-      <EditDetailTextBox title='체온' temp={36.5} />
-      <EditDetailTextBox title='체중' weight={10} />
-      <EditDetailTextBox title='사진 기록' photo={true} />
+      <DeleteButtonContainer>
+        <DeleteButton onClick={() => setPopupType(PopupType.DeleteData)}>
+          전체 삭제
+        </DeleteButton>
+      </DeleteButtonContainer>
+      <EditDetailTextBox title='약 복용 여부' />
+      <EditDetailTextBox title='혈당' />
+      <EditDetailTextBox title='체온' />
+      <EditDetailTextBox title='체중' />
+      <EditDetailTextBox title='사진 기록' />
+      {popupType !== PopupType.None && (
+        <Popup onClose={() => setPopupType(PopupType.None)}>
+          {getPopupContent(popupType)}
+        </Popup>
+      )}
     </ContentContainer>
   );
 };
 
 export default OpenCalendarDetail;
+
+const DeleteButtonContainer = styled.div`
+  display: flex;
+  justify-content: flex-end;
+`;
+
+const DeleteButton = styled.button`
+  border-radius: 10px;
+  border: none;
+  height: 30px;
+  padding: 0 10px;
+  background-color: #e8e8e8;
+`;

@@ -1,22 +1,19 @@
-/**
-File Name : EditMyInformation
-Description : 내 정보 수정 페이지
-Author : 오선아
-
-History
-Date        Author   Status    Description
-2024.07.19  오선아   Created
-*/
-
 import styled from 'styled-components';
 import BottomPictureSheet from './BottomPictureSheet';
 import { Icon } from '@iconify-icon/react';
 import { useState } from 'react';
+import useUserStore, { LoginType } from '../../store/user';
+import Loading from '../Loading';
+import Popup from '../popup/Popup';
+import { changeProfileImage, fetchUserProfile } from '../../api/myPageService';
+import PopupContent, { PopupType } from '../popup/PopupMessages';
+import { useNavigate } from 'react-router-dom';
+import Toast from '../Toast';
 
-type Info = {
+interface Info {
   info: string;
   onClick?: () => void;
-};
+}
 
 const EditMyInformation = ({
   onEditNameClick,
@@ -27,27 +24,67 @@ const EditMyInformation = ({
   onEditPasswordClick: () => void;
   onEditPharmacistClick: () => void;
 }) => {
+  const { user } = useUserStore.getState();
   const [bottomSheet, setBottomSheet] = useState(false);
+  const [popupType, setPopupType] = useState(PopupType.None);
+  const [toastMessage, setToastMessage] = useState('');
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
-  const infos1: Info[] = [
+  let infos1: Info[] = [
     { info: '이메일', onClick: undefined },
-    { info: '이름', onClick: onEditNameClick },
-    { info: '비밀번호 변경', onClick: onEditPasswordClick }
+    { info: '이름', onClick: onEditNameClick }
   ];
 
-  const infos2: Info[] = [
-    { info: '약사 인증', onClick: onEditPharmacistClick },
-    { info: '연동된 소셜계정', onClick: undefined }
-  ];
+  let infos2: Info[] = [];
+
+  if (user?.loginType == LoginType.none)
+    infos1.push({ info: '비밀번호 변경', onClick: onEditPasswordClick });
+
+  if (user?.loginType != LoginType.none)
+    infos2.push({ info: '연동된 소셜계정', onClick: undefined });
+
+  if (user?.role) infos2.push({ info: '약사 인증 완료', onClick: undefined });
+  else infos2.push({ info: '약사 인증', onClick: onEditPharmacistClick });
 
   const getInfoValue = (type: string) => {
     switch (type) {
+      case '약사 인증 완료':
+        return (
+          <img
+            src={`/img/pharm.png`}
+            style={{ height: '1.5rem' }}
+            alt='약사인증'
+          />
+        );
       case '이름':
-        return '홍길동';
+        return user?.userName;
       case '이메일':
-        return 'gildong@naver.com';
-      case '연동된 소셜계정':
-        return <Icon icon='devicon:google' width='1.1rem' height='1.1rem' />;
+        return user?.email;
+      case '프로필 이미지':
+        return user?.profileImg;
+      case '연동된 소셜계정': {
+        if (user?.loginType == LoginType.kakao)
+          return (
+            <Icon
+              icon='ri:kakao-talk-fill'
+              width='1.5rem'
+              height='1.5rem'
+              style={{ color: '#3A1D1F' }}
+            />
+          );
+        else if (user?.loginType == LoginType.naver)
+          return (
+            <Icon
+              icon='simple-icons:naver'
+              width='1.1rem'
+              height='1.1rem'
+              style={{ color: '#00c73c' }}
+            />
+          );
+        else
+          return <Icon icon='devicon:google' width='1.1rem' height='1.1rem' />;
+      }
       default:
         return '';
     }
@@ -57,7 +94,7 @@ const EditMyInformation = ({
     const items = [];
     for (let i = 0; i < infos.length; i++) {
       items.push(
-        <div>
+        <div key={i}>
           <div className='information-item' onClick={infos[i].onClick}>
             <div className='info-key'>{infos[i].info}</div>
             <div className='info-value'>
@@ -82,7 +119,7 @@ const EditMyInformation = ({
         <div className='thumbnail'>
           <img
             className='thumbnailImage'
-            src={`img/user.svg`}
+            src={user?.profileImg ?? `img/user.svg`}
             alt='프로필 이미지'
           />
           <div className='edit-thumb' onClick={() => setBottomSheet(true)}>
@@ -92,17 +129,42 @@ const EditMyInformation = ({
         <div className='informations'>{generateItems(infos1)}</div>
 
         <div className='informations'>{generateItems(infos2)}</div>
-
-        <div className='bottom-menu'>로그아웃 | 회원탈퇴</div>
       </StyledContent>
-
       <BottomPictureSheet
         title={'사진 등록'}
         isVisible={bottomSheet}
-        onClose={() => {
+        onClose={(file) => {
+          if (file !== null) {
+            setLoading(true);
+
+            const formData = new FormData();
+            formData.append('profileImg', file);
+            changeProfileImage(
+              formData,
+              () => {
+                fetchUserProfile(() => {
+                  setToastMessage('프로필사진 수정 완료!');
+                });
+                setLoading(false);
+              },
+              () => {
+                setLoading(false);
+                setPopupType(PopupType.ChangeUserProfileImageFailure);
+              }
+            );
+          }
           setBottomSheet(false);
         }}
       />
+      {popupType !== PopupType.None && (
+        <Popup onClose={() => setPopupType(PopupType.None)}>
+          {PopupContent(popupType, navigate)}
+        </Popup>
+      )}
+      {loading && <Loading />}
+      {toastMessage != '' && (
+        <Toast onEnd={() => setToastMessage('')}>{toastMessage}</Toast>
+      )}
     </MyPageContainer>
   );
 };
@@ -131,6 +193,9 @@ const StyledContent = styled.div`
     .thumbnailImage {
       width: 100%;
       height: 100%;
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
     }
 
     .edit-thumb {
@@ -169,7 +234,7 @@ const StyledContent = styled.div`
       .info-value {
         display: flex;
         gap: 10px;
-        font-align: right;
+        text-align: right;
         color: gray;
       }
     }
@@ -182,6 +247,8 @@ const StyledContent = styled.div`
   .bottom-menu {
     color: gray;
     margin-top: 50px;
+    display: flex;
+    gap: 10px;
   }
 `;
 

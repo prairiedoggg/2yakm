@@ -1,37 +1,96 @@
+import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
+import styled from 'styled-components';
+import Layout from '../Layout';
+import { fetchPillListByEfficacy } from '../../api/searchApi';
+import { fetchFavoriteCount } from '../../api/favoriteApi';
+import { fetchReviewCount } from '../../api/reviewApi';
+import { useSearchParams } from 'react-router-dom';
+import Loading from '../Loading';
 
-import { useParams } from 'react-router-dom';
-import styled from 'styled-components'; 
-import Layout from '../Layout'
-
+export interface PillData {
+  id: number;
+  name: string;
+  importantWords: string;
+}
 
 const TagPage = () => {
-  const { tag } = useParams<{ tag: string }>();
+  const [searchParams] = useSearchParams();
+  const query = searchParams.get('q') || '';
+  const [favoriteCount, setFavoriteCount] = useState<number>(0);
+  const [reviewCount, setReviewCount] = useState<number>(0);
+  const [pillData, setPillData] = useState<PillData[]>([]);
+  const [loading, setLoading] = useState<boolean>(false);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        const data = await fetchPillListByEfficacy(query, 10, 10);
+        console.log('효능 데이터:', data);
+        setPillData(data);
+
+        if (data.length > 0) {
+          const favoritecount = await fetchFavoriteCount(data[0].id);
+          setFavoriteCount(favoritecount);
+          const reviewcount = await fetchReviewCount(data[0].id);
+          setReviewCount(reviewcount);
+        }
+      } catch (error) {
+        console.log('효능 데이터 가져오기 실패:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, [query, setFavoriteCount, setReviewCount]);
+
+  if (loading) {
+    return <Loading />;
+  }
+
+  if (!pillData || pillData.length === 0) {
+    return <div className='searchInner'>검색 결과가 없습니다.</div>;
+  }
 
   return (
     <>
-      <Layout/>
-      <TagTitle>{tag}</TagTitle>
+      <Layout />
+      <TagTitle>{query}</TagTitle>
       <ListContainer>
-        <p>즐겨찾기 개수로 정렬되었습니다.</p>
+        <p>좋아요 개수로 정렬되었습니다.</p>
         <PillList>
-          <PillItem>
-            <PillImg src={`/img/pill.png`} alt='유저'></PillImg>
-            <PillText>
-              <PillTitle>
-                <h3>타이레놀정500밀리그람 (아세트아미노펜)</h3>
-                <img src='/img/arrow.svg' alt='더보기' />
-              </PillTitle>
-              <FavoritesCount>
-                <p>즐겨찾기 1024</p>
-                <p>리뷰 512</p>
-              </FavoritesCount>
-              <TagContainer>
-                <Tag>두통</Tag>
-                <Tag>신경통</Tag>
-                <Tag>근육통</Tag>
-              </TagContainer>
-            </PillText>
-          </PillItem>
+          {pillData.map((pill: PillData) => (
+            <PillItem
+              to={`/search/name?q=${encodeURIComponent(pill.name)}`}
+              key={pill.id}
+            >
+              <PillImg src={`/img/pill.png`} alt={pill.name}></PillImg>
+              <PillText>
+                <PillTitle>
+                  <h3>{pill.name}</h3>
+                  <img src='/img/arrow.svg' alt='더보기' />
+                </PillTitle>
+                <FavoritesCount>
+                  <p>즐겨찾기 {favoriteCount}</p>
+                  <p>리뷰 {reviewCount}</p>
+                </FavoritesCount>
+                <TagContainer className='tagContainer'>
+                  {pill.importantWords &&
+                    pill.importantWords.trim() &&
+                    pill.importantWords.split(', ').map((word) => (
+                      <Tag
+                        to={`/search/efficacy?q=${word}`}
+                        key={word}
+                        className='tag'
+                      >
+                        {word}
+                      </Tag>
+                    ))}
+                </TagContainer>
+              </PillText>
+            </PillItem>
+          ))}
         </PillList>
       </ListContainer>
     </>
@@ -50,6 +109,7 @@ const TagTitle = styled.div`
 `;
 
 const ListContainer = styled.div`
+  padding-bottom: 100px;
   margin: auto;
   width: 85vw;
   > p {
@@ -62,9 +122,11 @@ const ListContainer = styled.div`
 
 const PillList = styled.ul``;
 
-const PillItem = styled.li`
+const PillItem = styled(Link)`
   display: flex;
   margin-top: 20px;
+  color: black;
+  text-decoration: none;
 `;
 
 const PillImg = styled.img`
@@ -72,7 +134,7 @@ const PillImg = styled.img`
 `;
 
 const PillText = styled.div`
-  margin-left: 30px;
+  margin-left: 15px;
 `;
 
 const PillTitle = styled.div`
@@ -86,6 +148,9 @@ const PillTitle = styled.div`
     word-break: break-word;
     overflow-wrap: break-word;
   }
+  & img {
+    margin-left: 5px;
+  }
 `;
 
 const FavoritesCount = styled.div`
@@ -98,21 +163,6 @@ const FavoritesCount = styled.div`
   }
 `;
 
-const TagContainer = styled.div`
-  display: flex;
-  width: 100%;
-  height: 30px;
-`;
+const TagContainer = styled.div``;
 
-const Tag = styled.p`
-  width: 48px;
-  height: 25px;
-  margin-right: 10px;
-  font-size: 12px;
-  font-weight: 500;
-  text-align: center;
-  line-height: 25px;
-  border-radius: 5px;
-  background-color: var(--main-color);
-  cursor: pointer;
-`;
+const Tag = styled(Link)``;

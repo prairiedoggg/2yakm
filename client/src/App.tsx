@@ -1,22 +1,33 @@
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import loadable from '@loadable/component';
+import 'dayjs/locale/ko';
+import { Route, BrowserRouter as Router, Routes } from 'react-router-dom';
+import './App.css';
+import AuthenticatedRoute from './components/AuthenticatedRoute';
 
 const Home = loadable(() => import('./components/home/Home'));
 const News = loadable(() => import('./components/cardNews/News'));
 const Search = loadable(() => import('./components/search/Search'));
+const SearchResults = loadable(
+  () => import('./components/search/SearchResults')
+);
 const TagPage = loadable(() => import('./components/search/TagPage'));
 const Calendar = loadable(() => import('./components/calendar/CalendarPage'));
 const Alarm = loadable(() => import('./components/alarm/Alarm'));
 const MyPage = loadable(() => import('./components/myPage/MyPage'));
 const Login = loadable(() => import('./components/authentication/Login'));
 const Register = loadable(() => import('./components/authentication/Register'));
+const EmailVerification = loadable(
+  () => import('./components/authentication/EmailVerification')
+);
+const ResetPasswordRequest = loadable(
+  () => import('./components/authentication/ResetPasswordRequest')
+);
 const ResetPassword = loadable(
   () => import('./components/authentication/ResetPassword')
 );
 const ChatBot = loadable(() => import('./components/chatBot/ChatBot'));
 const Redirect = loadable(() => import('./components/authentication/Redirect'));
-
-import 'dayjs/locale/ko';
+const NotFound = loadable(() => import('./components/NotFound'));
 
 const App = () => {
   return (
@@ -25,16 +36,31 @@ const App = () => {
         <Route path='/' element={<Home />} />
         <Route path='/news/:num' element={<News />} />
         <Route path='/search' element={<Search />} />
-        <Route path='/search/tag/:tag' element={<TagPage />} />
-        <Route path='/calendar' element={<Calendar />} />
-        <Route path='/alarm' element={<Alarm />} />
-        <Route path='/myPage' element={<MyPage />} />
+        <Route path='/search/name' element={<SearchResults />} />
+        <Route path='/search/efficacy' element={<TagPage />} />
+        <Route
+          path='/calendar'
+          element={<AuthenticatedRoute element={Calendar} />}
+        />
+        <Route path='/alarm' element={<AuthenticatedRoute element={Alarm} />} />
+        <Route
+          path='/myPage'
+          element={<AuthenticatedRoute element={MyPage} />}
+        />
         <Route path='/login' element={<Login />} />
+        <Route path='/verification/email' element={<EmailVerification />} />
         <Route path='/register' element={<Register />} />
-        <Route path='/password/reset' element={<ResetPassword />} />
-        <Route path='/chatbot' element={<ChatBot />} />
-        <Route path='/kakao/callback' element={<Redirect sns='kakao' />} />
-        <Route path='/google/callback' element={<Redirect sns='google' />} />
+        <Route
+          path='/password/reset/request'
+          element={<ResetPasswordRequest />}
+        />
+        <Route path='/reset-password' element={<ResetPassword />} />
+        <Route
+          path='/chatbot'
+          element={<AuthenticatedRoute element={ChatBot} />}
+        />
+        <Route path='/snsLogin/callback' element={<Redirect />} />
+        <Route path='*' element={<NotFound />} />
       </Routes>
     </Router>
   );

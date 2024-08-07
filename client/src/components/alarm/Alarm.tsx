@@ -1,12 +1,16 @@
-
+import { useEffect } from 'react';
 import styled from 'styled-components';
+import { useAlarmStore } from '../../store/alarm';
 import Nav from '../Nav';
 import AlarmPage from './AlarmPage';
 import AlarmSettings from './AlarmSettings';
-import { useAlarmStore } from '../../store/alarm';
 
 const Alarm = () => {
-  const { currentPage } = useAlarmStore();
+  const { currentPage, setCurrentPage } = useAlarmStore();
+
+  useEffect(() => {
+    return () => setCurrentPage('main');
+  }, []);
 
   const renderContent = () => {
     switch (currentPage) {

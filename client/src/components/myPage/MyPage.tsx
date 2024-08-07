@@ -1,37 +1,29 @@
-/**
-File Name : MyPage
-Description : 마이페이지
-Author : 오선아
-
-History
-Date        Author   Status    Description
-2024.07.17  오선아   Created
-*/
-
 import styled from 'styled-components';
 import Header from '../Header';
-import MyInformation from './MyInformation';
 import EditMyInformation from './EditMyInformation';
 import EditName from './EditName';
-import ConfirmPassword from './ConfirmPassword';
 import EditPassword from './EditPassword';
 import EditPharmacist from './EditPharmacist';
 import FavoriteMedications from './FavoriteMedications';
 import ManageReviews from './ManageReviews';
+import MyInformation from './MyInformation';
 import MyMedications from './MyMedications';
 
-import Login from '../authentication/Login';
-
-import Toast from '../Toast';
-import Nav from '../Nav';
 import { Icon } from '@iconify-icon/react';
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { deleteAccount, logout } from '../../api/authService';
+import { useChatBot } from '../../store/chatbot';
+import useUserStore from '../../store/user';
+import Loading from '../Loading';
+import Nav from '../Nav';
+import Popup from '../popup/Popup';
+import PopupContent, { PopupType } from '../popup/PopupMessages';
 
 enum pageState {
   Main,
   EditInfo,
   EditName,
-  ConfirmPassword,
   EditPassword,
   EditPharmacist,
   MyMedications,
@@ -41,12 +33,16 @@ enum pageState {
 
 const MyPage = () => {
   const [currentState, setCurrentState] = useState(pageState.Main);
+  const { user } = useUserStore.getState();
+  const [popupType, setPopupType] = useState(PopupType.None);
+  const [loading, setLoading] = useState(false);
+  const { deleteChat } = useChatBot();
+  const navigate = useNavigate();
 
   const renderContent = () => {
     switch (currentState) {
       case pageState.EditInfo:
       case pageState.EditName:
-      case pageState.ConfirmPassword:
       case pageState.EditPassword:
       case pageState.EditPharmacist:
       case pageState.MyMedications:
@@ -71,6 +67,31 @@ const MyPage = () => {
               <hr />
               {renderMenuItems()}
             </div>
+
+            <div className='bottom-menu'>
+              <div
+                onClick={() =>
+                  logout(() => {
+                    navigate('/', { replace: true });
+                    window.location.reload();
+                    deleteChat();
+                  })
+                }
+              >
+                로그아웃
+              </div>{' '}
+              |{' '}
+              <div onClick={() => setPopupType(PopupType.DeleteAccount)}>
+                회원탈퇴
+              </div>
+            </div>
+
+            {popupType !== PopupType.None && (
+              <Popup onClose={() => setPopupType(PopupType.None)}>
+                {getPopupContent(popupType)}
+              </Popup>
+            )}
+            {loading && <Loading />}
           </StyledContent>
         );
     }
@@ -82,9 +103,7 @@ const MyPage = () => {
         return (
           <EditMyInformation
             onEditNameClick={() => setCurrentState(pageState.EditName)}
-            onEditPasswordClick={() =>
-              setCurrentState(pageState.ConfirmPassword)
-            }
+            onEditPasswordClick={() => setCurrentState(pageState.EditPassword)}
             onEditPharmacistClick={() =>
               setCurrentState(pageState.EditPharmacist)
             }
@@ -100,32 +119,11 @@ const MyPage = () => {
           />
         );
 
-      case pageState.ConfirmPassword:
-        return (
-          <ConfirmPassword
-            onEdit={() => {
-              setCurrentState(pageState.EditPassword);
-            }}
-          />
-        );
-
       case pageState.EditPassword:
-        return (
-          <EditPassword
-            onEdit={() => {
-              setCurrentState(pageState.EditInfo);
-            }}
-          />
-        );
+        return <EditPassword />;
 
       case pageState.EditPharmacist:
-        return (
-          <EditPharmacist
-            onEdit={() => {
-              setCurrentState(pageState.EditInfo);
-            }}
-          />
-        );
+        return <EditPharmacist />;
 
       case pageState.MyMedications:
         return <MyMedications />;
@@ -145,7 +143,6 @@ const MyPage = () => {
       case pageState.EditName:
         return '이름 변경';
       case pageState.EditPassword:
-      case pageState.ConfirmPassword:
         return '비밀번호 변경';
       case pageState.EditPharmacist:
         return '약사 인증';
@@ -161,7 +158,6 @@ const MyPage = () => {
   const getStateBackPage = (state: pageState) => {
     switch (state) {
       case pageState.EditName:
-      case pageState.ConfirmPassword:
       case pageState.EditPassword:
       case pageState.EditPharmacist:
         return pageState.EditInfo;
@@ -212,11 +208,45 @@ const MyPage = () => {
     ));
   };
 
+  const getPopupContent = (type: PopupType) => {
+    switch (type) {
+      case PopupType.DeleteAccount:
+        return (
+          <div>
+            이약뭐약 서비스 회원탈퇴를 하시겠어요?
+            <button
+              className='bottomClose'
+              onClick={() => {
+                setLoading(true);
+                deleteAccount(
+                  user?.id ?? '',
+                  () => {
+                    setLoading(false);
+                    setPopupType(PopupType.DeleteAccountSuccess);
+                  },
+                  () => {
+                    setLoading(false);
+                    setPopupType(PopupType.DeleteAccountFailure);
+                  }
+                );
+              }}
+            >
+              회원탈퇴
+            </button>
+          </div>
+        );
+
+      default:
+        return PopupContent(type, navigate);
+    }
+  };
+
   return (
     <MyPageContainer>
       <Header />
       {renderContent()}
       {/* <Toast str="이름 변경이 완료되었어요" /> */}
+
       <Nav />
     </MyPageContainer>
   );
@@ -265,9 +295,17 @@ const StyledContent = styled.div`
     width: 90%;
   }
 
-  .entries {
+  .bottom-menu {
+    color: gray;
+    margin-top: 50px;
     display: flex;
     gap: 10px;
+    justify-content: center;
+  }
+
+  .entries {
+    display: flex;
+    gap: 5px;
     flex-direction: column;
     font-size: 1em;
 
@@ -277,7 +315,10 @@ const StyledContent = styled.div`
       align-content: center;
       width: 90%;
       margin-left: 20px;
-      margin-bottom: 15px;
+      margin-bottom: 10px;
+      padding-left: 10px;
+      padding-right: 10px;
+      font-size: 0.9rem;
     }
   }
 `;

@@ -1,67 +1,157 @@
-/**
-File Name : EditMyInformation
-Description : 내 정보 수정 페이지
-Author : 오선아
-
-History
-Date        Author   Status    Description
-2024.07.19  오선아   Created
-*/
-
-import styled from 'styled-components';
 import { Icon } from '@iconify-icon/react';
-import { ChangeEvent, useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import styled from 'styled-components';
+import { fetchMyFavorites, toggleFavoriteApi } from '../../api/favoriteApi';
+import Loading from '../Loading';
+import Popup from '../popup/Popup';
+import PopupContent, { PopupType } from '../popup/PopupMessages';
+import Toast from '../Toast';
 
-type MedicationItem = {
+interface MedicationItem {
+  pillid: number;
   title: string;
   registrationDate: string;
   tags: string[];
-};
+}
 
 const FavoriteMedications = () => {
   const [deleteItem, setDeleteItem] = useState(false);
+  const [itemCount, setItemCount] = useState(0);
+  const [loading, setLoading] = useState(false);
+  const [items, setItems] = useState<MedicationItem[]>([]);
+  const [popupType, setPopupType] = useState(PopupType.None);
+  const [offset, setOffset] = useState(0);
+  const [limit] = useState(10);
+  const [hasMore, setHasMore] = useState(true);
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  const [toastMessage, setToastMessage] = useState('');
 
-  const items: MedicationItem[] = [
-    // test
-    {
-      title: '타이레놀',
-      registrationDate: '2023.05.14',
-      tags: ['두통', '신경통', '근육통']
-    },
-    {
-      title: '타이레놀',
-      registrationDate: '2023.06.01',
-      tags: ['두통', '발열']
-    },
-    {
-      title: '타이레놀',
-      registrationDate: '2023.06.15',
-      tags: ['감기', '두통']
+  const navigate = useNavigate();
+  const maxTextLength = 15;
+
+  const fetchDatas = () => {
+    setLoading(true);
+
+    fetchMyFavorites(
+      offset,
+      limit,
+      'createdAt',
+      'DESC',
+      (data) => {
+        const favorites = data.data;
+        const temp: MedicationItem[] = favorites.map((d: any) => ({
+          pillid: Number(d.pillid),
+          title: d.name,
+          registrationDate: new Date(d.createdat).toDateString(),
+          tags:
+            d.importantWords === ''
+              ? []
+              : d.importantWords &&
+                d.importantWords.trim() &&
+                d.importantWords.split(', ')
+        }));
+        setLoading(false);
+
+        setItems((prevData) => [...prevData, ...temp]);
+        setOffset((prevOffset) => prevOffset + temp.length);
+        setHasMore(temp.length === limit);
+
+        setItemCount(data.totalCount);
+      },
+      () => {
+        setLoading(false);
+      }
+    );
+  };
+
+  const handleScroll = useCallback(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    const bottom =
+      container.scrollHeight === container.scrollTop + container.clientHeight;
+
+    if (bottom && !loading && hasMore) {
+      fetchDatas();
     }
-  ];
+  }, [loading, hasMore, offset]);
 
-  const renderItems = (item: MedicationItem) => {
+  useEffect(() => {
+    fetchDatas();
+  }, []);
+
+  useEffect(() => {
+    const container = containerRef.current;
+    if (container) container.addEventListener('scroll', handleScroll);
+
+    return () => {
+      if (container) container.removeEventListener('scroll', handleScroll);
+    };
+  }, [handleScroll]);
+
+  const renderItems = (item: MedicationItem, index: number) => {
     return (
-      <Item>
+      <Item key={index}>
         <div className='title'>
-          {item.title}
-          <Icon
-            icon='ep:arrow-right-bold'
-            width='1.2em'
-            height='1.2em'
-            style={{ color: 'black' }}
-          />
+          <Link
+            to={`/search/name?q=${item.title}`}
+            style={{ color: 'black', textDecoration: 'none' }}
+          >
+            <div className='title2'>
+              {item.title.length > maxTextLength
+                ? item.title.substring(0, maxTextLength) + '...'
+                : item.title}
+              <Icon
+                icon='ep:arrow-right-bold'
+                width='1.2em'
+                height='1.2em'
+                style={{ color: 'black' }}
+              />
+            </div>
+          </Link>
+
+          {deleteItem ? (
+            <div
+              className='delete-button'
+              onClick={() => {
+                setLoading(true);
+                toggleFavoriteApi(
+                  { id: item.pillid },
+                  () => {
+                    setItems((prevItems) =>
+                      prevItems.filter((t) => t.pillid !== item?.pillid)
+                    );
+                    setItemCount(itemCount - 1);
+                    setLoading(false);
+                    setToastMessage('즐겨찾는 약 삭제 완료!');
+                  },
+                  () => {
+                    setPopupType(PopupType.DeleteFavoriteFailure);
+                    setLoading(false);
+                  }
+                );
+              }}
+            >
+              삭제
+            </div>
+          ) : (
+            ''
+          )}
         </div>
-        {deleteItem ? <div className='delete-button'>삭제</div> : ''}
+
         <div className='registration'>등록일 {item.registrationDate}</div>
-        <TagContainer>
-          {item.tags.map((tag, index) => (
-            <Tag key={index} to={`/search/tag/${tag}`}>
-              {tag}
-            </Tag>
-          ))}
-        </TagContainer>
+        {item.tags.length > 0 ? (
+          <TagContainer>
+            {item.tags.slice(0, 3)?.map((tag, index) => (
+              <Tag key={index} to={`/search/efficacy?q=${tag}`}>
+                {tag}
+              </Tag>
+            ))}
+          </TagContainer>
+        ) : (
+          ''
+        )}
       </Item>
     );
   };
@@ -70,7 +160,7 @@ const FavoriteMedications = () => {
     <MyPageContainer>
       <StyledContent>
         <div className='totalCount'>
-          총 {items.length}개{' '}
+          총 {itemCount}개{' '}
           <Icon
             onClick={() => setDeleteItem(!deleteItem)}
             icon='ic:baseline-edit'
@@ -79,8 +169,19 @@ const FavoriteMedications = () => {
             style={{ color: '#d1d1d1' }}
           />
         </div>
-        <div className='items'>{items.map((item) => renderItems(item))}</div>
+        <div className='items' ref={containerRef}>
+          {items.map((item, index) => renderItems(item, index))}
+        </div>
       </StyledContent>
+      {loading && <Loading />}
+      {popupType !== PopupType.None && (
+        <Popup onClose={() => setPopupType(PopupType.None)}>
+          {PopupContent(popupType, navigate)}
+        </Popup>
+      )}
+      {toastMessage != '' && (
+        <Toast onEnd={() => setToastMessage('')}>{toastMessage}</Toast>
+      )}
     </MyPageContainer>
   );
 };
@@ -111,7 +212,8 @@ const StyledContent = styled.div`
     display: flex;
     flex-direction: column;
     gap: 30px;
-    padding: 0px 20px 0px 20px;
+    padding: 0px 10px 0px 0px;
+    overflow: auto;
   }
 `;
 
@@ -124,6 +226,13 @@ const Item = styled.div`
     display: flex;
     font-weight: bold;
     font-size: 1.2em;
+    justify-content: space-between;
+  }
+
+  .title2 {
+    display: flex;
+    justify-content: space-between;
+    font-size: 1rem;
   }
 
   .registration {
@@ -132,14 +241,13 @@ const Item = styled.div`
   }
 
   .delete-button {
-    position: absolute;
     right: 30px;
     background-color: #d9d9d9;
     border: none;
     border-radius: 25px;
     padding: 3px 8px;
     cursor: pointer;
-    font-size: 0.9em;
+    font-size: 0.6em;
   }
 `;
 

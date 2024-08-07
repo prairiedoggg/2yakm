@@ -1,41 +1,73 @@
-
-
-import { Icon } from '@iconify-icon/react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import styled from 'styled-components';
+import { Icon } from '@iconify-icon/react';
 import Header from '../Header';
 import { Alarm, useAlarmStore } from '../../store/alarm';
+import { getAlarms, deleteAlarm, updateAlarmStatus } from '../../api/alarmApi';
 
 const AlarmPage = () => {
-  const { alarms, setCurrentPage, removeAlarm, setCurrentAlarm } =
-    useAlarmStore(); 
-  const [isToggled, setIsToggled] = useState(Array(alarms.length).fill(true));
-  const [isDeleteMode, setIsDeleteMode] = useState(false); 
+  const { alarms, setCurrentPage, setCurrentAlarm, setAlarms } =
+    useAlarmStore();
+  const [isDeleteMode, setIsDeleteMode] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
-  // 알람 온오프 토글기능
-  const handleToggle = (index: number) => {
-    const newToggledState = [...isToggled];
-    newToggledState[index] = !newToggledState[index];
-    setIsToggled(newToggledState);
+  useEffect(() => {
+    const fetchAlarms = async () => {
+      try {
+        const data = await getAlarms();
+        setAlarms(data);
+      } catch (error) {
+        console.error('알람을 불러오는 도중 에러 발생:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchAlarms();
+  }, [setAlarms]);
+
+  const handleToggle = async (id: string) => {
+    const updatedAlarms = alarms.map((alarm) => {
+      if (alarm.id === id) {
+        return { ...alarm, alarmStatus: !alarm.alarmStatus };
+      }
+      return alarm;
+    });
+
+    const updatedAlarm = updatedAlarms.find((alarm) => alarm.id === id);
+
+    if (updatedAlarm && updatedAlarm.alarmStatus !== undefined) {
+      try {
+        await updateAlarmStatus(updatedAlarm.id, updatedAlarm.alarmStatus);
+        console.log('알람상태:', updatedAlarm.alarmStatus)
+        setAlarms(updatedAlarms);
+      } catch (error) {
+        console.error('알람 상태 업데이트 에러:', error);
+      }
+    }
   };
 
-  // 삭제 버튼 토글기능
   const handleDeleteMode = () => {
     setIsDeleteMode(!isDeleteMode);
   };
 
-  // 특정 알람 삭제
-  const handleDelete = (index: number) => {
-    removeAlarm(index); // 알람을 삭제하는 함수
-    const newToggledState = isToggled.filter((_, i) => i !== index);
-    setIsToggled(newToggledState);
+  const handleDelete = async (id: string) => {
+    try {
+      await deleteAlarm(id);
+      setAlarms(alarms.filter((alarm) => alarm.id !== id));
+    } catch (error) {
+      console.error('에러:', error);
+    }
   };
 
-  // 알람 수정 모드로 전환
   const handleEditAlarm = (alarm: Alarm) => {
     setCurrentAlarm(alarm);
     setCurrentPage('settings');
   };
+
+  if (isLoading) {
+    return <p>잠시만 기다려주세요..!</p>;
+  }
 
   return (
     <>
@@ -45,30 +77,28 @@ const AlarmPage = () => {
           <Icon icon='mdi:pencil' onClick={handleDeleteMode} />
         </IconContainer>
         <AlarmList>
-          {alarms.map((alarm, index) => (
-            <AlarmItemContainer key={index}>
+          {alarms.map((alarm) => (
+            <AlarmItemContainer key={alarm.id}>
               <AlarmItem onClick={() => handleEditAlarm(alarm)}>
                 <AlarmHeader>
                   <AlarmName>{alarm.name}</AlarmName>
-                  <AlarmFrequency>{alarm.frequency}</AlarmFrequency>
-
                   <ToggleSwitch onClick={(event) => event.stopPropagation()}>
                     <input
                       type='checkbox'
-                      checked={isToggled[index]}
-                      onChange={() => handleToggle(index)}
+                      checked={alarm.alarmStatus}
+                      onChange={() => handleToggle(alarm.id)}
                     />
                     <Slider />
                   </ToggleSwitch>
                 </AlarmHeader>
                 <AlarmTimes>
-                  {alarm.times.map((time, i) => (
-                    <AlarmTime key={i}>{time}</AlarmTime>
+                  {alarm.times.map((timeObj, i) => (
+                    <AlarmTime key={i}>{timeObj.time}</AlarmTime>
                   ))}
                 </AlarmTimes>
               </AlarmItem>
               {isDeleteMode && (
-                <DeleteButton onClick={() => handleDelete(index)}>
+                <DeleteButton onClick={() => handleDelete(alarm.id)}>
                   삭제
                 </DeleteButton>
               )}
@@ -76,10 +106,13 @@ const AlarmPage = () => {
           ))}
         </AlarmList>
         <AddAlarm
-          src={`/img/plus.svg`}
-          alt='알람추가'
-          onClick={() => setCurrentPage('settings')}
-        />
+          onClick={() => {
+            setCurrentAlarm(null);
+            setCurrentPage('settings');
+          }}
+        >
+          <img src={`/img/plus.svg`} alt='알람추가' />
+        </AddAlarm>
       </AlarmContainer>
     </>
   );
@@ -101,7 +134,9 @@ const IconContainer = styled.div`
   cursor: pointer;
 `;
 
-const AlarmList = styled.div``;
+const AlarmList = styled.div`
+  width: 100%;
+`;
 
 const AlarmItemContainer = styled.div`
   display: flex;
@@ -129,10 +164,6 @@ const AlarmHeader = styled.div`
 const AlarmName = styled.h4`
   padding-left: 5px;
   font-weight: 500;
-`;
-
-const AlarmFrequency = styled.p`
-  font-weight: 300;
 `;
 
 const AlarmTimes = styled.div`
@@ -207,8 +238,17 @@ const DeleteButton = styled.button`
   }
 `;
 
-const AddAlarm = styled.img`
+const AddAlarm = styled.button`
   width: 60px;
-  cursor: pointer;
+  height: 60px;
+  padding: 0;
   margin-top: 20px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+
+  & img {
+    width: 100%;
+    height: 100%;
+  }
 `;

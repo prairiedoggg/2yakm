@@ -1,16 +1,6 @@
-/**
-File Name : SnsLogin
-Description : sns 로그인
-Author : 오선아
-
-History
-Date        Author   Status    Description
-2024.07.21  오선아   Created
-*/
-
-import styled from 'styled-components';
 import { Icon } from '@iconify-icon/react';
-import { KAKAO_AUTH_URL, GOOGLE_AUTH_URL } from '../../oAuth';
+import { Link } from 'react-router-dom';
+import styled from 'styled-components';
 
 const SnsLogin = ({
   onClose,
@@ -21,39 +11,54 @@ const SnsLogin = ({
   onEmailLoginClick: () => void;
   onEmailRegisterClick: () => void;
 }) => {
+  const AUTH_URLS = `http://localhost:3000/api/auth`;
+
+  const SNS_LOGINS = [
+    {
+      name: 'KAKAO',
+      label: '카카오톡 로그인',
+      icon: 'ri:kakao-talk-fill',
+      style: { color: '#3A1D1F', marginRight: '10px' },
+      iconSize: { width: '1.5rem', height: '1.5rem' }
+    },
+    {
+      name: 'NAVER',
+      label: '네이버 로그인',
+      icon: 'simple-icons:naver',
+      style: { color: 'white', marginRight: '10px', padding: '5px' },
+      iconSize: { width: '1rem', height: '1rem' }
+    },
+    {
+      name: 'GOOGLE',
+      label: '구글 로그인',
+      icon: 'logos:google-icon',
+      style: { marginRight: '10px', padding: '2px' },
+      iconSize: { width: '1.4rem', height: '1.4rem' }
+    }
+  ];
+
   return (
     <Content>
-      <Logo src='/img/logo_not_chicken.svg' alt='이약뭐약' />
+      <Logo src='/img/logo.svg' alt='이약뭐약' />
       <div className='bubble'>⚡ 3초만에 빠른 회원가입</div>
-      <a className='kakao' onClick={onClose} href={KAKAO_AUTH_URL}>
-        <div>
-          <Icon
-            icon='ri:kakao-talk-fill'
-            width='1.5rem'
-            height='1.5rem'
-            style={{ color: '#3A1D1F', marginRight: '10px' }}
-          />
-          카카오톡으로 계속하기
-        </div>
-      </a>
-      <div className='other'>
-        <div className='naver' onClick={onClose}>
-          <Icon
-            icon='simple-icons:naver'
-            width='1rem'
-            height='1rem'
-            style={{ color: 'white' }}
-          />
-        </div>
-        <a className='google' onClick={onClose} href={GOOGLE_AUTH_URL}>
-          <Icon
+      {SNS_LOGINS.map((sns) => {
+        const { name, iconSize, label, ...rest } = sns;
+
+        return (
+          <Link
+            to={`${AUTH_URLS}/${name}`}
+            key={name}
+            className={`login ${name.toLowerCase()}`}
             onClick={onClose}
-            icon='logos:google-icon'
-            width='30px'
-            height='30px'
-          />
-        </a>
-      </div>
+          >
+            <div className='snsBox'>
+              <Icon {...iconSize} {...rest} />
+              {label}
+            </div>
+          </Link>
+        );
+      })}
+
       <div className='other'>
         <div onClick={onEmailLoginClick}>이메일로 로그인</div>
         <div onClick={onEmailRegisterClick}>이메일로 회원가입</div>
@@ -75,7 +80,7 @@ const Content = styled.div`
   display: flex;
   flex-direction: column;
   align-content: center;
-  gap: 20px;
+  gap: 10px;
 
   .bubble {
     position: relative;
@@ -87,6 +92,7 @@ const Content = styled.div`
     padding: 10px 20px 10px 20px;
     font-size: 0.8em;
     font-weight: bold;
+    margin-bottom: 10px;
     border: 1px solid rgba(0, 0, 0, 0.1);
   }
 
@@ -102,45 +108,49 @@ const Content = styled.div`
     border-top-color: white;
   }
 
-  .kakao {
-    background-color: #fae100;
+  .login {
     padding: 10px;
     width: 80%;
     border-radius: 5px;
     text-align: center;
-    font-weight: 500;
+    font-weight: 600;
+    font-size: 12pt;
     align-items: center;
     display: flex;
     justify-content: center;
-    gap: 5px;
     text-decoration: none;
+  }
+
+  .login.kakao {
+    background-color: #fae100;
     color: #2f3438;
   }
 
-  .kakao div {
+  .snsBox {
     display: flex;
     align-items: center;
     justify-content: center;
     height: 100%;
   }
 
+  .login.naver {
+    background-color: #00c73c;
+    color: white;
+  }
+
+  .login.google {
+    background-color: #f2f2f2;
+    color: #2f3438;
+  }
+
   .other {
     display: flex;
     gap: 20px;
     align-items: center;
-    margin-bottom: 30px;
+    margin-top: 40px;
+    margin-bottom: 80px;
     text-decoration: underline;
     font-size: 0.9em;
-  }
-
-  .naver {
-    background-color: #00c73c;
-    border-radius: 50%;
-    width: 35px;
-    height: 35px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
   }
 `;
 
