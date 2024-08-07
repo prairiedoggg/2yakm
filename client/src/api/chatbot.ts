@@ -1,6 +1,6 @@
 import { post } from './api';
 
-const url = 'http://34.47.126.125:3000';
+const url = 'https://34.47.126.125:3000';
 
 export const chatBot = async (question: string) => {
   try {
