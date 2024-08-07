@@ -54,6 +54,6 @@ app.use('/api/pills', pillRouter);
 
 app.use(notFoundHandler);
 app.use(errorHandler);
-app.listen(port, () => {
-  console.log(`Server is running http://localhost:${port}`);
+app.listen(Number(port), '0.0.0.0', () => {
+  console.log(`서버가 http://localhost:${port}에서 실행 중입니다`);
 });
