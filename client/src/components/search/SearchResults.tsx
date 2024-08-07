@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { Icon } from '@iconify-icon/react';
 import informationOutline from '@iconify/icons-mdi/information-outline';
+import Modal from 'react-modal'; 
 import styled from 'styled-components';
 import {
   fetchFavoriteCount,
@@ -18,6 +19,19 @@ import SearchHeader from './SearchHeader';
 import LoginCheck from '../LoginCheck';
 import Toast from '../Toast';
 
+const customStyles = {
+  content: {
+    top: '50%',
+    left: '50%',
+    right: 'auto',
+    bottom: 'auto',
+    marginRight: '-50%',
+    transform: 'translate(-50%, -50%)',
+    maxHeight: '90vh',
+    overflow: 'auto'
+  }
+};
+
 const SearchResults = () => {
   const [searchParams] = useSearchParams();
   const query = searchParams.get('q') || '';
@@ -29,6 +43,8 @@ const SearchResults = () => {
   const [searchType, setSearchType] = useState<string>('name');
   const [activeType, setActiveType] = useState<string>(searchType);
   const [showToast, setShowToast] = useState<boolean>(false);
+   const [modalIsOpen, setModalIsOpen] = useState<boolean>(false);
+   const [modalImageSrc, setModalImageSrc] = useState<string>('');
 
   const formatTextWithLineBreaks = (text: string) => {
     return text.split('(').map((part, index, array) => (
@@ -97,6 +113,17 @@ const SearchResults = () => {
     setActiveType(type);
   };
 
+
+  const openModal = (src: string) => {
+    setModalImageSrc(src);
+    setModalIsOpen(true);
+  };
+
+  const closeModal = () => {
+    setModalIsOpen(false);
+    setModalImageSrc('');
+  };
+
   const tabs = [
     { key: 'effectiveness', label: '효능•용법' },
     { key: 'review', label: '리뷰' }
@@ -120,8 +147,18 @@ const SearchResults = () => {
       <SearchResultsContainer>
         <PillInfo>
           <PillImgs>
-            {pillData.boxurl && <img src={pillData.boxurl} alt='약 박스' />}
-            <img src={pillData.imgurl} alt='알약' />
+            {pillData.boxurl && (
+              <img
+                src={pillData.boxurl}
+                alt='약 박스'
+                onClick={() => openModal(pillData.boxurl)}
+              />
+            )}
+            <img
+              src={pillData.imgurl}
+              alt='알약'
+              onClick={() => openModal(pillData.imgurl)}
+            />
           </PillImgs>
           <section>
             <PillHeader>
@@ -203,6 +240,18 @@ const SearchResults = () => {
           {isFavorite ? '좋아요가 추가되었습니다.' : '좋아요가 취소되었습니다.'}
         </Toast>
       )}
+      <Modal
+        isOpen={modalIsOpen}
+        onRequestClose={closeModal}
+        style={customStyles}
+        contentLabel='Image Modal'
+      >
+        <img
+          src={modalImageSrc}
+          alt='확대된 이미지'
+          style={{ width: '100%' }}
+        />
+      </Modal>
     </>
   );
 };
@@ -219,6 +268,7 @@ const PillInfo = styled.div`
 
   & img {
     width: 35%;
+    cursor: pointer;
   }
 
   & section {
