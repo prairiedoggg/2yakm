@@ -1,10 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import { fetchReviews, createReview } from '../../api/reviewApi';
-import { isUserLoggedIn } from '../../store/authService';
-import Popup from '../popup/Popup';
-import PopupContent, { PopupType } from '../popup/PopupMessages.tsx';
+import LoginCheck from '../LoginCheck';
 
 export interface Review {
   id: number;
@@ -23,9 +20,6 @@ const Review = ({ pillId }: { pillId: number }) => {
   const [isWritingReview, setIsWritingReview] = useState<boolean>(false);
   const [newReview, setNewReview] = useState<string>('');
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [showLoginPopup, setShowLoginPopup] = useState<boolean>(false);
-  const [popupType, setPopupType] = useState<PopupType>(PopupType.None);
-  const navigate = useNavigate();
 
   const loadReviews = async (pillId: number, cursor: string | null) => {
     if (isLoading) return;
@@ -78,28 +72,29 @@ const Review = ({ pillId }: { pillId: number }) => {
     loadReviews(pillId, null);
   }, [pillId]);
 
-  const handleWriteReviewClick = () => {
-    if (!isUserLoggedIn()) {
-      setPopupType(PopupType.LoginRequired);
-      setShowLoginPopup(true);
-      return;
-    }
-    setIsWritingReview(true);
-  };
-
   return (
     <ReviewContainer>
-      <WriteReview onClick={handleWriteReviewClick}>리뷰 작성하기</WriteReview>
-      {isWritingReview && (
-        <ReviewForm>
-          <textarea
-            placeholder='리뷰를 작성해 주세요.&#10;욕설, 비방, 명예훼손성 표현은 사용하지 말아주세요.'
-            value={newReview}
-            onChange={(e) => setNewReview(e.target.value)}
-          />
-          <SubmitButton onClick={handleReviewSubmit}>완료</SubmitButton>
-        </ReviewForm>
-      )}
+      <LoginCheck>
+        {(handleCheckLogin) => (
+          <>
+            <WriteReview
+              onClick={() => handleCheckLogin(() => setIsWritingReview(true))}
+            >
+              리뷰 작성하기
+            </WriteReview>
+            {isWritingReview && (
+              <ReviewForm>
+                <textarea
+                  placeholder='리뷰를 작성해 주세요.&#10;욕설, 비방, 명예훼손성 표현은 사용하지 말아주세요.'
+                  value={newReview}
+                  onChange={(e) => setNewReview(e.target.value)}
+                />
+                <SubmitButton onClick={handleReviewSubmit}>완료</SubmitButton>
+              </ReviewForm>
+            )}
+          </>
+        )}
+      </LoginCheck>
       <ReviewList>
         {reviews.map((review) => (
           <ReviewItem
@@ -119,11 +114,6 @@ const Review = ({ pillId }: { pillId: number }) => {
           </ReviewItem>
         ))}
       </ReviewList>
-      {showLoginPopup && (
-        <Popup onClose={() => setShowLoginPopup(false)}>
-          {PopupContent(popupType, navigate)}
-        </Popup>
-      )}
       {isLoading && <LoadingText>로딩 중...</LoadingText>}
     </ReviewContainer>
   );
