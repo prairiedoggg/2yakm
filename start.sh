@@ -6,4 +6,4 @@
    #cd /chicken_pharm/client && npm run preview -- --port 5173 &
 
    # 서버 시작 (3000 포트 사용)
-   cd /chicken_pharm/server && node dist/server.js
+   cd /chicken_pharm/server && node dist/server.js &

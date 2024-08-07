@@ -28,7 +28,7 @@ RUN mkdir -p server/public && cp -r client/dist/* server/public/
 # Nginx 설정 복사
 #COPY nginx.conf /etc/nginx/nginx.conf
 
-EXPOSE 80
+EXPOSE 80 3000
 
 RUN chmod +x /chicken_pharm/start.sh
 
