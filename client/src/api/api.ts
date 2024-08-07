@@ -2,12 +2,12 @@ import axios, { HttpStatusCode } from 'axios';
 import Cookies from 'js-cookie';
 
 const api = axios.create({
-  baseURL: 'http://localhost:3000/', // import.meta.env.SERVER_BASE_URL,
+  baseURL: 'http://34.47.126.125:3000/', // import.meta.env.SERVER_BASE_URL,
   timeout: 100000
 });
 
 const refreshApi = axios.create({
-  baseURL: 'http://localhost:3000/',
+  baseURL: 'http://34.47.126.125:3000/',
   withCredentials: true
 });
 
