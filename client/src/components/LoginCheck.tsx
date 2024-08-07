@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { isUserLoggedIn } from '../store/authService';
+import { isUserLoggedIn } from '../utils/auth';
 import Popup from './popup/Popup';
 import PopupContent, { PopupType } from './popup/PopupMessages';
 import { useNavigate } from 'react-router-dom';

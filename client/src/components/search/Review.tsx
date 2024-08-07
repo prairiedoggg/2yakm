@@ -109,7 +109,7 @@ const Review = ({ pillId }: { pillId: number }) => {
             <User>
               <Profile
                 src={review.profileimg ?? `/img/user.svg`}
-                alt='프로필 이미지'
+                alt='프로필'
               />
               <span>{review.username}</span>
             </User>
@@ -207,7 +207,9 @@ const User = styled.div`
   }
 `;
 
-const Profile = styled.img``;
+const Profile = styled.img`
+  width: 24px;
+`;
 
 const LoadingText = styled.div`
   margin: 20px 0;

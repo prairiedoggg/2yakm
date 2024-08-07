@@ -121,7 +121,7 @@ const SearchResults = () => {
       <SearchResultsContainer>
         <PillInfo>
           <PillImgs>
-            <img src={pillData.boxurl} alt='약 박스' />
+            {pillData.boxurl && <img src={pillData.boxurl} alt='약 박스' />}
             <img src={pillData.imgurl} alt='알약' />
           </PillImgs>
           <section>
@@ -257,7 +257,7 @@ const PillText = styled.div`
   display: flex;
 
   & h3 {
-    font-size: 16px;
+    font-size: 15px;
     font-weight: 500;
   }
 `;
