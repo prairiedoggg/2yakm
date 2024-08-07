@@ -30,7 +30,7 @@ RUN cd server && npm run build
 
 # NGINX 설정 복사
 # COPY nginx.conf /etc/nginx/nginx.conf
-COPY /etc/nginx/nginx.conf /etc/nginx/nginx.conf
+COPY nginx.conf /etc/nginx/nginx.conf
 COPY default /etc/nginx/sites-available/default
 
 # 포트 설정
