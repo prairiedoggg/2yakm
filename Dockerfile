@@ -1,6 +1,5 @@
 FROM node:20.3.0
 
-# 작업 디렉토리 설정
 WORKDIR /chicken_pharm
 
 # Nginx, Python 및 필요한 도구 설치
@@ -18,9 +17,9 @@ RUN cd client && npm ci
 # 소스 코드 복사
 COPY . .
 
-# .env 파일 복사 (Jenkins에서 제공)
-ARG ENV_FILE=.env
-COPY ${ENV_FILE} .env
+# .env 파일 처리
+#ARG ENV_FILE=.env
+#COPY ${ENV_FILE} .env
 
 # 클라이언트 빌드
 RUN cd client && npm run build || echo "클라이언트 빌드 중 오류 발생"
