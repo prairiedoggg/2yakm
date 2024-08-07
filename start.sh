@@ -12,4 +12,4 @@
 
    # 서버 시작 (3000 포트 사용)
    cd /chicken_pharm/server/src
-   NODE_ENV=production node dist/server.js &
+   NODE_ENV=production node dist/server.js
