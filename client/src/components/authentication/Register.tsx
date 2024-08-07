@@ -6,12 +6,20 @@ import { requestEmailVerification, signup } from '../../api/authService';
 import Loading from '../Loading';
 import Popup from '../popup/Popup';
 import PopupContent, { PopupType } from '../popup/PopupMessages';
+import ValidationError from '../ValidationError';
 
 interface FormData {
   email: string;
   name: string;
   password: string;
   confirmPassword: string;
+}
+
+interface BlurState {
+  email: boolean;
+  name: boolean;
+  password: boolean;
+  confirmPassword: boolean;
 }
 
 enum InputType {
@@ -34,7 +42,22 @@ const Register = () => {
     confirmPassword: ''
   });
 
+  const [blurState, setBlurState] = useState<BlurState>({
+    email: false,
+    name: false,
+    password: false,
+    confirmPassword: false
+  });
+
   const [showPassword, setShowPassword] = useState<boolean>(false);
+
+  const handleBlur = (e: ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setBlurState((prevState) => ({
+      ...prevState,
+      [name]: value
+    }));
+  };
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -113,7 +136,6 @@ const Register = () => {
 
   const isFormValid = (): boolean => {
     const { email, name, password, confirmPassword } = formData;
-    const specialCharPattern = /[!@#$%^&*(),.?":{}|<>]/;
 
     return (
       email !== '' &&
@@ -124,8 +146,19 @@ const Register = () => {
       name.length >= 3 &&
       name.length < 20 &&
       password.length >= 8 &&
-      specialCharPattern.test(password)
+      checkSpecialCharPattern(password) &&
+      checkEmailPattern(email)
     );
+  };
+
+  const checkSpecialCharPattern = (str: string): boolean => {
+    const specialCharPattern = /[!@#$%^&*(),.?":{}|<>]/;
+    return specialCharPattern.test(str);
+  };
+
+  const checkEmailPattern = (str: string): boolean => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(str);
   };
 
   const getInputRightPadding = (type: InputType) => {
@@ -140,17 +173,53 @@ const Register = () => {
     }
   };
 
+  const isEmailInvalid = () => {
+    return blurState.email && !checkEmailPattern(formData.email);
+  };
+
+  const isNameInvalid = () => {
+    return blurState.name && formData.name.length < 3;
+  };
+
+  const isPasswordInvalid = () => {
+    return (
+      blurState.password &&
+      (formData.password.length < 8 ||
+        !checkSpecialCharPattern(formData.password))
+    );
+  };
+
+  const isConfirmPasswordInvalid = () => {
+    return (
+      blurState.password &&
+      blurState.confirmPassword &&
+      formData.password != formData.confirmPassword
+    );
+  };
+
+  const checkInvalid = (type: InputType) => {
+    if (type == InputType.Email) return isEmailInvalid();
+    else if (type == InputType.Name) return isNameInvalid();
+    else if (type == InputType.Password) return isPasswordInvalid();
+    else if (type == InputType.ConfirmPassword)
+      return isConfirmPasswordInvalid();
+  };
+
   const renderInput = (type: InputType, showHr: boolean) => {
     return (
       <div className='input-container' key={type}>
         <input
-          style={{ paddingRight: `${getInputRightPadding(type)}px` }}
+          style={{
+            paddingRight: `${getInputRightPadding(type)}px`,
+            backgroundColor: checkInvalid(type) ? 'rgba(255, 0, 0, 0.1)' : ''
+          }}
           type={getInputType(type)}
           name={type}
           placeholder={getPlaceholder(type)}
           value={getValue(type)}
           onChange={handleChange}
           required
+          onBlur={handleBlur}
         />
         <Icon
           className='input-left-btn'
@@ -230,6 +299,21 @@ const Register = () => {
             )}
           </div>
 
+          <div className='errors'>
+            <ValidationError condition={isEmailInvalid()}>
+              이메일 형식이 올바르지않습니다.
+            </ValidationError>
+            <ValidationError condition={isNameInvalid()}>
+              이름은 3글자 이상 입력해주세요.
+            </ValidationError>
+            <ValidationError condition={isPasswordInvalid()}>
+              패스워드는 8자리 이상, 특수문자를 포함해 입력해주세요.
+            </ValidationError>
+            <ValidationError condition={isConfirmPasswordInvalid()}>
+              비밀번호와 비밀번호 확인이 동일하지않습니다.
+            </ValidationError>
+          </div>
+
           <button
             className='submitButton'
             disabled={!isFormValid()}
@@ -289,6 +373,11 @@ const Content = styled.div`
   align-content: center;
   gap:20px;
   width:100%;
+
+  .errors{
+    display: flex;
+    flex-direction: column;
+  }
 
   .title{
     margin-bottom: 50px;

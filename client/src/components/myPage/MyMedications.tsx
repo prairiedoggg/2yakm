@@ -10,9 +10,9 @@ import {
 import Loading from '../Loading';
 import Popup from '../popup/Popup';
 import PopupContent, { PopupType } from '../popup/PopupMessages';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { fetchAutocompleteSuggestions } from '../../api/searchApi';
-import { useSearchStore } from '../../store/search';
+import Toast from '../Toast';
 
 interface MedicationItem {
   id: string;
@@ -35,6 +35,9 @@ const MyMedications = () => {
   const [hasMore, setHasMore] = useState(true);
   const containerRef = useRef<HTMLDivElement | null>(null);
   const [suggestions, setSuggestions] = useState<string[]>([]);
+  const [toastMessage, setToastMessage] = useState('');
+
+  const maxTextLength = 15;
 
   const navigate = useNavigate();
 
@@ -52,9 +55,13 @@ const MyMedications = () => {
                 deleteMyPills(
                   selected?.id.toString() ?? '',
                   () => {
+                    setItems((prevItems) =>
+                      prevItems.filter((item) => item.id !== selected?.id)
+                    );
+                    setItemCount(itemCount - 1);
                     setLoading(false);
                     setSelected(undefined);
-                    fetchDatas();
+                    setToastMessage('나의 약 삭제 완료!');
                   },
                   () => {
                     setPopupType(PopupType.DeleteMyPillFailure);
@@ -134,23 +141,28 @@ const MyMedications = () => {
     return `${year}.${month}.${day}`;
   };
 
-  const fetchDatas = () => {
+  const fetchDatas = (latestData = false) => {
     fetchMyPills(
-      limit,
-      offset,
+      latestData ? 1 : limit,
+      latestData ? 0 : offset,
       'createdAt',
       'DESC',
       (data) => {
-        const reviews = data.data;
-        const temp: MedicationItem[] = reviews.map((d: any) => ({
+        const pillDatas = data.data;
+        const temp: MedicationItem[] = pillDatas.map((d: any) => ({
           id: d.pillid,
           title: d.pillname,
           expiration: formatDate(d.expiredat)
         }));
         setLoading(false);
-        setItems((prevData) => [...prevData, ...temp]);
         setOffset((prevOffset) => prevOffset + temp.length);
-        setHasMore(temp.length === limit);
+
+        if (latestData) {
+          setItems((prevData) => [...temp, ...prevData]);
+        } else {
+          setItems((prevData) => [...prevData, ...temp]);
+          setHasMore(temp.length === limit);
+        }
 
         setItemCount(data.totalCount);
       },
@@ -164,15 +176,22 @@ const MyMedications = () => {
     return (
       <Item key={key}>
         <div className='title'>
-          <div className='title2'>
-            {item.title}
-            <Icon
-              icon='ep:arrow-right-bold'
-              width='1.2em'
-              height='1.2em'
-              style={{ color: 'black' }}
-            />
-          </div>
+          <Link
+            to={`/search/name?q=${item.title}`}
+            style={{ color: 'black', textDecoration: 'none' }}
+          >
+            <div className='title2'>
+              {item.title.length > maxTextLength
+                ? item.title.substring(0, maxTextLength) + '...'
+                : item.title}
+              <Icon
+                icon='ep:arrow-right-bold'
+                width='1.2em'
+                height='1.2em'
+                style={{ color: 'black' }}
+              />
+            </div>
+          </Link>
 
           {deleteItem ? (
             <div
@@ -296,10 +315,10 @@ const MyMedications = () => {
                   () => {
                     setBottomSheet(false);
                     setLoading(false);
-                    fetchDatas();
-
+                    fetchDatas(true);
                     setName('');
                     setDate('');
+                    setToastMessage('나의 약 등록 완료!');
                   },
                   () => {
                     setLoading(false);
@@ -318,6 +337,9 @@ const MyMedications = () => {
         <Popup onClose={() => setPopupType(PopupType.None)}>
           {getPopupContent(popupType)}
         </Popup>
+      )}
+      {toastMessage != '' && (
+        <Toast onEnd={() => setToastMessage('')}>{toastMessage}</Toast>
       )}
     </MyPageContainer>
   );
@@ -413,6 +435,7 @@ const StyledContent = styled.div`
     flex-direction: column;
     gap: 30px;
     overflow: auto;
+    padding-right: 10px;
   }
 `;
 
@@ -428,7 +451,7 @@ const Item = styled.div`
   .title {
     display: flex;
     font-weight: bold;
-    font-size: 1.2em;
+    font-size: 1em;
     justify-content: space-between;
   }
 
@@ -448,7 +471,7 @@ const Item = styled.div`
     border-radius: 25px;
     padding: 3px 8px;
     cursor: pointer;
-    font-size: 0.6em;
+    font-size: 0.8em;
   }
 
   .empty {
