@@ -32,7 +32,7 @@ RUN pip install -r requirements.txt
 RUN cd server && npm ci
 
 # 클라이언트 의존성 설치
-RUN cd client && npm ci
+RUN cd client && npm install
 
 # .env 파일 복사 (Jenkins에서 제공)
 ARG ENV_FILE=.env
