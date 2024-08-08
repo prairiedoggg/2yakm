@@ -32,19 +32,21 @@ const CalendarSection: React.FC = () => {
   const [calendarData, setData] = useState<CalendarDate[]>([]);
 
   useEffect(() => {
-    const fetchData = async () => {
-      const data: CalendarDate[] = await calendarAllGet();
-      setData(data);
-      console.log(data);
-      const datesWithMedications = new Set(
-        data
-          .filter((post) => post.medications && post.medications.length > 0)
-          .map((post) => new Date(post.date).toDateString())
-      );
-      setPostArray(datesWithMedications);
-    };
+    if (login) {
+      const fetchData = async () => {
+        const data: CalendarDate[] = await calendarAllGet();
+        setData(data);
+        console.log(data);
+        const datesWithMedications = new Set(
+          data
+            .filter((post) => post.medications && post.medications.length > 0)
+            .map((post) => new Date(post.date).toDateString())
+        );
+        setPostArray(datesWithMedications);
+      };
 
-    fetchData();
+      fetchData();
+    }
   }, [edit, login]);
 
   useEffect(() => {

@@ -65,7 +65,7 @@ const LoadingBottom = styled.div`
   border-bottom-right-radius: 44%;
 
   opacity: 0;
-  animation: ${fadeInAndOut} 2s infinite;
+  animation: ${fadeInAndOut} 1s infinite;
 `;
 
 const Text = styled.div`
