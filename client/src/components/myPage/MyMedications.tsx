@@ -24,6 +24,7 @@ const MyMedications = () => {
   const [bottomSheet, setBottomSheet] = useState(false);
   const [name, setName] = useState('');
   const [date, setDate] = useState('');
+  const [alarm, setAlarm] = useState(false);
   const [loading, setLoading] = useState(false);
   const [items, setItems] = useState<MedicationItem[]>([]);
   const [itemCount, setItemCount] = useState(0);
@@ -293,10 +294,11 @@ const MyMedications = () => {
               <div className='title2'>
                 사용 기한{' '}
                 <Icon
-                  icon='ep:mute-notification'
-                  width='1.3rem'
-                  height='1.3rem'
+                  icon={alarm ? 'octicon:bell-16' : 'octicon:bell-slash-16'}
+                  width='1.4rem'
+                  height='1.4rem'
                   style={{ color: 'gray' }}
+                  onClick={() => setAlarm(!alarm)}
                 />
               </div>
               <div className='input-container'>
@@ -312,12 +314,14 @@ const MyMedications = () => {
                 addMyPills(
                   name,
                   date.toString(),
+                  alarm,
                   () => {
                     setBottomSheet(false);
                     setLoading(false);
                     fetchDatas(true);
                     setName('');
                     setDate('');
+                    setAlarm(false);
                     setToastMessage('나의 약 등록 완료!');
                   },
                   () => {
