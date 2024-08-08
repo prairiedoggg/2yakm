@@ -122,11 +122,6 @@ const SearchResults = () => {
   if (!pillData) {
     return (
       <>
-        <SearchHeader
-          activeType={activeType}
-          handleTypeClick={handleTypeClick}
-          setImageResults={() => {}}
-        />
         <NotSearched />
       </>
     );
