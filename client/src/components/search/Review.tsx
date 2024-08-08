@@ -17,6 +17,7 @@ export interface Review {
   role?: boolean;
   content: string;
   profileimg?: string;
+  createdat: string;
 }
 
 const Review = ({ pillId }: { pillId: number }) => {
@@ -27,7 +28,6 @@ const Review = ({ pillId }: { pillId: number }) => {
   const [reviewCount, setReviewCount] = useState<number>(0);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [showToast, setShowToast] = useState<boolean>(false);
-
 
   const loadReviews = useCallback(
     async (pillId: number, cursor: string | null) => {
@@ -95,6 +95,14 @@ const Review = ({ pillId }: { pillId: number }) => {
     fetchCount();
   }, [pillId]);
 
+   const formatDate = (dateString: string) => {
+     const date = new Date(dateString);
+     const day = date.getDate();
+     const month = date.getMonth() + 1; 
+     const year = date.getFullYear();
+     return `${year}.${month}.${day}`;
+   };
+
   return (
     <ReviewContainer>
       <ReviewHeader>
@@ -103,27 +111,24 @@ const Review = ({ pillId }: { pillId: number }) => {
         </p>
         <LoginCheck>
           {(handleCheckLogin) => (
-            <>
-              <WriteReview
-                onClick={() => handleCheckLogin(() => setIsWritingReview(true))}
-              >
-                리뷰 작성하기
-              </WriteReview>
-              {isWritingReview && (
-                <ReviewForm>
-                  <textarea
-                    placeholder='리뷰를 작성해 주세요.&#10;욕설, 비방, 명예훼손성 표현은 사용하지 말아주세요.'
-                    value={newReview}
-                    onChange={(e) => setNewReview(e.target.value)}
-                  />
-                  <SubmitButton onClick={handleReviewSubmit}>완료</SubmitButton>
-                </ReviewForm>
-              )}
-            </>
+            <WriteReview
+              onClick={() => handleCheckLogin(() => setIsWritingReview(true))}
+            >
+              리뷰 작성하기
+            </WriteReview>
           )}
         </LoginCheck>
       </ReviewHeader>
-
+      {isWritingReview && (
+        <ReviewForm>
+          <textarea
+            placeholder='리뷰를 작성해 주세요.&#10;욕설, 비방, 명예훼손성 표현은 사용하지 말아주세요.'
+            value={newReview}
+            onChange={(e) => setNewReview(e.target.value)}
+          />
+          <SubmitButton onClick={handleReviewSubmit}>완료</SubmitButton>
+        </ReviewForm>
+      )}
       <ReviewList>
         {reviews.map((review) => (
           <ReviewItem
@@ -138,6 +143,11 @@ const Review = ({ pillId }: { pillId: number }) => {
                 alt='프로필'
               />
               <span>{review.username}</span>
+              <span
+                style={{ marginLeft: 'auto', fontWeight: 300, color: 'gray' }}
+              >
+                {formatDate(review.createdat)}
+              </span>
             </User>
             <p>{review.content}</p>
           </ReviewItem>
@@ -246,7 +256,8 @@ const User = styled.div`
 `;
 
 const Profile = styled.img`
-  width: 24px;
+  width: 30px;
+  border-radius: 15px;
 `;
 
 const LoadingText = styled.div`

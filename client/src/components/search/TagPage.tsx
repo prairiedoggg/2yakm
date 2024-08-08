@@ -12,6 +12,7 @@ export interface PillData {
   id: number;
   name: string;
   importantWords: string;
+  imgurl: string;
 }
 
 const TagPage = () => {
@@ -65,7 +66,7 @@ const TagPage = () => {
               to={`/search/name?q=${encodeURIComponent(pill.name)}`}
               key={pill.id}
             >
-              <PillImg src={`/img/pill.png`} alt={pill.name}></PillImg>
+              <PillImg src={pill.imgurl} alt={pill.name}></PillImg>
               <PillText>
                 <PillTitle>
                   <h3>{pill.name}</h3>
