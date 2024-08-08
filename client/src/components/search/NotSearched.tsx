@@ -1,15 +1,30 @@
+import { useState } from 'react';
 import styled from 'styled-components';
+import SearchHeader from './SearchHeader';
 
 const NotSearched = () => {
+  const [activeType, setActiveType] = useState<string>('name');
+
+  const handleTypeClick = (type: string) => {
+    setActiveType(type);
+  };
+
   return (
-    <NotSearchedContainer>
-      <Image src='/img/notSearched.png' />
-      <Text className='main'>검색 결과가 없어요</Text>
-      <Text className='sub'>
-        철자를 확인하거나
-        <br /> 다른 키워드로 검색해보세요.
-      </Text>
-    </NotSearchedContainer>
+    <>
+      <SearchHeader
+        activeType={activeType}
+        handleTypeClick={handleTypeClick}
+        setImageResults={() => {}}
+      />
+      <NotSearchedContainer>
+        <Image src='/img/notSearched.png' />
+        <Text className='main'>검색 결과가 없어요</Text>
+        <Text className='sub'>
+          검색 타입을 확인하거나
+          <br /> 다른 키워드로 검색해보세요.
+        </Text>
+      </NotSearchedContainer>
+    </>
   );
 };
 

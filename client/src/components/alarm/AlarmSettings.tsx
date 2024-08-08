@@ -1,5 +1,5 @@
 import { Icon } from '@iconify-icon/react';
-import { Button, DatePicker, Input, TimePicker } from 'antd';
+import { Button, Input, TimePicker } from 'antd';
 import dayjs, { Dayjs } from 'dayjs';
 import { useEffect, useState } from 'react';
 import styled from 'styled-components';
@@ -17,8 +17,12 @@ const AlarmSettings = () => {
     { time: dayjs('13:00', 'HH:mm') },
     { time: dayjs('20:00', 'HH:mm') }
   ]);
-  const [startDate, setStartDate] = useState<Dayjs | null>(dayjs());
-  const [endDate, setEndDate] = useState<Dayjs | null>(dayjs());
+const [startDate, setStartDate] = useState<string>(
+  new Date().toISOString().split('T')[0]
+);
+const [endDate, setEndDate] = useState<string>(
+  new Date().toISOString().split('T')[0]
+);
   const [showToast, setShowToast] = useState<string | null>(null);
 
   useEffect(() => {
@@ -29,8 +33,12 @@ const AlarmSettings = () => {
           time: dayjs(t.time, 'HH:mm')
         }))
       );
-      setStartDate(dayjs(currentAlarm.startDate));
-      setEndDate(dayjs(currentAlarm.endDate));
+    if (currentAlarm.startDate) {
+      setStartDate(currentAlarm.startDate.split('T')[0]);
+    }
+    if (currentAlarm.endDate) {
+      setEndDate(currentAlarm.endDate.split('T')[0]);
+    }
     }
   }, [currentAlarm]);
 
@@ -56,8 +64,8 @@ const AlarmSettings = () => {
       times: alarmTimes.map((t) => ({
         time: t.time.format('HH:mm')
       })),
-      startDate: startDate?.toISOString() || '',
-      endDate: endDate?.toISOString() || '',
+      startDate: startDate,
+      endDate: endDate,
       alarmStatus: true
     };
 
@@ -76,15 +84,6 @@ const AlarmSettings = () => {
     }
   };
 
-  const disabledStartDate = (current: Dayjs) => {
-    return current && current < dayjs().startOf('day');
-  };
-
-  const disabledEndDate = (current: Dayjs): boolean => {
-    if (!current) return false;
-    const today = dayjs().startOf('day');
-    return current < today || (startDate !== null && current < startDate);
-  };
 
   return (
     <>
@@ -101,18 +100,20 @@ const AlarmSettings = () => {
           </AlarmName>
           <AlarmStartDate>
             <h4>언제부터 약을 드시나요?</h4>
-            <DatePicker
+            <Input
+              type='date'
               value={startDate}
-              onChange={(date) => setStartDate(date)}
-              disabledDate={disabledStartDate}
+              onChange={(e) => setStartDate(e.target.value)}
+              min={new Date().toISOString().split('T')[0]}
             />
           </AlarmStartDate>
           <AlarmEndDate>
             <h4>언제까지 약을 드시나요?</h4>
-            <DatePicker
+            <Input
+              type='date'
               value={endDate}
-              onChange={(date) => setEndDate(date)}
-              disabledDate={disabledEndDate}
+              onChange={(e) => setEndDate(e.target.value)}
+              min={startDate}
             />
           </AlarmEndDate>
           <AlarmTime>

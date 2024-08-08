@@ -79,3 +79,25 @@ export const fetchAutocompleteSuggestions = async (name: string) => {
     throw error;
   }
 };
+
+export const fetchReviewCount = async (pillId: string) => {
+  try {
+    const data = await get(`/api/pills/${pillId}/reviewcount`);
+    console.log('리뷰수:', data);
+    return data.count;
+  } catch (error) {
+    console.log('리뷰 수 가져오기 실패:', error);
+  }
+};
+
+
+export const fetchFavoriteCount = async (pillId: number) => {
+  try {
+    const data = await get(`/api/pills/${pillId}/favoritecount`);
+    console.log('좋아요 수:', data);
+    return data.count;
+  } catch (error) {
+    console.error('즐겨찾기 수 가져오기 실패:', error);
+    throw error;
+  }
+};

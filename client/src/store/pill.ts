@@ -14,7 +14,8 @@ export interface PillData {
   source: string;
   similarity: string;
   boxurl: string;
-  departments:string;
+  departments: string;
+  type: string;
 }
 
 interface PillState {
