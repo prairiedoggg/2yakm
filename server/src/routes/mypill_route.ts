@@ -4,7 +4,8 @@ import {
   addMyPill,
   updateMyPill,
   getMyPills,
-  deleteMyPill
+  deleteMyPill,
+  getPillsExpiringToday
 } from '../controllers/mypillController';
 
 /**
@@ -142,5 +143,53 @@ router.get('/', getMyPills);
  *         description: 성공
  */
 router.delete('/:mypillid', deleteMyPill);
+
+/**
+ * @swagger
+ * /api/mypills/expiredtoday:
+ *   get:
+ *     summary: 오늘 만료되는 약 정보 가져오기
+ *     tags: [mypills]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: 성공
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   pillid:
+ *                     type: integer
+ *                     description: 약 ID
+ *                     example: 1
+ *                   userid:
+ *                     type: string
+ *                     description: 사용자 ID
+ *                     example: '0190caaa-c723-7169-861d-3a78c0dbbee2'
+ *                   pillname:
+ *                     type: string
+ *                     description: 약 이름
+ *                     example: '감기약'
+ *                   expiredat:
+ *                     type: string
+ *                     format: date
+ *                     description: 만료 날짜
+ *                     example: '2024-08-08'
+ *                   alarmstatus:
+ *                     type: boolean
+ *                     description: 알람 상태
+ *                     example: false
+ *       401:
+ *         description: Unauthorized
+ *       404:
+ *         description: Not Found
+ *       500:
+ *         description: Internal Server Error
+ */
+router.get('/expiredtoday', getPillsExpiringToday);
 
 export default router;
