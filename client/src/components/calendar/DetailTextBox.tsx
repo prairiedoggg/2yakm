@@ -1,6 +1,11 @@
+import Cookies from 'js-cookie';
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import { useDateStore } from '../../store/calendar';
 import Info from '../Info';
+import Popup from '../popup/Popup';
+import PopupContent, { PopupType } from '../popup/PopupMessages';
 import BloodSugar from './calendarDetails/BloodSugar';
 import IsPillTaken from './calendarDetails/IsPillTaken';
 import Photo from './calendarDetails/Photo';
@@ -31,6 +36,10 @@ const DetailTextBox = ({
   photo
 }: DetailTextBoxProps) => {
   const { setEdit, setArrow } = useDateStore();
+  const login = Cookies.get('login');
+  const navigate = useNavigate();
+  const [showPopup, setShowPopup] = useState<boolean>(false);
+  const [popupType, setPopupType] = useState<PopupType>(PopupType.None);
 
   const handleInfoText = () => {
     switch (title) {
@@ -107,8 +116,13 @@ const DetailTextBox = ({
   const isPill = title === '약 복용 여부';
 
   const openEdit = () => {
-    setEdit(true);
-    setArrow(true);
+    if (login) {
+      setEdit(true);
+      setArrow(true);
+    } else {
+      setPopupType(PopupType.LoginRequired);
+      setShowPopup(true);
+    }
   };
 
   return isRender ? (
@@ -120,9 +134,16 @@ const DetailTextBox = ({
       <UnitContainer>{handleContent()}</UnitContainer>
     </PillContainer>
   ) : isEmpty ? (
-    <Empty onClick={() => openEdit()}>
-      {title} 정보 없음. 추가하려면 탭 하세요.
-    </Empty>
+    <>
+      <Empty onClick={() => openEdit()}>
+        {title} 정보 없음. 추가하려면 탭 하세요.
+      </Empty>
+      {showPopup && (
+        <Popup onClose={() => setShowPopup(false)}>
+          {PopupContent(popupType, navigate)}
+        </Popup>
+      )}
+    </>
   ) : null;
 };
 
