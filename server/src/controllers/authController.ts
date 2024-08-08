@@ -244,7 +244,7 @@ export const resetPasswordController = async (req: Request, res: Response, next:
   try {
     const { token, newPassword } = req.body;
     await resetPasswordService(token, newPassword);
-    res.redirect(`${FRONTEND_URL}/password/reset`);
+    res.status(200).json({ message: '비밀번호 재설정 완료' });
   } catch (error) {
     next(error);
   }

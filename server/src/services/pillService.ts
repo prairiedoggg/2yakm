@@ -98,20 +98,20 @@ interface ImportantWord {
 }
 
 const getImportantWords = (text: string): ImportantWord[] => {
-  console.log(`Original text: ${text}`);
   const wordFrequency: { [key: string]: number } = {};
 
   const words = text
     .toLowerCase()
     .split(/[\s,.;:ㆍ()]+/)
     .filter((word) => {
-      const isValid = word && Object.keys(stopwords).some(stopword => word.startsWith(stopword));
-      console.log(`Word: ${word}, isValid: ${isValid}`);
+      const isValid =
+        word &&
+        Object.keys(stopwords).some((stopword) => word.startsWith(stopword));
       return isValid;
     });
 
   words.forEach((word) => {
-    const stopword = Object.keys(stopwords).find(sw => word.startsWith(sw));
+    const stopword = Object.keys(stopwords).find((sw) => word.startsWith(sw));
     if (stopword) {
       wordFrequency[stopword] = (wordFrequency[stopword] || 0) + 1;
     }
@@ -141,9 +141,13 @@ export const searchPillsbyName = async (
 
     const pills = result.rows.map((pill: Pills) => {
       const importantWordsWithDepartments = getImportantWords(pill.efficacy);
-      const importantWords = importantWordsWithDepartments.map(iw => iw.word).join(', ');
-      const departments = importantWordsWithDepartments.map(iw => iw.department).filter(dep => dep).join(', ');
-      console.log(`Pill ID: ${pill.id}, Important Words: ${importantWords}, Departments: ${departments}`);
+      const importantWords = importantWordsWithDepartments
+        .map((iw) => iw.word)
+        .join(', ');
+      const departments = importantWordsWithDepartments
+        .map((iw) => iw.department)
+        .filter((dep) => dep)
+        .join(', ');
       return {
         ...pill,
         importantWords,
@@ -162,14 +166,14 @@ export const searchPillsbyName = async (
     };
   } catch (error: unknown) {
     if (error instanceof Error) {
-      console.error('DatabaseError', error)
+      console.error('DatabaseError', error);
       throw createError(
         'DatabaseError',
         `Failed to search pills by name: ${error.message}`,
         500
       );
     } else {
-      console.error('UnknownError', error)
+      console.error('UnknownError', error);
       throw createError(
         'UnknownError',
         `Failed to search pills by name: An unknown error occurred`,
@@ -199,8 +203,13 @@ export const searchPillsbyEfficacy = async (
 
     const pills = result.rows.map((pill: Pills) => {
       const importantWordsWithDepartments = getImportantWords(pill.efficacy);
-      const importantWords = importantWordsWithDepartments.map(iw => iw.word).join(', ');
-      const departments = importantWordsWithDepartments.map(iw => iw.department).filter(dep => dep).join(', ');
+      const importantWords = importantWordsWithDepartments
+        .map((iw) => iw.word)
+        .join(', ');
+      const departments = importantWordsWithDepartments
+        .map((iw) => iw.department)
+        .filter((dep) => dep)
+        .join(', ');
       return {
         ...pill,
         importantWords,
@@ -217,14 +226,14 @@ export const searchPillsbyEfficacy = async (
     };
   } catch (error: unknown) {
     if (error instanceof Error) {
-      console.error('DatabaseError', error)
+      console.error('DatabaseError', error);
       throw createError(
         'DatabaseError',
         `Failed to search pills by efficacy: ${error.message}`,
         500
       );
     } else {
-      console.error('UnknownError', error)
+      console.error('UnknownError', error);
       throw createError(
         'UnknownError',
         'Failed to search pills by efficacy: An unknown error occurred',
@@ -259,10 +268,10 @@ const searchPillsByFrontAndBack = async (
     };
   } catch (error: unknown) {
     if (error instanceof Error) {
-      console.error('DatabaseError', error)
+      console.error('DatabaseError', error);
       throw createError('DatabaseError', `${error.message}`, 500);
     } else {
-      console.error('UnknownError', error)
+      console.error('UnknownError', error);
       throw createError('UnknownError', 'An unknown error occurred', 500);
     }
   }
@@ -292,10 +301,10 @@ const searchPillsByNameFromText = async (
     };
   } catch (error: unknown) {
     if (error instanceof Error) {
-      console.error('DatabaseError', error)
+      console.error('DatabaseError', error);
       throw createError('DatabaseError', `${error.message}`, 500);
     } else {
-      console.error('UnknownError', error)
+      console.error('UnknownError', error);
       throw createError('UnknownError', 'An unknown error occurred', 500);
     }
   }
@@ -643,7 +652,7 @@ export const getPillFavoriteCountService = async (
 
     return parseInt(rows[0].count, 10);
   } catch (error: any) {
-    console.error('DatabaseError', error)
+    console.error('DatabaseError', error);
     throw createError(
       'DatabaseError',
       `Failed to get favorite count: ${error.message}`,
@@ -666,7 +675,7 @@ export const getPillReviewCountService = async (
 
     return parseInt(rows[0].count, 10);
   } catch (error: any) {
-    console.error('DatabaseError', error)
+    console.error('DatabaseError', error);
     throw createError(
       'DatabaseError',
       `Failed to get review count: ${error.message}`,
