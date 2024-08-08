@@ -10,7 +10,8 @@ export default defineConfig({
     }
   },
   server: {
-    Port: 5173,
+    disableDisconnectRefresh: true,
+    port: 5173,
     host: '0.0.0.0'
   }
 });
