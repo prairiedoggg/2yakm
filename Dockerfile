@@ -16,8 +16,8 @@ RUN pip install --upgrade pip && \
     pip install scikit-image transformers
 
 # google module 설치
-RUN pip install google-auth google-auth-oauthlib google-auth-httplib2 google-api-python-client protobuf pinecone-client==2.2.1
-
+RUN pip install google-auth google-auth-oauthlib google-auth-httplib2 google-api-python-client protobuf
+RUN pip install 'pinecone-client[grpc]'
 # 소스 코드 복사
 COPY . .
 
