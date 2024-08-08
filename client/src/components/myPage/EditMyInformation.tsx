@@ -47,34 +47,6 @@ const EditMyInformation = ({
   if (user?.role) infos2.push({ info: '약사 인증 완료', onClick: undefined });
   else infos2.push({ info: '약사 인증', onClick: onEditPharmacistClick });
 
-  const handleClose = async (file: FileList | null) => {
-    if (file !== null) {
-      setLoading(true);
-
-      const formData = new FormData();
-      formData.append('profileImg', file[0]);
-      try {
-        await changeProfileImage(
-          formData,
-          () => {
-            fetchUserProfile(() => {
-              setToastMessage('프로필사진 수정 완료!');
-            });
-            setLoading(false);
-          },
-          (error) => {
-            setLoading(false);
-            setPopupType(PopupType.ChangeUserProfileImageFailure);
-            throw error;
-          }
-        );
-      } catch(error) {
-        throw error;
-      }
-    }
-    setBottomSheet(false);
-  };
-
   const getInfoValue = (type: string) => {
     switch (type) {
       case '약사 인증 완료':
@@ -160,9 +132,29 @@ const EditMyInformation = ({
       </StyledContent>
       <BottomPictureSheet
         title={'사진 등록'}
-        isLoading={loading}
         isVisible={bottomSheet}
-        onClose={handleClose}
+        onClose={(file) => {
+          if (file !== null) {
+            setLoading(true);
+
+            const formData = new FormData();
+            formData.append('profileImg', file);
+            changeProfileImage(
+              formData,
+              () => {
+                fetchUserProfile(() => {
+                  setToastMessage('프로필사진 수정 완료!');
+                });
+                setLoading(false);
+              },
+              () => {
+                setLoading(false);
+                setPopupType(PopupType.ChangeUserProfileImageFailure);
+              }
+            );
+          }
+          setBottomSheet(false);
+        }}
       />
       {popupType !== PopupType.None && (
         <Popup onClose={() => setPopupType(PopupType.None)}>

@@ -1,4 +1,6 @@
 import styled from 'styled-components';
+import { Dispatch, SetStateAction } from 'react';
+import { PillData } from '../../store/pill.ts';
 import SearchBox from './SearchBox';
 
 const SEARCH_TYPES = [
@@ -15,11 +17,13 @@ const SEARCH_TYPES = [
 interface SearchHeaderProps {
   activeType?: string;
   handleTypeClick: (type: string) => void;
+  setImageResults?: Dispatch<SetStateAction<PillData[]>>;
 }
 
 const SearchHeader = ({
   activeType,
   handleTypeClick,
+  setImageResults
 }: SearchHeaderProps) => {
   return (
     <BackgroundHeader>
@@ -39,7 +43,7 @@ const SearchHeader = ({
           );
         })}
       </SearchTypeSelect>
-      <SearchBox />
+      <SearchBox setImageResults={setImageResults} />
     </BackgroundHeader>
   );
 };

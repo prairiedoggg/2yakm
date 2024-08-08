@@ -38,7 +38,7 @@ const DetailTextBox = ({
         return (
           <Info
             text={
-              '<p style="color: #23AF51">정상 : <br /> 공복 혈당 100미만, 식후 혈당 140미만 </p><br /> <p style="color: #F78500">관리 필요: <br /> 공복혈당 100이상 126미만, 식후혈당 140이상 200미만</p><br/> <p style="color: #EE3610">당뇨:  <br />공복혈당 126이상, 식후혈당 200이상 </p>'
+              '<p style="color: #23AF51">정상 : <br /> 공복 혈당 100미만, 식후 혈당 140미만 </p><br /> <br /><p style="color: #F78500">관리 필요: <br /> 공복혈당 100이상 126미만, 식후혈당 140이상 200미만</p><br/> <br /><p style="color: #EE3610">당뇨:  <br />공복혈당 126이상, 식후혈당 200이상 </p>'
             }
             category='혈당'
           />
@@ -47,7 +47,7 @@ const DetailTextBox = ({
         return (
           <Info
             text={
-              '<p style="color: #72BF44">정상: 35.8 ~ 37.2도 </p> <br /><p style="color: #D8C100">미열: 37.2 ~ 37.9도 </p><br /><p style="color: #F69999">중등도열: 38 ~ 38.9도 </p> <br />  <p style="color: #C20000">고열: 39도 이상</p> '
+              '<p style="color: #72BF44">정상: 35.8 ~ 37.2도 </p><br /> <br /><p style="color: #D8C100">미열: 37.2 ~ 37.9도 </p><br /> <br /><p style="color: #F69999">중등도열: 38 ~ 38.9도 </p> <br /> <br> <p style="color: #C20000">고열: 39도 이상</p> '
             }
             category='체온'
           />

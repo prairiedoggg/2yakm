@@ -27,7 +27,7 @@ const PillExpiredAlarmChecker = () => {
     setCurrentDate(getDateString(now));
 
     pills.forEach((pill) => {
-      if (!pill.alarmstatus) return;
+      if (!pill.alarmStatus) return;
 
       if (nextExpiredAlarmTime != undefined && nextExpiredAlarmTime > now)
         return;
@@ -41,13 +41,11 @@ const PillExpiredAlarmChecker = () => {
   };
 
   const getDateString = (date: Date) => {
-    const formatter = new Intl.DateTimeFormat('ko-KR', {
-      year: 'numeric',
-      month: 'long',
-      day: '2-digit'
-    });
+    const year = date.getFullYear();
+    const month = date.getMonth();
+    const day = date.getDay();
 
-    return formatter.format(date);
+    return `${year}. ${month}. ${day}`;
   };
 
   useEffect(() => {
@@ -64,14 +62,14 @@ const PillExpiredAlarmChecker = () => {
 
   const updateExpiredAlarm = (alarm: Pill) => {
     const prevAlarms = currentExpiredAlarms ?? [];
-    let alarmInfo = { id: alarm.pillid, name: alarm.pillname };
+    let alarmInfo = { id: alarm.id, name: alarm.name };
 
     const alreadyExists = prevAlarms.some(
-      (existingAlarm) => existingAlarm.id === alarm.pillid
+      (existingAlarm) => existingAlarm.id === alarm.id
     );
 
     const alreadyConfirmed = confirmedExpiredAlarms?.some(
-      (existingAlarm) => existingAlarm.id === alarm.pillid
+      (existingAlarm) => existingAlarm.id === alarm.id
     );
 
     if (!alreadyExists && !alreadyConfirmed)
@@ -102,7 +100,7 @@ const PillExpiredAlarmChecker = () => {
         <Popup
           onClose={() => {
             setCurrentExpiredAlarms([]);
-            setNextExpiredAlarmTime(addSecondsToDate(new Date(), 60));
+            setNextExpiredAlarmTime(addSecondsToDate(new Date(), 10));
           }}
         >
           <div className='center'>
@@ -121,7 +119,7 @@ const PillExpiredAlarmChecker = () => {
             폐기 후 가까운 약국이나 병원에 방문하여 새로운 약을 처방받으세요.
             <br />
             <br />
-            <div style={{ fontSize: '0.9rem' }}>(닫기 시 1분 뒤 재알람)</div>
+            <div style={{ fontSize: '0.9rem' }}>(닫기 시 10초 뒤 재알람)</div>
             <br />
             <div className='pill-list'>{getExpiredAlarmsName()}</div>
             <button onClick={() => confirmCurrentExpiredAlarms()}>
@@ -136,16 +134,11 @@ const PillExpiredAlarmChecker = () => {
 
 const Container = styled.nav`
   .pill-list {
-    display: flex;
     background-color: #d9d9d9;
     padding: 10px;
     border-radius: 10px;
     margin-bottom: 10px;
     width: 100%;
-    font-size: 0.9rem;
-
-    overflow-wrap: break-word;
-    word-break: break-all;
   }
 `;
 export default PillExpiredAlarmChecker;

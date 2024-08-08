@@ -7,8 +7,6 @@ import Popup from '../popup/Popup';
 import Loading from '../Loading';
 import { getAlarms } from '../../api/alarmApi';
 import { useAlarmStore } from '../../store/alarm';
-import { fetchExpiredPills } from '../../api/myMedicineApi';
-import { useMyPillStore } from '../../store/myPill';
 
 const EmailLogin = ({
   onRegisterClick,
@@ -28,7 +26,6 @@ const EmailLogin = ({
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [popupMessage, setPopupMessage] = useState('');
   const { setAlarms } = useAlarmStore();
-  const { setPills } = useMyPillStore();
 
   const handleEmailChange = (e: ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
@@ -70,18 +67,12 @@ const EmailLogin = ({
   };
 
   const onFetchUserInformationSucceed = async () => {
-    try {
-      const data = await getAlarms();
-      setAlarms(data);
-    } catch {}
-
-    try {
-      const expiredPills = await fetchExpiredPills();
-      setPills(expiredPills);
-    } catch {}
+    const data = await getAlarms();
+    setAlarms(data);
 
     setLoading(false);
-    navigate('/');
+    navigate('/', { replace: true });
+    window.location.reload();
   };
 
   return (
