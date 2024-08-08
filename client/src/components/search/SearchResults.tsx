@@ -1,21 +1,21 @@
-import React, { useEffect, useState } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
 import { Icon } from '@iconify-icon/react';
 import informationOutline from '@iconify/icons-mdi/information-outline';
+import React, { useEffect, useState } from 'react';
 import Modal from 'react-modal';
+import { Link, useSearchParams } from 'react-router-dom';
 import styled from 'styled-components';
 import {
   fetchFavoriteStatusApi,
   toggleFavoriteApi
 } from '../../api/favoriteApi';
-import { fetchPillDataByName, fetchFavoriteCount } from '../../api/searchApi';
+import { fetchFavoriteCount, fetchPillDataByName } from '../../api/searchApi';
 import { usePillStore } from '../../store/pill';
 import Loading from '../Loading';
-import NotSearched from './NotSearched';
-import SearchHeader from './SearchHeader';
 import Nav from '../Nav';
+import NotSearched from './NotSearched';
 import PillExp from './PillExp';
 import Review from './Review';
+import SearchHeader from './SearchHeader';
 
 import LoginCheck from '../LoginCheck';
 import Toast from '../Toast';
@@ -40,7 +40,8 @@ const SearchResults = () => {
         {part}
         {index < array.length - 1 && (
           <>
-            <br />({}
+            <br />
+            {}
           </>
         )}
       </React.Fragment>
