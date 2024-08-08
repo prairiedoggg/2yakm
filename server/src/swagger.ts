@@ -9,7 +9,7 @@ const options = {
     },
     servers: [
       {
-        url: 'https://34.47.126.125:3000/',
+        url: '/',
         description: 'Development server'
       }
     ]
