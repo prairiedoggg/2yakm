@@ -315,6 +315,10 @@ router.get('/search/name', searchPillsbyNameHandler);
  *                     type: string
  *                   source:
  *                     type: string
+ *                   favorite_count:
+ *                     type: string
+ *                   reviews_count:
+ *                     type: string
  *                   importWords:
  *                     type: string
  *                   imgurl:
