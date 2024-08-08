@@ -81,8 +81,7 @@ const EmailLogin = ({
     } catch {}
 
     setLoading(false);
-    navigate('/', { replace: true });
-    window.location.reload();
+    navigate('/');
   };
 
   return (
