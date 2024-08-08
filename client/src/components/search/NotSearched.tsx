@@ -1,26 +1,13 @@
-import { useState } from 'react';
 import styled from 'styled-components';
-import SearchHeader from './SearchHeader';
 
 const NotSearched = () => {
-  const [activeType, setActiveType] = useState<string>('name');
-
-  const handleTypeClick = (type: string) => {
-    setActiveType(type);
-  };
-
   return (
     <>
-      <SearchHeader
-        activeType={activeType}
-        handleTypeClick={handleTypeClick}
-        setImageResults={() => {}}
-      />
       <NotSearchedContainer>
         <Image src='/img/notSearched.png' />
         <Text className='main'>검색 결과가 없어요</Text>
         <Text className='sub'>
-          철자를 확인하거나
+          검색 타입을 확인하거나
           <br /> 다른 키워드로 검색해보세요.
         </Text>
       </NotSearchedContainer>
@@ -32,7 +19,11 @@ export default NotSearched;
 
 const NotSearchedContainer = styled.div`
   padding: 30% 20%;
-  text-align: center;
+  margin-top: 20%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
 `;
 
 const Image = styled.img`
@@ -42,6 +33,7 @@ const Image = styled.img`
 
 const Text = styled.div`
   color: #6f6f6f;
+  text-align: center;
 
   &.main {
     margin-top: 30px;

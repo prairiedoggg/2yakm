@@ -1,5 +1,4 @@
 import { Icon } from '@iconify-icon/react';
-import { Link } from 'react-router-dom';
 import styled from 'styled-components';
 
 const SnsLogin = ({
@@ -15,21 +14,21 @@ const SnsLogin = ({
 
   const SNS_LOGINS = [
     {
-      name: 'KAKAO',
+      name: 'kakao',
       label: '카카오톡 로그인',
       icon: 'ri:kakao-talk-fill',
       style: { color: '#3A1D1F', marginRight: '10px' },
       iconSize: { width: '1.5rem', height: '1.5rem' }
     },
     {
-      name: 'NAVER',
+      name: 'naver',
       label: '네이버 로그인',
       icon: 'simple-icons:naver',
       style: { color: 'white', marginRight: '10px', padding: '5px' },
       iconSize: { width: '1rem', height: '1rem' }
     },
     {
-      name: 'GOOGLE',
+      name: 'google',
       label: '구글 로그인',
       icon: 'logos:google-icon',
       style: { marginRight: '10px', padding: '2px' },
@@ -45,8 +44,8 @@ const SnsLogin = ({
         const { name, iconSize, label, ...rest } = sns;
 
         return (
-          <Link
-            to={`${AUTH_URLS}/${name}`}
+          <a
+            href={`${AUTH_URLS}/${name}`}
             key={name}
             className={`login ${name.toLowerCase()}`}
             onClick={onClose}
@@ -55,7 +54,7 @@ const SnsLogin = ({
               <Icon {...iconSize} {...rest} />
               {label}
             </div>
-          </Link>
+          </a>
         );
       })}
 

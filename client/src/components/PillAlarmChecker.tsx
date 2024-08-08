@@ -24,6 +24,8 @@ const PillAlarmChecker = () => {
 
   const checkTime = () => {
     const now = new Date();
+    const nowDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
     setCurrentTime(getTimeString(now));
 
     alarms.forEach((alarm) => {
@@ -31,9 +33,23 @@ const PillAlarmChecker = () => {
 
       if (nextPillAlarmTime != undefined && nextPillAlarmTime > now) return;
 
-      if (new Date(alarm.startDate ?? '') > now) return;
+      let startDate = new Date(alarm.endDate ?? '');
+      startDate = new Date(
+        startDate.getFullYear(),
+        startDate.getMonth(),
+        startDate.getDate()
+      );
 
-      if (new Date(alarm.endDate ?? '') <= now) return;
+      if (new Date(alarm.startDate ?? '') > nowDate) return;
+
+      let endDate = new Date(alarm.endDate ?? '');
+      endDate = new Date(
+        endDate.getFullYear(),
+        endDate.getMonth(),
+        endDate.getDate()
+      );
+
+      if (endDate < nowDate) return;
 
       alarm.times.map((time) => {
         if (time.time == currentTime) updatePillAlarm(alarm);

@@ -161,7 +161,7 @@ export const requestEmailVerification = async (email: string): Promise<void> => 
     }
 
     const emailToken = jwt.sign({ email}, SECRET_KEY, { expiresIn: '5m' });
-    const url = `/api/auth/verify-email?token=${emailToken}`;
+    const url = `${FRONTEND_URL}/api/auth/verify-email?token=${emailToken}`;
 
     const mailOptions = {
       from: process.env.EMAIL_USER,
@@ -692,7 +692,7 @@ export const requestPasswordService = async (email: string): Promise<void> => {
       from: process.env.EMAIL_USER,
       to: email,
       subject: '비밀번호 재설정',
-      text: `비밀번호를 재설정하려면 링크를 클릭하세요 (유효시간: 3분): /reset-password?token=${token}`,
+      text: `비밀번호를 재설정하려면 링크를 클릭하세요 (유효시간: 3분): ${FRONTEND_URL}/reset-password?token=${token}`,
     };
     await transporter.sendMail(mailOptions);
 

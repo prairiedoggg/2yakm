@@ -15,6 +15,9 @@ RUN pip install --upgrade pip && \
     pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu && \
     pip install scikit-image transformers
 
+# google module 설치
+RUN pip install google-auth google-auth-oauthlib google-auth-httplib2 google-api-python-client protobuf
+RUN pip install 'pinecone-client[grpc]'
 # 소스 코드 복사
 COPY . .
 

@@ -5,19 +5,19 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import { useDateStore } from '../../store/calendar';
-import Header from '../Header';
-import Nav from '../Nav';
+import Layout from '../Layout';
 import Popup from '../popup/Popup';
 import PopupContent, { PopupType } from '../popup/PopupMessages';
 import CalendarDetail from './CalendarDetail';
 import CalendarSection from './CalendarSection';
+import CalendarToast from './CalendarToast';
 
 const CalendarPage: React.FC = () => {
   const { value, arrow, setArrow, edit, setEdit, setAddTaken } = useDateStore();
   dayjs.locale('ko');
-  const days = dayjs(value).format('D. ddd');
+  const days = dayjs(value).format('D일 ddd');
   const login = Cookies.get('login');
-
+  const [maxTime, setMaxTime] = useState<boolean>(false);
   const navigate = useNavigate();
   const [showPopup, setShowPopup] = useState<boolean>(false);
   const [popupType, setPopupType] = useState<PopupType>(PopupType.None);
@@ -27,6 +27,8 @@ const CalendarPage: React.FC = () => {
       if (!open) {
         setAddTaken(false);
         setEdit(false);
+        setMaxTime(true);
+        setTimeout(() => setMaxTime(false), 2000);
       } else {
         setEdit(true);
       }
@@ -41,12 +43,14 @@ const CalendarPage: React.FC = () => {
     setEdit(false);
     setAddTaken(false);
     setArrow(false);
+    setMaxTime(true);
+    setTimeout(() => setMaxTime(false), 2000);
   };
 
   return (
     <CalendarContainer>
       <Modal expanded={arrow} onClick={() => handleModal()} />
-      <Header />
+      <Layout />
       <MainContent>
         <CalendarSection />
         <EntireDetail expanded={arrow}>
@@ -79,12 +83,12 @@ const CalendarPage: React.FC = () => {
           </DetailContainer>
         </EntireDetail>
       </MainContent>
-      <Nav />
       {showPopup && (
         <Popup onClose={() => setShowPopup(false)}>
           {PopupContent(popupType, navigate)}
         </Popup>
       )}
+      {!edit && maxTime && <CalendarToast title='저장' str='저장 완료!' />}
     </CalendarContainer>
   );
 };

@@ -17,6 +17,7 @@ export interface PillData {
   name: string;
   importantWords: string;
   imgurl: string;
+  boxurl?: string;
 }
 
 interface PillStore {
@@ -105,7 +106,10 @@ const TagPage = () => {
               <StyledLink
                 to={`/search/name?q=${encodeURIComponent(pill.name)}`}
               >
-                <PillImg src={pill.imgurl} alt={pill.name}></PillImg>
+                <PillImg
+                  src={pill.boxurl ? pill.boxurl : pill.imgurl}
+                  alt={pill.name}
+                />
                 <PillText>
                   <PillTitle>
                     <h3>{pill.name}</h3>
@@ -164,7 +168,6 @@ const ListContainer = styled.div`
 const PillList = styled.ul``;
 
 const PillItem = styled.li`
-
   margin-top: 20px;
   color: black;
   text-decoration: none;
