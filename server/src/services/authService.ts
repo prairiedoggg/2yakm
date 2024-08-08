@@ -161,7 +161,7 @@ export const requestEmailVerification = async (email: string): Promise<void> => 
     }
 
     const emailToken = jwt.sign({ email}, SECRET_KEY, { expiresIn: '5m' });
-    const url = `/api/auth/verify-email?token=${emailToken}`;
+    const url = `${FRONTEND_URL}/api/auth/verify-email?token=${emailToken}`;
 
     const mailOptions = {
       from: process.env.EMAIL_USER,
