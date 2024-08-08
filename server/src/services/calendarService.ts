@@ -10,9 +10,12 @@ const getErrorMessage = (error: unknown): string => {
   return String(error);
 };
 
-// 날짜를 한국 시간으로 변환하는 함수
 const convertToKoreanTime = (date: Date): Date => {
   return utcToZonedTime(date, TIMEZONE);
+};
+
+const convertToUTCPlus16 = (date: Date): Date => {
+  return new Date(date.getTime() + (16 * 60 * 60 * 1000));
 };
 
 export const getAllCalendars = async (userId: string): Promise<Calendar[]> => {
@@ -28,7 +31,7 @@ export const getAllCalendars = async (userId: string): Promise<Calendar[]> => {
     return result.rows.map(row => ({
       id: row.id,
       userId: row.userId,
-      date: convertToKoreanTime(row.date),
+      date: convertToUTCPlus16(row.date),
       calImg: row.calImg,
       condition: row.condition,
       weight: row.weight,
@@ -63,7 +66,7 @@ export const getCalendarById = async (userId: string, date: Date): Promise<Calen
     return {
       id: row.id,
       userId: row.userId,
-      date: convertToKoreanTime(row.date),
+      date: convertToUTCPlus16(row.date),
       calImg: row.calImg,
       condition: row.condition,
       weight: row.weight,
@@ -94,7 +97,7 @@ export const createCalendar = async (calendar: Omit<Calendar, 'id'>): Promise<Ca
     `;
     const values = [
       calendar.userId,
-      format(zonedTimeToUtc(calendar.date, TIMEZONE), 'yyyy-MM-dd'),
+      calendar.date,
       calendar.calImg,
       calendar.condition,
       calendar.weight,
@@ -132,7 +135,6 @@ export const updateCalendar = async (
   calendar: Partial<Calendar>
 ): Promise<Calendar | null> => {
   try {
-    const dateString = format(zonedTimeToUtc(date, TIMEZONE), 'yyyy-MM-dd');
     const existingCalendar = await getCalendarById(userId, date);
     if (!existingCalendar) {
       throw createError('CalendarNotFound', '해당 날짜의 캘린더를 찾을 수 없습니다.', 404);
@@ -158,7 +160,7 @@ export const updateCalendar = async (
       calendar.bloodsugarAfter ?? existingCalendar.bloodsugarAfter,
       JSON.stringify(updatedMedications),
       userId,
-      dateString
+      date
     ];
 
     const result: QueryResult<Calendar>  = await pool.query(text, values);
@@ -187,7 +189,7 @@ export const updateCalendar = async (
 
 export const deleteCalendar = async (userId: string, date: Date): Promise<boolean> => {
   try {
-    const dateString = format(zonedTimeToUtc(date, TIMEZONE), 'yyyy-MM-dd');
+    const dateString = date;
     const text = 'DELETE FROM calendar WHERE userId = $1 AND date = $2';
     const values = [userId, dateString];
     const result: QueryResult<Calendar>  = await pool.query(text, values);
