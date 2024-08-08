@@ -71,7 +71,7 @@ const LoadingBottom = styled.div`
 const Text = styled.div`
   text-align: center;
   position: absolute;
-  bottom: 32%;
+  bottom: 27%;
   left: 26%;
   font-size: 14pt;
   color: #6f6f6f;

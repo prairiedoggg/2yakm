@@ -83,7 +83,7 @@ const OpenCalendarDetail: React.FC = () => {
 
         setData(res);
       } catch (err) {
-        console.error('Error in posting/putting calendar data:', err);
+        console.error('수정 에러:', err);
       }
     };
     putData();
@@ -189,7 +189,10 @@ const OpenCalendarDetail: React.FC = () => {
           건강 정보 없음. 추가하려면 탭 하세요.
         </Empty>
       ) : (
-        detailBoxes.map((box) => hasContent(box.name) && box.component)
+        detailBoxes.map(
+          (box, index) =>
+            hasContent(box.name) && <div key={index}>{box.component}</div>
+        )
       )}
       {showPopup && (
         <Popup onClose={() => setShowPopup(false)}>

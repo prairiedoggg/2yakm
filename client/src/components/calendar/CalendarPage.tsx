@@ -1,7 +1,7 @@
 import { Icon } from '@iconify-icon/react';
 import dayjs from 'dayjs';
 import Cookies from 'js-cookie';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import { useDateStore } from '../../store/calendar';
@@ -13,14 +13,23 @@ import CalendarSection from './CalendarSection';
 import CalendarToast from './CalendarToast';
 
 const CalendarPage: React.FC = () => {
-  const { value, arrow, setArrow, edit, setEdit, setAddTaken } = useDateStore();
+  const { value, arrow, setArrow, edit, setEdit, setAddTaken, onChange } =
+    useDateStore();
   dayjs.locale('ko');
+  const today = dayjs();
   const days = dayjs(value).format('D일 ddd');
   const login = Cookies.get('login');
   const [maxTime, setMaxTime] = useState<boolean>(false);
   const navigate = useNavigate();
   const [showPopup, setShowPopup] = useState<boolean>(false);
   const [popupType, setPopupType] = useState<PopupType>(PopupType.None);
+
+  useEffect(() => {
+    setAddTaken(false);
+    setEdit(false);
+    setArrow(false);
+    onChange(today.toDate());
+  }, [onChange]);
 
   const openEdit = (open: boolean) => {
     if (login) {
@@ -43,17 +52,18 @@ const CalendarPage: React.FC = () => {
     setEdit(false);
     setAddTaken(false);
     setArrow(false);
-    setMaxTime(true);
-    setTimeout(() => setMaxTime(false), 2000);
   };
 
   return (
     <CalendarContainer>
-      <Modal expanded={arrow} onClick={() => handleModal()} />
+      <Modal
+        expanded={arrow ? 'true' : undefined}
+        onClick={() => handleModal()}
+      />
       <Layout />
       <MainContent>
         <CalendarSection />
-        <EntireDetail expanded={arrow}>
+        <EntireDetail expanded={arrow ? 'true' : undefined}>
           <CalandarDatailContainer>
             <ImgContainer onClick={() => setArrow(!arrow)}>
               <Line />
@@ -88,10 +98,14 @@ const CalendarPage: React.FC = () => {
           {PopupContent(popupType, navigate)}
         </Popup>
       )}
-      {!edit && maxTime && <CalendarToast title='저장' str='저장 완료!' />}
+      {!edit && maxTime ? (
+        <CalendarToast title='저장' str='저장 완료!' />
+      ) : null}
     </CalendarContainer>
   );
 };
+
+export default CalendarPage;
 
 const CalendarContainer = styled.div`
   width: 100vw;
@@ -108,7 +122,7 @@ const MainContent = styled.div`
   overflow: hidden;
 `;
 
-const EntireDetail = styled.div<{ expanded: boolean }>`
+const EntireDetail = styled.div<{ expanded?: string }>`
   position: ${({ expanded }) => (expanded ? 'absolute' : 'relative')};
   bottom: ${({ expanded }) => (expanded ? '80px' : '0')};
   width: 100%;
@@ -152,7 +166,7 @@ const DetailContainer = styled.div`
   width: 100%;
 `;
 
-const Modal = styled.div<{ expanded: boolean }>`
+const Modal = styled.div<{ expanded?: string }>`
   position: fixed;
   top: 0;
   left: 0;
@@ -168,5 +182,3 @@ const TopContainer = styled.div`
   justify-content: space-between;
   margin-top: 20px;
 `;
-
-export default CalendarPage;
