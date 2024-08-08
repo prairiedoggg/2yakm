@@ -1,7 +1,20 @@
+import React, { useEffect } from 'react';
 import styled, { keyframes } from 'styled-components';
 
-const Toast = ({ str }: { str: string }) => {
-  return <ToastContainer>{str}</ToastContainer>;
+const Toast = ({
+  children,
+  onEnd
+}: {
+  children: React.ReactNode;
+  onEnd: () => void;
+}) => {
+  useEffect(() => {
+    setTimeout(() => {
+      onEnd();
+    }, 2000);
+  }, []);
+
+  return <ToastContainer>{children}</ToastContainer>;
 };
 
 const toastAnimation = keyframes`
@@ -27,6 +40,9 @@ const ToastContainer = styled.div`
   position: fixed;
   top: 50%;
   left: 50%;
+  display: inline-block;
+  max-width: 300px;
+
   transform: translate(-50%, -50%);
   background-color: rgba(51, 51, 51, 0.8);
   color: #fff;
@@ -34,6 +50,7 @@ const ToastContainer = styled.div`
   border-radius: 5px;
   z-index: 1000;
   animation: ${toastAnimation} 2s ease-out;
+  animation-fill-mode: forwards;
 `;
 
 export default Toast;

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
+import styled from 'styled-components';
 import { PillData } from '../../store/pill.ts';
 import { useSearchStore } from '../../store/search.ts';
 import Nav from '../Nav';
@@ -29,7 +30,7 @@ const Search = () => {
   };
 
   return (
-    <>
+    <SearchContainer>
       <SearchHeader
         activeType={activeType}
         handleTypeClick={handleTypeClick}
@@ -37,8 +38,14 @@ const Search = () => {
       />
       {renderer()}
       <Nav />
-    </>
+    </SearchContainer>
   );
 };
 
 export default Search;
+
+const SearchContainer = styled.div`
+  /* display: flex;
+  flex-direction: column;
+  justify-content: center; */
+`;

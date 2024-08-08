@@ -7,12 +7,18 @@ import Loading from '../Loading';
 import Popup from '../popup/Popup';
 import PopupContent, { PopupType } from '../popup/PopupMessages';
 import { useNavigate } from 'react-router-dom';
+import ValidationError from '../ValidationError';
 
 interface FormData {
   email: string;
   oldPassword: string;
   newPassword: string;
   newPasswordConfirm: string;
+}
+
+interface BlurState {
+  newPassword: boolean;
+  newPasswordConfirm: boolean;
 }
 
 enum InputType {
@@ -32,11 +38,24 @@ const EditPassword = () => {
     newPasswordConfirm: ''
   });
 
+  const [blurState, setBlurState] = useState<BlurState>({
+    newPassword: false,
+    newPasswordConfirm: false
+  });
+
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prevState) => ({
+      ...prevState,
+      [name]: value
+    }));
+  };
+
+  const handleBlur = (e: ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setBlurState((prevState) => ({
       ...prevState,
       [name]: value
     }));
@@ -75,7 +94,7 @@ const EditPassword = () => {
       case InputType.OldPassword:
         return '현재 비밀번호';
       case InputType.NewPassword:
-        return '새로운 비밀번호';
+        return '새로운 비밀번호 (특수문자 포함 8자리 이상)';
       case InputType.NewPasswordConfirm:
         return '비밀번호 확인';
     }
@@ -107,11 +126,19 @@ const EditPassword = () => {
 
   const isFormValid = (): boolean => {
     const { oldPassword, newPassword, newPasswordConfirm } = formData;
+
     return (
       oldPassword !== '' &&
       newPassword !== '' &&
-      newPassword === newPasswordConfirm
+      newPassword === newPasswordConfirm &&
+      newPassword.length >= 8 &&
+      checkSpecialCharPattern(newPassword)
     );
+  };
+
+  const checkSpecialCharPattern = (str: string): boolean => {
+    const specialCharPattern = /[!@#$%^&*(),.?":{}|<>]/;
+    return specialCharPattern.test(str);
   };
 
   const renderInput = (type: InputType) => {
@@ -124,6 +151,7 @@ const EditPassword = () => {
           value={getValue(type)}
           onChange={handleChange}
           required
+          onBlur={handleBlur}
         />
         <Icon
           className='input-left-btn'
@@ -168,6 +196,24 @@ const EditPassword = () => {
             <div className='login-inputs'>
               {renderInput(InputType.NewPassword)}
               {renderInput(InputType.NewPasswordConfirm)}
+              <ValidationError
+                condition={
+                  blurState.newPassword &&
+                  (formData.newPassword.length < 8 ||
+                    !checkSpecialCharPattern(formData.newPassword))
+                }
+              >
+                패스워드는 8자리 이상, 특수문자를 포함해 입력해주세요.
+              </ValidationError>
+              <ValidationError
+                condition={
+                  blurState.newPassword &&
+                  blurState.newPasswordConfirm &&
+                  formData.newPassword != formData.newPasswordConfirm
+                }
+              >
+                비밀번호와 비밀번호 확인이 동일하지않습니다.
+              </ValidationError>
             </div>
           </div>
 

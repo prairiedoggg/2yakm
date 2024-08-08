@@ -39,7 +39,7 @@ export const fetchUserInformation = async (
       .setUser(
         data.username,
         data.email,
-        data.profileImg,
+        data.profileimg,
         data.id,
         data.role,
         loginType

@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import { createAlarm, updateAlarm } from '../../api/alarmApi';
 import { Alarm, useAlarmStore } from '../../store/alarm';
+import Toast from '../Toast';
 
 const AlarmSettings = () => {
   const setCurrentPage = useAlarmStore((state) => state.setCurrentPage);
@@ -18,6 +19,7 @@ const AlarmSettings = () => {
   ]);
   const [startDate, setStartDate] = useState<Dayjs | null>(dayjs());
   const [endDate, setEndDate] = useState<Dayjs | null>(dayjs());
+  const [showToast, setShowToast] = useState<string | null>(null);
 
   useEffect(() => {
     if (currentAlarm) {
@@ -62,8 +64,10 @@ const AlarmSettings = () => {
     try {
       if (currentAlarm && currentAlarm.id) {
         await updateAlarm(currentAlarm.id, alarmData);
+        setShowToast('알람이 수정되었습니다.');
       } else {
         await createAlarm(alarmData);
+        setShowToast('알람이 생성되었습니다.');
       }
       setCurrentPage('main');
       setCurrentAlarm(null);
@@ -144,6 +148,7 @@ const AlarmSettings = () => {
         <RunButton onClick={() => setCurrentPage('main')}>취소</RunButton>
         <RunButton onClick={handleSave}>저장</RunButton>
       </ButtonContainer>
+      {showToast && <Toast onEnd={() => setShowToast(null)}>{showToast}</Toast>}
     </>
   );
 };
@@ -153,6 +158,7 @@ export default AlarmSettings;
 const AlarmSettingsContainer = styled.div`
   margin: auto;
   padding: 20px 0;
+  margin-bottom: 160px;
   width: 80vw;
 
   & h2 {
