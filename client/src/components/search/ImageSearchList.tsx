@@ -37,4 +37,8 @@ const ImageSearchList = ({ pills }: { pills: PillData[] }) => {
 
 export default ImageSearchList;
 
-const ListItem = styled(Link)``;
+const ListItem = styled(Link)`
+  & img {
+    width: 50px;
+  } 
+`;

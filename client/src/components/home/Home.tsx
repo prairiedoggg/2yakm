@@ -1,7 +1,6 @@
 import styled from 'styled-components';
 import MainHeader from './HomeHeader';
 import CardNews from './CardNews';
-import Footer from '../Footer';
 import Nav from '../Nav';
 import BottomEditNameSheet from '../authentication/BottomEditNameSheet';
 import { useLocation } from 'react-router-dom';
@@ -26,7 +25,6 @@ const Home: React.FC = () => {
         onClose={() => setBottomSheet(false)}
       />
       <Nav />
-      <Footer />
     </MainContainer>
   );
 };

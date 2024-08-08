@@ -38,17 +38,6 @@ export const fetchFavoriteStatusApi = async (pillId: number) => {
   }
 };
 
-export const fetchFavoriteCount = async (pillId: number) => {
-  try {
-    const data = await get(`/api/pills/${pillId}/favoritecount`);
-    console.log('좋아요 수:', data);
-    return data.count;
-  } catch (error) {
-    console.error('즐겨찾기 수 가져오기 실패:', error);
-    throw error;
-  }
-};
-
 
 
 export const fetchMyFavorites = async (

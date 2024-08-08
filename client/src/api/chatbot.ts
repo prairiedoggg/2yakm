@@ -1,6 +1,6 @@
 import { post } from './api';
 
-const url = 'http://localhost:3000';
+const url = '';
 
 export const chatBot = async (question: string) => {
   try {

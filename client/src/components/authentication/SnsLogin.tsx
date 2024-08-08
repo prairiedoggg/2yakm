@@ -11,7 +11,7 @@ const SnsLogin = ({
   onEmailLoginClick: () => void;
   onEmailRegisterClick: () => void;
 }) => {
-  const AUTH_URLS = `http://localhost:3000/api/auth`;
+  const AUTH_URLS = `/api/auth`;
 
   const SNS_LOGINS = [
     {

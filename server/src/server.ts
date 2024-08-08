@@ -62,6 +62,11 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieParser());
 
+//테스트 404
+app.get('/', (req, res) => {
+  res.send('Hello World! Welcome to the API');
+});
+
 app.use('/api/reviews', reviewRouter);
 app.use('/api/auth', authRouter);
 app.use('/api/favorites', favoriteRouter);
@@ -74,8 +79,6 @@ app.use('/api/pills', pillRouter);
 
 app.use(notFoundHandler);
 app.use(errorHandler);
-app.listen(port, () => {
-  console.log(`Server is running ${BASE_URL}`);
-  rescheduleAllAlarms();
+app.listen(Number(port), '0.0.0.0', () => {
+  console.log(`서버가 http://localhost:${port}에서 실행 중입니다`);
 });
-
