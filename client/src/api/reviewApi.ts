@@ -59,16 +59,6 @@ export const deleteReview = async (
   }
 };
 
-export const fetchReviewCount = async (pillId: string) => {
-  try {
-    const data = await get(`/api/pills/${pillId}/reviewcount`);
-    console.log('리뷰수:', data);
-    return data.count;
-  } catch (error) {
-    console.log('리뷰 수 가져오기 실패:', error);
-  }
-};
-
 export const fetchUserAllReview = async (
   limit: number,
   offset: number,

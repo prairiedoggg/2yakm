@@ -5,11 +5,10 @@ import informationOutline from '@iconify/icons-mdi/information-outline';
 import Modal from 'react-modal';
 import styled from 'styled-components';
 import {
-  fetchFavoriteCount,
   fetchFavoriteStatusApi,
   toggleFavoriteApi
 } from '../../api/favoriteApi';
-import { fetchPillDataByName } from '../../api/searchApi';
+import { fetchPillDataByName, fetchFavoriteCount } from '../../api/searchApi';
 import { usePillStore } from '../../store/pill';
 import Loading from '../Loading';
 import NotSearched from './NotSearched';
@@ -159,7 +158,10 @@ const SearchResults = () => {
           <section>
             <PillHeader>
               <PillText>
-                <h3>{formatTextWithLineBreaks(pillData.name)}</h3>
+                <div>
+                  <p>{pillData.type}</p>
+                  <h3>{formatTextWithLineBreaks(pillData.name)}</h3>
+                </div>
                 <LoginCheck>
                   {(handleCheckLogin) => (
                     <HeartButton
@@ -374,6 +376,7 @@ const Menu = styled.div`
     margin: 0;
     padding: 10px;
     text-align: center;
+    font-weight: 600;
     border: none;
     background: none;
     cursor: pointer;

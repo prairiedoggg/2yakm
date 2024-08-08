@@ -1,10 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import styled from 'styled-components';
-import {
-  fetchReviews,
-  createReview,
-  fetchReviewCount
-} from '../../api/reviewApi';
+import { fetchReviewCount } from '../../api/searchApi';
+import { fetchReviews, createReview } from '../../api/reviewApi';
 import LoginCheck from '../LoginCheck';
 import Toast from '../Toast';
 
@@ -95,13 +92,13 @@ const Review = ({ pillId }: { pillId: number }) => {
     fetchCount();
   }, [pillId]);
 
-   const formatDate = (dateString: string) => {
-     const date = new Date(dateString);
-     const day = date.getDate();
-     const month = date.getMonth() + 1; 
-     const year = date.getFullYear();
-     return `${year}.${month}.${day}`;
-   };
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    const day = date.getDate();
+    const month = date.getMonth() + 1;
+    const year = date.getFullYear();
+    return `${year}.${month}.${day}`;
+  };
 
   return (
     <ReviewContainer>
@@ -143,6 +140,7 @@ const Review = ({ pillId }: { pillId: number }) => {
                 alt='프로필'
               />
               <span>{review.username}</span>
+              {review.role && <img src='/img/pharm.png' alt='Role Icon' style={{width:'18px'} } />}
               <span
                 style={{ marginLeft: 'auto', fontWeight: 300, color: 'gray' }}
               >
