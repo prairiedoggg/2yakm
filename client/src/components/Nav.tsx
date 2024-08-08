@@ -40,7 +40,7 @@ const Nav = () => {
       icon: {
         default: '/img/nav/calender.png',
         active: '/img/nav/calendarClicked.png'
-      },
+      }
     },
 
     {

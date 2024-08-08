@@ -32,7 +32,11 @@ export default NotSearched;
 
 const NotSearchedContainer = styled.div`
   padding: 30% 20%;
-  text-align: center;
+  margin-top: 20%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
 `;
 
 const Image = styled.img`
@@ -42,6 +46,7 @@ const Image = styled.img`
 
 const Text = styled.div`
   color: #6f6f6f;
+  text-align: center;
 
   &.main {
     margin-top: 30px;

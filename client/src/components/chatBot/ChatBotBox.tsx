@@ -85,6 +85,12 @@ const ChatBotBox: React.FC = () => {
   return (
     <ChatBotBoxContainer>
       <Box>
+        <Warning>
+          <Icon icon='streamline:pharmacy' width='20px' />
+          <p style={{ lineHeight: '25px', marginLeft: '5px' }}>
+            자세한 내용은 약사와 상담하세요
+          </p>
+        </Warning>
         <FinishButton onClick={() => setPopupType(PopupType.FinishChatBot)}>
           채팅 종료
         </FinishButton>
@@ -129,7 +135,8 @@ export default ChatBotBox;
 
 const ChatBotBoxContainer = styled.div`
   width: 100%;
-  height: 84vh;
+  height: 90vh;
+  overflow-y: hidden;
 `;
 
 const Box = styled.div`
@@ -138,13 +145,22 @@ const Box = styled.div`
   border-radius: 40px;
   background-color: #ffe612;
   width: 90%;
-  height: 90%;
+  height: 87%;
   padding: 10px;
+  padding-bottom: 45px;
   font-size: 10.5pt;
 `;
 
+const Warning = styled.div`
+  position: absolute;
+  z-index: 100;
+  left: 23px;
+  top: 18px;
+  display: flex;
+`;
+
 const ChattingContainer = styled.div`
-  margin-top: 15px;
+  margin-top: 55px;
   overflow-y: auto;
   overflow-x: hidden;
   height: 90%;
@@ -166,6 +182,8 @@ const ChattingInputContainer = styled.form`
   border-radius: 20px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   background-color: #ffffff;
+  z-index: 80;
+  margin-top: 40px;
 `;
 
 const Chatting = styled.input`

@@ -26,7 +26,7 @@ interface TileContentProps {
 
 const CalendarSection: React.FC = () => {
   const login = Cookies.get('login');
-  const { value, onChange, edit, addPosted, posted, setPosted } =
+  const { value, onChange, edit, addPosted, posted, setPosted, arrow } =
     useDateStore();
   const [postArray, setPostArray] = useState<Set<string>>(new Set());
   const [calendarData, setData] = useState<CalendarDate[]>([]);
@@ -47,7 +47,7 @@ const CalendarSection: React.FC = () => {
 
       fetchData();
     }
-  }, [edit, login]);
+  }, [edit, login, arrow]);
 
   useEffect(() => {
     const postedDates = new Set(posted.map((item) => item.date));
@@ -97,9 +97,13 @@ const CalendarSection: React.FC = () => {
     return null;
   };
 
-  const getDayClassName = ({ date }: { date: Date }) => {
+  const getDayClassName = ({ date, view }: { date: Date; view: string }) => {
     const SUNDAY = 0;
     const SATURDAY = 6;
+
+    if (view !== 'month') {
+      return '';
+    }
 
     if (date.getDay() === SUNDAY) {
       return 'sunday';
@@ -142,7 +146,7 @@ const CalendarSection: React.FC = () => {
         formatDay={(locale, date) => formatDate(date, 'D', locale)}
         tileContent={addContent}
         showNeighboringMonth={true}
-        tileClassName={getDayClassName}
+        tileClassName={({ date, view }) => getDayClassName({ date, view })}
         className={`react-calendar ${
           (value as any).view === 'decade' ? 'react-calendar--decade-view' : ''
         } ${(value as any).view === 'year' ? 'react-calendar--year-view' : ''}`}
