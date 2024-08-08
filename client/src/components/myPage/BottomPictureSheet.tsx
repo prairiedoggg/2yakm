@@ -17,10 +17,8 @@ const BottomPictureSheet = ({
   onClose: (pic: FileList | null) => Promise<void>;
 }) => {
   const inputRef = useRef<HTMLInputElement | null>(null);
-  
-    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-  console.log(navigator.userAgent);
-  
+  const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+
   const onUploadImage = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files) {
       return;
@@ -50,26 +48,26 @@ const BottomPictureSheet = ({
             />
           ) : null}
         </div>
-          {isMobile && (
-        <div className='menu'>
-          <Icon
-            icon='ph:camera-light'
-            width='1.5rem'
-            height='1.5rem'
-            style={{ color: 'black' }}
-            onClick={() => {}}
-          />{' '}
-          카메라로 촬영하기
-          <input
-            className='file-input'
-            type='file'
-            multiple={useMultiple}
-            capture='environment'
-            ref={inputRef}
-            onChange={onUploadImage}
-          />
-        </div>
-           )}
+        {isMobile && (
+          <div className='menu'>
+            <Icon
+              icon='ph:camera-light'
+              width='1.5rem'
+              height='1.5rem'
+              style={{ color: 'black' }}
+              onClick={() => {}}
+            />{' '}
+            카메라로 촬영하기
+            <input
+              className='file-input'
+              type='file'
+              multiple={useMultiple}
+              capture='environment'
+              ref={inputRef}
+              onChange={onUploadImage}
+            />
+          </div>
+        )}
         <div className='menu'>
           <Icon
             icon='solar:gallery-bold'
