@@ -1,7 +1,5 @@
 import { Icon } from '@iconify-icon/react';
 import dayjs from 'dayjs';
-import utc from 'dayjs/plugin/utc';
-import timezone from 'dayjs/plugin/timezone';
 import Cookies from 'js-cookie';
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -14,13 +12,10 @@ import CalendarDetail from './CalendarDetail';
 import CalendarSection from './CalendarSection';
 import CalendarToast from './CalendarToast';
 
-dayjs.extend(utc);
-dayjs.extend(timezone);
-
 const CalendarPage: React.FC = () => {
   const { value, arrow, setArrow, edit, setEdit, setAddTaken } = useDateStore();
   dayjs.locale('ko');
-  const days = dayjs(value).utc().tz('Asia/Seoul').format('D일 ddd');
+  const days = dayjs(value).format('D일 ddd');
   const login = Cookies.get('login');
   const [maxTime, setMaxTime] = useState<boolean>(false);
   const navigate = useNavigate();
