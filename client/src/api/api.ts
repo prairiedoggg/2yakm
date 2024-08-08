@@ -2,7 +2,7 @@ import axios, { HttpStatusCode } from 'axios';
 import Cookies from 'js-cookie';
 
 const api = axios.create({
-  baseURL: '/', // import.meta.env.SERVER_BASE_URL,
+  baseURL: '', // import.meta.env.SERVER_BASE_URL,
   timeout: 100000
 });
 
