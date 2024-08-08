@@ -26,7 +26,14 @@ export const createAlarm = async (alarm: Omit<Alarm, 'id'>): Promise<Alarm> => {
     RETURNING id, userId AS "userId", name, startDate AS "startDate", 
     endDate AS "endDate", times, alarmStatus AS "alarmStatus", createdAt, updatedAt
     `;
-    const values = [userId, name, startDate, endDate, JSON.stringify(times), alarmStatus];
+    const values = [
+      userId,
+      name,
+      startDate,
+      endDate,
+      JSON.stringify(times),
+      alarmStatus
+    ];
     const result: QueryResult<Alarm> = await pool.query(query, values);
     const row = result.rows[0];
     const newAlarm: Alarm = {
@@ -48,7 +55,11 @@ export const createAlarm = async (alarm: Omit<Alarm, 'id'>): Promise<Alarm> => {
       throw error;
     }
     console.error('알람 생성 오류:', error);
-    throw createError('DBError', '알람 생성 중 데이터베이스 오류가 발생했습니다.', 500);
+    throw createError(
+      'DBError',
+      '알람 생성 중 데이터베이스 오류가 발생했습니다.',
+      500
+    );
   }
 };
 
@@ -80,9 +91,17 @@ export const updateAlarm = async (
       RETURNING id, userId as "userId", name, startDate as "startDate",
       endDate as "endDate", times, alarmStatus as "alarmStatus"
     `;
-    const values = [userId, name, startDate, endDate, JSON.stringify(times), alarmStatus, id];
-    const result : QueryResult<Alarm> = await pool.query(text, values);
-    
+    const values = [
+      userId,
+      name,
+      startDate,
+      endDate,
+      JSON.stringify(times),
+      alarmStatus,
+      id
+    ];
+    const result: QueryResult<Alarm> = await pool.query(text, values);
+
     if (result.rows.length === 0) {
       throw createError('AlarmNotFound', '해당 알람을 찾을 수 없습니다.', 404);
     }
@@ -124,8 +143,11 @@ export const updateAlarm = async (
   }
 };
 
-export const updateAlarmStatus = async (id: string, alarmStatus: boolean): Promise<Alarm | null> => {
-  const client = await pool.connect(); 
+export const updateAlarmStatus = async (
+  id: string,
+  alarmStatus: boolean
+): Promise<Alarm | null> => {
+  const client = await pool.connect();
   try {
     await client.query('BEGIN');
 
@@ -139,7 +161,7 @@ export const updateAlarmStatus = async (id: string, alarmStatus: boolean): Promi
     `;
     const values = [alarmStatus, id];
     const result: QueryResult<Alarm> = await client.query(text, values);
-    
+
     if (result.rows.length === 0) {
       await client.query('ROLLBACK');
       throw createError('AlarmNotFound', '해당 알람을 찾을 수 없습니다.', 404);
@@ -171,9 +193,17 @@ export const updateAlarmStatus = async (id: string, alarmStatus: boolean): Promi
     console.error('알람 상태 업데이트 오류:', error);
     if (error instanceof Error && error.name === 'AlarmNotFound') throw error;
     if (error instanceof Error) {
-      throw createError('DBError', `알람 상태 업데이트 중 데이터베이스 오류가 발생했습니다: ${error.message}`, 500);
+      throw createError(
+        'DBError',
+        `알람 상태 업데이트 중 데이터베이스 오류가 발생했습니다: ${error.message}`,
+        500
+      );
     } else {
-      throw createError('DBError', '알람 상태 업데이트 중 알 수 없는 오류가 발생했습니다.', 500);
+      throw createError(
+        'DBError',
+        '알람 상태 업데이트 중 알 수 없는 오류가 발생했습니다.',
+        500
+      );
     }
   } finally {
     client.release();
@@ -192,9 +222,9 @@ const cancelExistingAlarms = (alarmId: string) => {
 };
 
 export const scheduleAlarmService = (alarm: Alarm) => {
-  const { id, startDate, endDate, times, alarmStatus, userId } = alarm;
+  const { id, startDate, endDate, times, alarmStatus, userId, name } = alarm;
   if (!alarmStatus) {
-    return; 
+    return;
   }
 
   const timeZone = 'Asia/Seoul';
@@ -211,7 +241,7 @@ export const scheduleAlarmService = (alarm: Alarm) => {
         if (scheduleDate.getTime() >= currentDate.getTime()) {
           const job = schedule.scheduleJob(scheduleDate, async () => {
             try {
-              const emailSent = await sendEmail(userId);
+              const emailSent = await sendEmail(userId, name, alarmTime.time);
               if (!emailSent) {
                 console.error(`알람 ${id}의 이메일 전송 실패`);
               }
@@ -221,9 +251,14 @@ export const scheduleAlarmService = (alarm: Alarm) => {
           });
 
           if (!job) {
-            console.error(`작업 스케줄링 실패: ${scheduleDate.toLocaleString('ko-KR', { timeZone })}`);
+            console.error(
+              `작업 스케줄링 실패: ${scheduleDate.toLocaleString('ko-KR', { timeZone })}`
+            );
           } else {
-            runningJobs.set(`${id}_${alarmTime.time}_${scheduleDate.toISOString()}`, job);
+            runningJobs.set(
+              `${id}_${alarmTime.time}_${scheduleDate.toISOString()}`,
+              job
+            );
           }
         }
 
@@ -233,7 +268,6 @@ export const scheduleAlarmService = (alarm: Alarm) => {
   }
 };
 
-
 export const getAlarmsByUserId = async (userId: string): Promise<Alarm[]> => {
   try {
     const text = `
@@ -241,9 +275,9 @@ export const getAlarmsByUserId = async (userId: string): Promise<Alarm[]> => {
       endDate AS "endDate", times, alarmStatus AS "alarmStatus"
       FROM alarms 
       WHERE userId = $1
-    `;    
-    const result : QueryResult<Alarm> = await pool.query(text, [userId]);
-    return result.rows.map(row => ({
+    `;
+    const result: QueryResult<Alarm> = await pool.query(text, [userId]);
+    return result.rows.map((row) => ({
       id: row.id,
       userId: row.userId,
       name: row.name,
@@ -270,7 +304,7 @@ export const deleteAlarm = async (id: string): Promise<boolean> => {
     }
 
     const query = 'DELETE FROM alarms WHERE id = $1';
-    const result : QueryResult<Alarm> = await pool.query(query, [id]);
+    const result: QueryResult<Alarm> = await pool.query(query, [id]);
 
     if (result.rowCount === 0) {
       throw createError('AlarmNotFound', '해당 알람을 찾을 수 없습니다.', 404);
@@ -287,8 +321,11 @@ export const deleteAlarm = async (id: string): Promise<boolean> => {
   }
 };
 
-const sendEmail = async (recipientEmail: string) => {
-
+const sendEmail = async (
+  recipientEmail: string,
+  alarmName: string,
+  alarmTime: string
+) => {
   const transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {
@@ -300,8 +337,21 @@ const sendEmail = async (recipientEmail: string) => {
   const mailOptions = {
     from: process.env.EMAIL_USER,
     to: recipientEmail,
-    subject: '알람 메시지!',
-    text: '약 드세요!!!'
+    subject: '이약뭐약 약 알람 서비스입니다.',
+    html: `
+    <h1>이약뭐약 약 알람 서비스</h1>
+    <br/>
+    <p>알람 이름: <strong>${alarmName}</strong></p>
+    <p>알람 시간: <strong>${alarmTime}</strong></p>
+    <br/>
+    <p>안녕하세요!</p>
+    <p>지금은 약을 드실 시간입니다. 복용 방법에 따라 정확히 복용해주세요.</p>
+    <br/>
+    <br/>
+    <img src="https://res.cloudinary.com/dnxyampqy/image/upload/v1723135153/llflxzkmg9qlfw1pi4xu.png" alt="약 이미지" style="width:201px;height:auto;">
+    <br/>
+    <p>서비스를 이용해 주셔서 감사합니다.</p>
+  `
   };
 
   try {
@@ -317,11 +367,11 @@ export const rescheduleAllAlarms = async () => {
   try {
     const query = 'SELECT * FROM alarms WHERE alarmStatus = true';
     const result: QueryResult<Alarm> = await pool.query(query);
-    
-    result.rows.forEach(alarm => {
+
+    result.rows.forEach((alarm) => {
       scheduleAlarmService(alarm);
     });
   } catch (error) {
     console.error('알람 재스케줄링 중 오류 발생:', error);
   }
-};  
+};
