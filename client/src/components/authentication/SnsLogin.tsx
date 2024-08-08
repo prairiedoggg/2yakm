@@ -45,8 +45,8 @@ const SnsLogin = ({
         const { name, iconSize, label, ...rest } = sns;
 
         return (
-          <Link
-            to={`${AUTH_URLS}/${name}`}
+          <a
+            href={`${AUTH_URLS}/${name}`}
             key={name}
             className={`login ${name.toLowerCase()}`}
             onClick={onClose}
@@ -55,7 +55,7 @@ const SnsLogin = ({
               <Icon {...iconSize} {...rest} />
               {label}
             </div>
-          </Link>
+          </a>
         );
       })}
 
