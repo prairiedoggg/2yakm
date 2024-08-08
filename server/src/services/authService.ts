@@ -90,7 +90,10 @@ const BASE_URL =
     ? `http://localhost:${process.env.PORT ?? 3000}`
     : process.env.CORS_ORIGIN;
 
-const FRONTEND_URL = 'http://localhost:5173';
+const FRONTEND_URL = 
+  process.env.NODE_ENV === 'development'
+    ? `http://localhost:${process.env.FRONTEND_URL ?? 5173}`
+    : process.env.CORS_ORIGIN;
 
 if (!SECRET_KEY || !REFRESH_TOKEN_SECRET_KEY) {
   throw new Error('SECRET_KEY 또는 REFRESH_TOKEN_SECRET_KEY 확인바람.');

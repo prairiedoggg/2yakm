@@ -27,7 +27,10 @@ interface Decoded {
 }
 
 const SECRET_KEY = process.env.SECRET_KEY;
-const FRONTEND_URL = 'http://localhost:5173';
+const FRONTEND_URL = 
+  process.env.NODE_ENV === 'development'
+    ? `http://localhost:${process.env.FRONTEND_URL ?? 5173}`
+    : process.env.CORS_ORIGIN;
 const BASE_URL = 
   process.env.NODE_ENV === 'development'
     ? `http://localhost:${process.env.PORT ?? 3000}`
