@@ -132,7 +132,8 @@ export const searchPillsbyName = async (
 ): Promise<GetPillsResult> => {
   const query = `SELECT id, name, engname, companyname, ingredientname, type, efficacy, dosage, caution, storagemethod, source, imgurl, boxurl 
                  FROM pills 
-                 WHERE name ILIKE $1 OR engname ILIKE $1 
+                 WHERE name ILIKE $1 OR engname ILIKE $1
+                 ORDER BY name collate "ko_KR.utf8"
                  LIMIT $2 OFFSET $3`;
   const values = [`${name}%`, limit, offset];
 
