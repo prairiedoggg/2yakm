@@ -7,26 +7,18 @@ WORKDIR /chicken_pharm
 RUN apt-get update && apt-get install -y nginx python3 python3-pip build-essential libssl-dev libffi-dev python3-dev wget git && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# Miniconda 설치
-RUN wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh && \
-    bash miniconda.sh -b -p /opt/conda && \
-    rm miniconda.sh
+# pip 업그레이드
+RUN pip3 install --upgrade pip
 
-# Miniconda 환경변수 설정
-ENV PATH="/opt/conda/bin:${PATH}"
-
-# Conda 초기화
-RUN conda init bash && \
-    echo "conda activate base" >> ~/.bashrc
-
-# PyTorch 및 PyTorch Vision 설치
-RUN conda install -y pytorch torchvision cpuonly -c pytorch
+# PyTorch, torchvision, scikit-image, transformers 설치
+RUN pip3 install torch torchvision --index-url https://download.pytorch.org/whl/cpu
+RUN pip3 install scikit-image transformers
 
 # 소스 코드 복사
 COPY . .
 
 # requirements.txt에서 Python 패키지 설치
-RUN pip install -r requirements.txt
+RUN pip3 install -r requirements.txt
 
 # 서버 의존성 설치
 RUN cd server && npm ci
