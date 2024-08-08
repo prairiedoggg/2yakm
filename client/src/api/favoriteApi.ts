@@ -32,10 +32,8 @@ export const toggleFavoriteApi = async (
 export const fetchFavoriteStatusApi = async (pillId: number) => {
   try {
     const data = await get(`/api/favorites/${pillId}/status`);
-    console.log('좋아요 get:', data);
-    return data.isFavorite;
+    return data;
   } catch (error) {
-    console.error('좋아요상태 실패:', error);
     throw error;
   }
 };

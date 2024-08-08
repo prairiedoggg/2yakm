@@ -1,7 +1,8 @@
+import React, { useEffect, useState } from 'react';
+import { Link, useSearchParams } from 'react-router-dom';
 import { Icon } from '@iconify-icon/react';
 import informationOutline from '@iconify/icons-mdi/information-outline';
-import React, { useEffect, useState } from 'react';
-import { Link, useSearchParams, useNavigate } from 'react-router-dom';
+import Modal from 'react-modal';
 import styled from 'styled-components';
 import {
   fetchFavoriteCount,
@@ -9,31 +10,43 @@ import {
   toggleFavoriteApi
 } from '../../api/favoriteApi';
 import { fetchPillDataByName } from '../../api/searchApi';
-import { useFavoriteStore } from '../../store/favorite';
 import { usePillStore } from '../../store/pill';
 import Loading from '../Loading';
+import NotSearched from './NotSearched';
+import SearchHeader from './SearchHeader';
 import Nav from '../Nav';
 import PillExp from './PillExp';
 import Review from './Review';
-import SearchHeader from './SearchHeader';
-import { isUserLoggedIn } from '../../store/authService';
-import Popup from '../popup/Popup';
-import PopupContent, { PopupType } from '../popup/PopupMessages.tsx';
+
+import LoginCheck from '../LoginCheck';
+import Toast from '../Toast';
+
+const customStyles = {
+  content: {
+    top: '50%',
+    left: '50%',
+    right: 'auto',
+    bottom: 'auto',
+    marginRight: '-50%',
+    transform: 'translate(-50%, -50%)',
+    maxHeight: '90vh',
+    overflow: 'auto'
+  }
+};
 
 const SearchResults = () => {
   const [searchParams] = useSearchParams();
   const query = searchParams.get('q') || '';
   const { pillData, setPillData, loading, setLoading } = usePillStore();
-  const { isFavorite, setIsFavorite, favoriteCount, setFavoriteCount } =
-    useFavoriteStore();
+  const [isFavorite, setIsFavorite] = useState<boolean>(false);
+  const [favoriteCount, setFavoriteCount] = useState<number>(0);
   const [activeTab, setActiveTab] = useState<string>('effectiveness');
-  const [pillId, setPillId] = useState<number | null>(null);
   const [showInfo, setShowInfo] = useState<boolean>(false);
   const [searchType, setSearchType] = useState<string>('name');
   const [activeType, setActiveType] = useState<string>(searchType);
-  const [showLoginPopup, setShowLoginPopup] = useState<boolean>(false);
-  const [popupType, setPopupType] = useState<PopupType>(PopupType.None);
-    const navigate = useNavigate();
+  const [showToast, setShowToast] = useState<boolean>(false);
+  const [modalIsOpen, setModalIsOpen] = useState<boolean>(false);
+  const [modalImageSrc, setModalImageSrc] = useState<string>('');
 
   const formatTextWithLineBreaks = (text: string) => {
     return text.split('(').map((part, index, array) => (
@@ -52,24 +65,18 @@ const SearchResults = () => {
     const fetchData = async () => {
       setLoading(true);
       try {
-        const loggedIn = isUserLoggedIn();
-        console.log('로그인 상태:', loggedIn);
-
         const data = await fetchPillDataByName(query, 1, 0);
+
         if (data) {
-          setPillId(data.id);
           setPillData(data);
-          console.log('약데이터', data);
+
           const count = await fetchFavoriteCount(data.id);
-          console.log('좋아요 수', count);
           setFavoriteCount(count);
-          if (isUserLoggedIn()) {
-            const status = await fetchFavoriteStatusApi(data.id);
-            setIsFavorite(status);
-          }
+
+          const { status } = await fetchFavoriteStatusApi(data.id);
+          setIsFavorite(status);
         } else {
           setPillData(null);
-          setPillId(null);
         }
       } catch (error) {
         console.error('검색결과페이지 실패:', error);
@@ -81,27 +88,21 @@ const SearchResults = () => {
   }, [query, setIsFavorite, setPillData]);
 
   const handleToggleFavorite = async () => {
-    if (!isUserLoggedIn()) {
-       setPopupType(PopupType.LoginRequired);
-      setShowLoginPopup(true);
-     
-      return;
-    }
-
-    if (!pillId) return;
+    if (!pillData?.id) return;
 
     try {
       await toggleFavoriteApi(
-        { id: pillId },
+        { id: pillData.id },
         (response) => {
-          setIsFavorite(!isFavorite);
+          setIsFavorite((prevIsFavorite) => !prevIsFavorite);
           console.log(response.message);
+          setShowToast(true);
         },
         (error) => {
           console.error('좋아요 상태 업데이트 에러:', error);
         }
       );
-      const count = await fetchFavoriteCount(pillId);
+      const count = await fetchFavoriteCount(pillData.id);
       setFavoriteCount(count);
     } catch (error) {
       console.error('좋아요상태 실패:', error);
@@ -111,6 +112,16 @@ const SearchResults = () => {
   const handleTypeClick = (type: string) => {
     setSearchType(type);
     setActiveType(type);
+  };
+
+  const openModal = (src: string) => {
+    setModalImageSrc(src);
+    setModalIsOpen(true);
+  };
+
+  const closeModal = () => {
+    setModalIsOpen(false);
+    setModalImageSrc('');
   };
 
   const tabs = [
@@ -123,7 +134,7 @@ const SearchResults = () => {
   }
 
   if (!pillData) {
-    return <div className='searchInner'>검색 결과가 없습니다.</div>;
+    return <NotSearched/>;
   }
 
   return (
@@ -136,24 +147,40 @@ const SearchResults = () => {
       <SearchResultsContainer>
         <PillInfo>
           <PillImgs>
-            <img src={pillData.boxurl} alt='약 박스' />
-            <img src={pillData.imgurl} alt='알약' />
+            {pillData.boxurl && (
+              <img
+                src={pillData.boxurl}
+                alt='약 박스'
+                onClick={() => openModal(pillData.boxurl)}
+              />
+            )}
+            <img
+              src={pillData.imgurl}
+              alt='알약'
+              onClick={() => openModal(pillData.imgurl)}
+            />
           </PillImgs>
           <section>
             <PillHeader>
               <PillText>
                 <h3>{formatTextWithLineBreaks(pillData.name)}</h3>
-                <HeartButton onClick={handleToggleFavorite}>
-                  <Icon
-                    icon='mdi:heart'
-                    style={{
-                      color: isFavorite ? 'red' : 'gray'
-                    }}
-                    width='24'
-                    height='24'
-                  />
-                  <p>{favoriteCount}</p>
-                </HeartButton>
+                <LoginCheck>
+                  {(handleCheckLogin) => (
+                    <HeartButton
+                      onClick={() => handleCheckLogin(handleToggleFavorite)}
+                    >
+                      <Icon
+                        icon='mdi:heart'
+                        style={{
+                          color: isFavorite ? 'red' : 'gray'
+                        }}
+                        width='24'
+                        height='24'
+                      />
+                      <p>{favoriteCount}</p>
+                    </HeartButton>
+                  )}
+                </LoginCheck>
               </PillText>
               <span>{pillData.engname}</span>
               <p>{pillData.companyname}</p>
@@ -180,12 +207,12 @@ const SearchResults = () => {
             </TagContainer>
           </section>
         </PillInfo>
-        <Exp>
-          출처 :{' '}
+        <Source>
+          <span>출처</span>
           <a target='_blank' href={pillData.source}>
             {pillData.source}
           </a>
-        </Exp>
+        </Source>
         <PillMore>
           <Menu>
             {tabs.map((tab) => (
@@ -202,17 +229,29 @@ const SearchResults = () => {
             {activeTab === 'effectiveness' ? (
               <PillExp />
             ) : (
-              <Review pillId={pillId!} />
+              <Review pillId={pillData.id} />
             )}
           </Contants>
         </PillMore>
       </SearchResultsContainer>
       <Nav />
-      {showLoginPopup && (
-        <Popup onClose={() => setShowLoginPopup(false)}>
-          {PopupContent(popupType, navigate)}
-        </Popup>
+      {showToast && (
+        <Toast onEnd={() => setShowToast(false)}>
+          {isFavorite ? '좋아요가 추가되었습니다.' : '좋아요가 취소되었습니다.'}
+        </Toast>
       )}
+      <Modal
+        isOpen={modalIsOpen}
+        onRequestClose={closeModal}
+        style={customStyles}
+        contentLabel='Image Modal'
+      >
+        <img
+          src={modalImageSrc}
+          alt='확대된 이미지'
+          style={{ width: '100%' }}
+        />
+      </Modal>
     </>
   );
 };
@@ -227,10 +266,6 @@ const PillInfo = styled.div`
   width: 80vw;
   margin: auto;
 
-  & img {
-    width: 35%;
-  }
-
   & section {
     flex: 1;
     padding-left: 15px;
@@ -240,7 +275,10 @@ const PillInfo = styled.div`
 const PillImgs = styled.div`
   display: flex;
   flex-direction: column;
+  justify-content: center;
   height: 100%;
+  width: 35%;
+  cursor: pointer;
 
   & img {
     width: 100%;
@@ -266,7 +304,7 @@ const PillText = styled.div`
   display: flex;
 
   & h3 {
-    font-size: 16px;
+    font-size: 15px;
     font-weight: 500;
   }
 `;
@@ -300,18 +338,25 @@ const InfoBox = styled.div`
   font-size: 14px;
 `;
 
-const Exp = styled.p`
-  margin: 15px 20px;
-  color: #696969;
+const Source = styled.p`
+  display: flex;
+  align-items: center;
+  margin: 8px 20px;
   font-size: 14px;
 
   & a {
-    color: inherit;
+    display: inline-block;
+    max-width: 300px;
+    color: #696969;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    margin-left: 5px;
   }
 `;
 
 const PillMore = styled.div`
-  margin-top: 30px;
+  margin-top: 20px;
 `;
 
 const Menu = styled.div`

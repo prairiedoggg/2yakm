@@ -122,7 +122,7 @@ export const login = async (
 
     const payload = { id: user.userid, email: user.email, role: user.role };
     const token = jwt.sign(payload, SECRET_KEY, {
-      expiresIn: '30m',
+      expiresIn: '2h',
     });
     const refreshToken = jwt.sign(
       { id: user.userid },
@@ -291,12 +291,20 @@ export const refreshTokenService = async (
   try {
     payload = jwt.verify(refreshToken, REFRESH_TOKEN_SECRET_KEY);
 
-    if (typeof payload !== 'string' && 'id' in payload && 'email' in payload && 'role' in payload) {
-      const newToken = jwt.sign(
-        { id: payload.id, email: payload.email, role: payload.role },
-        SECRET_KEY,
-        { expiresIn: '30m' }
-      );
+    if (typeof payload !== 'string' && 'id' in payload) {
+      const query = 'SELECT email, role FROM users WHERE userid = $1';
+      const values = [payload.id];
+      const result = await pool.query(query, values);
+      const user = result.rows[0];
+
+      if (!user) {
+        throw createError('UserNotFound', '사용자를 찾을 수 없습니다.', 404);
+      }
+
+      const newPayload = { id: payload.id, email: user.email, role: user.role };
+      const newToken = jwt.sign(newPayload, SECRET_KEY, {
+        expiresIn: '2h'
+      });
       const newRefreshToken = jwt.sign(
         { id: payload.id },
         REFRESH_TOKEN_SECRET_KEY,
@@ -312,7 +320,6 @@ export const refreshTokenService = async (
     throw createError('InvalidRefreshToken', '유효하지 않은 토큰입니다.', 403);
   }
 };
-
 
 // 카카오 소셜
 export const kakaoAuthService = async (
@@ -393,7 +400,7 @@ export const kakaoAuthService = async (
 
       const payload = { id: user.userid, kakaoid: user.kakaoid, email: user.email, role: user.role };
       const token = jwt.sign(payload, SECRET_KEY, {
-        expiresIn: '30m',
+        expiresIn: '2h',
       });
       const refreshToken = jwt.sign(
         { id: user.id },
@@ -488,7 +495,7 @@ export const naverAuthService = async (
 
       const payload = { id: user.userid, naverid: user.naverid, email: user.email, role: user.role };
       const token = jwt.sign(payload, SECRET_KEY, {
-        expiresIn: '30m',
+        expiresIn: '2h',
       });
       const refreshToken = jwt.sign(
         { id: user.userid },
@@ -583,7 +590,7 @@ export const googleAuthService = async (
 
       const payload = { id: user.userid, googleid: user.googleid, email: user.email, role: user.role };
       const token = jwt.sign(payload, SECRET_KEY, {
-        expiresIn: '30m',
+        expiresIn: '2h',
       });
       const refreshToken = jwt.sign(
         { id: user.userid },

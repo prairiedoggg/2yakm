@@ -28,6 +28,10 @@ interface Decoded {
 
 const SECRET_KEY = process.env.SECRET_KEY;
 const FRONTEND_URL = 'http://localhost:5173';
+const BASE_URL = 
+  process.env.NODE_ENV === 'development'
+    ? `http://localhost:${process.env.PORT ?? 3000}`
+    : process.env.CORS_ORIGIN;
 
 // 로그인
 export const loginController = async (req: Request, res: Response, next: NextFunction) => {
@@ -174,7 +178,7 @@ export const googleAuthController = async (req: Request<{ query: { code: string 
 // 카카오 리디렉션
 export const kakaoRedirectController = (req: Request, res: Response, next: NextFunction) => {
   try {
-    const kakaoAuthUrl = `https://kauth.kakao.com/oauth/authorize?client_id=${process.env.KAKAO_CLIENT_ID}&redirect_uri=${process.env.BASE_URL}/api/auth/kakao/callback&response_type=code`;
+    const kakaoAuthUrl = `https://kauth.kakao.com/oauth/authorize?client_id=${process.env.KAKAO_CLIENT_ID}&redirect_uri=${BASE_URL}/api/auth/kakao/callback&response_type=code`;
     res.redirect(kakaoAuthUrl);
   } catch (error) {
     next(error);
@@ -185,7 +189,7 @@ export const kakaoRedirectController = (req: Request, res: Response, next: NextF
 export const naverRedirectController = (req: Request, res: Response, next: NextFunction) => {
   try {
     const state = Math.random().toString(36).substring(7); // 랜덤 문자열로 만들었음
-    const naverAuthUrl = `https://nid.naver.com/oauth2.0/authorize?client_id=${process.env.NAVER_CLIENT_ID}&redirect_uri=${process.env.BASE_URL}/api/auth/naver/callback&response_type=code&state=${state}`;
+    const naverAuthUrl = `https://nid.naver.com/oauth2.0/authorize?client_id=${process.env.NAVER_CLIENT_ID}&redirect_uri=${BASE_URL}/api/auth/naver/callback&response_type=code&state=${state}`;
     res.redirect(naverAuthUrl);
   } catch (error) {
     next(error);
@@ -195,7 +199,7 @@ export const naverRedirectController = (req: Request, res: Response, next: NextF
 // 구글 리디렉션
 export const googleRedirectController = (req: Request, res: Response, next: NextFunction) => {
   try {
-    const googleAuthUrl = `https://accounts.google.com/o/oauth2/auth?client_id=${process.env.GOOGLE_CLIENT_ID}&redirect_uri=${process.env.BASE_URL}/api/auth/google/callback&response_type=code&scope=email profile`;
+    const googleAuthUrl = `https://accounts.google.com/o/oauth2/auth?client_id=${process.env.GOOGLE_CLIENT_ID}&redirect_uri=${BASE_URL}/api/auth/google/callback&response_type=code&scope=email profile`;
     res.redirect(googleAuthUrl);
   } catch (error) {
     next(error);

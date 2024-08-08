@@ -1,10 +1,12 @@
 import { useState, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
-import { fetchReviews, createReview } from '../../api/reviewApi';
-import { isUserLoggedIn } from '../../store/authService';
-import Popup from '../popup/Popup';
-import PopupContent, { PopupType } from '../popup/PopupMessages.tsx';
+import {
+  fetchReviews,
+  createReview,
+  fetchReviewCount
+} from '../../api/reviewApi';
+import LoginCheck from '../LoginCheck';
+import Toast from '../Toast';
 
 export interface Review {
   id: number;
@@ -22,37 +24,44 @@ const Review = ({ pillId }: { pillId: number }) => {
   const [nextCursor, setNextCursor] = useState<number | null>(null);
   const [isWritingReview, setIsWritingReview] = useState<boolean>(false);
   const [newReview, setNewReview] = useState<string>('');
+  const [reviewCount, setReviewCount] = useState<number>(0);
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [showLoginPopup, setShowLoginPopup] = useState<boolean>(false);
-  const [popupType, setPopupType] = useState<PopupType>(PopupType.None);
-  const navigate = useNavigate();
+  const [showToast, setShowToast] = useState<boolean>(false);
 
-  const loadReviews = async (pillId: number, cursor: string | null) => {
-    if (isLoading) return;
-    setIsLoading(true);
-    try {
-      const data = await fetchReviews({ pillId, cursor });
-      setReviews([...reviews, ...data.reviews]);
-      setNextCursor(data.nextCursor || null);
-    } catch (error) {
-      console.error('리뷰불러오기 에러:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+
+  const loadReviews = useCallback(
+    async (pillId: number, cursor: string | null) => {
+      if (isLoading) return;
+      setIsLoading(true);
+      try {
+        const data = await fetchReviews({ pillId, cursor });
+        setReviews((prevReviews) => {
+          const newReviews = data.reviews.filter(
+            (review: Review) => !prevReviews.some((r) => r.id === review.id)
+          );
+          return [...prevReviews, ...newReviews];
+        });
+        setNextCursor(data.nextCursor || null);
+      } catch (error) {
+        console.error('리뷰 불러오기 에러:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [pillId]
+  );
 
   const handleReviewSubmit = async () => {
-    const newReviewItem = {
-      content: newReview,
-      pillId
-    };
+    const newReviewItem = { content: newReview, pillId };
     try {
       const data = await createReview(newReviewItem);
       setReviews((prevReviews) => [data, ...prevReviews]);
       setNewReview('');
       setIsWritingReview(false);
+      setShowToast(true);
+      setReviewCount((prevCount) => prevCount + 1);
     } catch (error) {
-      console.error('리뷰생성 에러:', error);
+      console.error('리뷰 생성 에러:', error);
     }
   };
 
@@ -65,41 +74,56 @@ const Review = ({ pillId }: { pillId: number }) => {
     )
       return;
     loadReviews(pillId, nextCursor?.toString() || null);
-  }, [pillId, nextCursor, isLoading]);
+  }, [pillId, nextCursor, isLoading, loadReviews]);
 
   useEffect(() => {
     window.addEventListener('scroll', handleScroll);
     return () => {
       window.removeEventListener('scroll', handleScroll);
     };
-  }, [handleScroll, pillId]);
+  }, [handleScroll]);
 
   useEffect(() => {
     loadReviews(pillId, null);
-  }, [pillId]);
+  }, [pillId, loadReviews]);
 
-  const handleWriteReviewClick = () => {
-    if (!isUserLoggedIn()) {
-      setPopupType(PopupType.LoginRequired);
-      setShowLoginPopup(true);
-      return;
-    }
-    setIsWritingReview(true);
-  };
+  useEffect(() => {
+    const fetchCount = async () => {
+      const count = await fetchReviewCount(pillId.toString());
+      setReviewCount(count);
+    };
+    fetchCount();
+  }, [pillId]);
 
   return (
     <ReviewContainer>
-      <WriteReview onClick={handleWriteReviewClick}>리뷰 작성하기</WriteReview>
-      {isWritingReview && (
-        <ReviewForm>
-          <textarea
-            placeholder='리뷰를 작성해 주세요.&#10;욕설, 비방, 명예훼손성 표현은 사용하지 말아주세요.'
-            value={newReview}
-            onChange={(e) => setNewReview(e.target.value)}
-          />
-          <SubmitButton onClick={handleReviewSubmit}>완료</SubmitButton>
-        </ReviewForm>
-      )}
+      <ReviewHeader>
+        <p>
+          리뷰 <span>{reviewCount}</span>
+        </p>
+        <LoginCheck>
+          {(handleCheckLogin) => (
+            <>
+              <WriteReview
+                onClick={() => handleCheckLogin(() => setIsWritingReview(true))}
+              >
+                리뷰 작성하기
+              </WriteReview>
+              {isWritingReview && (
+                <ReviewForm>
+                  <textarea
+                    placeholder='리뷰를 작성해 주세요.&#10;욕설, 비방, 명예훼손성 표현은 사용하지 말아주세요.'
+                    value={newReview}
+                    onChange={(e) => setNewReview(e.target.value)}
+                  />
+                  <SubmitButton onClick={handleReviewSubmit}>완료</SubmitButton>
+                </ReviewForm>
+              )}
+            </>
+          )}
+        </LoginCheck>
+      </ReviewHeader>
+
       <ReviewList>
         {reviews.map((review) => (
           <ReviewItem
@@ -111,7 +135,7 @@ const Review = ({ pillId }: { pillId: number }) => {
             <User>
               <Profile
                 src={review.profileimg ?? `/img/user.svg`}
-                alt='프로필 이미지'
+                alt='프로필'
               />
               <span>{review.username}</span>
             </User>
@@ -119,12 +143,12 @@ const Review = ({ pillId }: { pillId: number }) => {
           </ReviewItem>
         ))}
       </ReviewList>
-      {showLoginPopup && (
-        <Popup onClose={() => setShowLoginPopup(false)}>
-          {PopupContent(popupType, navigate)}
-        </Popup>
-      )}
       {isLoading && <LoadingText>로딩 중...</LoadingText>}
+      {showToast && (
+        <Toast onEnd={() => setShowToast(false)}>
+          리뷰가 성공적으로 작성되었습니다.
+        </Toast>
+      )}
     </ReviewContainer>
   );
 };
@@ -139,10 +163,22 @@ const ReviewContainer = styled.div`
   padding: 20px 30px 100px;
 `;
 
+const ReviewHeader = styled.div`
+  display: flex;
+  width: 100%;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: 600;
+
+  & span {
+    color: gray;
+  }
+`;
+
 const WriteReview = styled.button`
-  margin-left: auto;
-  width: 135px;
+  width: 125px;
   height: 35px;
+  font-weight: 600;
   background-color: #ffffff;
   border: 1px solid var(--secondary-color);
   border-radius: 10px;
@@ -209,7 +245,9 @@ const User = styled.div`
   }
 `;
 
-const Profile = styled.img``;
+const Profile = styled.img`
+  width: 24px;
+`;
 
 const LoadingText = styled.div`
   margin: 20px 0;

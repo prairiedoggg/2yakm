@@ -124,12 +124,12 @@ const SearchBox = ({ setImageResults }: SearchBoxProps) => {
 
   return (
     <>
-      <Link to='/search' onClick={handleSearch}>
-        <SearchContainer>
+      <SearchContainer>
+        <StyledLink to='/search' onClick={handleSearch}>
           <SearchIcon
             src={`/img/search_icon.png`}
             alt='search'
-            style={{ width: '20px' }}
+            style={{ width: '20px'}}
           />
 
           <SearchInput
@@ -138,13 +138,14 @@ const SearchBox = ({ setImageResults }: SearchBoxProps) => {
             onChange={handleChange}
             onKeyDown={handleKeyDown}
           />
-          <SearchIcon
-            src={`/img/camera.png`}
-            alt='camera'
-            onClick={handleCameraClick}
-          />
-        </SearchContainer>
-      </Link>
+        </StyledLink>
+        <SearchIcon
+          src={`/img/camera.png`}
+          alt='camera'
+          onClick={handleCameraClick}
+        />
+      </SearchContainer>
+
       <BottomPictureSheet
         title={'사진 등록'}
         isVisible={bottomSheet}
@@ -177,8 +178,17 @@ const SearchContainer = styled.div`
   background-color: #ffffff;
 `;
 
-const SearchInput = styled.input`
+const StyledLink = styled(Link)`
   flex: 1;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+`;
+
+const SearchInput = styled.input`
+  padding-left: 10px;
+  width: 100%;
   height: 100%;
   border: none;
   outline: none;
