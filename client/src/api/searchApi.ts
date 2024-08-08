@@ -38,12 +38,13 @@ export const fetchPillListByEfficacy = async (
 };
 
 export const fetchPillDataByImage = async (
-  image: File,
+  images: FileList,
   limit: number = 10,
   offset: number = 0
 ) => {
   const formData = new FormData();
-  formData.append('image', image);
+  formData.append('image', images[0]);
+  formData.append('image', images[1]);
   formData.append('limit', limit.toString());
   formData.append('offset', offset.toString());
 
@@ -89,7 +90,6 @@ export const fetchReviewCount = async (pillId: string) => {
     console.log('리뷰 수 가져오기 실패:', error);
   }
 };
-
 
 export const fetchFavoriteCount = async (pillId: number) => {
   try {
