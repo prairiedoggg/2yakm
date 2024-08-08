@@ -5,9 +5,8 @@ import Layout from '../Layout';
 import { fetchPillListByEfficacy } from '../../api/searchApi';
 import { fetchFavoriteCount } from '../../api/favoriteApi';
 import { fetchReviewCount } from '../../api/reviewApi';
-import { useFavoriteStore } from '../../store/favorite';
-import { useReviewStore } from '../../store/review';
 import { useSearchParams } from 'react-router-dom';
+import Loading from '../Loading';
 
 export interface PillData {
   id: number;
@@ -18,8 +17,8 @@ export interface PillData {
 const TagPage = () => {
   const [searchParams] = useSearchParams();
   const query = searchParams.get('q') || '';
-  const { favoriteCount, setFavoriteCount } = useFavoriteStore();
-  const { reviewCount, setReviewCount } = useReviewStore();
+  const [favoriteCount, setFavoriteCount] = useState<number>(0);
+  const [reviewCount, setReviewCount] = useState<number>(0);
   const [pillData, setPillData] = useState<PillData[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
 
@@ -47,11 +46,11 @@ const TagPage = () => {
   }, [query, setFavoriteCount, setReviewCount]);
 
   if (loading) {
-    return <div>데이터 검색중입니다.</div>;
+    return <Loading />;
   }
 
   if (!pillData || pillData.length === 0) {
-    return <div>검색 결과가 없습니다.</div>;
+    return <div className='searchInner'>검색 결과가 없습니다.</div>;
   }
 
   return (
@@ -80,7 +79,11 @@ const TagPage = () => {
                   {pill.importantWords &&
                     pill.importantWords.trim() &&
                     pill.importantWords.split(', ').map((word) => (
-                      <Tag to={`/search/efficacy?q=${word}`} key={word} className='tag'>
+                      <Tag
+                        to={`/search/efficacy?q=${word}`}
+                        key={word}
+                        className='tag'
+                      >
                         {word}
                       </Tag>
                     ))}
@@ -106,6 +109,7 @@ const TagTitle = styled.div`
 `;
 
 const ListContainer = styled.div`
+  padding-bottom: 100px;
   margin: auto;
   width: 85vw;
   > p {
@@ -130,7 +134,7 @@ const PillImg = styled.img`
 `;
 
 const PillText = styled.div`
-  margin-left: 30px;
+  margin-left: 15px;
 `;
 
 const PillTitle = styled.div`
@@ -144,6 +148,9 @@ const PillTitle = styled.div`
     word-break: break-word;
     overflow-wrap: break-word;
   }
+  & img {
+    margin-left: 5px;
+  }
 `;
 
 const FavoritesCount = styled.div`
@@ -156,10 +163,6 @@ const FavoritesCount = styled.div`
   }
 `;
 
-const TagContainer = styled.div`
+const TagContainer = styled.div``;
 
-`;
-
-const Tag = styled(Link)`
-
-`;
+const Tag = styled(Link)``;

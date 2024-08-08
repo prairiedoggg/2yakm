@@ -50,10 +50,7 @@ const EmailLogin = ({
       email,
       password,
       () => {
-        console.log('ddd2');
         fetchUserInformation(() => {
-          console.log('ddd3');
-
           setLoading(false);
           navigate('/', { replace: true });
           window.location.reload();

@@ -13,10 +13,9 @@ const useSearchHistoryStore = create(
       history: [],
       addHistory: (query) => {
         const currentHistory = get().history;
-        if (!currentHistory.includes(query)) {
-          const updatedHistory = [...currentHistory, query];
-          set({ history: updatedHistory });
-        }
+        const updatedHistory = currentHistory.filter((item) => item !== query);
+        updatedHistory.unshift(query);
+        set({ history: updatedHistory });
       },
       clearHistory: () => set({ history: [] })
     }),

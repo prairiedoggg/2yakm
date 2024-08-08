@@ -1,26 +1,40 @@
-import { Icon } from '@iconify-icon/react/dist/iconify.mjs';
+import { Icon } from '@iconify-icon/react';
 import dayjs from 'dayjs';
+import Cookies from 'js-cookie';
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import { useDateStore } from '../../store/calendar';
 import Header from '../Header';
 import Nav from '../Nav';
+import Popup from '../popup/Popup';
+import PopupContent, { PopupType } from '../popup/PopupMessages';
 import CalendarDetail from './CalendarDetail';
 import CalendarSection from './CalendarSection';
 
 const CalendarPage: React.FC = () => {
   const { value, arrow, setArrow, edit, setEdit, setAddTaken } = useDateStore();
-
   dayjs.locale('ko');
   const days = dayjs(value).format('D. ddd');
+  const login = Cookies.get('login');
+
+  const navigate = useNavigate();
+  const [showPopup, setShowPopup] = useState<boolean>(false);
+  const [popupType, setPopupType] = useState<PopupType>(PopupType.None);
 
   const openEdit = (open: boolean) => {
-    if (!open) {
-      setAddTaken(false);
-      setEdit(false);
+    if (login) {
+      if (!open) {
+        setAddTaken(false);
+        setEdit(false);
+      } else {
+        setEdit(true);
+      }
+      setArrow(true);
     } else {
-      setEdit(true);
+      setPopupType(PopupType.LoginRequired);
+      setShowPopup(true);
     }
-    setArrow(true);
   };
 
   const handleModal = () => {
@@ -66,6 +80,11 @@ const CalendarPage: React.FC = () => {
         </EntireDetail>
       </MainContent>
       <Nav />
+      {showPopup && (
+        <Popup onClose={() => setShowPopup(false)}>
+          {PopupContent(popupType, navigate)}
+        </Popup>
+      )}
     </CalendarContainer>
   );
 };
@@ -102,7 +121,7 @@ const EntireDetail = styled.div<{ expanded: boolean }>`
 `;
 
 const CalandarDatailContainer = styled.div`
-  padding: 5px 25px;
+  padding: 0px 25px;
 `;
 
 const ImgContainer = styled.div`
@@ -115,7 +134,7 @@ const Line = styled.div`
   height: 3px;
   background-color: #a9a9a9;
   border-radius: 10px;
-  margin: 10px;
+  margin-top: 10px;
 `;
 
 const DateBox = styled.div`

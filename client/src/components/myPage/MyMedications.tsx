@@ -10,7 +10,9 @@ import {
 import Loading from '../Loading';
 import Popup from '../popup/Popup';
 import PopupContent, { PopupType } from '../popup/PopupMessages';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { fetchAutocompleteSuggestions } from '../../api/searchApi';
+import Toast from '../Toast';
 
 interface MedicationItem {
   id: string;
@@ -22,6 +24,7 @@ const MyMedications = () => {
   const [bottomSheet, setBottomSheet] = useState(false);
   const [name, setName] = useState('');
   const [date, setDate] = useState('');
+  const [alarm, setAlarm] = useState(false);
   const [loading, setLoading] = useState(false);
   const [items, setItems] = useState<MedicationItem[]>([]);
   const [itemCount, setItemCount] = useState(0);
@@ -32,6 +35,10 @@ const MyMedications = () => {
   const [limit] = useState(10);
   const [hasMore, setHasMore] = useState(true);
   const containerRef = useRef<HTMLDivElement | null>(null);
+  const [suggestions, setSuggestions] = useState<string[]>([]);
+  const [toastMessage, setToastMessage] = useState('');
+
+  const maxTextLength = 15;
 
   const navigate = useNavigate();
 
@@ -49,9 +56,13 @@ const MyMedications = () => {
                 deleteMyPills(
                   selected?.id.toString() ?? '',
                   () => {
+                    setItems((prevItems) =>
+                      prevItems.filter((item) => item.id !== selected?.id)
+                    );
+                    setItemCount(itemCount - 1);
                     setLoading(false);
                     setSelected(undefined);
-                    fetchDatas();
+                    setToastMessage('나의 약 삭제 완료!');
                   },
                   () => {
                     setPopupType(PopupType.DeleteMyPillFailure);
@@ -71,9 +82,27 @@ const MyMedications = () => {
     }
   };
 
-  const handleNameChange = (e: ChangeEvent<HTMLInputElement>) => {
+  const fetchSuggestions = async (newQuery: string) => {
+    if (newQuery === '') return;
+
+    try {
+      const results = await fetchAutocompleteSuggestions(newQuery);
+      setSuggestions(results.map((r: any) => r.name));
+    } catch (error) {
+      setSuggestions([]);
+    }
+  };
+
+  const handleNameChange = async (e: ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setName(value);
+
+    await fetchSuggestions(value);
+  };
+
+  const handleSuggestionClick = (suggestion: string) => {
+    setName(suggestion);
+    setSuggestions([]);
   };
 
   const handleDateChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -113,23 +142,28 @@ const MyMedications = () => {
     return `${year}.${month}.${day}`;
   };
 
-  const fetchDatas = () => {
+  const fetchDatas = (latestData = false) => {
     fetchMyPills(
-      limit,
-      offset,
+      latestData ? 1 : limit,
+      latestData ? 0 : offset,
       'createdAt',
       'DESC',
       (data) => {
-        const reviews = data.data;
-        const temp: MedicationItem[] = reviews.map((d: any) => ({
+        const pillDatas = data.data;
+        const temp: MedicationItem[] = pillDatas.map((d: any) => ({
           id: d.pillid,
           title: d.pillname,
           expiration: formatDate(d.expiredat)
         }));
         setLoading(false);
-        setItems((prevData) => [...prevData, ...temp]);
         setOffset((prevOffset) => prevOffset + temp.length);
-        setHasMore(temp.length === limit);
+
+        if (latestData) {
+          setItems((prevData) => [...temp, ...prevData]);
+        } else {
+          setItems((prevData) => [...prevData, ...temp]);
+          setHasMore(temp.length === limit);
+        }
 
         setItemCount(data.totalCount);
       },
@@ -143,15 +177,22 @@ const MyMedications = () => {
     return (
       <Item key={key}>
         <div className='title'>
-          <div className='title2'>
-            {item.title}
-            <Icon
-              icon='ep:arrow-right-bold'
-              width='1.2em'
-              height='1.2em'
-              style={{ color: 'black' }}
-            />
-          </div>
+          <Link
+            to={`/search/name?q=${item.title}`}
+            style={{ color: 'black', textDecoration: 'none' }}
+          >
+            <div className='title2'>
+              {item.title.length > maxTextLength
+                ? item.title.substring(0, maxTextLength) + '...'
+                : item.title}
+              <Icon
+                icon='ep:arrow-right-bold'
+                width='1.2em'
+                height='1.2em'
+                style={{ color: 'black' }}
+              />
+            </div>
+          </Link>
 
           {deleteItem ? (
             <div
@@ -174,6 +215,10 @@ const MyMedications = () => {
     );
   };
 
+  const isFormValid = (): boolean => {
+    return name != '' && date != '';
+  };
+
   return (
     <MyPageContainer>
       <StyledContent>
@@ -187,7 +232,11 @@ const MyMedications = () => {
             style={{ color: '#d1d1d1' }}
           />
         </div>
-        <div className='info'>📍폐의약품 전용수거함 위치</div>
+        <div className='info'>
+          <a href='https://map.seoul.go.kr/smgis2/short/6OgWi'>
+            📍<u>폐의약품 전용수거함 위치</u>
+          </a>
+        </div>
         <div className='items' ref={containerRef}>
           <Item>
             <div className='empty' onClick={() => setBottomSheet(true)}>
@@ -209,9 +258,9 @@ const MyMedications = () => {
             onClose={() => setBottomSheet(false)}
           >
             <div className='title'>내 약 추가</div>
-
             <div className='info-box'>
               <div className='title2'>약 이름</div>
+
               <div className='input-container'>
                 <input
                   type='text'
@@ -220,16 +269,36 @@ const MyMedications = () => {
                   onChange={handleNameChange}
                 />
               </div>
+
+              {suggestions.length > 0 && (
+                <ul className='drop-down'>
+                  {suggestions.map((suggestion, index) => (
+                    <li
+                      key={index}
+                      onClick={() => handleSuggestionClick(suggestion)}
+                      style={{
+                        padding: '8px',
+                        cursor: 'pointer',
+                        fontSize: '0.9rem',
+                        borderBottom: '1px solid #ddd'
+                      }}
+                    >
+                      {suggestion}
+                    </li>
+                  ))}
+                </ul>
+              )}
             </div>
 
             <div className='info-box'>
               <div className='title2'>
                 사용 기한{' '}
                 <Icon
-                  icon='ep:mute-notification'
-                  width='1.3rem'
-                  height='1.3rem'
+                  icon={alarm ? 'octicon:bell-16' : 'octicon:bell-slash-16'}
+                  width='1.4rem'
+                  height='1.4rem'
                   style={{ color: 'gray' }}
+                  onClick={() => setAlarm(!alarm)}
                 />
               </div>
               <div className='input-container'>
@@ -239,16 +308,27 @@ const MyMedications = () => {
 
             <button
               className='bottomClose'
+              disabled={!isFormValid()}
               onClick={() => {
                 setLoading(true);
-                addMyPills(name, date.toString(), () => {
-                  setBottomSheet(false);
-                  setLoading(false);
-                  fetchDatas();
-
-                  setName('');
-                  setDate('');
-                });
+                addMyPills(
+                  name,
+                  date.toString(),
+                  alarm,
+                  () => {
+                    setBottomSheet(false);
+                    setLoading(false);
+                    fetchDatas(true);
+                    setName('');
+                    setDate('');
+                    setAlarm(false);
+                    setToastMessage('나의 약 등록 완료!');
+                  },
+                  () => {
+                    setLoading(false);
+                    setPopupType(PopupType.AddMyPillFailure);
+                  }
+                );
               }}
             >
               등록 완료
@@ -261,6 +341,9 @@ const MyMedications = () => {
         <Popup onClose={() => setPopupType(PopupType.None)}>
           {getPopupContent(popupType)}
         </Popup>
+      )}
+      {toastMessage != '' && (
+        <Toast onEnd={() => setToastMessage('')}>{toastMessage}</Toast>
       )}
     </MyPageContainer>
   );
@@ -305,8 +388,14 @@ const Sheet = styled.div`
     padding: 12px;
     box-sizing: border-box;
   }
+
   .bottomClose {
     margin-top: 20px;
+  }
+
+  .bottomClose:disabled {
+    color: gray;
+    background-color: #c7c7c7;
   }
 `;
 
@@ -338,6 +427,11 @@ const StyledContent = styled.div`
     margin-bottom: 30px;
     font-weight: 500;
     margin-left: -5px;
+
+    a {
+      color: gray;
+      text-decoration: none;
+    }
   }
 
   .items {
@@ -345,6 +439,7 @@ const StyledContent = styled.div`
     flex-direction: column;
     gap: 30px;
     overflow: auto;
+    padding-right: 10px;
   }
 `;
 
@@ -360,7 +455,7 @@ const Item = styled.div`
   .title {
     display: flex;
     font-weight: bold;
-    font-size: 1.2em;
+    font-size: 1em;
     justify-content: space-between;
   }
 
@@ -380,7 +475,7 @@ const Item = styled.div`
     border-radius: 25px;
     padding: 3px 8px;
     cursor: pointer;
-    font-size: 0.6em;
+    font-size: 0.8em;
   }
 
   .empty {

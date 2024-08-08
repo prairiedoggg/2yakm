@@ -1,8 +1,8 @@
 import { put, get, post, del } from './api';
 
-export const addMyPills = async ( name:string, expiredat:string,  onSuccess?:(arg0:any)=>void, onFailure?:(arg0:any)=>void) => {
+export const addMyPills = async ( name:string, expiredat:string,alarmstatus:boolean,  onSuccess?:(arg0:any)=>void, onFailure?:(arg0:any)=>void) => {
     try {
-      const data = await post('/api/mypills', {name:name, expiredat:expiredat} );
+      const data = await post('/api/mypills', {name:name, expiredat:expiredat, alarmstatus:alarmstatus} );
       if (onSuccess) onSuccess(data);  
   
     } catch (error) {

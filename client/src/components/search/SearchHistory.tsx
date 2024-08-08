@@ -13,10 +13,12 @@ const SearchHistory = () => {
       </HistoryTitle>
       <HistoryList>
         {history
-          .slice()
-          .reverse()
           .map((item, index) => (
-            <HistoryItem to={`/search/name?q=${encodeURIComponent(item)}`} key={index} className='listItem'>
+            <HistoryItem
+              to={`/search/name?q=${encodeURIComponent(item)}`}
+              key={index}
+              className='listItem'
+            >
               {item}
             </HistoryItem>
           ))}
@@ -27,16 +29,11 @@ const SearchHistory = () => {
 
 export default SearchHistory;
 
-
 const HistoryTitle = styled.div`
   display: flex;
   justify-content: space-between;
-
 `;
 
-const HistoryList = styled.div`
-`;
+const HistoryList = styled.div``;
 
-const HistoryItem = styled(Link)`
-
-`;
+const HistoryItem = styled(Link)``;

@@ -27,6 +27,7 @@ const ResetPassword = loadable(
 );
 const ChatBot = loadable(() => import('./components/chatBot/ChatBot'));
 const Redirect = loadable(() => import('./components/authentication/Redirect'));
+const NotFound = loadable(() => import('./components/NotFound'));
 
 const App = () => {
   return (
@@ -37,11 +38,8 @@ const App = () => {
         <Route path='/search' element={<Search />} />
         <Route path='/search/name' element={<SearchResults />} />
         <Route path='/search/efficacy' element={<TagPage />} />
-        <Route
-          path='/calendar'
-          element={<AuthenticatedRoute element={Calendar} />}
-        />
-        <Route path='/alarm' element={<AuthenticatedRoute element={Alarm} />} />
+        <Route path='/calendar' element={<Calendar />} />
+        <Route path='/alarm' element={<Alarm />} />
         <Route
           path='/myPage'
           element={<AuthenticatedRoute element={MyPage} />}
@@ -53,13 +51,13 @@ const App = () => {
           path='/password/reset/request'
           element={<ResetPasswordRequest />}
         />
-        <Route path='/password/reset' element={<ResetPassword />} />
-
+        <Route path='/reset-password' element={<ResetPassword />} />
         <Route
           path='/chatbot'
           element={<AuthenticatedRoute element={ChatBot} />}
         />
         <Route path='/snsLogin/callback' element={<Redirect />} />
+        <Route path='*' element={<NotFound />} />
       </Routes>
     </Router>
   );
