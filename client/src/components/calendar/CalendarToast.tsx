@@ -11,15 +11,19 @@
 import { Icon } from '@iconify-icon/react/dist/iconify.mjs';
 import styled, { keyframes } from 'styled-components';
 
-const CalendarToast = ({ str }: { str: string }) => {
+const CalendarToast = ({ title, str }: { title: string; str: string }) => {
   return (
     <ToastContainer>
       <div style={{ display: 'flex', alignItems: 'center', width: '25px' }}>
-        <Icon
-          icon='fluent:info-12-filled'
-          width='20px'
-          style={{ color: '#FFBB25' }}
-        />
+        {title === '시간추가' ? (
+          <Icon
+            icon='fluent:info-12-filled'
+            width='20px'
+            style={{ color: '#FFBB25' }}
+          />
+        ) : (
+          <Icon icon='gg:check-o' style={{ color: '#19B878' }} />
+        )}
       </div>
       {str}
     </ToastContainer>
@@ -52,7 +56,7 @@ const ToastContainer = styled.div`
   position: fixed;
   bottom: 14%;
   left: 50%;
-  width: 80%;
+  // width: 80%;
   transform: translate(-50%, -50%);
   background-color: rgba(51, 51, 51, 0.7);
   color: #fff;

@@ -6,15 +6,14 @@ import Loading from '../Loading';
 import { Alarm, useAlarmStore } from '../../store/alarm';
 import { getAlarms, deleteAlarm, updateAlarmStatus } from '../../api/alarmApi';
 import LoginCheck from '../LoginCheck';
-import Toast from '../Toast';
 import { isUserLoggedIn } from '../../utils/auth';
+import { AlarmProps } from './Alarm';
 
-const AlarmPage = () => {
+const AlarmPage = ({ setShowToast }: AlarmProps) => {
   const { alarms, setCurrentPage, setCurrentAlarm, setAlarms } =
     useAlarmStore();
   const [isDeleteMode, setIsDeleteMode] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const [showToast, setShowToast] = useState<string | null>(null);
   const isLoggedIn = isUserLoggedIn();
 
   useEffect(() => {
@@ -147,7 +146,6 @@ const AlarmPage = () => {
           </AlarmContainer>
         )}
       </LoginCheck>
-      {showToast && <Toast onEnd={() => setShowToast(null)}>{showToast}</Toast>}
     </>
   );
 };

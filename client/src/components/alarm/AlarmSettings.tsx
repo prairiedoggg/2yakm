@@ -5,9 +5,9 @@ import { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import { createAlarm, updateAlarm } from '../../api/alarmApi';
 import { Alarm, useAlarmStore } from '../../store/alarm';
-import Toast from '../Toast';
+import { AlarmProps } from './Alarm';
 
-const AlarmSettings = () => {
+const AlarmSettings = ({ setShowToast }: AlarmProps) => {
   const setCurrentPage = useAlarmStore((state) => state.setCurrentPage);
   const currentAlarm = useAlarmStore((state) => state.currentAlarm);
   const setCurrentAlarm = useAlarmStore((state) => state.setCurrentAlarm);
@@ -17,13 +17,12 @@ const AlarmSettings = () => {
     { time: dayjs('13:00', 'HH:mm') },
     { time: dayjs('20:00', 'HH:mm') }
   ]);
-const [startDate, setStartDate] = useState<string>(
-  new Date().toISOString().split('T')[0]
-);
-const [endDate, setEndDate] = useState<string>(
-  new Date().toISOString().split('T')[0]
-);
-  const [showToast, setShowToast] = useState<string | null>(null);
+  const [startDate, setStartDate] = useState<string>(
+    new Date().toISOString().split('T')[0]
+  );
+  const [endDate, setEndDate] = useState<string>(
+    new Date().toISOString().split('T')[0]
+  );
 
   useEffect(() => {
     if (currentAlarm) {
@@ -33,12 +32,12 @@ const [endDate, setEndDate] = useState<string>(
           time: dayjs(t.time, 'HH:mm')
         }))
       );
-    if (currentAlarm.startDate) {
-      setStartDate(currentAlarm.startDate.split('T')[0]);
-    }
-    if (currentAlarm.endDate) {
-      setEndDate(currentAlarm.endDate.split('T')[0]);
-    }
+      if (currentAlarm.startDate) {
+        setStartDate(currentAlarm.startDate.split('T')[0]);
+      }
+      if (currentAlarm.endDate) {
+        setEndDate(currentAlarm.endDate.split('T')[0]);
+      }
     }
   }, [currentAlarm]);
 
@@ -83,7 +82,6 @@ const [endDate, setEndDate] = useState<string>(
       console.error('에러:', error);
     }
   };
-
 
   return (
     <>
@@ -149,7 +147,6 @@ const [endDate, setEndDate] = useState<string>(
         <RunButton onClick={() => setCurrentPage('main')}>취소</RunButton>
         <RunButton onClick={handleSave}>저장</RunButton>
       </ButtonContainer>
-      {showToast && <Toast onEnd={() => setShowToast(null)}>{showToast}</Toast>}
     </>
   );
 };
