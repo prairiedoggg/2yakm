@@ -29,7 +29,8 @@ interface RequestUser {
 }
 
 // Extend the Request interface to include the user and query types
-interface AuthenticatedRequest<QueryType extends ParsedQs = ParsedQs> extends Request {
+interface AuthenticatedRequest<QueryType extends ParsedQs = ParsedQs>
+  extends Request {
   user?: RequestUser;
   query: QueryType;
 }
@@ -135,3 +136,21 @@ export const deleteMyPill = async (
     next(error);
   }
 };
+
+// export const expiredTodayMyPill = async (
+//   req: AuthenticatedRequest,
+//   res: Response,
+//   next: NextFunction
+// ) => {
+//   try {
+//     const user = req.user;
+//     if (!user) {
+//       return next(createError('UnauthorizedError', 'Unauthorized', 401));
+//     }
+//     const userId = user.id;
+//     const result = expiredTodayPill(userId);
+//     res.status(200).json(result);
+//   } catch (error) {
+//     next(error);
+//   }
+// };

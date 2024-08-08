@@ -439,8 +439,9 @@ const searchSimilarImage = async (
     const similarPills = lines.map((line) => {
       const [fullPath, similarity] = line.split(' ('); // 이미지 경로와 유사도를 분리함
       const fileName = path.basename(fullPath).split('.')[0]; // 파일명만 추출하고 확장자를 제거함
+      const id = fileName.replace(/^processed_image_\d+\\/, ''); // mac, linux에서 \\ 두개가 생기는 문제 해결
       return {
-        id: fileName,
+        id,
         similarity: similarity.replace(')', '').replace('\r', '')
       };
     });
