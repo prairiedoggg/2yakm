@@ -1,12 +1,12 @@
-import styled from 'styled-components';
-import { useNavigate } from 'react-router-dom';
 import { Icon } from '@iconify-icon/react';
 import { ChangeEvent, FormEvent, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import styled from 'styled-components';
 import { requestEmailVerification, signup } from '../../api/authService';
 import Loading from '../Loading';
+import ValidationError from '../ValidationError';
 import Popup from '../popup/Popup';
 import PopupContent, { PopupType } from '../popup/PopupMessages';
-import ValidationError from '../ValidationError';
 
 interface FormData {
   email: string;
@@ -279,7 +279,7 @@ const Register = () => {
       <Icon
         className='topClose'
         onClick={() => {
-          navigate('/');
+          navigate(-1);
         }}
         icon='material-symbols:close'
         width='1.7rem'
@@ -365,53 +365,53 @@ const Logo = styled.img`
 `;
 
 const Content = styled.div`
-  height:100%;
-  margin-top:100px;
+  height: 100%;
+  margin-top: 100px;
   align-items: center;
   display: flex;
   flex-direction: column;
   align-content: center;
-  gap:20px;
-  width:100%;
+  gap: 20px;
+  width: 100%;
 
-  .errors{
+  .errors {
     display: flex;
     flex-direction: column;
   }
 
-  .title{
+  .title {
     margin-bottom: 50px;
     text-align: center;
-    font-weight:500;
-  }
-  
-  .other{
-    display:flex;
-    gap:20px;
-    align-items: center;
-    margin-bottom:30px;
-    text-decoration: underline;
-    font-size:.9em;
+    font-weight: 500;
   }
 
-  form{
-  width:80%;}
+  .other {
+    display: flex;
+    gap: 20px;
+    align-items: center;
+    margin-bottom: 30px;
+    text-decoration: underline;
+    font-size: 0.9em;
+  }
+
+  form {
+    width: 80%;
+  }
 
   .input-container {
     position: relative;
-
   }
 
-  input{
+  input {
     width: 100%;
-    border: none; 
-    border-radius: 4px; 
-    padding:8px 3px 8px 3px;
+    border: none;
+    border-radius: 4px;
+    padding: 8px 3px 8px 3px;
     padding-right: 30px;
     box-sizing: border-box;
-  }    
+  }
 
-  .password{
+  .password {
     padding-right: 60px;
   }
 
@@ -421,42 +421,43 @@ const Content = styled.div`
     right: 10px;
     transform: translateY(-50%);
     cursor: pointer;
-  }    
+  }
 
-  .text-btn{
-    font-size:0.9rem;
-    background-color:#ccc;
-    color:white;
-    border-radius: 10px; 
-    padding:3px;
+  .text-btn {
+    font-size: 0.9rem;
+    background-color: #ccc;
+    color: white;
+    border-radius: 10px;
+    padding: 3px;
   }
 
   .input-left-second {
     right: 35px;
-  }   
-
-  .login-inputs{
-    width: 100%;
-    border: 1px solid #ccc;
-    border-radius: 10px; 
-    padding: 10px 3px 10px 3px; 
-    margin-bottom:20px;
   }
 
-  .submitButton{
+  .login-inputs {
+    width: 100%;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    padding: 10px 3px 10px 3px;
+    margin-bottom: 20px;
+  }
+
+  .submitButton {
     position: absolute;
     bottom: 0;
-    left:0;
-    width:100%;
-    background-color: #FDE72E;
-    border: none; 
-    padding:12px;
-    font-size:1em;
-    font-weight:bold;
-}
+    left: 0;
+    width: 100%;
+    background-color: #fde72e;
+    border: none;
+    padding: 12px;
+    font-size: 1em;
+    font-weight: bold;
+  }
 
-.submitButton:disabled{
-  background-color: #C7C7C7;
-}`;
+  .submitButton:disabled {
+    background-color: #c7c7c7;
+  }
+`;
 
 export default Register;

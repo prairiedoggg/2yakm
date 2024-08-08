@@ -131,7 +131,10 @@ const AddPill = () => {
         </SubTitle>
 
         {maxTime && (
-          <CalendarToast str='시간 추가는 최대 3개까지 가능합니다.' />
+          <CalendarToast
+            title='시간추가'
+            str='시간 추가는 최대 3개까지 가능합니다.'
+          />
         )}
       </AddPillContainer>
       <ButtonContainer>

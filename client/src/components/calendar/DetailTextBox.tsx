@@ -1,11 +1,6 @@
-import Cookies from 'js-cookie';
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import { useDateStore } from '../../store/calendar';
 import Info from '../Info';
-import Popup from '../popup/Popup';
-import PopupContent, { PopupType } from '../popup/PopupMessages';
 import BloodSugar from './calendarDetails/BloodSugar';
 import IsPillTaken from './calendarDetails/IsPillTaken';
 import Photo from './calendarDetails/Photo';
@@ -35,11 +30,7 @@ const DetailTextBox = ({
   weight,
   photo
 }: DetailTextBoxProps) => {
-  const { setEdit, setArrow } = useDateStore();
-  const login = Cookies.get('login');
-  const navigate = useNavigate();
-  const [showPopup, setShowPopup] = useState<boolean>(false);
-  const [popupType, setPopupType] = useState<PopupType>(PopupType.None);
+  const { setArrow } = useDateStore();
 
   const handleInfoText = () => {
     switch (title) {
@@ -47,7 +38,7 @@ const DetailTextBox = ({
         return (
           <Info
             text={
-              '정상 : <br /> 공복 혈당 100미만, 식후 혈당 140미만 <br /> <br />관리 필요: <br /> 공복혈당 100이상 126미만, 식후혈당 140이상 200미만<br/> <br />당뇨:  <br />공복혈당 126이상, 식후혈당 200이상 '
+              '<p style="color: #23AF51">정상 : <br /> 공복 혈당 100미만, 식후 혈당 140미만 </p><br /> <br /><p style="color: #F78500">관리 필요: <br /> 공복혈당 100이상 126미만, 식후혈당 140이상 200미만</p><br/> <br /><p style="color: #EE3610">당뇨:  <br />공복혈당 126이상, 식후혈당 200이상 </p>'
             }
             category='혈당'
           />
@@ -56,7 +47,7 @@ const DetailTextBox = ({
         return (
           <Info
             text={
-              '정상: 35.8 ~ 37.2도  <br /> <br />미열: 37.2 ~ 37.9도 <br /> <br />중등도열: 38 ~ 38.9도  <br /> <br />고열: 39도 이상 '
+              '<p style="color: #72BF44">정상: 35.8 ~ 37.2도 </p><br /> <br /><p style="color: #D8C100">미열: 37.2 ~ 37.9도 </p><br /> <br /><p style="color: #F69999">중등도열: 38 ~ 38.9도 </p> <br /> <br> <p style="color: #C20000">고열: 39도 이상</p> '
             }
             category='체온'
           />
@@ -97,54 +88,29 @@ const DetailTextBox = ({
     }
   };
 
-  const isRender =
-    (pillData && pillData.length > 0) ||
-    (bloodsugarbefore !== undefined && bloodsugarbefore !== 0) ||
-    (bloodsugarafter !== undefined && bloodsugarafter !== 0) ||
-    (temp !== undefined && temp !== 0) ||
-    (weight !== undefined && weight !== 0) ||
-    (photo !== undefined && photo !== null);
+  const isPill = title === '약 복용 여부';
 
-  const isEmpty =
+  const isAllEmpty =
     (!pillData || pillData.length === 0) &&
     (bloodsugarbefore === undefined || bloodsugarbefore === 0) &&
     (bloodsugarafter === undefined || bloodsugarafter === 0) &&
     (temp === undefined || temp === 0) &&
     (weight === undefined || weight === 0) &&
-    (photo === undefined || photo === null);
+    (!photo || photo === '');
 
-  const isPill = title === '약 복용 여부';
-
-  const openEdit = () => {
-    if (login) {
-      setEdit(true);
-      setArrow(true);
-    } else {
-      setPopupType(PopupType.LoginRequired);
-      setShowPopup(true);
-    }
-  };
-
-  return isRender ? (
-    <PillContainer isPill={isPill} onClick={() => setArrow(true)}>
-      <ContentTitle>
-        {title}
-        {handleInfoText()}
-      </ContentTitle>
-      <UnitContainer>{handleContent()}</UnitContainer>
-    </PillContainer>
-  ) : isEmpty ? (
+  return (
     <>
-      <Empty onClick={() => openEdit()}>
-        {title} 정보 없음. 추가하려면 탭 하세요.
-      </Empty>
-      {showPopup && (
-        <Popup onClose={() => setShowPopup(false)}>
-          {PopupContent(popupType, navigate)}
-        </Popup>
+      {!isAllEmpty && (
+        <PillContainer isPill={isPill} onClick={() => setArrow(true)}>
+          <ContentTitle>
+            {title}
+            {handleInfoText()}
+          </ContentTitle>
+          <UnitContainer>{handleContent()}</UnitContainer>
+        </PillContainer>
       )}
     </>
-  ) : null;
+  );
 };
 
 const PillContainer = styled.div<{ isPill?: boolean }>`
@@ -164,19 +130,6 @@ const ContentTitle = styled.div`
 
 const UnitContainer = styled.div`
   display: flex;
-`;
-
-const Empty = styled.div`
-  border-radius: 10px;
-  background-color: #ececec;
-  border: #d9d9d9 solid 0.5px;
-  height: 50px;
-  padding-left: 10px;
-  line-height: 50px;
-  font-size: 10.5pt;
-  margin-top: 10px;
-  color: #9b9a9a;
-  cursor: pointer;
 `;
 
 export default DetailTextBox;

@@ -15,7 +15,7 @@ const refreshApi = axios.create({
 const refreshAuthToken = async () => {
   try {
     const response = await refreshApi.post(`api/auth/token`);
-    return response.data;
+    return response.data.token;
   } catch (err) {
     console.error('Refresh token failed:', err);
     throw err;

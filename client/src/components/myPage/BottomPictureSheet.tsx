@@ -13,6 +13,8 @@ const BottomPictureSheet = ({
   onClose: (pic: File | null) => void;
 }) => {
   const inputRef = useRef<HTMLInputElement | null>(null);
+  const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+  console.log(navigator.userAgent);
 
   const onUploadImage = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -28,23 +30,25 @@ const BottomPictureSheet = ({
     <Sheet>
       <BottomSheet isVisible={isVisible} onClose={() => onClose(null)}>
         <div className='title'>{title}</div>
-        <div className='menu'>
-          <Icon
-            icon='ph:camera-light'
-            width='1.5rem'
-            height='1.5rem'
-            style={{ color: 'black' }}
-            onClick={() => {}}
-          />{' '}
-          카메라로 촬영하기
-          <input
-            className='file-input'
-            type='file'
-            capture='environment'
-            ref={inputRef}
-            onChange={onUploadImage}
-          />
-        </div>
+        {isMobile && (
+          <div className='menu'>
+            <Icon
+              icon='ph:camera-light'
+              width='1.5rem'
+              height='1.5rem'
+              style={{ color: 'black' }}
+              onClick={() => {}}
+            />{' '}
+            카메라로 촬영하기
+            <input
+              className='file-input'
+              type='file'
+              capture='environment'
+              ref={inputRef}
+              onChange={onUploadImage}
+            />
+          </div>
+        )}
         <div className='menu'>
           <Icon
             icon='solar:gallery-bold'

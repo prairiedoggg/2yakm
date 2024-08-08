@@ -5,6 +5,8 @@ import { login, fetchUserInformation } from '../../api/authService';
 import { useNavigate } from 'react-router-dom';
 import Popup from '../popup/Popup';
 import Loading from '../Loading';
+import { getAlarms } from '../../api/alarmApi';
+import { useAlarmStore } from '../../store/alarm';
 
 const EmailLogin = ({
   onRegisterClick,
@@ -23,6 +25,7 @@ const EmailLogin = ({
     useState<boolean>(false);
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [popupMessage, setPopupMessage] = useState('');
+  const { setAlarms } = useAlarmStore();
 
   const handleEmailChange = (e: ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
@@ -51,9 +54,7 @@ const EmailLogin = ({
       password,
       () => {
         fetchUserInformation(() => {
-          setLoading(false);
-          navigate('/', { replace: true });
-          window.location.reload();
+          onFetchUserInformationSucceed();
         });
       },
       () => {
@@ -63,6 +64,15 @@ const EmailLogin = ({
         );
       }
     );
+  };
+
+  const onFetchUserInformationSucceed = async () => {
+    const data = await getAlarms();
+    setAlarms(data);
+
+    setLoading(false);
+    navigate('/', { replace: true });
+    window.location.reload();
   };
 
   return (
