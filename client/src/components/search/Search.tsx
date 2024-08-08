@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import styled from 'styled-components';
+import { PillData } from '../../store/pill.ts';
 import { useSearchStore } from '../../store/search.ts';
 import Nav from '../Nav';
 import AutoComplete from './AutoComplete.tsx';
@@ -11,12 +12,8 @@ import SearchHistory from './SearchHistory.tsx';
 const Search = () => {
   const [searchParams] = useSearchParams();
   const query = searchParams.get('q') || '';
-  const {
-    searchType,
-    setSearchType,
-    isImageSearch,
-    imageResults,
-  } = useSearchStore();
+  const [imageResults, setImageResults] = useState<PillData[]>([]);
+  const { searchType, setSearchType, isImageSearch } = useSearchStore();
   const [activeType, setActiveType] = useState<string>(searchType);
 
   const handleTypeClick = (type: string) => {
@@ -37,6 +34,7 @@ const Search = () => {
       <SearchHeader
         activeType={activeType}
         handleTypeClick={handleTypeClick}
+        setImageResults={setImageResults}
       />
       {renderer()}
       <Nav />

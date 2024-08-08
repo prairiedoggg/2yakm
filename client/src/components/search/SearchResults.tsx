@@ -133,6 +133,7 @@ const SearchResults = () => {
       <SearchHeader
         activeType={activeType}
         handleTypeClick={handleTypeClick}
+        setImageResults={() => {}}
       />
       <SearchResultsContainer>
         <PillInfo>

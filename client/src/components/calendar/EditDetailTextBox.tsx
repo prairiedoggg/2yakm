@@ -177,6 +177,7 @@ const EditDetailTextBox = ({ title }: EditDetailTextBoxProps) => {
 };
 
 export default EditDetailTextBox;
+
 const Container = styled.div<{ isPill?: boolean }>`
   border: 0.5px #d9d9d9 solid;
   border-radius: 10px;
@@ -207,7 +208,6 @@ const TextContainer = styled.div`
 
 const TextInput = styled.input`
   width: 50px;
-  height: 17px;
   font-size: 15pt;
   border: #d9d9d9 solid;
   border-radius: 8px;

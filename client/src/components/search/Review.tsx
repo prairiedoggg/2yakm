@@ -1,8 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import styled from 'styled-components';
 import { fetchReviewCount } from '../../api/searchApi';
 import { fetchReviews, createReview } from '../../api/reviewApi';
-import InfiniteScroll from '../InfiniteScroll';
 import LoginCheck from '../LoginCheck';
 import Toast from '../Toast';
 
@@ -27,24 +26,27 @@ const Review = ({ pillId }: { pillId: number }) => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [showToast, setShowToast] = useState<boolean>(false);
 
-  const loadReviews = async (pillId: number, cursor: string | null) => {
-    setIsLoading(true);
-    try {
-      const data = await fetchReviews({ pillId, cursor });
-      setReviews((prevReviews) => {
-        const newReviews = data.reviews.filter(
-          (review: Review) => !prevReviews.some((r) => r.id === review.id)
-        );
-        return [...prevReviews, ...newReviews];
-      });
-      console.log('넥스트:', data.nextCursor);
-      setNextCursor(data.nextCursor || null);
-    } catch (error) {
-      console.error('리뷰 불러오기 에러:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const loadReviews = useCallback(
+    async (pillId: number, cursor: string | null) => {
+      if (isLoading) return;
+      setIsLoading(true);
+      try {
+        const data = await fetchReviews({ pillId, cursor });
+        setReviews((prevReviews) => {
+          const newReviews = data.reviews.filter(
+            (review: Review) => !prevReviews.some((r) => r.id === review.id)
+          );
+          return [...prevReviews, ...newReviews];
+        });
+        setNextCursor(data.nextCursor || null);
+      } catch (error) {
+        console.error('리뷰 불러오기 에러:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [pillId]
+  );
 
   const handleReviewSubmit = async () => {
     const newReviewItem = { content: newReview, pillId };
@@ -59,6 +61,28 @@ const Review = ({ pillId }: { pillId: number }) => {
       console.error('리뷰 생성 에러:', error);
     }
   };
+
+  const handleScroll = useCallback(() => {
+    if (
+      window.innerHeight + document.documentElement.scrollTop !==
+        document.documentElement.offsetHeight ||
+      isLoading ||
+      !nextCursor
+    )
+      return;
+    loadReviews(pillId, nextCursor?.toString() || null);
+  }, [pillId, nextCursor, isLoading, loadReviews]);
+
+  useEffect(() => {
+    window.addEventListener('scroll', handleScroll);
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, [handleScroll]);
+
+  useEffect(() => {
+    loadReviews(pillId, null);
+  }, [pillId, loadReviews]);
 
   useEffect(() => {
     const fetchCount = async () => {
@@ -102,42 +126,31 @@ const Review = ({ pillId }: { pillId: number }) => {
           <SubmitButton onClick={handleReviewSubmit}>완료</SubmitButton>
         </ReviewForm>
       )}
-      <InfiniteScroll
-        loading={isLoading && <div>로딩중</div>}
-        onIntersect={() => loadReviews(pillId, nextCursor?.toString() ?? '')}
-      >
-        <ReviewList>
-          {reviews.map((review) => (
-            <ReviewItem
-              key={review.id}
-              style={{
-                backgroundColor: review.role ? 'rgba(114,191,68, 0.1)' : 'white'
-              }}
-            >
-              <User>
-                <Profile
-                  src={review.profileimg ?? `/img/user.svg`}
-                  alt='프로필'
-                />
-                <span>{review.username}</span>
-                {review.role && (
-                  <img
-                    src='/img/pharm.png'
-                    alt='Role Icon'
-                    style={{ width: '18px' }}
-                  />
-                )}
-                <span
-                  style={{ marginLeft: 'auto', fontWeight: 300, color: 'gray' }}
-                >
-                  {formatDate(review.createdat)}
-                </span>
-              </User>
-              <p>{review.content}</p>
-            </ReviewItem>
-          ))}
-        </ReviewList>
-      </InfiniteScroll>
+      <ReviewList>
+        {reviews.map((review) => (
+          <ReviewItem
+            key={review.id}
+            style={{
+              backgroundColor: review.role ? 'rgba(114,191,68, 0.1)' : 'white'
+            }}
+          >
+            <User>
+              <Profile
+                src={review.profileimg ?? `/img/user.svg`}
+                alt='프로필'
+              />
+              <span>{review.username}</span>
+              {review.role && <img src='/img/pharm.png' alt='Role Icon' style={{width:'18px'} } />}
+              <span
+                style={{ marginLeft: 'auto', fontWeight: 300, color: 'gray' }}
+              >
+                {formatDate(review.createdat)}
+              </span>
+            </User>
+            <p>{review.content}</p>
+          </ReviewItem>
+        ))}
+      </ReviewList>
       {isLoading && <LoadingText>로딩 중...</LoadingText>}
       {showToast && (
         <Toast onEnd={() => setShowToast(false)}>

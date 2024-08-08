@@ -37,7 +37,7 @@ const Overlay = styled.div`
   position: absolute;
   width: 100%;
   height: 80%;
-  z-index: 10;
+  z-index: 999;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -71,7 +71,7 @@ const LoadingBottom = styled.div`
 const Text = styled.div`
   text-align: center;
   position: absolute;
-  bottom: 27%;
+  bottom: 32%;
   left: 26%;
   font-size: 14pt;
   color: #6f6f6f;

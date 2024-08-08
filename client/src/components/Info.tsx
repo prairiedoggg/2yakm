@@ -18,9 +18,9 @@ const Info = ({ text, category }: InfoText) => {
         style={{ color: '#777777' }}
         onClick={() => setShow(!show)}
       />
-      {show && (
+      {show ? (
         <Text category={category} dangerouslySetInnerHTML={{ __html: text }} />
-      )}
+      ) : null}
     </InfoContainer>
   );
 };
@@ -58,7 +58,7 @@ const Text = styled.div<{ category: '혈당' | '체온' | '사진 기록' }>`
       width: 65vw;
     `}
 
-  ${({ category }) =>
+    ${({ category }) =>
     category === '사진 기록' &&
     css`
       width: 60vw;

@@ -31,7 +31,7 @@ const MainHeader: React.FC = () => {
     <MainHeaderContainer>
       <Logo />
       <SearchContainer>
-        <SearchBox useRoute />
+        <SearchBox />
       </SearchContainer>
     </MainHeaderContainer>
   );

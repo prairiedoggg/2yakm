@@ -1,6 +1,8 @@
 import {
   ChangeEvent,
+  Dispatch,
   KeyboardEvent,
+  SetStateAction,
   useEffect,
   useState,
   useCallback
@@ -11,7 +13,7 @@ import {
   fetchAutocompleteSuggestions,
   fetchPillDataByImage
 } from '../../api/searchApi';
-import { usePillStore } from '../../store/pill.ts';
+import { PillData, usePillStore } from '../../store/pill.ts';
 import { useSearchStore } from '../../store/search';
 import { useSearchHistoryStore } from '../../store/searchHistory';
 import BottomPictureSheet from '../myPage/BottomPictureSheet';
@@ -19,18 +21,22 @@ import Popup from '../popup/Popup';
 import PopupContent, { PopupType } from '../popup/PopupMessages.tsx';
 import { debounce } from 'lodash-es';
 
-const SearchBox = ({ useRoute = false }: { useRoute?: boolean }) => {
+interface SearchBoxProps {
+  setImageResults?: Dispatch<SetStateAction<PillData[]>>;
+}
+
+const SearchBox = ({ setImageResults }: SearchBoxProps) => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const query = searchParams.get('q') || '';
   const {
+    setImageQuery,
     searchType,
     setSuggestions,
     setIsImageSearch,
-    isImageSearch,
-    setImageResults
+    isImageSearch
   } = useSearchStore();
-  const { loading, setLoading } = usePillStore();
+  const { setLoading } = usePillStore();
   const [bottomSheet, setBottomSheet] = useState(false);
   const [popupVisible, setPopupVisible] = useState(false);
   const [popupType, setPopupType] = useState<PopupType>(PopupType.None);
@@ -98,18 +104,15 @@ const SearchBox = ({ useRoute = false }: { useRoute?: boolean }) => {
     setPopupType(PopupType.ImageSearchInfo);
   };
 
-  const handleImageUpload = async (images: FileList | null) => {
-    if (images) {
+  const handleImageUpload = async (image: File | null) => {
+    if (image) {
+      setImageQuery(image);
       setLoading(true);
       try {
-        const results = await fetchPillDataByImage(images, 10, 0);
-        setImageResults(results);
-        console.log('검색창 컴포넌트:', results);
-        if (useRoute) {
-          navigate(`/search`);
-        }
+        const results = await fetchPillDataByImage(image, 10, 0);
+        setImageResults?.(results);
       } catch (error) {
-        throw error;
+        console.error('이미지 검색 실패:', error);
       } finally {
         setLoading(false);
       }
@@ -126,8 +129,9 @@ const SearchBox = ({ useRoute = false }: { useRoute?: boolean }) => {
           <SearchIcon
             src={`/img/search_icon.png`}
             alt='search'
-            style={{ width: '20px' }}
+            style={{ width: '20px'}}
           />
+
           <SearchInput
             placeholder='이미지 또는 이름으로 검색'
             value={query}
@@ -141,11 +145,9 @@ const SearchBox = ({ useRoute = false }: { useRoute?: boolean }) => {
           onClick={handleCameraClick}
         />
       </SearchContainer>
-      <p onClick={handleCameraClick}>이미지로 검색</p>
+
       <BottomPictureSheet
         title={'사진 등록'}
-        isLoading={loading}
-        useMultiple
         isVisible={bottomSheet}
         onClose={handleImageUpload}
       />
