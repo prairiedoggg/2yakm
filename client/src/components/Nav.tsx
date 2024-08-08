@@ -1,5 +1,7 @@
 import { Link, useLocation } from 'react-router-dom';
 import styled from 'styled-components';
+import PillAlarmChecker from './PillAlarmChecker';
+import PillExpiredAlarmChecker from './PillExpiredAlarmChecker';
 
 interface Icon {
   default: string;
@@ -86,6 +88,8 @@ const Nav = () => {
           );
         })}
       </ul>
+      <PillAlarmChecker />
+      <PillExpiredAlarmChecker />
     </NavContainer>
   );
 };
