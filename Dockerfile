@@ -1,24 +1,25 @@
 FROM node:20.3.0
 
-# 작업 디렉토리 설정
 WORKDIR /chicken_pharm
 
-# Nginx, Python 및 필요한 도구 설치 (wget, git 추가)
-RUN apt-get update && apt-get install -y nginx python3 python3-pip build-essential libssl-dev libffi-dev python3-dev wget git && \
+# Nginx, Python 및 필요한 도구 설치
+RUN apt-get update && apt-get install -y nginx python3 python3-pip python3-venv build-essential libssl-dev libffi-dev python3-dev wget git && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# pip 업그레이드
-RUN pip3 install --upgrade pip
+# Python 가상 환경 생성 및 활성화
+RUN python3 -m venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
 
-# PyTorch, torchvision, scikit-image, transformers 설치
-RUN pip3 install torch torchvision --index-url https://download.pytorch.org/whl/cpu
-RUN pip3 install scikit-image transformers
+# pip 업그레이드 및 필요한 Python 패키지 설치
+RUN pip install --upgrade pip && \
+    pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu && \
+    pip install scikit-image transformers
 
 # 소스 코드 복사
 COPY . .
 
 # requirements.txt에서 Python 패키지 설치
-RUN pip3 install -r requirements.txt
+RUN pip install -r requirements.txt
 
 # 서버 의존성 설치
 RUN cd server && npm ci
