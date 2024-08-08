@@ -53,13 +53,17 @@ const EditName = ({ onEdit }: { onEdit: () => void }) => {
         <ValidationError condition={blur && name.length < 3}>
           이름은 3글자 이상 입력해주세요.
         </ValidationError>
+        <ValidationError condition={blur && name === user?.userName}>
+          현재 이름과 동일한 이름은 설정할 수 없습니다.
+        </ValidationError>
         <button
           className='submitButton'
-          disabled={!(name.trim().length > 2)}
+          disabled={!(name.trim().length > 2) || name === user?.userName}
           onClick={() => {
             changeUserName(
               name,
               () => {
+                setBlur(false);
                 setPopupType(PopupType.ChangeUserNameSuccess);
               },
               () => {

@@ -123,7 +123,13 @@ const MyPage = () => {
         return <EditPassword />;
 
       case pageState.EditPharmacist:
-        return <EditPharmacist />;
+        return (
+          <EditPharmacist
+            onEdit={() => {
+              setCurrentState(pageState.EditInfo);
+            }}
+          />
+        );
 
       case pageState.MyMedications:
         return <MyMedications />;

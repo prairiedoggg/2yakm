@@ -3,26 +3,34 @@ import { Icon } from '@iconify-icon/react';
 import { ChangeEvent, FormEvent, useState } from 'react';
 import Loading from '../Loading';
 import { registCertifications } from '../../api/certificationsApi';
+import PopupContent, { PopupType } from '../popup/PopupMessages';
+import Popup from '../popup/Popup';
+import { useNavigate } from 'react-router-dom';
 
 interface FormData {
   number: string;
   name: string;
   date: string;
+  btype: string;
 }
 
 enum InputType {
   Number = 'number',
   Name = 'name',
-  Date = 'date'
+  Date = 'date',
+  Btype = 'btype'
 }
 
-const EditPharmacist = () => {
+const EditPharmacist = ({ onEdit }: { onEdit: () => void }) => {
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState<FormData>({
     number: '',
     name: '',
-    date: ''
+    date: '',
+    btype: ''
   });
+  const [popupType, setPopupType] = useState<PopupType>(PopupType.None);
+  const navigate = useNavigate();
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -45,7 +53,7 @@ const EditPharmacist = () => {
     return `${numericValue.slice(0, 3)}-${numericValue.slice(
       3,
       5
-    )}-${numericValue.slice(5, 9)}`;
+    )}-${numericValue.slice(5, 10)}`;
   };
 
   const handleSubmit = async (e: FormEvent) => {
@@ -53,10 +61,21 @@ const EditPharmacist = () => {
     setLoading(true);
 
     try {
-      await registCertifications(formData.name, formData.date, formData.number);
+      function removeHyphens(dateString: string) {
+        return dateString.replace(/-/g, '');
+      }
+
+      await registCertifications(
+        formData.name,
+        removeHyphens(formData.date),
+        removeHyphens(formData.number),
+        formData.btype
+      );
       setLoading(false);
+      setPopupType(PopupType.CertificationsSuccess);
     } catch {
       setLoading(false);
+      setPopupType(PopupType.CertificationsFailure);
     }
   };
 
@@ -84,14 +103,16 @@ const EditPharmacist = () => {
         return formData.date;
       case InputType.Number:
         return formData.number;
+      case InputType.Btype:
+        return formData.btype;
       default:
         return '';
     }
   };
 
   const isFormValid = (): boolean => {
-    const { number, name, date } = formData;
-    return number !== '' && name !== '' && date !== '';
+    const { number, name, date, btype } = formData;
+    return number !== '' && name !== '' && date !== '' && btype !== '';
   };
 
   const getPlaceholder = (type: InputType) => {
@@ -102,6 +123,8 @@ const EditPharmacist = () => {
         return '등록일';
       case InputType.Number:
         return '등록번호';
+      case InputType.Btype:
+        return '업종';
       default:
         return '';
     }
@@ -145,6 +168,10 @@ const EditPharmacist = () => {
             <div className='login-inputs'>
               {renderInput(InputType.Number)}
               {renderInput(InputType.Name)}
+              {renderInput(InputType.Btype)}
+              <div style={{ fontSize: '0.9rem' }}>
+                * 업종에 '의약품'이 포함 되어야 약사인증이 됩니다.
+              </div>
             </div>
 
             <div className='title'>개업일을 입력해주세요</div>
@@ -161,6 +188,18 @@ const EditPharmacist = () => {
         </form>
       </StyledContent>
       {loading && <Loading />}
+
+      {popupType !== PopupType.None && (
+        <Popup
+          onClose={() =>
+            popupType == PopupType.CertificationsFailure
+              ? setPopupType(PopupType.None)
+              : onEdit()
+          }
+        >
+          {PopupContent(popupType, navigate)}
+        </Popup>
+      )}
     </MyPageContainer>
   );
 };

@@ -1,9 +1,12 @@
 import dayjs from 'dayjs';
 import Cookies from 'js-cookie';
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import { calendarGet, calendarPost, calendarPut } from '../../api/calendarApi';
 import { useCalendar, useDateStore } from '../../store/calendar';
+import Popup from '../popup/Popup';
+import PopupContent, { PopupType } from '../popup/PopupMessages';
 import DetailTextBox from './DetailTextBox';
 
 interface CalendarData {
@@ -23,22 +26,23 @@ const OpenCalendarDetail: React.FC = () => {
   const today = dayjs().format('YYYY-MM-DD');
   const login = Cookies.get('login');
   const { calendarData, calImg } = useCalendar();
-  const { value, edit, posted, addPosted } = useDateStore();
+  const { setArrow, setEdit, value, edit, posted, addPosted } = useDateStore();
   const formattedDate = dayjs(value).format('YYYY-MM-DD');
   const [data, setData] = useState<CalendarData | null>(null);
-  let isPosted = posted.find((item) => item.date === formattedDate)
-    ? true
-    : false;
+  const isPosted = posted.some((item) => item.date === formattedDate);
+  const navigate = useNavigate();
+  const [showPopup, setShowPopup] = useState<boolean>(false);
+  const [popupType, setPopupType] = useState<PopupType>(PopupType.None);
 
   useEffect(() => {
-    if (isPosted && login) {
+    if (login && isPosted) {
       const fetchPillData = async () => {
         try {
-          const data = await calendarGet(today);
-          setData(data);
+          const fetchedData = await calendarGet(today);
+          setData(fetchedData);
           addPosted({ date: formattedDate, post: true });
         } catch (err) {
-          console.log('해당하는 약복용여부 정보 없음', err);
+          console.error('Error fetching pill data:', err);
         }
       };
       fetchPillData();
@@ -50,56 +54,56 @@ const OpenCalendarDetail: React.FC = () => {
     formData.append('date', formattedDate);
     formData.append(
       'bloodsugarBefore',
-      calendarData?.bloodsugarbefore?.toString() || '0'
+      (calendarData?.bloodsugarbefore ?? 0).toString()
     );
     formData.append(
       'bloodsugarAfter',
-      calendarData?.bloodsugarafter?.toString() || '0'
+      (calendarData?.bloodsugarafter ?? 0).toString()
     );
     formData.append(
       'medications',
-      JSON.stringify(calendarData?.pillData) || '[]'
+      JSON.stringify(calendarData?.pillData ?? [])
     );
-    formData.append('temperature', calendarData?.temp?.toString() || '0');
-    formData.append('weight', calendarData?.weight?.toString() || '0');
+    formData.append('temperature', (calendarData?.temp ?? 0).toString());
+    formData.append('weight', (calendarData?.weight ?? 0).toString());
+
     formData.append('calImg', calImg?.get('file') as Blob);
 
     const putData = async () => {
       try {
-        if (!edit) {
-          if (isPosted) {
-            const res = await calendarPut(formattedDate, formData);
-            setData(res);
-          } else {
-            const res = await calendarPost(formData);
-            setData(res);
-            addPosted({ date: formattedDate, post: true });
-          }
+        let res;
+        if (edit) return;
+
+        if (isPosted) {
+          res = await calendarPut(formattedDate, formData);
+        } else {
+          res = await calendarPost(formData);
+          addPosted({ date: formattedDate, post: true });
         }
+
+        setData(res);
       } catch (err) {
-        console.log('일정 등록/수정 오류:', err);
+        console.error('Error in posting/putting calendar data:', err);
       }
     };
     putData();
   }, [edit]);
 
   useEffect(() => {
-    if (formattedDate !== undefined && isPosted && login) {
+    if (login && isPosted) {
       const fetchPillData = async () => {
         try {
-          const data = await calendarGet(formattedDate);
-          setData(data);
-          addPosted({ date: formattedDate, post: true });
+          const fetchedData = await calendarGet(formattedDate);
+          setData(fetchedData);
         } catch (err) {
-          console.log('해당하는 약복용여부 정보 없음', err);
+          console.error('Error fetching pill data:', err);
         }
       };
-
       fetchPillData();
     } else if (!isPosted) {
       setData(null);
     }
-  }, [formattedDate, edit]);
+  }, [formattedDate, edit, isPosted, login]);
 
   const hasContent = (name: string) => {
     switch (name) {
@@ -160,17 +164,57 @@ const OpenCalendarDetail: React.FC = () => {
     }
   ];
 
-  const withContent = detailBoxes.filter((box) => hasContent(box.name));
-  const withoutContent = detailBoxes.filter((box) => !hasContent(box.name));
+  const isAllEmpty =
+    (!data?.medications || data.medications.length === 0) &&
+    !data?.bloodsugarBefore &&
+    !data?.bloodsugarAfter &&
+    !data?.temperature &&
+    !data?.weight &&
+    (!data?.calImg || data.calImg === '');
+
+  const openEdit = () => {
+    if (login) {
+      setEdit(true);
+      setArrow(true);
+    } else {
+      setPopupType(PopupType.LoginRequired);
+      setShowPopup(true);
+    }
+  };
 
   return (
     <ContentContainer>
-      {withContent.map((box) => box.component)}
-      {withoutContent.map((box) => box.component)}
+      {isAllEmpty ? (
+        <Empty onClick={() => openEdit()}>
+          건강 정보 없음. 추가하려면 탭 하세요.
+        </Empty>
+      ) : (
+        detailBoxes.map((box) => hasContent(box.name) && box.component)
+      )}
+      {showPopup && (
+        <Popup onClose={() => setShowPopup(false)}>
+          {PopupContent(popupType, navigate)}
+        </Popup>
+      )}
     </ContentContainer>
   );
 };
 
-const ContentContainer = styled.div``;
-
 export default OpenCalendarDetail;
+
+const ContentContainer = styled.div`
+  padding-bottom: 88px;
+`;
+
+const Empty = styled.div`
+  border-radius: 10px;
+  background-color: #ececec;
+  border: #d9d9d9 solid 0.5px;
+  height: 50px;
+  padding-left: 10px;
+  line-height: 50px;
+  font-size: 10.5pt;
+  margin-top: 10px;
+  color: #9b9a9a;
+  cursor: pointer;
+`;

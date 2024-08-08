@@ -34,13 +34,13 @@ const UserChatting = styled.div`
   word-wrap: break-word;
   overflow-wrap: break-word;
 
-  &::after {
-    content: '';
-    position: absolute;
-    top: 3px;
-    left: 90%;
-    border-width: 15px;
-    border-style: solid;
-    border-color: #72bf44 transparent transparent transparent;
-  }
+  // &::after {
+  //   content: '';
+  //   position: absolute;
+  //   top: 3px;
+  //   left: 90%;
+  //   border-width: 15px;
+  //   border-style: solid;
+  //   border-color: #72bf44 transparent transparent transparent;
+  // }
 `;
