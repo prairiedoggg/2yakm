@@ -1,6 +1,7 @@
 import Cookies from 'js-cookie';
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { fetchUserInformation } from '../../api/authService';
 
 const Redirect = () => {
   const navigate = useNavigate();
@@ -11,8 +12,10 @@ const Redirect = () => {
       Cookies.set('login', success);
     };
 
-    loginSuccess();
-    navigate('/');
+    fetchUserInformation(() => {
+      loginSuccess();
+      navigate('/');
+    });
   }, [navigate]);
 
   return null;

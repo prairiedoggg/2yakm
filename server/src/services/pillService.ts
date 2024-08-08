@@ -87,7 +87,7 @@ export const getPills = async (
 
 export const getPillById = async (id: number): Promise<Pills | null> => {
   const query =
-    'SELECT id, name, engname, companyname, ingredientname, efficacy, dosage, caution, storagemethod, source, imgurl, boxurl FROM pills WHERE id = $1';
+    'SELECT id, name, engname, companyname, ingredientname, type, efficacy, dosage, caution, storagemethod, source, imgurl, boxurl FROM pills WHERE id = $1';
   const result = await pool.query(query, [id]);
   return result.rows[0] || null;
 };
@@ -130,7 +130,7 @@ export const searchPillsbyName = async (
   limit: number,
   offset: number
 ): Promise<GetPillsResult> => {
-  const query = `SELECT id, name, engname, companyname, ingredientname, efficacy, dosage, caution, storagemethod, source, imgurl, boxurl 
+  const query = `SELECT id, name, engname, companyname, ingredientname, type, efficacy, dosage, caution, storagemethod, source, imgurl, boxurl 
                  FROM pills 
                  WHERE name ILIKE $1 OR engname ILIKE $1 
                  LIMIT $2 OFFSET $3`;
@@ -190,7 +190,7 @@ export const searchPillsbyEfficacy = async (
 ): Promise<GetPillsResult> => {
   const efficacyArray = efficacy.split(',').map((eff) => `%${eff.trim()}%`);
   const query = `
-    SELECT id, name, engname, companyname, ingredientname, efficacy, dosage, caution, storagemethod, source, imgurl, boxurl
+    SELECT id, name, engname, companyname, ingredientname, type, efficacy, dosage, caution, storagemethod, source, imgurl, boxurl
     FROM pills 
     WHERE ${efficacyArray
       .map((_, index) => `efficacy ILIKE $${index + 1}`)
@@ -283,7 +283,7 @@ const searchPillsByNameFromText = async (
   offset: number
 ): Promise<GetPillsResult> => {
   const query = `
-    SELECT id, name, engname, companyname, ingredientname, efficacy, dosage, caution, storagemethod, source, imgurl, boxurl
+    SELECT id, name, engname, companyname, ingredientname, type, efficacy, dosage, caution, storagemethod, source, imgurl, boxurl
     FROM pills 
     WHERE engname ILIKE $1
     LIMIT $2 OFFSET $3`;

@@ -1,12 +1,12 @@
 import { Response, Request, NextFunction } from 'express';
-import { 
-  getUserProfile, 
-  updateUsername, 
-  updateProfilePicture, 
-  addCertification, 
-  getCertification, 
+import {
+  getUserProfile,
+  updateUsername,
+  updateProfilePicture,
+  addCertification,
+  getCertification,
   deleteCertification
-}from '../services/mypageService';
+} from '../services/mypageService';
 
 import Joi from 'joi';
 import { createError } from '../utils/error';
@@ -21,12 +21,15 @@ interface AuthenticatedRequest extends Request {
   file?: Express.Multer.File & { location?: string }; // Adding optional location property
 }
 
-
 export const updateUsernameSchema = Joi.object({
-  username: Joi.string().min(3).max(30).required(),
+  username: Joi.string().min(3).max(30).required()
 });
 
-export const getUserprofile = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+export const getUserprofile = async (
+  req: AuthenticatedRequest,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     const user = req.user;
     if (!user) {
@@ -40,7 +43,11 @@ export const getUserprofile = async (req: AuthenticatedRequest, res: Response, n
   }
 };
 
-export const updateName = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+export const updateName = async (
+  req: AuthenticatedRequest,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     const user = req.user;
     if (!user) {
@@ -69,7 +76,10 @@ export const updateProfilePictureS3 = [
         return next(createError('UploadError', 'No file uploaded', 400));
       }
       const s3Url = req.file.location;
-      const updatedProfilePicture = await updateProfilePicture(req.user.id, s3Url);
+      const updatedProfilePicture = await updateProfilePicture(
+        req.user.id,
+        s3Url
+      );
       res.status(200).json({ profilePicture: updatedProfilePicture });
     } catch (error) {
       next(error);
@@ -77,43 +87,61 @@ export const updateProfilePictureS3 = [
   }
 ];
 
-export const getCert = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+export const getCert = async (
+  req: AuthenticatedRequest,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     const user = req.user;
     if (!user) {
       return next(createError('UnauthorizedError', 'Unauthorized', 401));
     }
-  const userId = user.id;
-  const getCertifiedUser = await getCertification(userId);
-  res.status(200).json(getCertifiedUser);
+    const userId = user.id;
+    const getCertifiedUser = await getCertification(userId);
+    res.status(200).json(getCertifiedUser);
+  } catch (error) {
+    next(error);
   }
-catch(error) {
-  next(error)
-}
-}
+};
 
-export const addCert = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
-
+export const addCert = async (
+  req: AuthenticatedRequest,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     const user = req.user;
     if (!user) {
       return next(createError('UnauthorizedError', 'Unauthorized', 401));
     }
 
-    const { name, date, number } = req.body;
-    if (!name || !date || !number) {
-      return next(createError('ValidationError', 'Missing required fields', 400));
+    const { name, date, btype, number } = req.body;
+    if (!name || !date || !number || !btype) {
+      return next(
+        createError('ValidationError', 'Missing required fields', 400)
+      );
     }
 
     const userId = user.id;
-    const certifiedUser = await addCertification(userId, name, date, number);
+    const certifiedUser = await addCertification(
+      userId,
+      name,
+      date,
+      btype,
+      number
+    );
     res.status(201).json(certifiedUser);
   } catch (error) {
     next(error);
   }
 };
 
-export const deleteCert = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+export const deleteCert = async (
+  req: AuthenticatedRequest,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     const user = req.user;
     if (!user) {
@@ -121,7 +149,9 @@ export const deleteCert = async (req: AuthenticatedRequest, res: Response, next:
     }
     const { name } = req.body;
     if (!name) {
-      return next(createError('ValidationError', 'Missing required field: name', 400));
+      return next(
+        createError('ValidationError', 'Missing required field: name', 400)
+      );
     }
 
     const userId = user.id;

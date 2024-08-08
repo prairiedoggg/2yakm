@@ -8,6 +8,7 @@ import Popup from '../popup/Popup';
 import { changeProfileImage, fetchUserProfile } from '../../api/myPageService';
 import PopupContent, { PopupType } from '../popup/PopupMessages';
 import { useNavigate } from 'react-router-dom';
+import Toast from '../Toast';
 
 interface Info {
   info: string;
@@ -26,6 +27,7 @@ const EditMyInformation = ({
   const { user } = useUserStore.getState();
   const [bottomSheet, setBottomSheet] = useState(false);
   const [popupType, setPopupType] = useState(PopupType.None);
+  const [toastMessage, setToastMessage] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
@@ -34,7 +36,7 @@ const EditMyInformation = ({
     { info: '이름', onClick: onEditNameClick }
   ];
 
-  let infos2: Info[] = [{ info: '약사 인증', onClick: onEditPharmacistClick }];
+  let infos2: Info[] = [];
 
   if (user?.loginType == LoginType.none)
     infos1.push({ info: '비밀번호 변경', onClick: onEditPasswordClick });
@@ -42,8 +44,19 @@ const EditMyInformation = ({
   if (user?.loginType != LoginType.none)
     infos2.push({ info: '연동된 소셜계정', onClick: undefined });
 
+  if (user?.role) infos2.push({ info: '약사 인증 완료', onClick: undefined });
+  else infos2.push({ info: '약사 인증', onClick: onEditPharmacistClick });
+
   const getInfoValue = (type: string) => {
     switch (type) {
+      case '약사 인증 완료':
+        return (
+          <img
+            src={`/img/pharm.png`}
+            style={{ height: '1.5rem' }}
+            alt='약사인증'
+          />
+        );
       case '이름':
         return user?.userName;
       case '이메일':
@@ -117,7 +130,6 @@ const EditMyInformation = ({
 
         <div className='informations'>{generateItems(infos2)}</div>
       </StyledContent>
-
       <BottomPictureSheet
         title={'사진 등록'}
         isVisible={bottomSheet}
@@ -130,8 +142,8 @@ const EditMyInformation = ({
             changeProfileImage(
               formData,
               () => {
-                fetchUserProfile((data) => {
-                  console.log(data);
+                fetchUserProfile(() => {
+                  setToastMessage('프로필사진 수정 완료!');
                 });
                 setLoading(false);
               },
@@ -144,13 +156,15 @@ const EditMyInformation = ({
           setBottomSheet(false);
         }}
       />
-
       {popupType !== PopupType.None && (
         <Popup onClose={() => setPopupType(PopupType.None)}>
           {PopupContent(popupType, navigate)}
         </Popup>
       )}
       {loading && <Loading />}
+      {toastMessage != '' && (
+        <Toast onEnd={() => setToastMessage('')}>{toastMessage}</Toast>
+      )}
     </MyPageContainer>
   );
 };
@@ -220,7 +234,7 @@ const StyledContent = styled.div`
       .info-value {
         display: flex;
         gap: 10px;
-        font-align: right;
+        text-align: right;
         color: gray;
       }
     }

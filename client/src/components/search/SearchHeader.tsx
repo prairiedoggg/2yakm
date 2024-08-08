@@ -15,7 +15,7 @@ const SEARCH_TYPES = [
 ];
 
 interface SearchHeaderProps {
-  activeType: string;
+  activeType?: string;
   handleTypeClick: (type: string) => void;
   setImageResults?: Dispatch<SetStateAction<PillData[]>>;
 }
@@ -26,7 +26,6 @@ const SearchHeader = ({
   setImageResults
 }: SearchHeaderProps) => {
   return (
-    // JSX 반환
     <BackgroundHeader>
       <SearchTypeSelect>
         {SEARCH_TYPES.map((type) => {

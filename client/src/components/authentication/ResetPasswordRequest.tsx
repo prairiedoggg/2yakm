@@ -6,11 +6,13 @@ import { resetPasswordRequest } from '../../api/authService';
 import PopupContent, { PopupType } from '../popup/PopupMessages';
 import Loading from '../Loading';
 import Popup from '../popup/Popup';
+import ValidationError from '../ValidationError';
 
 const ResetPasswordRequest = () => {
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
+  const [blur, setBlur] = useState(false);
   const [popupType, setPopupType] = useState(PopupType.None);
 
   const handleSubmit = (e: FormEvent) => {
@@ -20,11 +22,11 @@ const ResetPasswordRequest = () => {
       email,
       () => {
         setLoading(false);
-        setPopupType(PopupType.ResetPasswordSuccess);
+        setPopupType(PopupType.ResetPasswordRequestSuccess);
       },
       () => {
         setLoading(false);
-        setPopupType(PopupType.ResetPasswordFailure);
+        setPopupType(PopupType.ResetPasswordRequestFailure);
       }
     );
   };
@@ -32,6 +34,15 @@ const ResetPasswordRequest = () => {
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setEmail(value);
+  };
+
+  const checkEmailPattern = (str: string): boolean => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(str);
+  };
+
+  const isEmailInvalid = () => {
+    return blur && !checkEmailPattern(email);
   };
 
   return (
@@ -62,6 +73,7 @@ const ResetPasswordRequest = () => {
                 value={email}
                 onChange={handleChange}
                 required
+                onBlur={() => setBlur(true)}
               />
               <Icon
                 className='input-left-btn'
@@ -76,6 +88,9 @@ const ResetPasswordRequest = () => {
               />
             </div>
           </div>
+          <ValidationError condition={isEmailInvalid()}>
+            이메일 형식이 올바르지않습니다.
+          </ValidationError>
 
           <button
             className='submitButton'

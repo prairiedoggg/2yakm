@@ -1,13 +1,3 @@
-/**
-File Name : SnsLogin
-Description : sns 로그인
-Author : 오선아
-
-History
-Date        Author   Status    Description
-2024.07.21  오선아   Created
-*/
-
 import { Icon } from '@iconify-icon/react';
 import { Link } from 'react-router-dom';
 import styled from 'styled-components';
@@ -21,8 +11,7 @@ const SnsLogin = ({
   onEmailLoginClick: () => void;
   onEmailRegisterClick: () => void;
 }) => {
-  const SERVER_BASE_URL = import.meta.env.VITE_APP_SERVER_BASE_URL;
-  const AUTH_URLS = `${SERVER_BASE_URL}api/auth`;
+  const AUTH_URLS = `http://localhost:3000/api/auth`;
 
   const SNS_LOGINS = [
     {

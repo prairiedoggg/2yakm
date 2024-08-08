@@ -62,7 +62,7 @@ const router = Router();
  *                     type: string
  *                   ingredientname:
  *                     type: string
- *                   ingredientengname:
+ *                   type:
  *                     type: string
  *                   efficacy:
  *                     type: string
@@ -236,15 +236,9 @@ router.get('/:id/favoritecount', getPillFavoriteCount);
  *                     type: string
  *                   companyname:
  *                     type: string
- *                   companyengname:
- *                     type: string
  *                   ingredientname:
  *                     type: string
- *                   ingredientengname:
- *                     type: string
  *                   type:
- *                     type: string
- *                   shape:
  *                     type: string
  *                   efficacy:
  *                     type: string
@@ -254,9 +248,9 @@ router.get('/:id/favoritecount', getPillFavoriteCount);
  *                     type: string
  *                   storagemethod:
  *                     type: string
- *                   source:
- *                     type: string
  *                   importWords:
+ *                     type: string
+ *                   source:
  *                     type: string
  *                   imgurl:
  *                     type: string
@@ -307,11 +301,9 @@ router.get('/search/name', searchPillsbyNameHandler);
  *                     type: string
  *                   companyname:
  *                     type: string
- *                   companyengname:
- *                     type: string
  *                   ingredientname:
  *                     type: string
- *                   ingredientengname:
+ *                   type:
  *                     type: string
  *                   efficacy:
  *                     type: string
@@ -378,6 +370,8 @@ router.get('/search/efficacy', searchPillsbyEfficacyHandler);
  *                       companyname:
  *                         type: string
  *                       ingredientname:
+ *                         type: string
+ *                       type:
  *                         type: string
  *                       efficacy:
  *                         type: string

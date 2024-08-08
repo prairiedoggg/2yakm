@@ -6,10 +6,12 @@ import { changeUserName } from '../../api/myPageService';
 import PopupContent, { PopupType } from '../popup/PopupMessages';
 import Popup from '../popup/Popup';
 import { useNavigate } from 'react-router-dom';
+import ValidationError from '../ValidationError';
 
 const EditName = ({ onEdit }: { onEdit: () => void }) => {
   const { user } = useUserStore.getState();
   const [name, setName] = useState('');
+  const [blur, setBlur] = useState(false);
   const [popupType, setPopupType] = useState<PopupType>(PopupType.None);
   const navigate = useNavigate();
 
@@ -21,13 +23,19 @@ const EditName = ({ onEdit }: { onEdit: () => void }) => {
   return (
     <MyPageContainer>
       <StyledContent>
-        <div className='title'>새로운 이름을 입력해주세요 (3글자 이상)</div>
+        <div className='title'>새로운 이름을 입력해주세요 (3~20글자)</div>
         <div className='input-container'>
           <input
             type='text'
             placeholder={user?.userName ?? ''}
             value={name}
             onChange={handleChange}
+            minLength={3}
+            maxLength={20}
+            onBlur={() => setBlur(true)}
+            onFocus={() => {
+              if (name.length > 2) setBlur(false);
+            }}
           />
           <Icon
             className='clearButton'
@@ -41,6 +49,10 @@ const EditName = ({ onEdit }: { onEdit: () => void }) => {
             onClick={() => setName('')}
           />
         </div>
+
+        <ValidationError condition={blur && name.length < 3}>
+          이름은 3글자 이상 입력해주세요.
+        </ValidationError>
         <button
           className='submitButton'
           disabled={!(name.trim().length > 2)}

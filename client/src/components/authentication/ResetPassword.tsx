@@ -1,11 +1,12 @@
 import styled from 'styled-components';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { Icon } from '@iconify-icon/react';
 import { ChangeEvent, FormEvent, useState } from 'react';
 import { resetPassword } from '../../api/authService';
 import PopupContent, { PopupType } from '../popup/PopupMessages';
 import Loading from '../Loading';
 import Popup from '../popup/Popup';
+import ValidationError from '../ValidationError';
 
 interface FormData {
   newPassword: string;
@@ -17,6 +18,11 @@ enum InputType {
   NewPasswordConfirm = 'newPasswordConfirm'
 }
 
+interface BlurState {
+  newPassword: boolean;
+  newPasswordConfirm: boolean;
+}
+
 const ResetPasswordRequest = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
@@ -25,14 +31,27 @@ const ResetPasswordRequest = () => {
     newPassword: '',
     newPasswordConfirm: ''
   });
+  const [blurState, setBlurState] = useState<BlurState>({
+    newPassword: false,
+    newPasswordConfirm: false
+  });
+
   const [showPassword, setShowPassword] = useState<boolean>(false);
+
+  const useQuery = () => {
+    return new URLSearchParams(useLocation().search);
+  };
+
+  const query = useQuery();
+  const token = query.get('token');
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
     setLoading(true);
+
     resetPassword(
       formData.newPassword,
-      '',
+      token ?? '',
       () => {
         setLoading(false);
         setPopupType(PopupType.ResetPasswordSuccess);
@@ -52,6 +71,14 @@ const ResetPasswordRequest = () => {
     }));
   };
 
+  const handleBlur = (e: ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setBlurState((prevState) => ({
+      ...prevState,
+      [name]: value
+    }));
+  };
+
   const clearData = (name: string) => {
     setFormData((prevState) => ({
       ...prevState,
@@ -62,7 +89,7 @@ const ResetPasswordRequest = () => {
   const getPlaceholder = (type: InputType) => {
     switch (type) {
       case InputType.NewPassword:
-        return '새로운 비밀번호';
+        return '새로운 비밀번호 (특수문자 포함 8자리 이상)';
       case InputType.NewPasswordConfirm:
         return '비밀번호 확인';
     }
@@ -91,7 +118,18 @@ const ResetPasswordRequest = () => {
 
   const isFormValid = (): boolean => {
     const { newPassword, newPasswordConfirm } = formData;
-    return newPassword !== '' && newPassword === newPasswordConfirm;
+
+    return (
+      newPassword !== '' &&
+      newPassword === newPasswordConfirm &&
+      newPassword.length >= 8 &&
+      checkSpecialCharPattern(newPassword)
+    );
+  };
+
+  const checkSpecialCharPattern = (str: string): boolean => {
+    const specialCharPattern = /[!@#$%^&*(),.?":{}|<>]/;
+    return specialCharPattern.test(str);
   };
 
   const renderInput = (type: InputType) => {
@@ -104,6 +142,7 @@ const ResetPasswordRequest = () => {
           value={getValue(type)}
           onChange={handleChange}
           required
+          onBlur={handleBlur}
         />
         <Icon
           className='input-left-btn'
@@ -155,6 +194,26 @@ const ResetPasswordRequest = () => {
               <hr />
               {renderInput(InputType.NewPasswordConfirm)}
             </div>
+          </div>
+          <div className='validation-error'>
+            <ValidationError
+              condition={
+                blurState.newPassword &&
+                (formData.newPassword.length < 8 ||
+                  !checkSpecialCharPattern(formData.newPassword))
+              }
+            >
+              패스워드는 8자리 이상, 특수문자를 포함해 입력해주세요.
+            </ValidationError>
+            <ValidationError
+              condition={
+                blurState.newPassword &&
+                blurState.newPasswordConfirm &&
+                formData.newPassword != formData.newPasswordConfirm
+              }
+            >
+              비밀번호와 비밀번호 확인이 동일하지않습니다.
+            </ValidationError>
           </div>
 
           <button
@@ -237,6 +296,12 @@ const Content = styled.div`
 
   .input-container {
     position: relative;
+
+  }
+
+  .validation-error{
+    display: flex;
+  flex-direction: column;
 
   }
 

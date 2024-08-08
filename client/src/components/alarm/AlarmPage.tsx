@@ -2,14 +2,20 @@ import { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import { Icon } from '@iconify-icon/react';
 import Header from '../Header';
+import Loading from '../Loading';
 import { Alarm, useAlarmStore } from '../../store/alarm';
 import { getAlarms, deleteAlarm, updateAlarmStatus } from '../../api/alarmApi';
+import LoginCheck from '../LoginCheck';
+import Toast from '../Toast';
+import { isUserLoggedIn } from '../../utils/auth';
 
 const AlarmPage = () => {
   const { alarms, setCurrentPage, setCurrentAlarm, setAlarms } =
     useAlarmStore();
   const [isDeleteMode, setIsDeleteMode] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [showToast, setShowToast] = useState<string | null>(null);
+  const isLoggedIn = isUserLoggedIn();
 
   useEffect(() => {
     const fetchAlarms = async () => {
@@ -22,8 +28,11 @@ const AlarmPage = () => {
         setIsLoading(false);
       }
     };
-
-    fetchAlarms();
+    if (isLoggedIn) {
+      fetchAlarms();
+    } else {
+      setIsLoading(false);
+    }
   }, [setAlarms]);
 
   const handleToggle = async (id: string) => {
@@ -39,8 +48,9 @@ const AlarmPage = () => {
     if (updatedAlarm && updatedAlarm.alarmStatus !== undefined) {
       try {
         await updateAlarmStatus(updatedAlarm.id, updatedAlarm.alarmStatus);
-        console.log('알람상태:', updatedAlarm.alarmStatus)
+        console.log('알람상태:', updatedAlarm.alarmStatus);
         setAlarms(updatedAlarms);
+        setShowToast('알람 상태가 업데이트되었습니다.');
       } catch (error) {
         console.error('알람 상태 업데이트 에러:', error);
       }
@@ -55,6 +65,7 @@ const AlarmPage = () => {
     try {
       await deleteAlarm(id);
       setAlarms(alarms.filter((alarm) => alarm.id !== id));
+      setShowToast('알람이 삭제되었습니다.');
     } catch (error) {
       console.error('에러:', error);
     }
@@ -66,54 +77,77 @@ const AlarmPage = () => {
   };
 
   if (isLoading) {
-    return <p>잠시만 기다려주세요..!</p>;
+    return <Loading />;
   }
 
   return (
     <>
       <Header />
-      <AlarmContainer>
-        <IconContainer>
-          <Icon icon='mdi:pencil' onClick={handleDeleteMode} />
-        </IconContainer>
-        <AlarmList>
-          {alarms.map((alarm) => (
-            <AlarmItemContainer key={alarm.id}>
-              <AlarmItem onClick={() => handleEditAlarm(alarm)}>
-                <AlarmHeader>
-                  <AlarmName>{alarm.name}</AlarmName>
-                  <ToggleSwitch onClick={(event) => event.stopPropagation()}>
-                    <input
-                      type='checkbox'
-                      checked={alarm.alarmStatus}
-                      onChange={() => handleToggle(alarm.id)}
-                    />
-                    <Slider />
-                  </ToggleSwitch>
-                </AlarmHeader>
-                <AlarmTimes>
-                  {alarm.times.map((timeObj, i) => (
-                    <AlarmTime key={i}>{timeObj.time}</AlarmTime>
-                  ))}
-                </AlarmTimes>
-              </AlarmItem>
-              {isDeleteMode && (
-                <DeleteButton onClick={() => handleDelete(alarm.id)}>
-                  삭제
-                </DeleteButton>
-              )}
-            </AlarmItemContainer>
-          ))}
-        </AlarmList>
-        <AddAlarm
-          onClick={() => {
-            setCurrentAlarm(null);
-            setCurrentPage('settings');
-          }}
-        >
-          <img src={`/img/plus.svg`} alt='알람추가' />
-        </AddAlarm>
-      </AlarmContainer>
+      <LoginCheck>
+        {(handleCheckLogin) => (
+          <AlarmContainer>
+            <IconContainer>
+              <Icon
+                icon='mdi:pencil'
+                width='20px'
+                height='20px'
+                style={{
+                  color: isDeleteMode ? '#72bf44' : 'gray'
+                }}
+                onClick={() => handleCheckLogin(handleDeleteMode)}
+              />
+            </IconContainer>
+            {alarms.length === 0 ? (
+              <NoAlarmsMessage>
+                {isLoggedIn ? '알람을 추가해주세요' : '로그인 후 이용해주세요'}
+              </NoAlarmsMessage>
+            ) : (
+              <AlarmList>
+                {alarms.map((alarm) => (
+                  <AlarmItemContainer key={alarm.id}>
+                    <AlarmItem onClick={() => handleEditAlarm(alarm)}>
+                      <AlarmHeader>
+                        <AlarmName>{alarm.name}</AlarmName>
+                        <ToggleSwitch
+                          onClick={(event) => event.stopPropagation()}
+                        >
+                          <input
+                            type='checkbox'
+                            checked={alarm.alarmStatus}
+                            onChange={() => handleToggle(alarm.id)}
+                          />
+                          <Slider />
+                        </ToggleSwitch>
+                      </AlarmHeader>
+                      <AlarmTimes>
+                        {alarm.times.map((timeObj, i) => (
+                          <AlarmTime key={i}>{timeObj.time}</AlarmTime>
+                        ))}
+                      </AlarmTimes>
+                    </AlarmItem>
+                    {isDeleteMode && (
+                      <DeleteButton onClick={() => handleDelete(alarm.id)}>
+                        삭제
+                      </DeleteButton>
+                    )}
+                  </AlarmItemContainer>
+                ))}
+              </AlarmList>
+            )}
+            <AddAlarm
+              onClick={() =>
+                handleCheckLogin(() => {
+                  setCurrentAlarm(null);
+                  setCurrentPage('settings');
+                })
+              }
+            >
+              <img src={`/img/plus.svg`} alt='알람추가' />
+            </AddAlarm>
+          </AlarmContainer>
+        )}
+      </LoginCheck>
+      {showToast && <Toast onEnd={() => setShowToast(null)}>{showToast}</Toast>}
     </>
   );
 };
@@ -132,6 +166,11 @@ const IconContainer = styled.div`
   margin-left: auto;
   margin-bottom: 20px;
   cursor: pointer;
+`;
+
+const NoAlarmsMessage = styled.p`
+  color: #9c9a9a;
+  font-weight: 300;
 `;
 
 const AlarmList = styled.div`

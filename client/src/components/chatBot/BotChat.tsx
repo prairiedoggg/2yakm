@@ -9,17 +9,9 @@ interface BotChatting {
 const BotChat = ({ text, loading }: BotChatting) => {
   return (
     <BotChattingContainer>
-      <Icon
-        icon='fxemoji:frontfacingchick'
-        style={{
-          backgroundColor: 'white',
-          height: '30px',
-          borderRadius: '20px',
-          marginRight: '5px',
-          marginTop: '5px'
-        }}
-        width='30px'
-      />
+      <MeoYakContainer>
+        <MeoYak src='/img/logo/just_chick.svg' />
+      </MeoYakContainer>
       <Bot>
         <BotName>머약</BotName>
         {loading ? (
@@ -43,7 +35,6 @@ export default BotChat;
 const BotChattingContainer = styled.div`
   display: flex;
   margin-bottom: 20px;
-  flex: 1;
 `;
 
 const BotChatting = styled.div`
@@ -99,4 +90,10 @@ const LoadingContainer = styled.div`
     border-style: solid;
     border-color: white transparent transparent transparent;
   }
+`;
+
+const MeoYakContainer = styled.div``;
+
+const MeoYak = styled.img`
+  width: 35px;
 `;

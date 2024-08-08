@@ -1,6 +1,13 @@
 import { Router } from 'express';
 const router = Router();
-import {getUserprofile, updateName, updateProfilePictureS3, addCert, deleteCert, getCert} from '../controllers/mypageController';
+import {
+  getUserprofile,
+  updateName,
+  updateProfilePictureS3,
+  addCert,
+  deleteCert,
+  getCert
+} from '../controllers/mypageController';
 
 /**
  * @swagger
@@ -73,7 +80,6 @@ router.put('/', updateName);
  */
 router.put('/profile-picture', updateProfilePictureS3);
 
-
 /**
  * @swagger
  * /api/mypage/certifications:
@@ -103,8 +109,7 @@ router.put('/profile-picture', updateProfilePictureS3);
  *       '500':
  *         description: 내부 서버 오류
  */
-router.get('/certifications', getCert)
-
+router.get('/certifications', getCert);
 
 /**
  * @swagger
@@ -125,6 +130,9 @@ router.get('/certifications', getCert)
  *               date:
  *                 type: string
  *                 description: date(YYYYMMDD)
+ *               btype:
+ *                 type: string
+ *                 description: 사업자등록증의 종목에서 가장 첫 번째 항목을 입력해주세요. (의약품 문구가 포함되어야 함)
  *               number:
  *                 type: string
  *                 description: 숫자로 이루어진 10자리 값만 가능 ('-' 등의 기호 반드시 제거 후 호출)
@@ -141,17 +149,18 @@ router.get('/certifications', getCert)
  *                 date:
  *                   type: string
  *                   format: date
+ *                 btype:
+ *                   type: string
  *                 number:
  *                   type: string
  *       '400':
- *         description: 유효하지 않은 사업자등록증입니다
+ *         description: 유효하지 않은 사업자등록증입니다 / 주 종목에 의약품이 없습니다.
  *       '403':
  *         description: 이미 등록된 사업자등록증입니다
  *       '500':
  *         description: 내부 서버 오류
  */
-router.post('/certifications', addCert)
-
+router.post('/certifications', addCert);
 
 /**
  * @swagger
@@ -189,6 +198,6 @@ router.post('/certifications', addCert)
  *       '500':
  *         description: 내부 서버 오류
  */
-router.delete('/certifications', deleteCert)
+router.delete('/certifications', deleteCert);
 
 export default router;

@@ -31,7 +31,7 @@ const OpenCalendarDetail: React.FC = () => {
     : false;
 
   useEffect(() => {
-    if (isPosted) {
+    if (isPosted && login) {
       const fetchPillData = async () => {
         try {
           const data = await calendarGet(today);
@@ -84,7 +84,7 @@ const OpenCalendarDetail: React.FC = () => {
   }, [edit]);
 
   useEffect(() => {
-    if (formattedDate !== undefined && isPosted) {
+    if (formattedDate !== undefined && isPosted && login) {
       const fetchPillData = async () => {
         try {
           const data = await calendarGet(formattedDate);

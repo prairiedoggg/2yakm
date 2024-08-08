@@ -17,7 +17,7 @@ export default UserChat;
 const UserChattingContainer = styled.div`
   display: flex;
   justify-content: flex-end;
-  margin-bottom: 25px;
+  margin-bottom: 5px;
 `;
 
 const UserChatting = styled.div`

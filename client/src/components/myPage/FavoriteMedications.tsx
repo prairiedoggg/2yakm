@@ -6,6 +6,7 @@ import { fetchMyFavorites, toggleFavoriteApi } from '../../api/favoriteApi';
 import Loading from '../Loading';
 import Popup from '../popup/Popup';
 import PopupContent, { PopupType } from '../popup/PopupMessages';
+import Toast from '../Toast';
 
 interface MedicationItem {
   pillid: number;
@@ -24,7 +25,10 @@ const FavoriteMedications = () => {
   const [limit] = useState(10);
   const [hasMore, setHasMore] = useState(true);
   const containerRef = useRef<HTMLDivElement | null>(null);
+  const [toastMessage, setToastMessage] = useState('');
+
   const navigate = useNavigate();
+  const maxTextLength = 15;
 
   const fetchDatas = () => {
     setLoading(true);
@@ -35,16 +39,17 @@ const FavoriteMedications = () => {
       'createdAt',
       'DESC',
       (data) => {
-        console.log(data);
         const favorites = data.data;
         const temp: MedicationItem[] = favorites.map((d: any) => ({
           pillid: Number(d.pillid),
           title: d.name,
           registrationDate: new Date(d.createdat).toDateString(),
-          tags: d.efficacy.split(' ').map((text: string) => {
-            if (text.length > 3) return text.slice(0, 3) + '...';
-            else return text;
-          })
+          tags:
+            d.importantWords === ''
+              ? []
+              : d.importantWords &&
+                d.importantWords.trim() &&
+                d.importantWords.split(', ')
         }));
         setLoading(false);
 
@@ -86,19 +91,25 @@ const FavoriteMedications = () => {
   }, [handleScroll]);
 
   const renderItems = (item: MedicationItem, index: number) => {
-    console.log(item);
     return (
       <Item key={index}>
         <div className='title'>
-          <div className='title2'>
-            {item.title}
-            <Icon
-              icon='ep:arrow-right-bold'
-              width='1.2em'
-              height='1.2em'
-              style={{ color: 'black' }}
-            />
-          </div>
+          <Link
+            to={`/search/name?q=${item.title}`}
+            style={{ color: 'black', textDecoration: 'none' }}
+          >
+            <div className='title2'>
+              {item.title.length > maxTextLength
+                ? item.title.substring(0, maxTextLength) + '...'
+                : item.title}
+              <Icon
+                icon='ep:arrow-right-bold'
+                width='1.2em'
+                height='1.2em'
+                style={{ color: 'black' }}
+              />
+            </div>
+          </Link>
 
           {deleteItem ? (
             <div
@@ -108,8 +119,12 @@ const FavoriteMedications = () => {
                 toggleFavoriteApi(
                   { id: item.pillid },
                   () => {
+                    setItems((prevItems) =>
+                      prevItems.filter((t) => t.pillid !== item?.pillid)
+                    );
+                    setItemCount(itemCount - 1);
                     setLoading(false);
-                    fetchDatas();
+                    setToastMessage('즐겨찾는 약 삭제 완료!');
                   },
                   () => {
                     setPopupType(PopupType.DeleteFavoriteFailure);
@@ -126,13 +141,17 @@ const FavoriteMedications = () => {
         </div>
 
         <div className='registration'>등록일 {item.registrationDate}</div>
-        <TagContainer>
-          {item.tags.slice(0, 3)?.map((tag, index) => (
-            <Tag key={index} to={`/search/tag/${tag}`}>
-              {tag}
-            </Tag>
-          ))}
-        </TagContainer>
+        {item.tags.length > 0 ? (
+          <TagContainer>
+            {item.tags.slice(0, 3)?.map((tag, index) => (
+              <Tag key={index} to={`/search/efficacy?q=${tag}`}>
+                {tag}
+              </Tag>
+            ))}
+          </TagContainer>
+        ) : (
+          ''
+        )}
       </Item>
     );
   };
@@ -150,7 +169,7 @@ const FavoriteMedications = () => {
             style={{ color: '#d1d1d1' }}
           />
         </div>
-        <div className='items'>
+        <div className='items' ref={containerRef}>
           {items.map((item, index) => renderItems(item, index))}
         </div>
       </StyledContent>
@@ -159,6 +178,9 @@ const FavoriteMedications = () => {
         <Popup onClose={() => setPopupType(PopupType.None)}>
           {PopupContent(popupType, navigate)}
         </Popup>
+      )}
+      {toastMessage != '' && (
+        <Toast onEnd={() => setToastMessage('')}>{toastMessage}</Toast>
       )}
     </MyPageContainer>
   );
@@ -190,7 +212,7 @@ const StyledContent = styled.div`
     display: flex;
     flex-direction: column;
     gap: 30px;
-    padding: 0px 20px 0px 20px;
+    padding: 0px 10px 0px 0px;
     overflow: auto;
   }
 `;
@@ -199,7 +221,6 @@ const Item = styled.div`
   display: flex;
   flex-direction: column;
   gap: 5px;
-  width: 80%;
 
   .title {
     display: flex;
@@ -211,6 +232,7 @@ const Item = styled.div`
   .title2 {
     display: flex;
     justify-content: space-between;
+    font-size: 1rem;
   }
 
   .registration {
@@ -219,14 +241,13 @@ const Item = styled.div`
   }
 
   .delete-button {
-    position: absolute;
     right: 30px;
     background-color: #d9d9d9;
     border: none;
     border-radius: 25px;
     padding: 3px 8px;
     cursor: pointer;
-    font-size: 0.9em;
+    font-size: 0.6em;
   }
 `;
 
