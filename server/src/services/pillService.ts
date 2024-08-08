@@ -132,7 +132,8 @@ export const searchPillsbyName = async (
 ): Promise<GetPillsResult> => {
   const query = `SELECT id, name, engname, companyname, ingredientname, type, efficacy, dosage, caution, storagemethod, source, imgurl, boxurl 
                  FROM pills 
-                 WHERE name ILIKE $1 OR engname ILIKE $1 
+                 WHERE name ILIKE $1 OR engname ILIKE $1
+                 ORDER BY name collate "ko_KR.utf8"
                  LIMIT $2 OFFSET $3`;
   const values = [`${name}%`, limit, offset];
 
@@ -190,11 +191,25 @@ export const searchPillsbyEfficacy = async (
 ): Promise<GetPillsResult> => {
   const efficacyArray = efficacy.split(',').map((eff) => `%${eff.trim()}%`);
   const query = `
-    SELECT id, name, engname, companyname, ingredientname, type, efficacy, dosage, caution, storagemethod, source, imgurl, boxurl
-    FROM pills 
+    SELECT p.id, p.name, p.engname, p.companyname, p.ingredientname, p.type, p.efficacy, p.dosage, p.caution, p.storagemethod, p.source, p.imgurl, p.boxurl,
+           COALESCE(f.favorites_count, 0) AS favorites_count,
+           COALESCE(r.reviews_count, 0) AS reviews_count
+    FROM pills p
+    LEFT JOIN (
+      SELECT pillid, COUNT(*) AS favorites_count
+      FROM favorites
+      GROUP BY pillid
+    ) f ON p.id = f.pillid
+    LEFT JOIN (
+      SELECT pillid, COUNT(*) AS reviews_count
+      FROM reviews
+      GROUP BY pillid
+    ) r ON p.id = r.pillid
     WHERE ${efficacyArray
-      .map((_, index) => `efficacy ILIKE $${index + 1}`)
-      .join(' AND ')}  
+      .map((_, index) => `p.efficacy ILIKE $${index + 1}`)
+      .join(' AND ')}
+    GROUP BY p.id, f.favorites_count, r.reviews_count
+    ORDER BY favorites_count DESC, reviews_count DESC
     LIMIT $${efficacyArray.length + 1} OFFSET $${efficacyArray.length + 2}`;
   const values = [...efficacyArray, limit, offset];
 
@@ -203,13 +218,15 @@ export const searchPillsbyEfficacy = async (
 
     const pills = result.rows.map((pill: Pills) => {
       const importantWordsWithDepartments = getImportantWords(pill.efficacy);
-      const importantWords = importantWordsWithDepartments
-        .map((iw) => iw.word)
-        .join(', ');
+      const importantWordsArray = importantWordsWithDepartments.map(
+        (iw) => iw.word
+      );
+      const importantWords = importantWordsArray.join(', ');
       const departments = importantWordsWithDepartments
         .map((iw) => iw.department)
         .filter((dep) => dep)
         .join(', ');
+
       return {
         ...pill,
         importantWords,
@@ -219,7 +236,7 @@ export const searchPillsbyEfficacy = async (
 
     return {
       pills,
-      totalCount: result.rowCount ?? 0,
+      totalCount: pills.length,
       totalPages: Math.ceil((result.rowCount ?? 0) / limit),
       limit,
       offset

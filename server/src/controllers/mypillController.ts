@@ -4,7 +4,8 @@ import {
   addPill,
   updatePill,
   getPills,
-  deletePill
+  deletePill,
+  getPillsExpiringTodayService
 } from '../services/mypillService';
 
 import { createError } from '../utils/error'; // Assuming a custom error handler is defined here
@@ -137,20 +138,21 @@ export const deleteMyPill = async (
   }
 };
 
-// export const expiredTodayMyPill = async (
-//   req: AuthenticatedRequest,
-//   res: Response,
-//   next: NextFunction
-// ) => {
-//   try {
-//     const user = req.user;
-//     if (!user) {
-//       return next(createError('UnauthorizedError', 'Unauthorized', 401));
-//     }
-//     const userId = user.id;
-//     const result = expiredTodayPill(userId);
-//     res.status(200).json(result);
-//   } catch (error) {
-//     next(error);
-//   }
-// };
+export const getPillsExpiringToday = async (
+  req: AuthenticatedRequest,
+  res: Response,
+  next: NextFunction
+) => {
+  const userId = req.user?.id; // Assuming you have user ID available in the request
+
+  if (!userId) {
+    return next(createError('UnauthorizedError', 'Unauthorized', 401));
+  }
+
+  try {
+    const pills = await getPillsExpiringTodayService(userId);
+    return res.status(200).json(pills);
+  } catch (error) {
+    return next(error);
+  }
+};
