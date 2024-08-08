@@ -1,5 +1,7 @@
 import { Link, useLocation } from 'react-router-dom';
 import styled from 'styled-components';
+import PillAlarmChecker from './PillAlarmChecker';
+import PillExpiredAlarmChecker from './PillExpiredAlarmChecker';
 
 interface Icon {
   default: string;
@@ -16,6 +18,14 @@ interface NavItem {
 const Nav = () => {
   const navItems: NavItem[] = [
     {
+      name: 'home',
+      label: '홈',
+      icon: {
+        default: '/img/nav/home.png',
+        active: '/img/nav/homeClicked.png'
+      }
+    },
+    {
       name: 'chatbot',
       label: '상담',
       icon: {
@@ -31,17 +41,8 @@ const Nav = () => {
         default: '/img/nav/calender.png',
         active: '/img/nav/calendarClicked.png'
       },
-      style: { marginRight: '15px' }
     },
-    {
-      name: 'home',
-      label: '홈',
-      icon: {
-        default: '/img/nav/home.png',
-        active: '/img/nav/homeClicked.png'
-      },
-      style: { position: 'absolute', top: '-20px', width: '50px' }
-    },
+
     {
       name: 'alarm',
       label: '알람설정',
@@ -86,6 +87,8 @@ const Nav = () => {
           );
         })}
       </ul>
+      <PillAlarmChecker />
+      <PillExpiredAlarmChecker />
     </NavContainer>
   );
 };
