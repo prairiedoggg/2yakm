@@ -21,19 +21,6 @@ import Review from './Review';
 import LoginCheck from '../LoginCheck';
 import Toast from '../Toast';
 
-const customStyles = {
-  content: {
-    top: '50%',
-    left: '50%',
-    right: 'auto',
-    bottom: 'auto',
-    marginRight: '-50%',
-    transform: 'translate(-50%, -50%)',
-    maxHeight: '90vh',
-    overflow: 'auto'
-  }
-};
-
 const SearchResults = () => {
   const [searchParams] = useSearchParams();
   const query = searchParams.get('q') || '';
@@ -134,7 +121,16 @@ const SearchResults = () => {
   }
 
   if (!pillData) {
-    return <NotSearched/>;
+    return (
+      <>
+        <SearchHeader
+          activeType={activeType}
+          handleTypeClick={handleTypeClick}
+          setImageResults={() => {}}
+        />
+        <NotSearched />
+      </>
+    );
   }
 
   return (
@@ -208,9 +204,9 @@ const SearchResults = () => {
           </section>
         </PillInfo>
         <Source>
-          <span>출처</span>
+          <span>출처 :</span>
           <a target='_blank' href={pillData.source}>
-            {pillData.source}
+            식품의약품안전처 의약품통합정보시스템
           </a>
         </Source>
         <PillMore>
@@ -257,6 +253,19 @@ const SearchResults = () => {
 };
 
 export default SearchResults;
+
+const customStyles = {
+  content: {
+    top: '50%',
+    left: '50%',
+    right: 'auto',
+    bottom: 'auto',
+    marginRight: '-50%',
+    transform: 'translate(-50%, -50%)',
+    maxHeight: '90vh',
+    overflow: 'auto'
+  }
+};
 
 const SearchResultsContainer = styled.div``;
 
@@ -341,16 +350,13 @@ const InfoBox = styled.div`
 const Source = styled.p`
   display: flex;
   align-items: center;
-  margin: 8px 20px;
+  margin: 15px 10vw;
   font-size: 14px;
 
   & a {
     display: inline-block;
     max-width: 300px;
     color: #696969;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
     margin-left: 5px;
   }
 `;
