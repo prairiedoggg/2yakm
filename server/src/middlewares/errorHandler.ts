@@ -16,10 +16,10 @@ class CustomError extends Error {
 const errorHandler = (err: CustomError, req: Request, res: Response, next: NextFunction) => {
   console.error(`[${err.name}] ${err.message}`);
 
-  res.status(err.status || 500).json({
+  res.status(err.status).json({
     error: {
       name: err.name,
-      message: err.message
+      message: err.status >= 500 ? 'Internal server error' : err.message
     }
   });
 };

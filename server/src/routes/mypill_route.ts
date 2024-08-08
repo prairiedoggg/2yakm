@@ -9,7 +9,7 @@ import {
 
 /**
  * @swagger
- * api/mypills:
+ * /api/mypills:
  *   post:
  *     summary: 새로운 약 추가
  *     tags: [mypills]
@@ -27,6 +27,9 @@ import {
  *                 type: string
  *                 format: date
  *                 example: 2023-12-31
+ *               alarmstatus:
+ *                 type: boolean
+ *
  *     responses:
  *       200:
  *         description: 성공
@@ -35,7 +38,7 @@ router.post('/', addMyPill);
 
 /**
  * @swagger
- * api/mypills/{mypillid}:
+ * /api/mypills/{mypillid}:
  *   put:
  *     summary: 약 정보 업데이트
  *     tags: [mypills]
@@ -60,6 +63,8 @@ router.post('/', addMyPill);
  *                 type: string
  *                 format: date
  *                 example: 2023-12-31
+ *               alarmstatus:
+ *                 type: boolean
  *     responses:
  *       200:
  *         description: 성공
@@ -68,7 +73,7 @@ router.put('/:mypillid', updateMyPill);
 
 /**
  * @swagger
- * api/mypills:
+ * /api/mypills:
  *   get:
  *     summary: 모든 약 정보 가져오기
  *     tags: [mypills]
@@ -111,15 +116,17 @@ router.put('/:mypillid', updateMyPill);
  *                   expiredat:
  *                     type: string
  *                     format: date
- *                   createdAt:
+ *                   createdat:
  *                     type: string
  *                     format: date
+ *                   alarmstatus:
+ *                     type: boolean
  */
 router.get('/', getMyPills);
 
 /**
  * @swagger
- * api/mypills/{mypillid}:
+ * /api/mypills/{mypillid}:
  *   delete:
  *     summary: 약 정보 삭제
  *     tags: [mypills]

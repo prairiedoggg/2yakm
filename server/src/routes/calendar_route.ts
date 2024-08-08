@@ -40,7 +40,7 @@ const router = Router();
  *                 type: string
  *               taken:
  *                 type: boolean
- * 
+ *
  */
 
 /**
@@ -65,13 +65,13 @@ router.get('/', calendarController.getAllCalendars);
 
 /**
  * @swagger
- * /api/calendars/{id}:
+ * /api/calendars/{date}:
  *   get:
  *     summary: 일정 상세보기
  *     tags: [Calendars]
  *     parameters:
  *       - in: path
- *         name: id
+ *         name: date
  *         required: true
  *         schema:
  *           type: string
@@ -87,7 +87,7 @@ router.get('/', calendarController.getAllCalendars);
  *       500:
  *         description: 서버 오류
  */
-router.get('/:id', calendarController.getCalendarById);
+router.get('/:date', calendarController.getCalendarById);
 
 /**
  * @swagger
@@ -136,13 +136,13 @@ router.post('/', calendarController.createCalendar);
 
 /**
  * @swagger
- * /api/calendars/{id}:
+ * /api/calendars/{date}:
  *   put:
  *     summary: 일정 업데이트
  *     tags: [Calendars]
  *     parameters:
  *       - in: path
- *         name: id
+ *         name: date
  *         required: true
  *         schema:
  *           type: string
@@ -183,17 +183,17 @@ router.post('/', calendarController.createCalendar);
  *       500:
  *         description: 서버 오류
  */
-router.put('/:id', calendarController.updateCalendar);
+router.put('/:date', calendarController.updateCalendar);
 
 /**
  * @swagger
- * /api/calendars/{id}:
+ * /api/calendars/{date}:
  *   delete:
  *     summary: 일정 삭제
  *     tags: [Calendars]
  *     parameters:
  *       - in: path
- *         name: id
+ *         name: date
  *         required: true
  *         schema:
  *           type: string
@@ -212,6 +212,6 @@ router.put('/:id', calendarController.updateCalendar);
  *       500:
  *         description: 서버 오류
  */
-router.delete('/:id', calendarController.deleteCalendar);
+router.delete('/:date', calendarController.deleteCalendar);
 
 export default router;

@@ -9,7 +9,6 @@ import cookieParser from 'cookie-parser';
 import { errorHandler, notFoundHandler } from './middlewares/errorHandler';
 import authByToken from './middlewares/authByToken';
 
-// import visionRouter from './routes/vision_route';
 import reviewRouter from './routes/review_route';
 import authRouter from './routes/auth_route';
 import calendarRouter from './routes/calendar_route';
@@ -20,19 +19,40 @@ import favoriteRouter from './routes/favorite_route';
 import mypillRouter from './routes/mypill_route';
 import pillRouter from './routes/pill_route';
 
+import { rescheduleAllAlarms } from './services/alarmService';
+
 dotenv.config();
 
 const app = express();
 
 const port = process.env.PORT ?? 3000;
+const BASE_URL = process.env.NODE_ENV === 'development'
+  ? `http://localhost:${port}`
+  : process.env.CORS_ORIGIN;
+
 // Helmet
 app.use(helmet());
+
+// CORS 설정 수정
+const allowedOrigins = [
+  'http://localhost:5173',
+  'http://localhost:3000',
+  'https://eyakmoyak.com'
+];
 
 // CORS
 app.use(
   cors({
-    origin: true,
-    credentials: true
+    origin: (origin, callback) => {
+      // 허용된 origin이 없는 경우 CORS 설정을 모든 요청에 대해 활성화
+      if (!origin) return callback(null, true);
+      if (allowedOrigins.indexOf(origin) === -1) {
+        const msg = `The CORS policy for this site does not allow access from the specified origin: ${origin}`;
+        return callback(new Error(msg), false);
+      }
+      return callback(null, true);
+    },
+    credentials: true,
   })
 );
 

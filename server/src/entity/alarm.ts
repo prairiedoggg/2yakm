@@ -1,6 +1,5 @@
 export interface AlarmTime {
     time: string;
-    status: boolean;
 }
 
 export interface Alarm {
@@ -10,4 +9,5 @@ export interface Alarm {
     startDate: Date;
     endDate: Date;
     times: AlarmTime[];
+    alarmStatus: boolean; 
 }

@@ -1,6 +1,6 @@
 export interface Review {
-  reviewId?: number;
-  id: number;
+  id?: number;
+  pillId: number;
   userId: string;
   content: string;
   createdAt?: Date;

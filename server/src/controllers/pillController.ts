@@ -1,14 +1,15 @@
 import { Response, Request, NextFunction } from 'express';
+import { ParsedQs } from 'qs';
 import {
   getPills,
   getPillById,
   searchPillsbyName,
   searchPillsbyEfficacy,
   searchPillsByImage,
-  searchPillsbyEngName,
   getPillFavoriteCountService,
   getPillReviewCountService
 } from '../services/pillService';
+
 
 interface PillsQueryParams {
   limit?: string;
@@ -26,7 +27,7 @@ export const getPillsHandler = async <T extends PillsQueryParams>(
     const limit = parseInt(req.query.limit ?? '10', 10);
     const offset = parseInt(req.query.offset ?? '0', 10);
     const sortedBy = req.query.sortedBy ?? 'favorite_count';
-    const order = (req.query.order?.toUpperCase() as 'ASC' | 'DESC') ?? 'DESC';
+    const order = req.query.order?.toUpperCase() === 'ASC' ? 'ASC' : 'DESC';
 
     const pills = await getPills(limit, offset, sortedBy, order);
     res.status(200).json(pills);
@@ -36,12 +37,12 @@ export const getPillsHandler = async <T extends PillsQueryParams>(
 };
 
 export const getPillByIdHandler = async (
-  req: Request,
+  req: Request<{ id: string }>,
   res: Response,
   next: NextFunction
 ): Promise<void> => {
   try {
-    const id = parseInt(req.params.id as string, 10);
+    const id = parseInt(req.params.id, 10);
     const pill = await getPillById(id);
     if (pill) {
       res.status(200).json(pill);
@@ -53,76 +54,32 @@ export const getPillByIdHandler = async (
   }
 };
 
-/**
-export const updatePillHandler = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-  try {
-    const updatedPill = await updatePill(parseInt(req.params.id, 10), req.body);
-    if (updatedPill) {
-      res.status(200).json(updatedPill);
-    } else {
-      res.status(404).json({ message: 'Pill not found' });
-    }
-  } catch (error) {
-    next(error);
-  }
-};
-*/
-
-/*
-export const deletePillHandler = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-  try {
-    const deleted = await deletePill(parseInt(req.params.id, 10));
-    if (deleted) {
-      res.status(204).end();
-    } else {
-      res.status(404).json({ message: 'Pill not found' });
-    }
-  } catch (error) {
-    next(error);
-  }
-};
-*/
-
 interface QueryParams {
   name: string;
   limit?: string;
   offset?: string;
   sortedBy?: string;
+  searchBy?: 'name' | 'engname';
   order?: 'ASC' | 'DESC';
 }
 
-interface RequestParams {
-  id: string;
-}
-
 export const searchPillsbyNameHandler = async (
-  req: Request<unknown, unknown, RequestParams, QueryParams>,
+  req: Request<unknown, unknown, unknown, QueryParams>,
   res: Response,
   next: NextFunction
-): Promise<void> => {
-  const name = req.query.name as string;
+) => {
+  const name = req.query.name;
   const offset = parseInt(req.query.offset ?? '0', 10);
   const limit = parseInt(req.query.limit ?? '10', 10);
+
+  if (!name) {
+    return res
+      .status(400)
+      .json({ message: 'name query parameter is required' });
+  }
 
   try {
     const pills = await searchPillsbyName(name, limit, offset);
-    res.status(200).json(pills);
-  } catch (error) {
-    next(error);
-  }
-};
-
-export const searchPillsbyEngNameHandler = async (
-  req: Request<unknown, unknown, RequestParams, QueryParams>,
-  res: Response,
-  next: NextFunction
-): Promise<void> => {
-  const name = req.query.name as string;
-  const offset = parseInt(req.query.offset ?? '0', 10);
-  const limit = parseInt(req.query.limit ?? '10', 10);
-
-  try {
-    const pills = await searchPillsbyEngName(name, limit, offset);
     res.status(200).json(pills);
   } catch (error) {
     next(error);
@@ -141,7 +98,7 @@ export const searchPillsbyEfficacyHandler = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const efficacy = req.query.efficacy as string;
+    const efficacy = req.query.efficacy;
     const offset = parseInt(req.query.offset ?? '0', 10);
     const limit = parseInt(req.query.limit ?? '10', 10);
     const pills = await searchPillsbyEfficacy(efficacy, limit, offset);
@@ -151,24 +108,32 @@ export const searchPillsbyEfficacyHandler = async (
   }
 };
 
-interface ImageQueryParams {
+interface ImageQueryParams extends ParsedQs {
   limit?: string;
   offset?: string;
 }
 
+interface ImageRequest extends Request<{}, {}, {}, ImageQueryParams> {
+  files?: Express.Multer.File[] | { [fieldname: string]: Express.Multer.File[] };
+}
+
 export const searchPillsByImageHandler = async (
-  req: Request<unknown, unknown, unknown, ImageQueryParams>,
+  req: ImageRequest,
   res: Response,
   next: NextFunction
 ) => {
   try {
-    if (!req.file) {
+    if (!req.files || (Array.isArray(req.files) && req.files.length === 0)) {
       return res.status(400).json({ message: 'No file uploaded' });
     }
-    const imageBuffer = req.file.buffer;
+
+    const imageBuffers: Buffer[] = Array.isArray(req.files)
+      ? req.files.map(file => file.buffer)
+      : Object.values(req.files).flat().map(file => file.buffer);
+
     const limit = parseInt(req.query.limit ?? '10', 10);
     const offset = parseInt(req.query.offset ?? '0', 10);
-    const result = await searchPillsByImage(imageBuffer, limit, offset);
+    const result = await searchPillsByImage(imageBuffers, limit, offset);
     res.status(200).json(result);
   } catch (error) {
     next(error);
@@ -176,7 +141,7 @@ export const searchPillsByImageHandler = async (
 };
 
 export const getPillFavoriteCount = async (
-  req: Request<{ id: any }, unknown, unknown, unknown>,
+  req: Request<{ id: string }>,
   res: Response,
   next: NextFunction
 ): Promise<void> => {
@@ -184,15 +149,14 @@ export const getPillFavoriteCount = async (
 
   try {
     const count = await getPillFavoriteCountService(id);
-
     res.status(200).send({ count });
-  } catch (error: any) {
+  } catch (error) {
     next(error);
   }
 };
 
 export const getPillReviewCount = async (
-  req: Request<{ id: any }, unknown, unknown, unknown>,
+  req: Request<{ id: string }>,
   res: Response,
   next: NextFunction
 ): Promise<void> => {
@@ -200,9 +164,8 @@ export const getPillReviewCount = async (
 
   try {
     const count = await getPillReviewCountService(id);
-
     res.status(200).send({ count });
-  } catch (error: any) {
+  } catch (error) {
     next(error);
   }
 };

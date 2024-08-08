@@ -25,14 +25,14 @@ const router = Router();
  *           schema:
  *             type: object
  *             properties:
- *               id:
+ *               pillid:
  *                 type: integer
  *                 description: 리뷰가 생성될 pill id 값을 입력해 주세요.
  *               content:
  *                 type: string
  *                 description: 리뷰 내용을 입력해 주세요.
  *             example:
- *               id: 197000037
+ *               pillid: 197000037
  *               content: "전 이거 먹고 힘을 내요! 완전 추천합니다!"
  *     responses:
  *       201:
@@ -42,23 +42,32 @@ const router = Router();
  *             schema:
  *               type: object
  *               properties:
- *                 reviewid:
- *                   type: integer
  *                 id:
  *                   type: integer
+ *                 pillid:
+ *                   type: integer
+ *                 name:
+ *                   type: string
  *                 userid:
+ *                   type: string
+ *                 username:
+ *                   type: string
+  *                 profileimg:
  *                   type: string
  *                 content:
  *                   type: string
- *                 createdAt:
+ *                 createdat:
  *                   type: string
  *                   format: date-time
  *               example:
- *                 reviewid: 1
- *                 id: 197000037
+ *                 id: 1
+ *                 pillid: 197000037
+ *                 name: 아로나민골드정
  *                 userid: "0190caa1-0c81-7fa2-9e4d-ed3c8ec93d7a"
+ *                 username: "test"
+ *                 profileimg: "https://eyakmoyak.s3.ap-northeast-2.amazonaws.com/1722569018981-dog2.jpeg"
  *                 content: "전 이거 먹고 힘을 내요! 완전 추천합니다!"
- *                 createdAt: "2024-07-16T20:37:08.325Z"
+ *                 createdat: "2024-07-16T20:37:08.325Z"
  *       400:
  *         description: 리뷰 내용을 입력해 주세요. / 리뷰 생성을 실패했습니다.
  *       401:
@@ -70,13 +79,13 @@ router.post('/', authByToken, createReview);
 
 /**
  * @swagger
- * /api/reviews/{reviewid}:
+ * /api/reviews/{id}:
  *   put:
  *     summary: 리뷰 수정 API
  *     tags: [Reviews]
  *     parameters:
  *       - in: path
- *         name: reviewid
+ *         name: id
  *         schema:
  *           type: integer
  *         required: true
@@ -102,44 +111,42 @@ router.post('/', authByToken, createReview);
  *             schema:
  *               type: object
  *               properties:
- *                 reviewid:
- *                   type: integer
  *                 id:
+ *                   type: integer
+ *                 pillid:
  *                   type: integer
  *                 userid:
  *                   type: string
  *                 content:
  *                   type: string
- *                 createdAt:
+ *                 createdat:
  *                   type: string
  *                   format: date-time
  *               example:
- *                 reviewid: 1
- *                 id: 197000037
+ *                 id: 1
+ *                 pillid: 197000037
  *                 userid: "0190caa1-0c81-7fa2-9e4d-ed3c8ec93d7a"
  *                 content: "생각해보니까 타이레놀이 가장 좋아요!"
- *                 createdAt: "2024-07-16T20:37:08.325Z"
+ *                 createdat: "2024-07-16T20:37:08.325Z"
  *       400:
- *         description: 수정할 리뷰 내용을 입력해 주세요.
+ *         description: 수정할 리뷰가 없거나 본인의 리뷰가 아닙니다.
  *       401:
- *         description: 토큰이 없습니다 / 수정 권한이 없습니다.
- *       404:
- *         description: 수정할 리뷰를 찾을 수 없습니다.
+ *         description: 토큰이 없습니다.
  *       500:
  *         description: Internal Server Error
  */
 // 사용자 리뷰 수정
-router.put('/:reviewid', authByToken, updateReview);
+router.put('/:id', authByToken, updateReview);
 
 /**
  * @swagger
- * /api/reviews/{reviewid}:
+ * /api/reviews/{id}:
  *   delete:
  *     summary: 리뷰 삭제 API
  *     tags: [Reviews]
  *     parameters:
  *       - in: path
- *         name: reviewid
+ *         name: id
  *         schema:
  *           type: integer
  *         required: true
@@ -149,15 +156,15 @@ router.put('/:reviewid', authByToken, updateReview);
  *     responses:
  *       200:
  *         description: 리뷰 삭제 성공
+ *       400:
+ *         description: 삭제할 리뷰가 없거나 본인의 리뷰가 아닙니다.
  *       401:
- *         description: 토큰이 없습니다 / 수정 권한이 없습니다.
- *       404:
- *         description: 삭제할 리뷰를 찾을 수 없습니다.
+ *         description: 토큰이 없습니다.
  *       500:
  *         description: Internal Server Error
  */
 // 사용자 리뷰 삭제
-router.delete('/:reviewid', authByToken, deleteReview);
+router.delete('/:id', authByToken, deleteReview);
 
 /**
  * @swagger
@@ -182,7 +189,7 @@ router.delete('/:reviewid', authByToken, deleteReview);
  *         name: sortedBy
  *         schema:
  *           type: string
- *         description: 정렬할 필드명을 입력해 주세요. (createdAt, name,... 기본값은 createdAt)
+ *         description: 정렬할 필드명을 입력해 주세요. (createdat, name,... 기본값은 createdat)
  *       - in: query
  *         name: order
  *         schema:
@@ -209,17 +216,19 @@ router.delete('/:reviewid', authByToken, deleteReview);
  *                   items:
  *                     type: object
  *                     properties:
- *                       reviewid:
- *                         type: integer
  *                       id:
+ *                         type: integer
+ *                       pillid:
  *                         type: integer
  *                       name:
  *                         type: string
  *                       content:
  *                         type: string
- *                       createdAt:
+ *                       createdat:
  *                         type: string
  *                         format: date-time
+ *       400:
+ *         description: limit, offset 값을 다시 확인해 주세요.
  *       401:
  *         description: 토큰이 없습니다
  *       500:
@@ -230,13 +239,13 @@ router.get('/users/', authByToken, getUserAllReview);
 
 /**
  * @swagger
- * /api/reviews/pills/{id}:
+ * /api/reviews/pills/{pillid}:
  *   get:
  *     summary: 해당 약의 모든 리뷰 조회 API (cursor-based pagination)
  *     tags: [Reviews]
  *     parameters:
  *       - in: path
- *         name: id
+ *         name: pillid
  *         schema:
  *           type: integer
  *         required: true
@@ -259,7 +268,7 @@ router.get('/users/', authByToken, getUserAllReview);
  *           type: string
  *           format: json
  *         required: false
- *         description: 다음 페이지를 가져오기 위한 커서 값</br>(이전 페이지의 마지막 리뷰의 reviewid 값, nextCursor의 값 입력하면 됨)</br>(예, nextCursor=93이면 다음 스크롤은 92부터 cursorLimit만큼 가져옴)</br>(마지막 페이지의 nextCursor은 null 값입니다.)
+ *         description: 다음 페이지를 가져오기 위한 커서 값</br>(이전 페이지의 마지막 리뷰의 id 값, nextCursor의 값 입력하면 됨)</br>(예, nextCursor=93이면 다음 스크롤은 92부터 cursorLimit만큼 가져옴)</br>(마지막 페이지의 nextCursor은 null 값입니다.)
  *     responses:
  *       200:
  *         description: 해당 약의 모든 리뷰가 표시됩니다.
@@ -273,9 +282,9 @@ router.get('/users/', authByToken, getUserAllReview);
  *                   items:
  *                     type: object
  *                     properties:
- *                       reviewid:
- *                         type: integer
  *                       id:
+ *                         type: integer
+ *                       pillid:
  *                         type: integer
  *                       name:
  *                         type: string
@@ -285,19 +294,23 @@ router.get('/users/', authByToken, getUserAllReview);
  *                         type: string
  *                       role:
  *                         type: boolean
+ *                       profileimg:
+ *                         type: string
  *                       content:
  *                         type: string
- *                       createdAt:
+ *                       createdat:
  *                         type: string
  *                         format: date-time
  *                 nextCursor:
  *                   type: integer
- *                   description: 다음 페이지를 가져오기 위한 커서 값 (마지막으로 반환된 리뷰의 reviewid)
+ *                   description: 다음 페이지를 가져오기 위한 커서 값 (마지막으로 반환된 리뷰의 id)
+ *       400:
+ *         description: initialLimit, cursorLimit 값을 다시 확인해 주세요.
  *       500:
  *         description: Internal Server Error
  */
 // 해당 약의 모든 리뷰 조회
-router.get('/pills/:id', getPillsAllReview);
+router.get('/pills/:pillid', getPillsAllReview);
 
 /**
  * @swagger
@@ -306,11 +319,11 @@ router.get('/pills/:id', getPillsAllReview);
  *     Review:
  *       type: object
  *       properties:
- *         reviewId:
+ *         id:
  *           type: integer
  *           format: int64
  *           description: review id입니다.
- *         id:
+ *         pillid:
  *           type: integer
  *           format: int64
  *           description: pill id입니다.
@@ -320,7 +333,7 @@ router.get('/pills/:id', getPillsAllReview);
  *         content:
  *           type: string
  *           description: 리뷰 내용입니다.
- *         createdAt:
+ *         createdat:
  *           type: string
  *           format: date-time
  *           description: 리뷰가 생성된 시간이 저장됩니다.
