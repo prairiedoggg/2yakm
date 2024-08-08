@@ -4,7 +4,8 @@ import {
   addMyPill,
   updateMyPill,
   getMyPills,
-  deleteMyPill
+  deleteMyPill,
+  getPillsExpiringToday
 } from '../controllers/mypillController';
 
 /**
@@ -142,5 +143,8 @@ router.get('/', getMyPills);
  *         description: 성공
  */
 router.delete('/:mypillid', deleteMyPill);
+
+
+router.get('/expiredtoday', getPillsExpiringToday)
 
 export default router;

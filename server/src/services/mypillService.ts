@@ -49,7 +49,7 @@ export const addPill = async (userId: string, updateData: UpdateData): Promise<{
   try {
     const query = `
       INSERT INTO mypills (userid, pillname, expiredat, alarmstatus)
-      VALUES ($1, $2, $3, $4) RETURNING pillid, pillname, expiredat, alarmstatus
+      VALUES ($1, $2, $3, $4) RETURNING pillid, pillname, to_char(expiredat, 'YYYY-MM-DD') as expiredat, alarmstatus
     `;
     const values = [userId, updateData.name, updateData.expiredat, updateData.alarmstatus];
     const result = await pool.query(query, values);
@@ -77,7 +77,7 @@ export const updatePill = async (mypillId: string, updateData: UpdateData): Prom
   try {
     const query = `
       UPDATE mypills SET pillname = $1, expiredat = $2, alarmstatus = $3 WHERE pillid = $4 
-      RETURNING pillid, pillname, expiredat, alarmstatus
+      RETURNING pillid, pillname, to_char(expiredat, 'YYYY-MM-DD') as expiredat, alarmstatus
     `;
     const values = [updateData.name, updateData.expiredat, updateData.alarmstatus, mypillId];
     const result = await pool.query(query, values);
@@ -114,7 +114,7 @@ export const getPills = async (userId: string, limit: number, offset: number, so
     const totalPages = Math.ceil(totalCount / limit);
 
     const query = `
-      SELECT pillid, pillname, expiredat, createdat, alarmstatus
+      SELECT pillid, pillname, to_char(expiredat, 'YYYY-MM-DD') as expiredat, alarmstatus
       FROM mypills
       WHERE userid = $1
       ORDER BY ${sortedBy} ${order}
@@ -143,7 +143,7 @@ export const deletePill = async (mypillId: string): Promise<MyPill> => {
   try {
     const query = `
       DELETE FROM mypills WHERE pillid = $1
-      RETURNING pillid, userid, pillname, expiredat, alarmstatus
+      RETURNING pillid, userid, pillname, to_char(expiredat, 'YYYY-MM-DD') as expiredat, alarmstatus
     `;
     const values = [mypillId];
     const result = await pool.query(query, values);
@@ -160,6 +160,39 @@ export const deletePill = async (mypillId: string): Promise<MyPill> => {
     } else {
       console.error('Unknown error', err);
       throw createError('UnknownError', 'Failed to delete pill due to an unknown error', 500);
+    }
+  }
+};
+
+export const getPillsExpiringTodayService = async (userId: string): Promise<MyPill[]> => {
+  const query = `
+    SELECT pillid, userid, pillname, to_char(expiredat, 'YYYY-MM-DD') as expiredat, alarmstatus
+    FROM mypills
+    WHERE userid = $1 AND expiredat = CURRENT_DATE;
+  `;
+  const values = [userId];
+
+  try {
+    console.log(`Executing query: ${query}`);
+    console.log(`With values: ${JSON.stringify(values)}`);
+
+    const result = await pool.query(query, values);
+
+    console.log(`Query Result: ${JSON.stringify(result.rows)}`); // Debugging output
+
+    if (result.rows.length === 0) {
+      console.log('No pills found for the given date');
+      throw createError('NotFoundError', 'No pills expiring today', 404);
+    }
+
+    return result.rows;
+  } catch (error) {
+    if (error instanceof Error) {
+      console.error('Error executing query', error.stack);
+      throw createError('DatabaseError', `Failed to retrieve pills expiring today: ${error.message}`, 500);
+    } else {
+      console.error('Unknown error', error);
+      throw createError('UnknownError', 'Failed to retrieve pills expiring today due to an unknown error', 500);
     }
   }
 };
