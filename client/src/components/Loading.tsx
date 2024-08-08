@@ -37,7 +37,7 @@ const Overlay = styled.div`
   position: absolute;
   width: 100%;
   height: 80%;
-  z-index: 999;
+  z-index: 10;
   display: flex;
   justify-content: center;
   align-items: center;

@@ -14,7 +14,6 @@ const NotSearched = () => {
       <SearchHeader
         activeType={activeType}
         handleTypeClick={handleTypeClick}
-        setImageResults={() => {}}
       />
       <NotSearchedContainer>
         <Image src='/img/notSearched.png' />
