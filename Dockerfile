@@ -1,10 +1,23 @@
 FROM node:20.3.0
 
+# 작업 디렉토리 설정
 WORKDIR /chicken_pharm
 
-# Nginx, Python 및 필요한 도구 설치
-RUN apt-get update && apt-get install -y nginx python3 python3-pip build-essential libssl-dev libffi-dev python3-dev && \
+# Nginx, Python 및 필요한 도구 설치 (wget 추가)
+RUN apt-get update && apt-get install -y nginx python3 python3-pip build-essential libssl-dev libffi-dev python3-dev wget && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# Miniconda 설치
+RUN wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh && \
+    bash miniconda.sh -b -p /opt/conda && \
+    rm miniconda.sh
+
+# Miniconda 환경변수 설정
+ENV PATH="/opt/conda/bin:${PATH}"
+
+# Conda 초기화
+RUN conda init bash && \
+    echo "conda activate base" >> ~/.bashrc
 
 # 서버 의존성 설치
 COPY server/package*.json ./server/
@@ -17,9 +30,9 @@ RUN cd client && npm ci
 # 소스 코드 복사
 COPY . .
 
-# .env 파일 처리
-#ARG ENV_FILE=.env
-#COPY ${ENV_FILE} .env
+# .env 파일 복사 (Jenkins에서 제공)
+ARG ENV_FILE=.env
+COPY ${ENV_FILE} .env
 
 # 클라이언트 빌드
 RUN cd client && npm run build || echo "클라이언트 빌드 중 오류 발생"
