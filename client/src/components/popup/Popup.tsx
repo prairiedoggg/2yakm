@@ -62,9 +62,9 @@ const SheetContainer = styled.div`
   button {
     font-size: 1em;
     font-weight: bold;
-    padding: 5px;
-    background-color: white;
-    border: 1px solid #ccc;
+    padding: 5px 10px 5px 10px;
+    background-color: #ffeb41;
+    border: none;
     border-radius: 5px;
     margin-top: 20px;
   }

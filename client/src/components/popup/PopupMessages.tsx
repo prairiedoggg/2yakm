@@ -47,6 +47,10 @@ export enum PopupType {
   AddMyPillSuccess,
   AddMyPillFailure,
 
+  Certifications, // src\api\certificationsApi.ts
+  CertificationsSuccess,
+  CertificationsFailure,
+
   FinishChatBot, // src\components\chatBot\Chatbot.tsx
 
   ImageSearchInfo, // src\components\search\SearchBox.tsx
@@ -102,7 +106,11 @@ const PopupContent = (
         return <div>회원탈퇴에 실패했습니다. 잠시 후 다시 시도해주세요.</div>;
 
       case PopupType.ChangeUserNameSuccess:
-        return <div>이름을 변경했습니다. </div>;
+        return (
+          <div>
+            이름을 변경했습니다. <button className='bottomClose'>확인</button>{' '}
+          </div>
+        );
 
       case PopupType.ChangeUserNameFailure:
         return <div>이름변경에 실패했습니다. 잠시 후 다시 시도해주세요.</div>;
@@ -132,6 +140,22 @@ const PopupContent = (
             >
               확인
             </button>
+          </div>
+        );
+
+      case PopupType.CertificationsSuccess:
+        return (
+          <div>
+            약사인증에 성공했습니다.
+            <button className='bottomClose'>확인</button>
+          </div>
+        );
+
+      case PopupType.CertificationsFailure:
+        return (
+          <div>
+            약사인증에 실패했습니다. 등록 정보를 재확인해주세요.
+            <button className='bottomClose'>확인</button>
           </div>
         );
 

@@ -11,9 +11,14 @@ export const fetchCertifications = async () => {
   }
 };
 
-export const registCertifications = async (name:string, date:string, number:string) => {
+export const registCertifications = async (name:string, date:string, number:string, btype:string) => {
     try {
-      const res = await post('/api/mypage/certifications', {name, date, number});
+      const res = await post('/api/mypage/certifications', {
+        name, 
+        date, 
+        btype, 
+        number});
+      console.log(res);
       useUserStore.getState().setRole(res.role);
       return res;
     } catch (error) {

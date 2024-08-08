@@ -1,6 +1,6 @@
 import Cookies from 'js-cookie';
 import useUserStore, { LoginType } from '../store/user';
-import { del, get, post } from './api';
+import { del, get, post, patch } from './api';
 
 export const login = async (
   email: string,
@@ -145,7 +145,7 @@ export const changePassword = async (
   onFailure?: (arg0: any) => void
 ) => {
   try {
-    const data = await post('/api/auth/change-password', {
+    const data = await patch('/api/auth/change-password', {
       email,
       oldPassword,
       newPassword

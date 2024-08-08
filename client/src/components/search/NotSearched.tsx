@@ -11,10 +11,7 @@ const NotSearched = () => {
 
   return (
     <>
-      <SearchHeader
-        activeType={activeType}
-        handleTypeClick={handleTypeClick}
-      />
+      <SearchHeader activeType={activeType} handleTypeClick={handleTypeClick} />
       <NotSearchedContainer>
         <Image src='/img/notSearched.png' />
         <Text className='main'>검색 결과가 없어요</Text>

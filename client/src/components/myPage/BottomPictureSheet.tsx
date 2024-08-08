@@ -17,6 +17,7 @@ const BottomPictureSheet = ({
   onClose: (pic: FileList | null) => Promise<void>;
 }) => {
   const inputRef = useRef<HTMLInputElement | null>(null);
+<<<<<<< HEAD
   const onUploadImage = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files) {
       return;
@@ -31,10 +32,25 @@ const BottomPictureSheet = ({
       alert('이미지 검색 실패');
     }
   };
+=======
+  const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+  console.log(navigator.userAgent);
+
+  const onUploadImage = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      if (!e.target.files) {
+        return;
+      }
+      onClose(e.target.files[0]);
+    },
+    []
+  );
+>>>>>>> 5bb7e9c1ad2b03ff6380f3692a1b77d215234655
 
   return (
     <Sheet>
       <BottomSheet isVisible={isVisible} onClose={() => onClose(null)}>
+<<<<<<< HEAD
         <div className='title'>
           {title}
           {isLoading ? (
@@ -64,6 +80,28 @@ const BottomPictureSheet = ({
             onChange={onUploadImage}
           />
         </div>
+=======
+        <div className='title'>{title}</div>
+        {isMobile && (
+          <div className='menu'>
+            <Icon
+              icon='ph:camera-light'
+              width='1.5rem'
+              height='1.5rem'
+              style={{ color: 'black' }}
+              onClick={() => {}}
+            />{' '}
+            카메라로 촬영하기
+            <input
+              className='file-input'
+              type='file'
+              capture='environment'
+              ref={inputRef}
+              onChange={onUploadImage}
+            />
+          </div>
+        )}
+>>>>>>> 5bb7e9c1ad2b03ff6380f3692a1b77d215234655
         <div className='menu'>
           <Icon
             icon='solar:gallery-bold'
