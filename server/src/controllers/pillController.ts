@@ -10,7 +10,6 @@ import {
   getPillReviewCountService
 } from '../services/pillService';
 
-
 interface PillsQueryParams {
   limit?: string;
   offset?: string;
@@ -114,7 +113,9 @@ interface ImageQueryParams extends ParsedQs {
 }
 
 interface ImageRequest extends Request<{}, {}, {}, ImageQueryParams> {
-  files?: Express.Multer.File[] | { [fieldname: string]: Express.Multer.File[] };
+  files?:
+    | Express.Multer.File[]
+    | { [fieldname: string]: Express.Multer.File[] };
 }
 
 export const searchPillsByImageHandler = async (
@@ -128,8 +129,10 @@ export const searchPillsByImageHandler = async (
     }
 
     const imageBuffers: Buffer[] = Array.isArray(req.files)
-      ? req.files.map(file => file.buffer)
-      : Object.values(req.files).flat().map(file => file.buffer);
+      ? req.files.map((file) => file.buffer)
+      : Object.values(req.files)
+          .flat()
+          .map((file) => file.buffer);
 
     const limit = parseInt(req.query.limit ?? '10', 10);
     const offset = parseInt(req.query.offset ?? '0', 10);
