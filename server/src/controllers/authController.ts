@@ -124,7 +124,7 @@ export const kakaoAuthController = async (req: Request<{ query: { code: string }
     }
     const result = await kakaoAuthService(code);
     if (result.message) {
-      res.status(400).json({message: result.message}).redirect(`${FRONTEND_URL}/login`);
+      res.status(400).redirect(`${FRONTEND_URL}/login?message=${result.message}`);
     } else {
       res.cookie('jwt', result.token, { httpOnly: true });
       res.cookie('refreshToken', result.refreshToken, { httpOnly: true });
@@ -145,7 +145,7 @@ export const naverAuthController = async (req: Request<{ query: { code: string, 
     const result = await naverAuthService(code, state);
     
     if (result.message) {
-      res.status(400).json({message: result.message}).redirect(`${FRONTEND_URL}/login`);
+      res.status(400).redirect(`${FRONTEND_URL}/login?message=${result.message}`);
     } else {
       res.cookie('jwt', result.token, { httpOnly: true });
       res.cookie('refreshToken', result.refreshToken, { httpOnly: true });
@@ -167,7 +167,7 @@ export const googleAuthController = async (req: Request<{ query: { code: string 
     const result = await googleAuthService(code);
     
     if (result.message) {
-      res.status(400).json({message: result.message}).redirect(`${FRONTEND_URL}/login`);
+      res.status(400).redirect(`${FRONTEND_URL}/login?message=${result.message}`);
     } else {
       res.cookie('jwt', result.token, { httpOnly: true });
       res.cookie('refreshToken', result.refreshToken, { httpOnly: true });

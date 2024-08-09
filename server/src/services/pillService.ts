@@ -279,13 +279,22 @@ const searchPillsByFrontAndBack = async (
   limit: number,
   offset: number
 ): Promise<GetPillsResult> => {
+  const frontText = front.length === 1 ? `${front}` : `${front}%`;
+  const backText = back.length === 1 ? `${back}` : `${back}%`;
+
   const query = `
     SELECT id, name, front, back, imagepath 
     FROM pillocr 
-    WHERE front = $1 AND back = $2
-    LIMIT $3 OFFSET $4`;
+    WHERE front LIKE $1 OR back LIKE $2
+    ORDER BY 
+      CASE 
+        WHEN front = $3 AND back = $4 THEN 1
+        WHEN front LIKE $1 OR back LIKE $2 THEN 2
+        ELSE 3
+      END
+    LIMIT $5 OFFSET $6`;
 
-  const values = [front, back, limit, offset];
+  const values = [frontText, backText, front, back, limit, offset];
 
   try {
     const result = await pool.query(query, values);
