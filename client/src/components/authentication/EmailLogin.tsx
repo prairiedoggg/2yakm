@@ -2,11 +2,13 @@ import styled from 'styled-components';
 import { Icon } from '@iconify-icon/react';
 import { ChangeEvent, FormEvent, useEffect, useState } from 'react';
 import { login, fetchUserInformation } from '../../api/authService';
-import { useNavigate } from 'react-router-dom';
-import Popup from '../popup/Popup';
-import Loading from '../Loading';
+import { Link, useNavigate } from 'react-router-dom';
+import Popup from '../common/popup/Popup';
+import Loading from '../common/Loading';
 import { getAlarms } from '../../api/alarmApi';
 import { useAlarmStore } from '../../store/alarm';
+import { fetchExpiredPills } from '../../api/myMedicineApi';
+import { useMyPillStore } from '../../store/myPill';
 
 const EmailLogin = ({
   onRegisterClick,
@@ -26,6 +28,7 @@ const EmailLogin = ({
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [popupMessage, setPopupMessage] = useState('');
   const { setAlarms } = useAlarmStore();
+  const { setPills } = useMyPillStore();
 
   const handleEmailChange = (e: ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
@@ -67,17 +70,25 @@ const EmailLogin = ({
   };
 
   const onFetchUserInformationSucceed = async () => {
-    const data = await getAlarms();
-    setAlarms(data);
+    try {
+      const data = await getAlarms();
+      setAlarms(data);
+    } catch {}
+
+    try {
+      const expiredPills = await fetchExpiredPills();
+      setPills(expiredPills);
+    } catch {}
 
     setLoading(false);
-    navigate('/', { replace: true });
-    window.location.reload();
+    navigate('/');
   };
 
   return (
     <Content>
-      <Logo src='/img/logo.svg' alt='이약뭐약' />
+      <Link to='/'>
+        <Logo src='/img/logo/big_chick.svg' alt='이약뭐약' />
+      </Link>
       <form onSubmit={handleSubmit}>
         <div className='login-inputs'>
           <div className='input-container'>
@@ -158,43 +169,44 @@ const EmailLogin = ({
 };
 
 const Logo = styled.img`
-  height: 80px;
+  width: 120px;
   cursor: pointer;
   margin-bottom: 20px;
 `;
 
 const Content = styled.div`
-  height:100%;
+  height: 100%;
   justify-content: center;
   align-items: center;
   display: flex;
   flex-direction: column;
   align-content: center;
-  gap:20px;
+  gap: 20px;
+  margin-top: -50px;
 
-  .other{
-    display:flex;
-    gap:20px;
+  .other {
+    display: flex;
+    gap: 20px;
     align-items: center;
-    margin-bottom:30px;
+    margin-bottom: 30px;
     text-decoration: underline;
-    font-size:.9em;
+    font-size: 0.9em;
   }
 
   .input-container {
     position: relative;
   }
 
-  input{
+  input {
     width: 100%;
-    border: none; 
-    border-radius: 4px; 
-    padding:8px 3px 8px 3px;
+    border: none;
+    border-radius: 4px;
+    padding: 8px 3px 8px 3px;
     padding-right: 30px;
     box-sizing: border-box;
-  }    
+  }
 
-  .password{
+  .password {
     padding-right: 60px;
   }
 
@@ -204,46 +216,44 @@ const Content = styled.div`
     right: 10px;
     transform: translateY(-50%);
     cursor: pointer;
-  }    
+  }
 
   .input-left-second {
     right: 35px;
-  }   
+  }
 
-  .login-inputs{
+  .login-inputs {
     width: 80%;
     border: 1px solid #ccc;
-    border-radius: 10px; 
-    padding: 10px 3px 10px 3px; 
-    margin-bottom:20px;
+    border-radius: 10px;
+    padding: 10px 3px 10px 3px;
+    margin-bottom: 20px;
   }
 
-  .submitButton{
-
-  position: absolute;
-  bottom: 0;
-  width:100%;
-  background-color: #FDE72E;
-  border: none; 
-  padding:12px;
-  font-size:1em;
-  font-weight:bold;
-}
-
-.submitButton:disabled{
-  background-color: #C7C7C7;
-}
-
-form{
-width:100%;
-  justify-content: center;
-  align-items: center;
-  display: flex;
-  flex-direction: column;
-  align-content: center;
-  gap:20px;
+  .submitButton {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    background-color: #fde72e;
+    border: none;
+    padding: 12px;
+    font-size: 1em;
+    font-weight: bold;
   }
 
-}`;
+  .submitButton:disabled {
+    background-color: #c7c7c7;
+  }
+
+  form {
+    width: 100%;
+    justify-content: center;
+    align-items: center;
+    display: flex;
+    flex-direction: column;
+    align-content: center;
+    gap: 20px;
+  }
+`;
 
 export default EmailLogin;

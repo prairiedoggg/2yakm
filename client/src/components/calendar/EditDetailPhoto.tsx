@@ -7,12 +7,13 @@ import { useCalendar } from '../../store/calendar';
 const EditDetailPhoto = () => {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const [isCameraOn, setIsCameraOn] = useState(false);
-  const { setPhoto, setCalImg, calendarData } = useCalendar();
+  const { setPhoto, nowData, setCalImg } = useCalendar();
 
   const [isDeniedCameraPermission, setIsDeniedCameraPermission] =
     useState(false);
 
   console.log(isDeniedCameraPermission);
+
   useEffect(() => {
     const startCamera = async () => {
       try {
@@ -56,15 +57,15 @@ const EditDetailPhoto = () => {
       formData.append('file', file);
       const imageUrl = URL.createObjectURL(file);
 
-      setPhoto(imageUrl);
-      setCalImg(formData);
+      setCalImg(imageUrl);
+      setPhoto(formData);
     }
   };
 
   const handleClick = () => photoInput.current?.click();
   const deletePhoto = () => {
-    setCalImg(new FormData());
-    setPhoto(null);
+    setCalImg('');
+    setPhoto(new FormData());
   };
 
   return (
@@ -74,22 +75,19 @@ const EditDetailPhoto = () => {
           icon='solar:gallery-send-linear'
           width='23px'
           onClick={handleClick}
-        >
-          사진 업로드
-          <HiddenInput
-            type='file'
-            accept='image/*'
-            capture='environment'
-            multiple
-            ref={photoInput}
-            onChange={onChangeImage}
-          />
-        </Icon>
+        />
+        <HiddenInput
+          type='file'
+          accept='image/*'
+          multiple
+          ref={photoInput}
+          onChange={onChangeImage}
+        />
       </IconContainer>
       <ImageContainer>
-        {calendarData?.photo && (
+        {nowData?.calImg && (
           <img
-            src={calendarData?.photo}
+            src={nowData?.calImg}
             alt='기록 이미지'
             style={{ width: '100%', height: 'auto' }}
           />

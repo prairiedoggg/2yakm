@@ -3,11 +3,11 @@ import { Icon } from '@iconify-icon/react';
 import { ChangeEvent, FormEvent, useState } from 'react';
 import useUserStore from '../../store/user';
 import { changePassword } from '../../api/authService';
-import Loading from '../Loading';
-import Popup from '../popup/Popup';
-import PopupContent, { PopupType } from '../popup/PopupMessages';
+import Loading from '../common/Loading';
+import Popup from '../common/popup/Popup';
+import PopupContent, { PopupType } from '../common/popup/PopupMessages';
 import { useNavigate } from 'react-router-dom';
-import ValidationError from '../ValidationError';
+import ValidationError from '../common/ValidationError';
 
 interface FormData {
   email: string;
@@ -71,7 +71,6 @@ const EditPassword = () => {
       () => {
         setLoading(false);
         setPopupType(PopupType.changePasswordSuccess);
-        console.log(`비밀번호 변경 완료`);
       },
       (error) => {
         setLoading(false);

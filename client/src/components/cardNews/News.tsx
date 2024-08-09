@@ -1,10 +1,11 @@
 import { useParams } from 'react-router-dom';
 import styled from 'styled-components';
-import Header from '../Header';
+import Header from '../common/Header';
 import NewsTitle from './NewsTitle';
 import NewsSlide from './NewsSlide';
 import NewsDescription from './NewsDescription';
-import Nav from '../Nav';
+import Nav from '../common/Nav';
+import Seo from '../common/Seo';
 
 const NEWS = [
   {
@@ -42,13 +43,20 @@ const News = () => {
   const { bigTitle, smallTitle, description, images } = NEWS[index];
 
   return (
-    <NewsContainer>
-      <Header />
-      <NewsTitle bigTitle={bigTitle} smallTitle={smallTitle} images={images} />
-      <NewsSlide num={index + 1} />
-      <NewsDescription description={description} />
-      <Nav />
-    </NewsContainer>
+    <>
+      <Seo title={'카드뉴스'} />
+      <NewsContainer>
+        <Header />
+        <NewsTitle
+          bigTitle={bigTitle}
+          smallTitle={smallTitle}
+          images={images}
+        />
+        <NewsSlide num={index + 1} />
+        <NewsDescription description={description} />
+        <Nav />
+      </NewsContainer>
+    </>
   );
 };
 

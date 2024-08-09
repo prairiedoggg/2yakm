@@ -1,12 +1,13 @@
 import { Icon } from '@iconify-icon/react';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useState } from 'react';
 import styled from 'styled-components';
 import { fetchUserAllReview, deleteReview } from '../../api/reviewApi';
-import Loading from '../Loading';
-import Popup from '../popup/Popup';
-import PopupContent, { PopupType } from '../popup/PopupMessages';
-import { useNavigate } from 'react-router-dom';
-import Toast from '../Toast';
+import Loading from '../common/Loading';
+import Popup from '../common/popup/Popup';
+import PopupContent, { PopupType } from '../common/popup/PopupMessages';
+import { Link, useNavigate } from 'react-router-dom';
+import Toast from '../common/Toast';
+import InfiniteScroll from '../common/InfiniteScroll';
 
 interface MedicationItem {
   id: number;
@@ -24,12 +25,18 @@ const ManageReviews = () => {
   const [popupType, setPopupType] = useState(PopupType.None);
   const [offset, setOffset] = useState(0);
   const [limit] = useState(10);
-  const [hasMore, setHasMore] = useState(true);
-  const containerRef = useRef<HTMLDivElement | null>(null);
   const [toastMessage, setToastMessage] = useState('');
 
   const navigate = useNavigate();
   const maxTextLength = 15;
+
+  const formatDate = (dateString: string): string => {
+    if (!dateString) return '';
+
+    const [datePart] = dateString.split('T');
+    const [year, month, day] = datePart.split('-');
+    return `${year}.${month}.${day}`;
+  };
 
   const fetchDatas = () => {
     setLoading(true);
@@ -45,13 +52,12 @@ const ManageReviews = () => {
           id: d.id,
           name: d.name,
           content: d.content,
-          createdAt: new Date(d.createdat).toDateString()
+          createdAt: formatDate(d.createdat)
         }));
         setLoading(false);
 
         setItems((prevData) => [...prevData, ...temp]);
         setOffset((prevOffset) => prevOffset + temp.length);
-        setHasMore(temp.length === limit);
 
         setItemCount(data.totalCount);
       },
@@ -60,31 +66,6 @@ const ManageReviews = () => {
       }
     );
   };
-
-  const handleScroll = useCallback(() => {
-    const container = containerRef.current;
-    if (!container) return;
-
-    const bottom =
-      container.scrollHeight === container.scrollTop + container.clientHeight;
-
-    if (bottom && !loading && hasMore) {
-      fetchDatas();
-    }
-  }, [loading, hasMore, offset]);
-
-  useEffect(() => {
-    fetchDatas();
-  }, []);
-
-  useEffect(() => {
-    const container = containerRef.current;
-    if (container) container.addEventListener('scroll', handleScroll);
-
-    return () => {
-      if (container) container.removeEventListener('scroll', handleScroll);
-    };
-  }, [handleScroll]);
 
   const getPopupContent = (type: PopupType) => {
     switch (type) {
@@ -132,11 +113,24 @@ const ManageReviews = () => {
         <div className='title'>
           <div className='title2'>
             <div className='name_ko'>
-              {' '}
-              {item.name.length > maxTextLength
-                ? item.name.substring(0, maxTextLength) + '...'
-                : item.name}
+              <Link
+                to={`/search/name?q=${item.name}`}
+                style={{ color: 'black', textDecoration: 'none' }}
+              >
+                {item.name.length > maxTextLength
+                  ? item.name.substring(0, maxTextLength) + '...'
+                  : item.name}
+                <Icon
+                  icon='ep:arrow-right-bold'
+                  width='0.8rem'
+                  height='0.8rem'
+                  style={{
+                    color: 'black'
+                  }}
+                />
+              </Link>
             </div>
+
             <div className='name_en'>{item.createdAt}</div>
           </div>
           {deleteItem ? (
@@ -169,14 +163,18 @@ const ManageReviews = () => {
             icon='ic:baseline-edit'
             width='1.3rem'
             height='1.3rem'
-            style={{ color: '#d1d1d1' }}
+            style={{ color: deleteItem ? '#72bf44' : '#d1d1d1' }}
           />
         </div>
-        <div className='items'>
+        <InfiniteScroll
+          className='items'
+          loading={loading && <div>로딩중</div>}
+          onIntersect={() => fetchDatas()}
+        >
           {items.map((item, index) =>
             renderItems(item, index < items.length - 1, index)
           )}
-        </div>
+        </InfiniteScroll>
       </StyledContent>
       {loading && <Loading />}
       {popupType !== PopupType.None && (
@@ -237,13 +235,18 @@ const Item = styled.div`
     justify-content: space-between;
   }
 
+  .desc {
+    font-size: 0.9rem;
+  }
+
   .title2 {
     justify-content: space-between;
   }
 
   .name_ko {
     font-weight: bold;
-    font-size: 1em;
+    display: flex;
+    justify-content: space-between;
   }
 
   .name_en {

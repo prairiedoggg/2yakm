@@ -8,9 +8,5 @@ export default defineConfig({
     alias: {
       '/img': '/src/assets/img'
     }
-  },
-  server: {
-    port: 5173,
-    host: '0.0.0.0'
   }
 });

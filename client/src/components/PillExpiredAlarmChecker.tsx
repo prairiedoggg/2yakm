@@ -27,7 +27,7 @@ const PillExpiredAlarmChecker = () => {
     setCurrentDate(getDateString(now));
 
     pills.forEach((pill) => {
-      if (!pill.alarmStatus) return;
+      if (!pill.alarmstatus) return;
 
       if (nextExpiredAlarmTime != undefined && nextExpiredAlarmTime > now)
         return;
@@ -62,14 +62,14 @@ const PillExpiredAlarmChecker = () => {
 
   const updateExpiredAlarm = (alarm: Pill) => {
     const prevAlarms = currentExpiredAlarms ?? [];
-    let alarmInfo = { id: alarm.id, name: alarm.name };
+    let alarmInfo = { id: alarm.pillid, name: alarm.pillname };
 
     const alreadyExists = prevAlarms.some(
-      (existingAlarm) => existingAlarm.id === alarm.id
+      (existingAlarm) => existingAlarm.id === alarm.pillid
     );
 
     const alreadyConfirmed = confirmedExpiredAlarms?.some(
-      (existingAlarm) => existingAlarm.id === alarm.id
+      (existingAlarm) => existingAlarm.id === alarm.pillid
     );
 
     if (!alreadyExists && !alreadyConfirmed)

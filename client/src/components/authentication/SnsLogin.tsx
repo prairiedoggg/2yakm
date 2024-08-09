@@ -1,5 +1,8 @@
 import { Icon } from '@iconify-icon/react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
+import Popup from '../common/popup/Popup';
+import { useEffect, useState } from 'react';
 
 const SnsLogin = ({
   onClose,
@@ -11,6 +14,29 @@ const SnsLogin = ({
   onEmailRegisterClick: () => void;
 }) => {
   const AUTH_URLS = `/api/auth`;
+  const [popupMessage, setPopupMessage] = useState<JSX.Element | null>(null);
+  const navigate = useNavigate();
+
+  const useQuery = () => {
+    return new URLSearchParams(useLocation().search);
+  };
+
+  const query = useQuery();
+  const message = query.get('message');
+
+  const makeMessage = (msg: string) => {
+    return (
+      <div>
+        {msg}
+
+        <button onClick={() => navigate('/login')}>확인</button>
+      </div>
+    );
+  };
+
+  useEffect(() => {
+    if (message != null) setPopupMessage(makeMessage(message ?? ''));
+  }, [message]);
 
   const SNS_LOGINS = [
     {
@@ -38,7 +64,9 @@ const SnsLogin = ({
 
   return (
     <Content>
-      <Logo src='/img/logo.svg' alt='이약뭐약' />
+      <Link to='/'>
+        <Logo src='/img/logo/aside_chick.svg' alt='이약뭐약' />
+      </Link>
       <div className='bubble'>⚡ 3초만에 빠른 회원가입</div>
       {SNS_LOGINS.map((sns) => {
         const { name, iconSize, label, ...rest } = sns;
@@ -62,12 +90,23 @@ const SnsLogin = ({
         <div onClick={onEmailLoginClick}>이메일로 로그인</div>
         <div onClick={onEmailRegisterClick}>이메일로 회원가입</div>
       </div>
+
+      {popupMessage !== null && (
+        <Popup
+          onClose={() => {
+            setPopupMessage(null);
+            navigate('/login');
+          }}
+        >
+          {popupMessage}
+        </Popup>
+      )}
     </Content>
   );
 };
 
 const Logo = styled.img`
-  height: 80px;
+  height: 75px;
   cursor: pointer;
   margin-bottom: 20px;
 `;
