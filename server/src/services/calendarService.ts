@@ -1,18 +1,16 @@
 import { Calendar, Medication } from '../entity/calendar';
 import { pool } from '../db';
 import { createError } from '../utils/error';
-import { zonedTimeToUtc, utcToZonedTime, format } from 'date-fns-tz';
 import { QueryResult } from 'pg';
 
-const TIMEZONE = 'Asia/Seoul';
 const getErrorMessage = (error: unknown): string => {
   if (error instanceof Error) return error.message;
   return String(error);
 };
 
-// 날짜를 한국 시간으로 변환하는 함수
-const convertToKoreanTime = (date: Date): Date => {
-  return utcToZonedTime(date, TIMEZONE);
+// 날짜를 YYYY-MM-DD 형식의 문자열로 변환하는 함수
+const formatDate = (date: Date): string => {
+  return date.toISOString().split('T')[0];
 };
 
 export const getAllCalendars = async (userId: string): Promise<Calendar[]> => {
@@ -25,16 +23,8 @@ export const getAllCalendars = async (userId: string): Promise<Calendar[]> => {
     `;    
     const values = [userId];
     const result: QueryResult<Calendar> = await pool.query(text, values);
-    return result.rows.map(row => ({
-      id: row.id,
-      userId: row.userId,
-      date: convertToKoreanTime(row.date),
-      calImg: row.calImg,
-      condition: row.condition,
-      weight: row.weight,
-      temperature: row.temperature,
-      bloodsugarBefore: row.bloodsugarBefore,
-      bloodsugarAfter: row.bloodsugarAfter,
+    return result.rows.map((row: any) => ({
+      ...row,
       medications: typeof row.medications === 'string' ? JSON.parse(row.medications) : row.medications
     }));
   } catch (error) {
@@ -45,7 +35,7 @@ export const getAllCalendars = async (userId: string): Promise<Calendar[]> => {
 
 export const getCalendarById = async (userId: string, date: Date): Promise<Calendar | null> => {
   try {
-    const dateString = format(zonedTimeToUtc(date, TIMEZONE), 'yyyy-MM-dd');
+    const dateString = formatDate(date);
     const text = `
       SELECT id, userId AS "userId", date, calImg AS "calImg", condition, weight, temperature, 
       bloodsugarBefore AS "bloodsugarBefore", bloodsugarAfter AS "bloodsugarAfter", medications
@@ -61,15 +51,7 @@ export const getCalendarById = async (userId: string, date: Date): Promise<Calen
     
     const row = result.rows[0];
     return {
-      id: row.id,
-      userId: row.userId,
-      date: convertToKoreanTime(row.date),
-      calImg: row.calImg,
-      condition: row.condition,
-      weight: row.weight,
-      temperature: row.temperature,
-      bloodsugarBefore: row.bloodsugarBefore,
-      bloodsugarAfter: row.bloodsugarAfter,
+      ...row,
       medications: typeof row.medications === 'string' ? JSON.parse(row.medications) : row.medications
     };
   } catch (error) {
@@ -94,7 +76,7 @@ export const createCalendar = async (calendar: Omit<Calendar, 'id'>): Promise<Ca
     `;
     const values = [
       calendar.userId,
-      calendar.date,
+      formatDate(calendar.date),
       calendar.calImg,
       calendar.condition,
       calendar.weight,
@@ -106,15 +88,7 @@ export const createCalendar = async (calendar: Omit<Calendar, 'id'>): Promise<Ca
     const result: QueryResult<Calendar>  = await pool.query(text, values);
     const row = result.rows[0];
     return {
-      id: row.id,
-      userId: row.userId,
-      date: convertToKoreanTime(row.date),
-      calImg: row.calImg,
-      condition: row.condition,
-      weight: row.weight,
-      temperature: row.temperature,
-      bloodsugarBefore: row.bloodsugarBefore,
-      bloodsugarAfter: row.bloodsugarAfter,
+      ...row,
       medications: typeof row.medications === 'string' ? JSON.parse(row.medications) : row.medications
     };
   } catch (error) {
@@ -132,9 +106,10 @@ export const updateCalendar = async (
   calendar: Partial<Calendar>
 ): Promise<Calendar | null> => {
   try {
+    const dateString = formatDate(date);
     const existingCalendar = await getCalendarById(userId, date);
     if (!existingCalendar) {
-      throw createError('CalendarNotFound', '해당 날짜의 캘린더를 찾을 수 없습니다..', 404);
+      throw createError('CalendarNotFound', '해당 날짜의 캘린더를 찾을 수 없습니다.', 404);
     }
 
     const updatedMedications = calendar.medications ?? existingCalendar.medications;
@@ -157,7 +132,7 @@ export const updateCalendar = async (
       calendar.bloodsugarAfter ?? existingCalendar.bloodsugarAfter,
       JSON.stringify(updatedMedications),
       userId,
-      calendar.date ?? existingCalendar.date
+      dateString
     ];
 
     const result: QueryResult<Calendar>  = await pool.query(text, values);
@@ -166,15 +141,7 @@ export const updateCalendar = async (
     }
     const row = result.rows[0];
     return {
-      id: row.id,
-      userId: row.userId,
-      date: row.date,
-      calImg: row.calImg,
-      condition: row.condition,
-      weight: row.weight,
-      temperature: row.temperature,
-      bloodsugarBefore: row.bloodsugarBefore,
-      bloodsugarAfter: row.bloodsugarAfter,
+      ...row,
       medications: typeof row.medications === 'string' ? JSON.parse(row.medications) : row.medications
     };
   } catch (error) {
@@ -186,9 +153,9 @@ export const updateCalendar = async (
 
 export const deleteCalendar = async (userId: string, date: Date): Promise<boolean> => {
   try {
-    // const dateString = format(zonedTimeToUtc(date, TIMEZONE), 'yyyy-MM-dd');
+    const dateString = formatDate(date);
     const text = 'DELETE FROM calendar WHERE userId = $1 AND date = $2';
-    const values = [userId, date];
+    const values = [userId, dateString];
     const result: QueryResult<Calendar>  = await pool.query(text, values);
     const deletedCount = result.rowCount ?? 0;
     
