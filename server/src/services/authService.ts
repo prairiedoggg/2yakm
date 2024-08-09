@@ -833,23 +833,23 @@ export const changeUsernameService = async (email: string, newUsername: string):
 // 회원 탈퇴
 export const deleteAccountService = async (userId: string): Promise<void> => {
   try {
-    const query = 'SELECT kakaoid, naverid, googleid FROM users WHERE userid = $1';
+    const query = 'SELECT userid FROM users WHERE userid = $1';
     const values = [userId];
     const result = await pool.query(query, values);
     const user = result.rows[0];
 
-    if (!user) {
+    if (result.rows.length === 0) {
       throw createError('User Not Found', '사용자를 찾을 수 없습니다.', 404);
     }
 
     // 소셜 연동 해제
-    if (user.kakaoid) {
-      await unlinkKakaoAccount(user.kakaoid);
-    } else if (user.googleid) {
-      await unlinkGoogleAccount(user.googleid);
-    } else if (user.naverid) {
-      await unlinkNaverAccount(user.naverid)
-    }
+    // if (user.kakaoid) {
+    //   await unlinkKakaoAccount(user.kakaoid);
+    // } else if (user.googleid) {
+    //   await unlinkGoogleAccount(user.googleid);
+    // } else if (user.naverid) {
+    //   await unlinkNaverAccount(user.naverid)
+    // }
 
     const deleteQuery = 'DELETE FROM users WHERE userid = $1';
     await pool.query(deleteQuery, values);
