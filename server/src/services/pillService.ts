@@ -249,7 +249,7 @@ export const searchPillsbyEfficacy = async (
 
     return {
       pills,
-      totalCount: result.rowCount ?? 0,
+      totalCount: pills.length,
       totalPages: Math.ceil((result.rowCount ?? 0) / limit),
       limit,
       offset
