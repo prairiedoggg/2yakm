@@ -106,12 +106,12 @@ const getImportantWords = (text: string): ImportantWord[] => {
     .filter((word) => {
       const isValid =
         word &&
-        Object.keys(stopwords).some((stopword) => word.startsWith(stopword));
+        Object.keys(stopwords).some((stopword) => word.includes(stopword));
       return isValid;
     });
 
   words.forEach((word) => {
-    const stopword = Object.keys(stopwords).find((sw) => word.startsWith(sw));
+    const stopword = Object.keys(stopwords).find((sw) => word.includes(sw));
     if (stopword) {
       wordFrequency[stopword] = (wordFrequency[stopword] || 0) + 1;
     }
@@ -122,6 +122,7 @@ const getImportantWords = (text: string): ImportantWord[] => {
     word,
     department: stopwords[word]
   }));
+
   return importantWords;
 };
 
@@ -207,32 +208,44 @@ export const searchPillsbyEfficacy = async (
     ) r ON p.id = r.pillid
     WHERE ${efficacyArray
       .map((_, index) => `p.efficacy ILIKE $${index + 1}`)
-      .join(' AND ')}
+      .join(' AND ')}  
     GROUP BY p.id, f.favorites_count, r.reviews_count
     ORDER BY favorites_count DESC, reviews_count DESC
     LIMIT $${efficacyArray.length + 1} OFFSET $${efficacyArray.length + 2}`;
+
   const values = [...efficacyArray, limit, offset];
 
   try {
     const result = await pool.query(query, values);
 
-    const pills = result.rows.map((pill: Pills) => {
-      const importantWordsWithDepartments = getImportantWords(pill.efficacy);
-      const importantWordsArray = importantWordsWithDepartments.map(
-        (iw) => iw.word
-      );
-      const importantWords = importantWordsArray.join(', ');
-      const departments = importantWordsWithDepartments
-        .map((iw) => iw.department)
-        .filter((dep) => dep)
-        .join(', ');
+    const pills = result.rows
+      .map((pill: Pills) => {
+        const importantWordsWithDepartments = getImportantWords(pill.efficacy);
+        const importantWords = importantWordsWithDepartments
+          .map((iw) => iw.word)
+          .join(', ');
+        const departments = importantWordsWithDepartments
+          .map((iw) => iw.department)
+          .filter((dep) => dep)
+          .join(', ');
+        return {
+          ...pill,
+          importantWords,
+          departments
+        };
+      })
+      .filter((pill) => {
+        const importantWordsArray = pill.importantWords
+          .split(', ')
+          .map((word) => word.trim().toLowerCase());
+        const efficacyArrayToCheck = efficacy
+          .split(',')
+          .map((word) => word.trim().toLowerCase());
 
-      return {
-        ...pill,
-        importantWords,
-        departments
-      };
-    });
+        return efficacyArrayToCheck.some((word) =>
+          importantWordsArray.includes(word)
+        );
+      });
 
     return {
       pills,

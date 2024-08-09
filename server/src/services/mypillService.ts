@@ -241,19 +241,23 @@ export const deletePill = async (mypillId: string): Promise<MyPill> => {
 export const getPillsExpiringTodayService = async (
   userId: string
 ): Promise<MyPill[]> => {
-  const query = `
-    SELECT pillid, userid, pillname, to_char(expiredat, 'YYYY-MM-DD') as expiredat, alarmstatus
-    FROM mypills
-    WHERE userid = $1 AND expiredat = CURRENT_DATE;
-  `;
-  const values = [userId];
-
   try {
+    const now = new Date();
+    const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+
+    const year = kst.getFullYear();
+    const month = String(kst.getMonth() + 1).padStart(2, '0');
+    const date = String(kst.getDate()).padStart(2, '0');
+
+    const today = `${year}-${month}-${date}`;
+
+    const query = `
+    SELECT pillid, userid, pillname, expiredat, createdat, alarmstatus 
+    FROM mypills
+    WHERE userid = $1 AND expiredat = $2
+    `;
+    const values = [userId, today];
     const result = await pool.query(query, values);
-    if (result.rows.length === 0) {
-      console.log('No pills found for the given date');
-      throw createError('NotFoundError', 'No pills expiring today', 404);
-    }
 
     return result.rows;
   } catch (error) {
