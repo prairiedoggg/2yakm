@@ -94,7 +94,7 @@ export const createCalendar = async (calendar: Omit<Calendar, 'id'>): Promise<Ca
     `;
     const values = [
       calendar.userId,
-      format(zonedTimeToUtc(calendar.date, TIMEZONE), 'yyyy-MM-dd'),
+      calendar.date,
       calendar.calImg,
       calendar.condition,
       calendar.weight,
@@ -132,10 +132,9 @@ export const updateCalendar = async (
   calendar: Partial<Calendar>
 ): Promise<Calendar | null> => {
   try {
-    const dateString = format(zonedTimeToUtc(date, TIMEZONE), 'yyyy-MM-dd');
     const existingCalendar = await getCalendarById(userId, date);
     if (!existingCalendar) {
-      throw createError('CalendarNotFound', '해당 날짜의 캘린더를 찾을 수 없습니다.', 404);
+      throw createError('CalendarNotFound', '해당 날짜의 캘린더를 찾을 수 없습니다..', 404);
     }
 
     const updatedMedications = calendar.medications ?? existingCalendar.medications;
@@ -158,7 +157,7 @@ export const updateCalendar = async (
       calendar.bloodsugarAfter ?? existingCalendar.bloodsugarAfter,
       JSON.stringify(updatedMedications),
       userId,
-      dateString
+      calendar.date ?? existingCalendar.date
     ];
 
     const result: QueryResult<Calendar>  = await pool.query(text, values);
