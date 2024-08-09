@@ -171,12 +171,9 @@ export const requestEmailVerification = async (email: string): Promise<void> => 
     };
     await transporter.sendMail(mailOptions);
 
-    if (user) {
-      const lastRequestTime = user.lastemailverificationrequest;
-      if (lastRequestTime && new Date().getTime() - new Date(lastRequestTime).getTime() < emailVerificationCoolTime) {
-        throw createError('TooManyRequests', '이메일 인증 요청 쿨타임이 지나지 않았습니다.', 429);
-      }
-    }
+    const updateUserQuery = 'UPDATE users SET lastemailverificationrequest = $1 WHERE email = $2';
+    const updateUserValues = [new Date(), email];
+    await pool.query(updateUserQuery, updateUserValues);
 
   } catch (error: unknown) {
     console.error('RequestEmailVerification Error:', error);
