@@ -140,47 +140,49 @@ export const login = async (
   }
 };
 
-// 이메일 인증 요청 인증 전
+// 이메일 인증 요청
 export const requestEmailVerification = async (email: string): Promise<void> => {
   const emailVerificationCoolTime = 5 * 60 * 1000; // 요청 5분 쿨타임
   try {
-    const checkUserQuery = 'SELECT email, lastemailverificationrequest FROM users WHERE email = $1';
+    const checkUserQuery = 'SELECT email, lastemailverificationrequest, isVerified FROM users WHERE email = $1';
     const checkUserValues = [email];
     const existingUserResult = await pool.query(checkUserQuery, checkUserValues);
     const user = existingUserResult.rows[0];
 
     if (user) {
       const lastRequestTime = user.lastemailverificationrequest;
+
       if (lastRequestTime && new Date().getTime() - new Date(lastRequestTime).getTime() < emailVerificationCoolTime) {
         throw createError('TooManyRequests', '이메일 인증 요청 쿨타임이 지나지 않았습니다.', 429);
       }
+      if (user.isverified) {
+        throw createError('AlreadyVerified', '이미 인증된 이메일입니다.', 400);
+      }
+
+      const updateUserQuery = 'UPDATE users SET lastemailverificationrequest = $1 WHERE email = $2';
+      const updateUserValues = [new Date(), email];
+      await pool.query(updateUserQuery, updateUserValues);
+
+    } else {
+      const insertUserQuery = 'INSERT INTO users (email, lastemailverificationrequest, isVerified) VALUES ($1, $2, $3)';
+      const insertUserValues = [email, new Date(), false];
+      await pool.query(insertUserQuery, insertUserValues);
     }
 
-    if (existingUserResult.rows.length > 0) {
-      throw createError('UserExists', '해당 이메일로 이미 사용자가 존재합니다.', 409);
-    }
-
-    const emailToken = jwt.sign({ email}, SECRET_KEY, { expiresIn: '5m' });
+    const emailToken = jwt.sign({ email }, SECRET_KEY, { expiresIn: '5m' });
     const url = `${FRONTEND_URL}/api/auth/verify-email?token=${emailToken}`;
 
     const mailOptions = {
       from: process.env.EMAIL_USER,
       to: email,
       subject: '이메일 인증',
-      text: `이메일 인증을 완료하려면 링크를 클릭하세요: ${url}`,
+      text: `이메일 인증을 완료하려면 링크를 클릭하세요 (유효시간 5분): ${url}`,
     };
     await transporter.sendMail(mailOptions);
-
-    const updateUserQuery = 'UPDATE users SET lastemailverificationrequest = $1 WHERE email = $2';
-    const updateUserValues = [new Date(), email];
-    await pool.query(updateUserQuery, updateUserValues);
 
   } catch (error: unknown) {
     console.error('RequestEmailVerification Error:', error);
     if (error instanceof Error) {
-      if (error.message === 'UserExists') {
-        throw createError('UserExists', '해당 이메일로 이미 사용자가 존재합니다.', 409);
-      }
       throw createError('DBError', error.message, 500);
     }
     throw createError('DBError', '데이터베이스 오류가 발생했습니다.', 500);
@@ -689,7 +691,7 @@ export const requestPasswordService = async (email: string): Promise<void> => {
       from: process.env.EMAIL_USER,
       to: email,
       subject: '비밀번호 재설정',
-      text: `비밀번호를 재설정하려면 링크를 클릭하세요 (유효시간: 3분): ${FRONTEND_URL}/reset-password?token=${token}`,
+      text: `비밀번호를 재설정하려면 링크를 클릭하세요 (유효시간: 5분): ${FRONTEND_URL}/reset-password?token=${token}`,
     };
     await transporter.sendMail(mailOptions);
 
