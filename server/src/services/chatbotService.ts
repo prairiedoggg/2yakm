@@ -60,7 +60,6 @@ export const processQuery = async (userId: string, message: string) => {
       includeMetadata: true
     });
     const endTime = Date.now();
-    console.log(`Query time: ${endTime - startTime}ms`);
     // 가중치를 고려하여 결과 재정렬
     const weightedResults = queryResponse.matches
       .map((match: any) => ({
