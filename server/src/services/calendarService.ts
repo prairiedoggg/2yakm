@@ -168,7 +168,7 @@ export const updateCalendar = async (
     return {
       id: row.id,
       userId: row.userId,
-      date: convertToKoreanTime(row.date),
+      date: row.date,
       calImg: row.calImg,
       condition: row.condition,
       weight: row.weight,
@@ -186,9 +186,9 @@ export const updateCalendar = async (
 
 export const deleteCalendar = async (userId: string, date: Date): Promise<boolean> => {
   try {
-    const dateString = format(zonedTimeToUtc(date, TIMEZONE), 'yyyy-MM-dd');
+    // const dateString = format(zonedTimeToUtc(date, TIMEZONE), 'yyyy-MM-dd');
     const text = 'DELETE FROM calendar WHERE userId = $1 AND date = $2';
-    const values = [userId, dateString];
+    const values = [userId, date];
     const result: QueryResult<Calendar>  = await pool.query(text, values);
     const deletedCount = result.rowCount ?? 0;
     
