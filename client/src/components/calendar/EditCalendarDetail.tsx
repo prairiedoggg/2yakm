@@ -4,8 +4,8 @@ import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import { calendarDelete } from '../../api/calendarApi';
 import { useCalendar, useDateStore } from '../../store/calendar';
-import Popup from '../popup/Popup';
-import PopupContent, { PopupType } from '../popup/PopupMessages';
+import Popup from '../common/popup/Popup';
+import PopupContent, { PopupType } from '../common/popup/PopupMessages';
 import EditDetailTextBox from './EditDetailTextBox';
 
 const ContentContainer = styled.div`
@@ -13,8 +13,8 @@ const ContentContainer = styled.div`
 `;
 
 const OpenCalendarDetail: React.FC = () => {
-  const { value, setEdit, setArrow, removePostedByDate } = useDateStore();
-  const { setCalendarData, setCalImg } = useCalendar();
+  const { value, setEdit, setArrow } = useDateStore();
+  const { setCalImg, setPhoto } = useCalendar();
   const formattedDate = dayjs(value).format('YYYY-MM-DD');
   const [popupType, setPopupType] = useState<PopupType>(PopupType.None);
   const navigate = useNavigate();
@@ -22,11 +22,10 @@ const OpenCalendarDetail: React.FC = () => {
   const handleDeleteCalender = async () => {
     try {
       const res = await calendarDelete(formattedDate);
+      setCalImg('');
+      setPhoto(new FormData());
       setEdit(false);
       setArrow(false);
-      setCalendarData(null);
-      setCalImg(new FormData());
-      removePostedByDate(formattedDate);
       setPopupType(PopupType.DeleteData);
       console.log(res);
     } catch (err) {

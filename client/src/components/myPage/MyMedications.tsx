@@ -1,42 +1,42 @@
 import styled from 'styled-components';
 import { Icon } from '@iconify-icon/react';
-import BottomSheet from '../BottomSheet';
-import { ChangeEvent, useCallback, useEffect, useRef, useState } from 'react';
+import { useState } from 'react';
 import {
   addMyPills,
   fetchMyPills,
-  deleteMyPills
+  deleteMyPills,
+  updateMyPills
 } from '../../api/myMedicineApi';
-import Loading from '../Loading';
-import Popup from '../popup/Popup';
-import PopupContent, { PopupType } from '../popup/PopupMessages';
-import { Link, useNavigate } from 'react-router-dom';
-import { fetchAutocompleteSuggestions } from '../../api/searchApi';
-import Toast from '../Toast';
+import Loading from '../common/Loading';
+import Popup from '../common/popup/Popup';
+import PopupContent, { PopupType } from '../common/popup/PopupMessages';
+import { useNavigate } from 'react-router-dom';
+import Toast from '../common/Toast';
+import { useMyPillStore } from '../../store/myPill';
+import InfiniteScroll from '../common/InfiniteScroll';
+import AddPillBottomSheet from './MyMedications/AddPillBottomSheet';
+import ModifyPillBottomSheet from './MyMedications/ModifyPillBottomSheet';
 
 interface MedicationItem {
   id: string;
   title: string;
   expiration: string;
+  alarmstatus: boolean;
 }
 
 const MyMedications = () => {
-  const [bottomSheet, setBottomSheet] = useState(false);
-  const [name, setName] = useState('');
-  const [date, setDate] = useState('');
-  const [alarm, setAlarm] = useState(false);
+  const [addBottomSheet, setAddBottomSheet] = useState(false);
   const [loading, setLoading] = useState(false);
   const [items, setItems] = useState<MedicationItem[]>([]);
+  const [selectedItem, setSelectedItem] = useState<MedicationItem | null>(null);
   const [itemCount, setItemCount] = useState(0);
   const [popupType, setPopupType] = useState(PopupType.None);
   const [deleteItem, setDeleteItem] = useState(false);
   const [selected, setSelected] = useState<MedicationItem>();
   const [offset, setOffset] = useState(0);
   const [limit] = useState(10);
-  const [hasMore, setHasMore] = useState(true);
-  const containerRef = useRef<HTMLDivElement | null>(null);
-  const [suggestions, setSuggestions] = useState<string[]>([]);
   const [toastMessage, setToastMessage] = useState('');
+  const { addPills, deletePill, updatePill } = useMyPillStore();
 
   const maxTextLength = 15;
 
@@ -59,6 +59,7 @@ const MyMedications = () => {
                     setItems((prevItems) =>
                       prevItems.filter((item) => item.id !== selected?.id)
                     );
+                    deletePill(selected?.id ?? '');
                     setItemCount(itemCount - 1);
                     setLoading(false);
                     setSelected(undefined);
@@ -77,63 +78,37 @@ const MyMedications = () => {
           </div>
         );
 
+      case PopupType.ExpiredMedNotice:
+        return (
+          <div>
+            <Icon
+              icon='line-md:alert-circle-twotone-loop'
+              width='3rem'
+              height='3rem'
+              style={{ color: 'red' }}
+            />
+            <br /> <br />
+            <b>{selected?.title}</b>폐의약품을 일반 쓰레기로 버리면 심각한 환경
+            오염을 유발해요. <br />
+            폐의약품 전용 수거함에 버려주세요!
+            <br />
+            <br />
+            <button
+              className='bottomClose'
+              onClick={() => {
+                window.location.href =
+                  'https://map.seoul.go.kr/smgis2/short/6OgWi';
+              }}
+            >
+              폐의약품 전용수거함 위치 보기
+            </button>
+          </div>
+        );
+
       default:
         return PopupContent(type, navigate);
     }
   };
-
-  const fetchSuggestions = async (newQuery: string) => {
-    if (newQuery === '') return;
-
-    try {
-      const results = await fetchAutocompleteSuggestions(newQuery);
-      setSuggestions(results.map((r: any) => r.name));
-    } catch (error) {
-      setSuggestions([]);
-    }
-  };
-
-  const handleNameChange = async (e: ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    setName(value);
-
-    await fetchSuggestions(value);
-  };
-
-  const handleSuggestionClick = (suggestion: string) => {
-    setName(suggestion);
-    setSuggestions([]);
-  };
-
-  const handleDateChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    setDate(value);
-  };
-
-  const handleScroll = useCallback(() => {
-    const container = containerRef.current;
-    if (!container) return;
-
-    const bottom =
-      container.scrollHeight === container.scrollTop + container.clientHeight;
-
-    if (bottom && !loading && hasMore) {
-      fetchDatas();
-    }
-  }, [loading, hasMore, offset]);
-
-  useEffect(() => {
-    fetchDatas();
-  }, []);
-
-  useEffect(() => {
-    const container = containerRef.current;
-    if (container) container.addEventListener('scroll', handleScroll);
-
-    return () => {
-      if (container) container.removeEventListener('scroll', handleScroll);
-    };
-  }, [handleScroll]);
 
   const formatDate = (dateString: string): string => {
     if (!dateString) return '';
@@ -142,18 +117,21 @@ const MyMedications = () => {
     return `${year}.${month}.${day}`;
   };
 
-  const fetchDatas = (latestData = false) => {
+  const fetchDatas = async (latestData = false) => {
     fetchMyPills(
       latestData ? 1 : limit,
       latestData ? 0 : offset,
       'createdAt',
       'DESC',
       (data) => {
+        addPills(data.data);
+
         const pillDatas = data.data;
         const temp: MedicationItem[] = pillDatas.map((d: any) => ({
           id: d.pillid,
           title: d.pillname,
-          expiration: formatDate(d.expiredat)
+          expiration: formatDate(d.expiredat),
+          alarmstatus: d.alarmstatus
         }));
         setLoading(false);
         setOffset((prevOffset) => prevOffset + temp.length);
@@ -162,7 +140,6 @@ const MyMedications = () => {
           setItems((prevData) => [...temp, ...prevData]);
         } else {
           setItems((prevData) => [...prevData, ...temp]);
-          setHasMore(temp.length === limit);
         }
 
         setItemCount(data.totalCount);
@@ -173,26 +150,35 @@ const MyMedications = () => {
     );
   };
 
+  const formatDateToISO = (date: string): string => {
+    const dateObj = new Date(date);
+    const year = dateObj.getFullYear();
+    const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+    const day = String(dateObj.getDate()).padStart(2, '0');
+
+    return `${year}-${month}-${day}`;
+  };
+
   const renderItems = (item: MedicationItem, key: number) => {
     return (
       <Item key={key}>
         <div className='title'>
-          <Link
+          {/* <Link
             to={`/search/name?q=${item.title}`}
             style={{ color: 'black', textDecoration: 'none' }}
-          >
-            <div className='title2'>
-              {item.title.length > maxTextLength
-                ? item.title.substring(0, maxTextLength) + '...'
-                : item.title}
-              <Icon
-                icon='ep:arrow-right-bold'
-                width='1.2em'
-                height='1.2em'
-                style={{ color: 'black' }}
-              />
-            </div>
-          </Link>
+          > */}
+          <div className='title2' onClick={() => setSelectedItem(item)}>
+            {item.title.length > maxTextLength
+              ? item.title.substring(0, maxTextLength) + '...'
+              : item.title}
+            <Icon
+              icon='ep:arrow-right-bold'
+              width='1.2em'
+              height='1.2em'
+              style={{ color: 'black' }}
+            />
+          </div>
+          {/* </Link> */}
 
           {deleteItem ? (
             <div
@@ -215,10 +201,6 @@ const MyMedications = () => {
     );
   };
 
-  const isFormValid = (): boolean => {
-    return name != '' && date != '';
-  };
-
   return (
     <MyPageContainer>
       <StyledContent>
@@ -229,111 +211,97 @@ const MyMedications = () => {
             icon='ic:baseline-edit'
             width='1.3rem'
             height='1.3rem'
-            style={{ color: '#d1d1d1' }}
+            style={{ color: deleteItem ? '#72bf44' : '#d1d1d1' }}
           />
         </div>
-        <div className='info'>
-          <a href='https://map.seoul.go.kr/smgis2/short/6OgWi'>
-            📍<u>폐의약품 전용수거함 위치</u>
-          </a>
+        <div
+          className='info'
+          onClick={() => setPopupType(PopupType.ExpiredMedNotice)}
+        >
+          📍<u>폐의약품 전용수거함 위치</u>
         </div>
-        <div className='items' ref={containerRef}>
-          <Item>
-            <div className='empty' onClick={() => setBottomSheet(true)}>
-              <Icon
-                icon='basil:add-solid'
-                width='2rem'
-                height='2rem'
-                style={{ color: '#ffbb25' }}
-              />
-              새로운 나의 약 추가하기
-            </div>
-          </Item>
+        <Item className='add-new-item' style={{ marginBottom: '20px' }}>
+          <div className='empty' onClick={() => setAddBottomSheet(true)}>
+            <Icon
+              icon='basil:add-solid'
+              width='2rem'
+              height='2rem'
+              style={{ color: '#ffbb25' }}
+            />
+            새로운 나의 약 추가하기
+          </div>
+        </Item>
+        <InfiniteScroll
+          className='items'
+          loading={loading && <div>로딩중</div>}
+          onIntersect={() => fetchDatas()}
+        >
           {items.map((item, index) => renderItems(item, index))}
-        </div>
+        </InfiniteScroll>
 
         <Sheet>
-          <BottomSheet
-            isVisible={bottomSheet}
-            onClose={() => setBottomSheet(false)}
-          >
-            <div className='title'>내 약 추가</div>
-            <div className='info-box'>
-              <div className='title2'>약 이름</div>
+          <AddPillBottomSheet
+            onSubmit={(name, date, alarm) => {
+              setLoading(true);
+              addMyPills(
+                name,
+                date.toString(),
+                alarm,
+                () => {
+                  setAddBottomSheet(false);
+                  setLoading(false);
+                  fetchDatas(true);
+                  setToastMessage('나의 약 등록 완료!');
+                },
+                () => {
+                  setLoading(false);
+                  setPopupType(PopupType.AddMyPillFailure);
+                }
+              );
+            }}
+            isVisible={addBottomSheet}
+            onClose={() => setAddBottomSheet(false)}
+          />
 
-              <div className='input-container'>
-                <input
-                  type='text'
-                  placeholder='약 이름'
-                  value={name}
-                  onChange={handleNameChange}
-                />
-              </div>
+          <ModifyPillBottomSheet
+            onSubmit={(name, date, alarm) => {
+              setLoading(true);
+              updateMyPills(
+                selectedItem?.id ?? '',
+                name,
+                date,
+                alarm,
+                () => {
+                  setItems((prevItems) =>
+                    prevItems.map((item) =>
+                      item.id === (selectedItem?.id ?? '')
+                        ? {
+                            ...item,
+                            title: name,
+                            expiration: date,
+                            alarmstatus: alarm
+                          }
+                        : item
+                    )
+                  );
 
-              {suggestions.length > 0 && (
-                <ul className='drop-down'>
-                  {suggestions.map((suggestion, index) => (
-                    <li
-                      key={index}
-                      onClick={() => handleSuggestionClick(suggestion)}
-                      style={{
-                        padding: '8px',
-                        cursor: 'pointer',
-                        fontSize: '0.9rem',
-                        borderBottom: '1px solid #ddd'
-                      }}
-                    >
-                      {suggestion}
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </div>
-
-            <div className='info-box'>
-              <div className='title2'>
-                사용 기한{' '}
-                <Icon
-                  icon={alarm ? 'octicon:bell-16' : 'octicon:bell-slash-16'}
-                  width='1.4rem'
-                  height='1.4rem'
-                  style={{ color: 'gray' }}
-                  onClick={() => setAlarm(!alarm)}
-                />
-              </div>
-              <div className='input-container'>
-                <input type='date' value={date} onChange={handleDateChange} />
-              </div>
-            </div>
-
-            <button
-              className='bottomClose'
-              disabled={!isFormValid()}
-              onClick={() => {
-                setLoading(true);
-                addMyPills(
-                  name,
-                  date.toString(),
-                  alarm,
-                  () => {
-                    setBottomSheet(false);
-                    setLoading(false);
-                    fetchDatas(true);
-                    setName('');
-                    setDate('');
-                    setAlarm(false);
-                    setToastMessage('나의 약 등록 완료!');
-                  },
-                  () => {
-                    setLoading(false);
-                    setPopupType(PopupType.AddMyPillFailure);
-                  }
-                );
-              }}
-            >
-              등록 완료
-            </button>
-          </BottomSheet>
+                  updatePill(selectedItem?.id ?? '', name, date, alarm);
+                  setSelectedItem(null);
+                  setLoading(false);
+                  setToastMessage('나의 약 수정 완료!');
+                },
+                () => {
+                  setLoading(false);
+                  setPopupType(PopupType.AddMyPillFailure);
+                }
+              );
+            }}
+            isVisible={selectedItem != null}
+            _name={selectedItem?.title ?? ''}
+            _date={formatDateToISO(selectedItem?.expiration ?? '')}
+            _alarm={selectedItem?.alarmstatus ?? false}
+            onClose={() => setSelectedItem(null)}
+          />
         </Sheet>
       </StyledContent>
       {loading && <Loading />}
@@ -455,7 +423,7 @@ const Item = styled.div`
   .title {
     display: flex;
     font-weight: bold;
-    font-size: 1em;
+    font-size: 0.9rem;
     justify-content: space-between;
   }
 

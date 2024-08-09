@@ -1,19 +1,19 @@
 import { useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import styled from 'styled-components';
-import { PillData } from '../../store/pill.ts';
 import { useSearchStore } from '../../store/search.ts';
-import Nav from '../Nav';
+import Nav from '../common/Nav.tsx';
 import AutoComplete from './AutoComplete.tsx';
 import ImageSearchList from './ImageSearchList.tsx';
 import SearchHeader from './SearchHeader.tsx';
 import SearchHistory from './SearchHistory.tsx';
+import Seo from '../common/Seo';
 
 const Search = () => {
   const [searchParams] = useSearchParams();
   const query = searchParams.get('q') || '';
-  const [imageResults, setImageResults] = useState<PillData[]>([]);
-  const { searchType, setSearchType, isImageSearch } = useSearchStore();
+  const { searchType, setSearchType, isImageSearch, imageResults } =
+    useSearchStore();
   const [activeType, setActiveType] = useState<string>(searchType);
 
   const handleTypeClick = (type: string) => {
@@ -30,15 +30,17 @@ const Search = () => {
   };
 
   return (
-    <SearchContainer>
-      <SearchHeader
-        activeType={activeType}
-        handleTypeClick={handleTypeClick}
-        setImageResults={setImageResults}
-      />
-      {renderer()}
-      <Nav />
-    </SearchContainer>
+    <>
+      <Seo title={'검색'} />
+      <SearchContainer>
+        <SearchHeader
+          activeType={activeType}
+          handleTypeClick={handleTypeClick}
+        />
+        {renderer()}
+        <Nav />
+      </SearchContainer>
+    </>
   );
 };
 

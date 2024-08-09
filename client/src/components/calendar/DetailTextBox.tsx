@@ -1,6 +1,6 @@
 import styled from 'styled-components';
-import { useDateStore } from '../../store/calendar';
-import Info from '../Info';
+import { useCalendar, useDateStore } from '../../store/calendar';
+import Info from '../common/Info';
 import BloodSugar from './calendarDetails/BloodSugar';
 import IsPillTaken from './calendarDetails/IsPillTaken';
 import Photo from './calendarDetails/Photo';
@@ -9,11 +9,6 @@ import Weight from './calendarDetails/Weight';
 
 interface DetailTextBoxProps {
   title: string;
-  pillData?: {
-    name?: string;
-    time?: string[];
-    taken?: boolean[];
-  }[];
   bloodsugarbefore?: number;
   bloodsugarafter?: number;
   temp?: number;
@@ -23,7 +18,6 @@ interface DetailTextBoxProps {
 
 const DetailTextBox = ({
   title,
-  pillData,
   bloodsugarbefore,
   bloodsugarafter,
   temp,
@@ -32,13 +26,15 @@ const DetailTextBox = ({
 }: DetailTextBoxProps) => {
   const { setArrow } = useDateStore();
 
+  const { nowData } = useCalendar();
+
   const handleInfoText = () => {
     switch (title) {
       case '혈당':
         return (
           <Info
             text={
-              '<p style="color: #23AF51">정상 : <br /> 공복 혈당 100미만, 식후 혈당 140미만 </p><br /> <br /><p style="color: #F78500">관리 필요: <br /> 공복혈당 100이상 126미만, 식후혈당 140이상 200미만</p><br/> <br /><p style="color: #EE3610">당뇨:  <br />공복혈당 126이상, 식후혈당 200이상 </p>'
+              '<p style="color: #23AF51">정상 : <br /> 공복 혈당 100미만, 식후 혈당 140미만 </p><br /> <p style="color: #F78500">관리 필요: <br /> 공복혈당 100이상 126미만, 식후혈당 140이상 200미만</p><br/> <p style="color: #EE3610">당뇨:  <br />공복혈당 126이상, 식후혈당 200이상 </p>'
             }
             category='혈당'
           />
@@ -47,7 +43,7 @@ const DetailTextBox = ({
         return (
           <Info
             text={
-              '<p style="color: #72BF44">정상: 35.8 ~ 37.2도 </p><br /> <br /><p style="color: #D8C100">미열: 37.2 ~ 37.9도 </p><br /> <br /><p style="color: #F69999">중등도열: 38 ~ 38.9도 </p> <br /> <br> <p style="color: #C20000">고열: 39도 이상</p> '
+              '<p style="color: #72BF44">정상: 35.8 ~ 37.2도 </p> <br /><p style="color: #D8C100">미열: 37.2 ~ 37.9도 </p><br /><p style="color: #F69999">중등도열: 38 ~ 38.9도 </p> <br />  <p style="color: #C20000">고열: 39도 이상</p> '
             }
             category='체온'
           />
@@ -65,11 +61,10 @@ const DetailTextBox = ({
         return null;
     }
   };
-
   const handleContent = () => {
     switch (title) {
       case '약 복용 여부':
-        return <IsPillTaken pillData={pillData} edit={false} />;
+        return <IsPillTaken edit={false} />;
       case '혈당':
         return (
           <BloodSugar
@@ -91,12 +86,14 @@ const DetailTextBox = ({
   const isPill = title === '약 복용 여부';
 
   const isAllEmpty =
-    (!pillData || pillData.length === 0) &&
-    (bloodsugarbefore === undefined || bloodsugarbefore === 0) &&
-    (bloodsugarafter === undefined || bloodsugarafter === 0) &&
-    (temp === undefined || temp === 0) &&
-    (weight === undefined || weight === 0) &&
-    (!photo || photo === '');
+    !nowData?.medications &&
+    (nowData?.bloodsugarBefore === undefined ||
+      nowData?.bloodsugarBefore === 0) &&
+    (nowData?.bloodsugarAfter === undefined ||
+      nowData?.bloodsugarAfter === 0) &&
+    (nowData?.temperature === undefined || nowData?.temperature === 0) &&
+    (nowData?.weight === undefined || nowData?.weight === 0) &&
+    (!nowData?.calImg || nowData?.calImg === '');
 
   return (
     <>

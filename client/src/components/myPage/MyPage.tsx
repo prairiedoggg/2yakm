@@ -1,5 +1,5 @@
 import styled from 'styled-components';
-import Header from '../Header';
+import Header from '../common/Header';
 import EditMyInformation from './EditMyInformation';
 import EditName from './EditName';
 import EditPassword from './EditPassword';
@@ -8,6 +8,7 @@ import FavoriteMedications from './FavoriteMedications';
 import ManageReviews from './ManageReviews';
 import MyInformation from './MyInformation';
 import MyMedications from './MyMedications';
+import Seo from '../common/Seo';
 
 import { Icon } from '@iconify-icon/react';
 import { useState } from 'react';
@@ -15,10 +16,12 @@ import { useNavigate } from 'react-router-dom';
 import { deleteAccount, logout } from '../../api/authService';
 import { useChatBot } from '../../store/chatbot';
 import useUserStore from '../../store/user';
-import Loading from '../Loading';
-import Nav from '../Nav';
-import Popup from '../popup/Popup';
-import PopupContent, { PopupType } from '../popup/PopupMessages';
+import Loading from '../common/Loading';
+import Nav from '../common/Nav';
+import Popup from '../common/popup/Popup';
+import PopupContent, { PopupType } from '../common/popup/PopupMessages';
+import { useMyPillStore } from '../../store/myPill';
+import { useAllAlarmStore } from '../../store/allAlarms';
 
 enum pageState {
   Main,
@@ -37,6 +40,9 @@ const MyPage = () => {
   const [popupType, setPopupType] = useState(PopupType.None);
   const [loading, setLoading] = useState(false);
   const { deleteChat } = useChatBot();
+  const { clearAllPills } = useMyPillStore();
+  const { clearAllAlarms } = useAllAlarmStore();
+
   const navigate = useNavigate();
 
   const renderContent = () => {
@@ -75,6 +81,8 @@ const MyPage = () => {
                     navigate('/', { replace: true });
                     window.location.reload();
                     deleteChat();
+                    clearAllPills();
+                    clearAllAlarms();
                   })
                 }
               >
@@ -248,13 +256,16 @@ const MyPage = () => {
   };
 
   return (
-    <MyPageContainer>
-      <Header />
-      {renderContent()}
-      {/* <Toast str="이름 변경이 완료되었어요" /> */}
+    <>
+      <Seo title={'마이페이지'} />
+      <MyPageContainer>
+        <Header />
+        {renderContent()}
+        {/* <Toast str="이름 변경이 완료되었어요" /> */}
 
-      <Nav />
-    </MyPageContainer>
+        <Nav />
+      </MyPageContainer>
+    </>
   );
 };
 
@@ -324,7 +335,7 @@ const StyledContent = styled.div`
       margin-bottom: 10px;
       padding-left: 10px;
       padding-right: 10px;
-      font-size: 0.9rem;
+      font-size: 1rem;
     }
   }
 `;

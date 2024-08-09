@@ -1,30 +1,112 @@
 import { Icon } from '@iconify-icon/react';
 import dayjs from 'dayjs';
 import Cookies from 'js-cookie';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
-import { useDateStore } from '../../store/calendar';
-import Layout from '../Layout';
-import Popup from '../popup/Popup';
-import PopupContent, { PopupType } from '../popup/PopupMessages';
+import { calendarGet, calendarPost, calendarPut } from '../../api/calendarApi';
+import { useCalendar, useDateStore } from '../../store/calendar';
+import Layout from '../common/Layout';
+import Seo from '../common/Seo';
+import Popup from '../common/popup/Popup';
+import PopupContent, { PopupType } from '../common/popup/PopupMessages';
 import CalendarDetail from './CalendarDetail';
 import CalendarSection from './CalendarSection';
 import CalendarToast from './CalendarToast';
 
 const CalendarPage: React.FC = () => {
-  const { value, arrow, setArrow, edit, setEdit, setAddTaken } = useDateStore();
+  const {
+    value,
+    arrow,
+    setArrow,
+    edit,
+    setEdit,
+    setAddTaken,
+    posted,
+    addPosted,
+    onChange
+  } = useDateStore();
+  const { nowData, photo, setNowData } = useCalendar();
   dayjs.locale('ko');
   const days = dayjs(value).format('D일 ddd');
+  const formattedDate = dayjs(value).format('YYYY-MM-DD');
   const login = Cookies.get('login');
   const [maxTime, setMaxTime] = useState<boolean>(false);
   const navigate = useNavigate();
   const [showPopup, setShowPopup] = useState<boolean>(false);
   const [popupType, setPopupType] = useState<PopupType>(PopupType.None);
+  const isPosted = posted.some((item) => item.date === formattedDate);
+
+  useEffect(() => {
+    onChange(dayjs().toDate());
+    const getTodayData = async () => {
+      try {
+        const res = await calendarGet(dayjs().format('YYYY-MM-DD'));
+        setNowData(res);
+      } catch (err) {
+        console.log(err);
+      }
+    };
+    getTodayData();
+    setEdit(false);
+    setArrow(false);
+    setAddTaken(false);
+  }, []);
+
+  const formData = new FormData();
+  formData.append('date', formattedDate);
+  formData.append(
+    'bloodsugarBefore',
+    (nowData?.bloodsugarBefore ?? 0).toString()
+  );
+  formData.append(
+    'bloodsugarAfter',
+    (nowData?.bloodsugarAfter ?? 0).toString()
+  );
+  formData.append('medications', JSON.stringify(nowData?.medications ?? []));
+  formData.append('temperature', (nowData?.temperature ?? 0).toString());
+  formData.append('weight', (nowData?.weight ?? 0).toString());
+  formData.append('calImg', photo?.get('file') as Blob);
+
+  const putData = async () => {
+    try {
+      if (isPosted) {
+        const res = await calendarPut(formattedDate, formData);
+        setNowData(res);
+      } else {
+        const res = await calendarPost(formData);
+        setNowData(res);
+        addPosted({ date: formattedDate, post: true });
+      }
+    } catch (err) {
+      console.error('수정 에러:', err);
+    }
+  };
 
   const openEdit = (open: boolean) => {
     if (login) {
-      if (!open) {
+      if (open === false) {
+        if (nowData && !isPosted) {
+          const newEntry = {
+            date: formattedDate,
+            medications: nowData?.medications?.map((pill) => ({
+              name: pill.name || '',
+              time: Array.isArray(pill.time) ? pill.time : [pill.time || ''],
+              taken: Array.isArray(pill.taken)
+                ? pill.taken
+                : [pill.taken || false]
+            })),
+            bloodsugarBefore: nowData?.bloodsugarBefore || 0,
+            bloodsugarAfter: nowData?.bloodsugarAfter || 0,
+            temperature: nowData?.temperature || 0,
+            weight: nowData?.weight || 0,
+            calImg: photo?.get('file')
+              ? URL.createObjectURL(photo.get('file') as Blob)
+              : undefined
+          };
+          setNowData(newEntry);
+        }
+        putData();
         setAddTaken(false);
         setEdit(false);
         setMaxTime(true);
@@ -43,55 +125,63 @@ const CalendarPage: React.FC = () => {
     setEdit(false);
     setAddTaken(false);
     setArrow(false);
-    setMaxTime(true);
-    setTimeout(() => setMaxTime(false), 2000);
   };
 
   return (
-    <CalendarContainer>
-      <Modal expanded={arrow} onClick={() => handleModal()} />
-      <Layout />
-      <MainContent>
-        <CalendarSection />
-        <EntireDetail expanded={arrow}>
-          <CalandarDatailContainer>
-            <ImgContainer onClick={() => setArrow(!arrow)}>
-              <Line />
-            </ImgContainer>
-            <TopContainer onClick={() => setArrow(true)}>
-              <DateBox>{days}</DateBox>
-              {!edit ? (
-                <Icon
-                  icon='uil:edit'
-                  width='20px'
-                  height='20px'
-                  onClick={() => openEdit(true)}
-                />
-              ) : (
-                <Icon
-                  icon='uil:edit'
-                  width='20px'
-                  height='20px'
-                  style={{ color: '#72bf44' }}
-                  onClick={() => openEdit(false)}
-                />
-              )}
-            </TopContainer>
-          </CalandarDatailContainer>
-          <DetailContainer>
-            <CalendarDetail />
-          </DetailContainer>
-        </EntireDetail>
-      </MainContent>
-      {showPopup && (
-        <Popup onClose={() => setShowPopup(false)}>
-          {PopupContent(popupType, navigate)}
-        </Popup>
-      )}
-      {!edit && maxTime && <CalendarToast title='저장' str='저장 완료!' />}
-    </CalendarContainer>
+    <>
+      <Seo title={'캘린더'} />
+      <CalendarContainer>
+        <Modal
+          expanded={arrow ? 'true' : undefined}
+          onClick={() => handleModal()}
+        />
+        <Layout />
+        <MainContent>
+          <CalendarSection />
+          <EntireDetail expanded={arrow ? 'true' : undefined}>
+            <CalandarDatailContainer>
+              <ImgContainer onClick={() => setArrow(!arrow)}>
+                <Line />
+              </ImgContainer>
+              <TopContainer onClick={() => setArrow(true)}>
+                <DateBox>{days}</DateBox>
+                {!edit ? (
+                  <Icon
+                    icon='uil:edit'
+                    width='20px'
+                    height='20px'
+                    onClick={() => openEdit(true)}
+                  />
+                ) : (
+                  <Icon
+                    icon='uil:edit'
+                    width='20px'
+                    height='20px'
+                    style={{ color: '#72bf44' }}
+                    onClick={() => openEdit(false)}
+                  />
+                )}
+              </TopContainer>
+            </CalandarDatailContainer>
+            <DetailContainer>
+              <CalendarDetail />
+            </DetailContainer>
+          </EntireDetail>
+        </MainContent>
+        {showPopup && (
+          <Popup onClose={() => setShowPopup(false)}>
+            {PopupContent(popupType, navigate)}
+          </Popup>
+        )}
+        {!edit && maxTime ? (
+          <CalendarToast title='저장' str='저장 완료!' />
+        ) : null}
+      </CalendarContainer>
+    </>
   );
 };
+
+export default CalendarPage;
 
 const CalendarContainer = styled.div`
   width: 100vw;
@@ -108,7 +198,7 @@ const MainContent = styled.div`
   overflow: hidden;
 `;
 
-const EntireDetail = styled.div<{ expanded: boolean }>`
+const EntireDetail = styled.div<{ expanded?: string }>`
   position: ${({ expanded }) => (expanded ? 'absolute' : 'relative')};
   bottom: ${({ expanded }) => (expanded ? '80px' : '0')};
   width: 100%;
@@ -152,7 +242,7 @@ const DetailContainer = styled.div`
   width: 100%;
 `;
 
-const Modal = styled.div<{ expanded: boolean }>`
+const Modal = styled.div<{ expanded?: string }>`
   position: fixed;
   top: 0;
   left: 0;
@@ -168,5 +258,3 @@ const TopContainer = styled.div`
   justify-content: space-between;
   margin-top: 20px;
 `;
-
-export default CalendarPage;

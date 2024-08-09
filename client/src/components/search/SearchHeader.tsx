@@ -1,29 +1,25 @@
 import styled from 'styled-components';
-import { Dispatch, SetStateAction } from 'react';
-import { PillData } from '../../store/pill.ts';
 import SearchBox from './SearchBox';
 
 const SEARCH_TYPES = [
   {
     key: 'name',
-    label: '이름으로 검색'
+    label: '이름'
   },
   {
     key: 'efficacy',
-    label: '효능으로 검색'
+    label: '효능'
   }
 ];
 
 interface SearchHeaderProps {
   activeType?: string;
   handleTypeClick: (type: string) => void;
-  setImageResults?: Dispatch<SetStateAction<PillData[]>>;
 }
 
 const SearchHeader = ({
   activeType,
   handleTypeClick,
-  setImageResults
 }: SearchHeaderProps) => {
   return (
     <BackgroundHeader>
@@ -43,7 +39,7 @@ const SearchHeader = ({
           );
         })}
       </SearchTypeSelect>
-      <SearchBox setImageResults={setImageResults} />
+      <SearchBox />
     </BackgroundHeader>
   );
 };
@@ -54,17 +50,18 @@ const BackgroundHeader = styled.div`
   position: relative;
   margin-bottom: 40px;
   width: 100vw;
-  height: 55px;
+  height: 60px;
   background-color: var(--main-color);
 `;
 
 const SearchTypeSelect = styled.div`
-  padding: 10px 20px;
+  padding: 15px 25px;
 `;
 
 const SearchTypeButton = styled.button<{ $isActive: boolean }>`
   position: relative;
   color: ${({ $isActive }) => (!$isActive ? 'gray' : 'black')};
+  font-size: 15px;
   border: none;
   background: none;
 

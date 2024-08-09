@@ -1,5 +1,4 @@
 import { get, post, del } from './api';
-
 export const fetchReviews = async ({
   pillId,
   initialLimit = 10,
@@ -12,16 +11,12 @@ export const fetchReviews = async ({
   cursor?: string | null;
 }) => {
   try {
-   
-   const data = await get(`/api/reviews/pills/${pillId}`, {
-     params: {
-       initialLimit,
-       cursorLimit,
-       cursor
-     }
-   });
+    const data = await get(`/api/reviews/pills/${pillId}`, {
+      initialLimit,
+      cursorLimit,
+      cursor
+    });
 
-    console.log('리뷰 get:', data);
     return data;
   } catch (error) {
     console.error('리뷰불러오기 에러:', error);

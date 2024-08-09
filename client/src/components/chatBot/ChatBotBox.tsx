@@ -4,8 +4,8 @@ import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import { chatBot, endChatBot } from '../../api/chatbot';
 import { useChatBot } from '../../store/chatbot';
-import Popup from '../popup/Popup';
-import PopupContent, { PopupType } from '../popup/PopupMessages';
+import Popup from '../common/popup/Popup';
+import PopupContent, { PopupType } from '../common/popup/PopupMessages';
 import BotChat from './BotChat';
 import UserChat from './UserChat';
 
@@ -35,8 +35,12 @@ const ChatBotBox: React.FC = () => {
 
     try {
       const res = await chatBot(text);
-      console.log('챗봇 대답', res);
-      const formattedRes = res.replace(/\n/g, '<br />');
+      const formattedRes = res
+        .replace(/\n/g, '<br />')
+        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+        .replace(/### (.*?)(<br \/>|$)/g, '<h3>$1</h3>')
+        .replace(/- (.*?)(<br \/>|$)/g, '<li>$1</li>')
+        .replace(/<li>(.*?)<\/li>/g, '<ul><li>$1</li></ul>');
       updateLastBotChat(formattedRes);
     } catch (err) {
       console.log('챗봇 대화 실패', err);
@@ -145,7 +149,7 @@ const Box = styled.div`
   border-radius: 40px;
   background-color: #ffe612;
   width: 90%;
-  height: 87%;
+  height: 84%;
   padding: 10px;
   padding-bottom: 45px;
   font-size: 10.5pt;
