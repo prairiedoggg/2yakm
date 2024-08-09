@@ -35,7 +35,7 @@ ARG ENV_FILE=.env
 COPY ${ENV_FILE} .env
 
 # 클라이언트 빌드
-RUN cd client && npm run build || echo "클라이언트 빌드 중 오류 발생"
+RUN cd client && npm run build
 
 # 서버 빌드
 RUN cd server && npm run build
