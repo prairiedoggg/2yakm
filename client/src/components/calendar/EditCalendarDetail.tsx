@@ -14,13 +14,14 @@ const ContentContainer = styled.div`
 
 const OpenCalendarDetail: React.FC = () => {
   const { value, setEdit, setArrow } = useDateStore();
-  const { setCalImg, setPhoto } = useCalendar();
+  const { setCalImg, setPhoto, removeCalendarEntries } = useCalendar();
   const formattedDate = dayjs(value).format('YYYY-MM-DD');
   const [popupType, setPopupType] = useState<PopupType>(PopupType.None);
   const navigate = useNavigate();
 
   const handleDeleteCalender = async () => {
     try {
+      removeCalendarEntries(formattedDate);
       const res = await calendarDelete(formattedDate);
       setCalImg('');
       setPhoto(new FormData());

@@ -87,6 +87,7 @@ interface Calendar {
   setPhoto: (photo: FormData) => void;
   nowData: CalendarEntry | null;
   setNowData: (data: CalendarEntry | null) => void;
+  removeCalendarEntries: (date: string) => void;
 }
 
 export const useCalendar = create<Calendar>()(
@@ -196,6 +197,12 @@ export const useCalendar = create<Calendar>()(
       set({
         photo: formData
       });
-    }
+    },
+    removeCalendarEntries: (date: string) =>
+      set((state) => ({
+        calendarEntries: state.calendarEntries.filter(
+          (entry) => entry.date !== date
+        )
+      }))
   }))
 );
