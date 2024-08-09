@@ -1,6 +1,8 @@
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
 
+const isDevelopment = import.meta.env.VITE_APP_NODE_ENV === 'development';
+
 interface Store {
   value: Date | null;
   onChange: (date: Date | null) => void;
@@ -91,118 +93,237 @@ interface Calendar {
 }
 
 export const useCalendar = create<Calendar>()(
-  devtools((set) => ({
-    calendarEntries: [],
-    calImg: null,
-    nowData: null,
+  isDevelopment
+    ? devtools((set) => ({
+        calendarEntries: [],
+        calImg: null,
+        nowData: null,
 
-    setCalendarEntries: (entries) => set({ calendarEntries: entries }),
+        setCalendarEntries: (entries) => set({ calendarEntries: entries }),
 
-    addMedications: (newMedications: CalendarEntry['medications']) =>
-      set((state) => {
-        const updatedMedications = Array.isArray(newMedications)
-          ? newMedications
-          : [];
+        addMedications: (newMedications: CalendarEntry['medications']) =>
+          set((state) => {
+            const updatedMedications = Array.isArray(newMedications)
+              ? newMedications
+              : [];
 
-        if (state.nowData) {
-          const updatedData = {
-            ...state.nowData,
-            medications: [
-              ...(state.nowData.medications || []),
-              ...updatedMedications
-            ]
-          };
-          return { nowData: updatedData };
-        } else {
-          const newEntry: CalendarEntry = {
-            date: new Date().toISOString(),
-            medications: updatedMedications
-          };
-          return { nowData: newEntry };
-        }
-      }),
+            if (state.nowData) {
+              const updatedData = {
+                ...state.nowData,
+                medications: [
+                  ...(state.nowData.medications || []),
+                  ...updatedMedications
+                ]
+              };
+              return { nowData: updatedData };
+            } else {
+              const newEntry: CalendarEntry = {
+                date: new Date().toISOString(),
+                medications: updatedMedications
+              };
+              return { nowData: newEntry };
+            }
+          }),
 
-    updateMedications: (updatedMedications: CalendarEntry['medications']) =>
-      set((state) => {
-        if (state.nowData) {
-          const existingMedications = state.nowData.medications || [];
-          const updatedEntry = {
-            ...state.nowData,
-            medications: existingMedications.map((medication) => {
-              const updatedMedication =
-                updatedMedications &&
-                updatedMedications.find((med) => med.name === medication.name);
-              return updatedMedication
-                ? { ...medication, ...updatedMedication }
-                : medication;
-            })
-          };
-          return { nowData: updatedEntry };
-        }
-        return state;
-      }),
+        updateMedications: (updatedMedications: CalendarEntry['medications']) =>
+          set((state) => {
+            if (state.nowData) {
+              const existingMedications = state.nowData.medications || [];
+              const updatedEntry = {
+                ...state.nowData,
+                medications: existingMedications.map((medication) => {
+                  const updatedMedication =
+                    updatedMedications &&
+                    updatedMedications.find(
+                      (med) => med.name === medication.name
+                    );
+                  return updatedMedication
+                    ? { ...medication, ...updatedMedication }
+                    : medication;
+                })
+              };
+              return { nowData: updatedEntry };
+            }
+            return state;
+          }),
 
-    removeMedications: (pillName: string) =>
-      set((state) => {
-        if (state.nowData) {
-          const filteredMedications = (state.nowData.medications || []).filter(
-            (medication) => medication.name !== pillName
-          );
-          return {
-            nowData: { ...state.nowData, medications: filteredMedications }
-          };
-        }
-        return state;
-      }),
+        removeMedications: (pillName: string) =>
+          set((state) => {
+            if (state.nowData) {
+              const filteredMedications = (
+                state.nowData.medications || []
+              ).filter((medication) => medication.name !== pillName);
+              return {
+                nowData: { ...state.nowData, medications: filteredMedications }
+              };
+            }
+            return state;
+          }),
 
-    setBloodSugarBefore: (bloodsugarBefore) =>
-      set((state) => ({
-        nowData: state.nowData
-          ? { ...state.nowData, bloodsugarBefore }
-          : { date: new Date().toISOString(), bloodsugarBefore }
-      })),
+        setBloodSugarBefore: (bloodsugarBefore) =>
+          set((state) => ({
+            nowData: state.nowData
+              ? { ...state.nowData, bloodsugarBefore }
+              : { date: new Date().toISOString(), bloodsugarBefore }
+          })),
 
-    setBloodSugarAfter: (bloodsugarAfter) =>
-      set((state) => ({
-        nowData: state.nowData
-          ? { ...state.nowData, bloodsugarAfter }
-          : { date: new Date().toISOString(), bloodsugarAfter }
-      })),
+        setBloodSugarAfter: (bloodsugarAfter) =>
+          set((state) => ({
+            nowData: state.nowData
+              ? { ...state.nowData, bloodsugarAfter }
+              : { date: new Date().toISOString(), bloodsugarAfter }
+          })),
 
-    setTemperature: (temperature) =>
-      set((state) => ({
-        nowData: state.nowData
-          ? { ...state.nowData, temperature }
-          : { date: new Date().toISOString(), temperature }
-      })),
+        setTemperature: (temperature) =>
+          set((state) => ({
+            nowData: state.nowData
+              ? { ...state.nowData, temperature }
+              : { date: new Date().toISOString(), temperature }
+          })),
 
-    setWeight: (weight) =>
-      set((state) => ({
-        nowData: state.nowData
-          ? { ...state.nowData, weight }
-          : { date: new Date().toISOString(), weight }
-      })),
+        setWeight: (weight) =>
+          set((state) => ({
+            nowData: state.nowData
+              ? { ...state.nowData, weight }
+              : { date: new Date().toISOString(), weight }
+          })),
 
-    setCalImg: (calImg) =>
-      set((state) => ({
-        nowData: state.nowData
-          ? { ...state.nowData, calImg }
-          : { date: new Date().toISOString(), calImg }
-      })),
+        setCalImg: (calImg) =>
+          set((state) => ({
+            nowData: state.nowData
+              ? { ...state.nowData, calImg }
+              : { date: new Date().toISOString(), calImg }
+          })),
 
-    setNowData: (data) => set({ nowData: data }),
+        setNowData: (data) => set({ nowData: data }),
 
-    photo: null,
-    setPhoto: (formData: FormData) => {
-      set({
-        photo: formData
-      });
-    },
-    removeCalendarEntries: (date: string) =>
-      set((state) => ({
-        calendarEntries: state.calendarEntries.filter(
-          (entry) => entry.date !== date
-        )
+        photo: null,
+        setPhoto: (formData: FormData) => {
+          set({
+            photo: formData
+          });
+        },
+        removeCalendarEntries: (date: string) =>
+          set((state) => ({
+            calendarEntries: state.calendarEntries.filter(
+              (entry) => entry.date !== date
+            )
+          }))
       }))
-  }))
+    : (set) => ({
+        calendarEntries: [],
+        calImg: null,
+        nowData: null,
+
+        setCalendarEntries: (entries) => set({ calendarEntries: entries }),
+
+        addMedications: (newMedications: CalendarEntry['medications']) =>
+          set((state) => {
+            const updatedMedications = Array.isArray(newMedications)
+              ? newMedications
+              : [];
+
+            if (state.nowData) {
+              const updatedData = {
+                ...state.nowData,
+                medications: [
+                  ...(state.nowData.medications || []),
+                  ...updatedMedications
+                ]
+              };
+              return { nowData: updatedData };
+            } else {
+              const newEntry: CalendarEntry = {
+                date: new Date().toISOString(),
+                medications: updatedMedications
+              };
+              return { nowData: newEntry };
+            }
+          }),
+
+        updateMedications: (updatedMedications: CalendarEntry['medications']) =>
+          set((state) => {
+            if (state.nowData) {
+              const existingMedications = state.nowData.medications || [];
+              const updatedEntry = {
+                ...state.nowData,
+                medications: existingMedications.map((medication) => {
+                  const updatedMedication =
+                    updatedMedications &&
+                    updatedMedications.find(
+                      (med) => med.name === medication.name
+                    );
+                  return updatedMedication
+                    ? { ...medication, ...updatedMedication }
+                    : medication;
+                })
+              };
+              return { nowData: updatedEntry };
+            }
+            return state;
+          }),
+
+        removeMedications: (pillName: string) =>
+          set((state) => {
+            if (state.nowData) {
+              const filteredMedications = (
+                state.nowData.medications || []
+              ).filter((medication) => medication.name !== pillName);
+              return {
+                nowData: { ...state.nowData, medications: filteredMedications }
+              };
+            }
+            return state;
+          }),
+
+        setBloodSugarBefore: (bloodsugarBefore) =>
+          set((state) => ({
+            nowData: state.nowData
+              ? { ...state.nowData, bloodsugarBefore }
+              : { date: new Date().toISOString(), bloodsugarBefore }
+          })),
+
+        setBloodSugarAfter: (bloodsugarAfter) =>
+          set((state) => ({
+            nowData: state.nowData
+              ? { ...state.nowData, bloodsugarAfter }
+              : { date: new Date().toISOString(), bloodsugarAfter }
+          })),
+
+        setTemperature: (temperature) =>
+          set((state) => ({
+            nowData: state.nowData
+              ? { ...state.nowData, temperature }
+              : { date: new Date().toISOString(), temperature }
+          })),
+
+        setWeight: (weight) =>
+          set((state) => ({
+            nowData: state.nowData
+              ? { ...state.nowData, weight }
+              : { date: new Date().toISOString(), weight }
+          })),
+
+        setCalImg: (calImg) =>
+          set((state) => ({
+            nowData: state.nowData
+              ? { ...state.nowData, calImg }
+              : { date: new Date().toISOString(), calImg }
+          })),
+
+        setNowData: (data) => set({ nowData: data }),
+
+        photo: null,
+        setPhoto: (formData: FormData) => {
+          set({
+            photo: formData
+          });
+        },
+        removeCalendarEntries: (date: string) =>
+          set((state) => ({
+            calendarEntries: state.calendarEntries.filter(
+              (entry) => entry.date !== date
+            )
+          }))
+      })
 );
