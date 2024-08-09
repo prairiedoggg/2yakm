@@ -35,6 +35,15 @@ const CalendarSection: React.FC = () => {
   const [postArray, setPostArray] = useState<Set<string>>(new Set());
 
   useEffect(() => {
+    const newPosts = calendarEntries.map((post) => ({
+      date: dayjs(post.date).format('YYYY-MM-DD'),
+      post: true
+    }));
+
+    resetPosted(newPosts);
+  }, [calendarEntries, edit]);
+
+  useEffect(() => {
     if (login) {
       const fetchData = async () => {
         const data: CalendarEntry[] = (await calendarAllGet()).map(
@@ -55,15 +64,6 @@ const CalendarSection: React.FC = () => {
       fetchData();
     }
   }, [edit, login, arrow]);
-
-  useEffect(() => {
-    const newPosts = calendarEntries.map((post) => ({
-      date: dayjs(post.date).format('YYYY-MM-DD'),
-      post: true
-    }));
-
-    resetPosted(newPosts);
-  }, [calendarEntries, edit]);
 
   const addContent = ({ date, view }: TileContentProps) => {
     if (view === 'month' && postArray.has(date.toDateString())) {
