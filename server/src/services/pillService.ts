@@ -408,10 +408,7 @@ const preprocessImage = async (
     if (decodedStderr) {
       console.error(`stderr: ${decodedStderr}`); // standard error, 에러 출력됨
     }
-    console.log(`stdout: ${decodedStdout}`); // standard output, 결과가 출력됨
-    console.log(
-      `전처리가 완료되었습니다. 작업시간 : ${(Date.now() - startTime) / 1000}초`
-    );
+
     const processedImageBuffer = fs.readFileSync(outputPath); // 처리된 이미지를 읽어와서 processedImageBuffer로 초기화
     return { processedImageBuffer, processedImagePath: outputPath }; // 처리된 이미지와, 경로를 반환함
   } catch (error: any) {
@@ -467,7 +464,6 @@ const searchSimilarImage = async (
     if (decodedStderr) {
       console.error(`stderr: ${decodedStderr}`); // standard error, 에러 출력됨
     }
-    console.log(`stdout: ${decodedStdout}`); // standard output, 결과가 출력됨
 
     // txt 파일에서 유사도를 읽어온 후에 삭제함
     const result = fs.readFileSync(outputResultPath, 'utf-8');
@@ -502,11 +498,11 @@ const detectTextInImage = async (
   imageBuffer: Buffer
 ): Promise<string[] | null> => {
   try {
-    console.log('Detecting text in image...');
+    
     const [result] = await client.textDetection({
       image: { content: imageBuffer }
     });
-    console.log('Vision API result:', result);
+    
 
     const detections = result.textAnnotations;
     if (detections && detections.length > 0) {
@@ -514,10 +510,10 @@ const detectTextInImage = async (
         .map((text) => text?.description ?? '')
         .filter((text) => !text.match(/[\.()]/) && !text.includes('-'));
 
-      console.log('Filtered text:', filteredText);
+      
       return filteredText;
     }
-    console.log('No text detected');
+    
     return [];
   } catch (error) {
     console.error('Error detecting text in image:', error);
@@ -544,7 +540,6 @@ export const searchPillsByImage = async (
 
     // 추출된 텍스트가 없을 경우 이미지 유사도 검색을 실행함
     if (!detectedText || detectedText.length === 0) {
-      console.log('OCR 검색 결과가 없습니다. 이미지 유사도 검색을 시작합니다.');
 
       const { similarPills } = await searchSimilarImage(outputPath);
 
@@ -589,8 +584,6 @@ export const searchPillsByImage = async (
       detectedText[0] = temp[0];
       detectedText[1] = temp[1];
     }
-
-    console.log('Detected Text:', detectedText);
 
     let pills: Pills[] = [];
     let total = 0;
