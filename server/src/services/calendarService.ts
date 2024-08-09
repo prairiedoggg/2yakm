@@ -94,7 +94,7 @@ export const createCalendar = async (calendar: Omit<Calendar, 'id'>): Promise<Ca
     `;
     const values = [
       calendar.userId,
-      calendar.date,
+      format(zonedTimeToUtc(calendar.date, TIMEZONE), 'yyyy-MM-dd'),
       calendar.calImg,
       calendar.condition,
       calendar.weight,
@@ -132,7 +132,7 @@ export const updateCalendar = async (
   calendar: Partial<Calendar>
 ): Promise<Calendar | null> => {
   try {
-    const dateString = date;
+    const dateString = format(zonedTimeToUtc(date, TIMEZONE), 'yyyy-MM-dd');
     const existingCalendar = await getCalendarById(userId, date);
     if (!existingCalendar) {
       throw createError('CalendarNotFound', '해당 날짜의 캘린더를 찾을 수 없습니다.', 404);
@@ -187,7 +187,7 @@ export const updateCalendar = async (
 
 export const deleteCalendar = async (userId: string, date: Date): Promise<boolean> => {
   try {
-    const dateString = date;
+    const dateString = format(zonedTimeToUtc(date, TIMEZONE), 'yyyy-MM-dd');
     const text = 'DELETE FROM calendar WHERE userId = $1 AND date = $2';
     const values = [userId, dateString];
     const result: QueryResult<Calendar>  = await pool.query(text, values);
