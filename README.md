@@ -2,7 +2,7 @@
 
 ## 팀 소개 (chicken pharm)
 
-<img src="uploads/4db131d032daba4376dab26d4d9730e6/image.png" alt="image" width="400px">
+<img src="https://kdt-gitlab.elice.io/ai_track/class_10/ai_project/team04/chicken_pharm/-/wikis/uploads/4db131d032daba4376dab26d4d9730e6/image.png" alt="image" width="400px">
 
 - **팀 이름 : chicken pharm**
 
@@ -30,7 +30,7 @@
 
 ### 1. 프로젝트 소개
 
-<img src="uploads/e3fdb43a82d1be23dc42332c74afa6d5/image.png" alt="image" width="400px">
+<img src="https://kdt-gitlab.elice.io/ai_track/class_10/ai_project/team04/chicken_pharm/-/wikis/uploads/e3fdb43a82d1be23dc42332c74afa6d5/image.png" alt="image" width="400px">
 
 #### 1) 이약뭐약 (eyakmoyak)
 
@@ -98,7 +98,7 @@
 
 - ERD
 
-<img src="uploads/cdbdd53e96efc6d561e97222f99f93b6/image.png" alt="image" width="700px">
+<img src="https://kdt-gitlab.elice.io/ai_track/class_10/ai_project/team04/chicken_pharm/-/wikis/uploads/cdbdd53e96efc6d561e97222f99f93b6/image.png" alt="image" width="700px">
 
 ### 3. 기술 스택
 
@@ -112,7 +112,7 @@
 
 - AI : Python, ChatGPT-4o mini, Google Cloud Vision API OCR
 
-<img src="uploads/edb62b79bc52188f500fb3b7044985f2/image.png" alt="image" width="700px">
+<img src="https://kdt-gitlab.elice.io/ai_track/class_10/ai_project/team04/chicken_pharm/-/wikis/uploads/edb62b79bc52188f500fb3b7044985f2/image.png" alt="image" width="700px">
 
 ### 4. 버전
 
