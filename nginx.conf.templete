@@ -1,162 +1,61 @@
-pipeline {
-    agent any
+server {
+    listen 80;
+    server_name eyakmoyak.com;
 
-    environment {
-        DOCKER_IMAGE = "eyakmoyak/chicken_pharm"
-        BLUE_CONTAINER = "chicken_pharm_blue"
-        GREEN_CONTAINER = "chicken_pharm_green"
-        SERVER_PORT = "3000"
-        CLIENT_PORT = "5173"
-        DOCKER_CREDENTIALS_ID = 'dockerhub-credentials'
-        ENV_FILE = credentials('env-file-pro')
-        GOOGLE_APPLICATION_CREDENTIALS = credentials('google-cloud-vision-key')
-        NGINX_CONTAINER = "nginx_container"  // Nginx 컨테이너 이름
+    location /health-check {
+        access_log off;
+        return 200 'OK';
     }
 
-    options {
-        timeout(time: 20, unit: 'MINUTES')
+    location / {
+        proxy_pass http://localhost:5173;  # 클라이언트 (React 등 프론트엔드)
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_cache_bypass $http_upgrade;
     }
 
-    stages {
-        stage('Cleanup') {
-            steps {
-                sh 'docker system prune -af || true'
-                sh 'docker volume prune -f || true'
-            }
-        }
-        
-        stage('Checkout') {
-            steps {
-                git branch: 'master', 
-                    credentialsId: 'e3369180-1a91-4ca5-934c-6d012a143b7f', 
-                    url: 'https://kdt-gitlab.elice.io/ai_track/class_10/ai_project/team04/chicken_pharm.git'
-            }
-        }
-
-        stage('Prepare Certificates') {
-            steps {
-                withCredentials([
-                    file(credentialsId: 'server-ca-pem', variable: 'SERVER_CA_PEM'),
-                    file(credentialsId: 'client-key-pem', variable: 'CLIENT_KEY_PEM'),
-                    file(credentialsId: 'client-cert-pem', variable: 'CLIENT_CERT_PEM')
-                ]) {
-                    sh '''
-                        mkdir -p server/certs
-                        cp "$SERVER_CA_PEM" server/certs/server-ca.pem
-                        cp "$CLIENT_KEY_PEM" server/certs/client-key.pem
-                        cp "$CLIENT_CERT_PEM" server/certs/client-cert.pem
-                        cp "$GOOGLE_APPLICATION_CREDENTIALS" server/certs/optical-country-423406-d7-9beaf0d26dfe.json
-                        chmod 600 server/certs/*.pem server/certs/*.json
-                    '''
-                }
-            }
-        }
-
-        stage('Build Docker Image') {
-            steps {
-                script {
-                    try {
-                        sh 'cat $ENV_FILE'
-                        sh "cat \$ENV_FILE | tr -d '\r' > .env"
-                        sh "env > env_vars.txt"
-                        
-                        sh """
-                            docker build --memory=8g \
-                                         -t ${DOCKER_IMAGE}:${env.BUILD_NUMBER} \
-                                         --cache-from ${DOCKER_IMAGE}:latest \
-                                         --build-arg ENV_FILE=.env \
-                                         --build-arg GOOGLE_APPLICATION_CREDENTIALS=/chicken_pharm/server/certs/optical-country-423406-d7-9beaf0d26dfe.json .
-                        """
-                        sh "docker tag ${DOCKER_IMAGE}:${env.BUILD_NUMBER} ${DOCKER_IMAGE}:latest"
-                    } catch (Exception e) {
-                        echo "Docker 이미지 빌드 중 오류가 발생했습니다: ${e.message}"
-                        sh "docker logs ${BLUE_CONTAINER} > blue_container_logs.txt 2>&1 || true"
-                        sh "docker logs ${GREEN_CONTAINER} > green_container_logs.txt 2>&1 || true"
-                        archiveArtifacts artifacts: '*.txt', fingerprint: true
-                        currentBuild.result = 'FAILURE'
-                        error("빌드 실패")
-                    }
-                }
-            }
-        }
-
-        stage('Push Docker Image') {
-            steps {
-                script {
-                    docker.withRegistry('https://index.docker.io/v1/', DOCKER_CREDENTIALS_ID) {
-                        docker.image("${DOCKER_IMAGE}:${env.BUILD_NUMBER}").push()
-                        docker.image("${DOCKER_IMAGE}:latest").push()
-                    }
-                }
-            }
-        }
-
-        stage('Deploy New Version and Update Nginx') {
-            steps {
-                script {
-                    try {
-                        // 현재 실행 중인 컨테이너 확인
-                        def runningContainer = sh(script: "docker ps --format '{{.Names}}' | grep -E '${BLUE_CONTAINER}|${GREEN_CONTAINER}' || true", returnStdout: true).trim()
-                        def newContainer = runningContainer == BLUE_CONTAINER ? GREEN_CONTAINER : BLUE_CONTAINER
-                        def newPort = runningContainer == BLUE_CONTAINER ? "3001" : "3000"
-
-                        // 새 컨테이너 실행
-                        sh """
-                            docker run -d --name ${newContainer} \\
-                                       -p ${newPort}:3000 -p ${CLIENT_PORT}:${CLIENT_PORT} \\
-                                       --env-file .env \\
-                                       --cap-add=NET_ADMIN \\
-                                       ${DOCKER_IMAGE}:${env.BUILD_NUMBER}
-                        """
-
-                        // 서비스 시작을 위한 대기 시간
-                        sleep 30
-
-                        // 새 컨테이너 health check
-                        def healthCheck = sh(script: "curl -s -o /dev/null -w '%{http_code}' http://localhost:${newPort}", returnStdout: true).trim()
-                        if (healthCheck != "200") {
-                            error "새 버전 health check 실패"
-                        }
-
-                        // Nginx 프록시 업데이트
-                        sh """
-                            sed -i 's|proxy_pass http://localhost:${runningContainer == BLUE_CONTAINER ? "3000" : "3001"}|proxy_pass http://localhost:${newPort}|g' /path/to/nginx.conf.template > /path/to/nginx.conf
-                            docker cp /path/to/nginx.conf ${NGINX_CONTAINER}:/etc/nginx/nginx.conf
-                            docker exec ${NGINX_CONTAINER} nginx -s reload
-                        """
-
-                        echo "블루-그린 배포가 성공적으로 완료되었습니다."
-
-                    } catch (Exception e) {
-                        echo "서비스 시작 중 오류가 발생했습니다: ${e.message}"
-                        sh "docker logs ${BLUE_CONTAINER} > blue_error_logs.txt 2>&1 || true"
-                        sh "docker logs ${GREEN_CONTAINER} > green_error_logs.txt 2>&1 || true"
-                        archiveArtifacts artifacts: '*.txt', fingerprint: true
-                        currentBuild.result = 'FAILURE'
-                        error("서비스 시작 실패")
-                    }
-                }
-            }
-        }
+    location /api {
+        proxy_pass http://localhost:{{API_PORT}};  # 서버 (API 백엔드)
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_cache_bypass $http_upgrade;
     }
 
-    post {
-        always {
-            echo '파이프라인 실행이 완료되었습니다.'
-            sh "docker logs ${BLUE_CONTAINER} > final_blue_container_logs.txt 2>&1 || true"
-            sh "docker logs ${GREEN_CONTAINER} > final_green_container_logs.txt 2>&1 || true"
-            sh 'rm -rf server/certs || true'
-            sh 'rm -f .env || true' 
-            archiveArtifacts artifacts: '*.txt', fingerprint: true
-        }
-        success {
-            echo '배포가 성공적으로 완료되었습니다.'
-        }
-        failure {
-            echo '배포 중 오류가 발생했습니다.'
-            sh "docker stop ${BLUE_CONTAINER} ${GREEN_CONTAINER} || true"
-            sh "docker rm ${BLUE_CONTAINER} ${GREEN_CONTAINER} || true"
-            sh 'docker system prune -af || true'
-        }
+    location /jenkins {
+        proxy_pass http://127.0.0.1:8080;  # Jenkins UI
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    location /oauth2/authorize {
+        proxy_pass http://localhost:{{API_PORT}};  # OAuth2 인증 처리
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header X-Forwarded-Host $host;
+        proxy_set_header X-Forwarded-Port $server_port;
+    }
+
+    location /login/oauth2 {
+        proxy_pass http://localhost:{{API_PORT}};  # OAuth2 로그인 처리
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header X-Forwarded-Host $host;
+        proxy_set_header X-Forwarded-Port $server_port;
     }
 }

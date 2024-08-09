@@ -18,6 +18,7 @@ RUN pip install --upgrade pip && \
 # google module 설치
 RUN pip install google-auth google-auth-oauthlib google-auth-httplib2 google-api-python-client protobuf
 RUN pip install 'pinecone-client[grpc]'
+
 # 소스 코드 복사
 COPY . .
 
@@ -30,19 +31,11 @@ RUN cd server && npm ci
 # 클라이언트 의존성 설치
 RUN cd client && npm install
 
-# .env 파일 복사 (Jenkins에서 제공)
-ARG ENV_FILE=.env
-COPY ${ENV_FILE} .env
-
 # 클라이언트 빌드
 RUN cd client && npm run build
 
 # 서버 빌드
 RUN cd server && npm run build
-
-# NGINX 설정 복사
-COPY nginx.conf /etc/nginx
-COPY default /etc/nginx/sites-available/default
 
 # 포트 설정
 EXPOSE 80 3000 5173
