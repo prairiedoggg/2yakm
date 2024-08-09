@@ -141,7 +141,7 @@ const AlarmPage = ({ setShowToast }: AlarmProps) => {
                 })
               }
             >
-              <img src={`../../assets/img/plus.svg`} alt='알람추가' />
+              <img src={`/img/plus.svg`} alt='알람추가' />
             </AddAlarm>
           </AlarmContainer>
         )}

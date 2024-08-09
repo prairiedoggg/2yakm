@@ -5,7 +5,7 @@ const Loading = () => {
     <Container>
       <Overlay>
         <AnimationContainer>
-          <Image src='../../assets/img/loading.png' />
+          <Image src='/img/loading.png' />
           <LoadingBottom>&nbsp;</LoadingBottom>
         </AnimationContainer>
       </Overlay>
