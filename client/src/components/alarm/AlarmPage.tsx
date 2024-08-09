@@ -1,12 +1,12 @@
+import { Icon } from '@iconify-icon/react';
 import { useEffect, useState } from 'react';
 import styled from 'styled-components';
-import { Icon } from '@iconify-icon/react';
+import { deleteAlarm, getAlarms, updateAlarmStatus } from '../../api/alarmApi';
+import { Alarm, useAlarmStore } from '../../store/alarm';
+import { isUserLoggedIn } from '../../utils/auth';
 import Header from '../common/Header';
 import Loading from '../common/Loading';
-import { Alarm, useAlarmStore } from '../../store/alarm';
-import { getAlarms, deleteAlarm, updateAlarmStatus } from '../../api/alarmApi';
 import LoginCheck from '../common/LoginCheck';
-import { isUserLoggedIn } from '../../utils/auth';
 import { AlarmProps } from './Alarm';
 
 const AlarmPage = ({ setShowToast }: AlarmProps) => {
@@ -141,7 +141,7 @@ const AlarmPage = ({ setShowToast }: AlarmProps) => {
                 })
               }
             >
-              <img src={`/img/plus.svg`} alt='알람추가' />
+              <img src={`../../assets/img/plus.svg`} alt='알람추가' />
             </AddAlarm>
           </AlarmContainer>
         )}
