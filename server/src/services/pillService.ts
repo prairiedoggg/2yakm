@@ -207,7 +207,7 @@ export const searchPillsbyEfficacy = async (
       GROUP BY pillid
     ) r ON p.id = r.pillid
     WHERE ${efficacyArray
-      .map((_, index) => `efficacy ILIKE $${index + 1}`)
+      .map((_, index) => `p.efficacy ILIKE $${index + 1}`)
       .join(' AND ')}  
     GROUP BY p.id, f.favorites_count, r.reviews_count
     ORDER BY favorites_count DESC, reviews_count DESC
