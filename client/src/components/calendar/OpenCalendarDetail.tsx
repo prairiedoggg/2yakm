@@ -23,9 +23,7 @@ const OpenCalendarDetail: React.FC = () => {
       try {
         const res = await calendarGet(formattedDate);
         setNowData(res);
-      } catch (err) {
-        console.log(err);
-      }
+      } catch (err) {}
     };
     getTodayData();
   }, []);
