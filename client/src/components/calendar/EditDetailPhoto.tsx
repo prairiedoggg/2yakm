@@ -12,7 +12,7 @@ const EditDetailPhoto = () => {
   const [isDeniedCameraPermission, setIsDeniedCameraPermission] =
     useState(false);
 
-  console.log(isDeniedCameraPermission);
+  isDeniedCameraPermission;
 
   useEffect(() => {
     const startCamera = async () => {

@@ -16,7 +16,7 @@ interface NewsNumber {
 const NewsSlide = ({ num }: NewsNumber) => {
   const [images, setImages] = useState<string[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
-  console.log(loading);
+  loading;
 
   useEffect(() => {
     const loadImages = async () => {
