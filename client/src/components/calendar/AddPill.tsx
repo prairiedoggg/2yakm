@@ -41,7 +41,6 @@ const AddPill = () => {
       }
     ];
 
-    console.log(medications);
     addMedications(medications);
     setAddTaken(false);
   };
