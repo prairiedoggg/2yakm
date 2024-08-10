@@ -182,7 +182,6 @@ const Content = styled.div`
   flex-direction: column;
   align-content: center;
   gap: 20px;
-  margin-top: -50px;
 
   .other {
     display: flex;
