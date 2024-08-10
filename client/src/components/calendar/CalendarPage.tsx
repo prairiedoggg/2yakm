@@ -43,9 +43,7 @@ const CalendarPage: React.FC = () => {
       try {
         const res = await calendarGet(dayjs().format('YYYY-MM-DD'));
         setNowData(res);
-      } catch (err) {
-        console.log(err);
-      }
+      } catch (err) {}
     };
     getTodayData();
     setEdit(false);

@@ -11,7 +11,7 @@ import CalendarToast from './CalendarToast';
 
 const EditPill = () => {
   const { updateMedications, nowData, removeMedications } = useCalendar();
-  const { edit, setEditTaken, index } = useDateStore();
+  const { setEditTaken, index } = useDateStore();
   const [pillName, setPillName] = useState<string>('');
   const [alarmTimes, setAlarmTimes] = useState<
     { time: Dayjs; status: string; checked: boolean }[]
@@ -63,8 +63,6 @@ const EditPill = () => {
 
     updateMedications(medications);
     setEditTaken(false);
-
-    console.log(edit);
   };
 
   const handleAddTime = () => {

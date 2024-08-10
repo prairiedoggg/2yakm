@@ -28,7 +28,7 @@ const OpenCalendarDetail: React.FC = () => {
       setEdit(false);
       setArrow(false);
       setPopupType(PopupType.DeleteData);
-      console.log(res);
+      res;
     } catch (err) {
       console.log(err);
     }
