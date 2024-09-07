@@ -4,8 +4,9 @@ import nodemailer from 'nodemailer';
 import { AlarmTime, Alarm } from '../entity/alarm';
 import { createError } from '../utils/error';
 import { pool } from '../db';
-import { isAfter } from 'date-fns';
+import { isAfter, isBefore, isEqual } from 'date-fns';
 import { QueryResult } from 'pg';
+import { producer } from '../config/kafkaConfig';
 
 const runningJobs = new Map<string, schedule.Job>();
 
@@ -222,7 +223,7 @@ const cancelExistingAlarms = (alarmId: string) => {
 };
 
 export const scheduleAlarmService = (alarm: Alarm) => {
-  const { id, startDate, endDate, times, alarmStatus, userId, name } = alarm;
+  const { id, startDate, endDate, times, alarmStatus } = alarm;
   if (!alarmStatus) {
     return;
   }
@@ -231,22 +232,25 @@ export const scheduleAlarmService = (alarm: Alarm) => {
   const endDateTime = new Date(endDate);
   let currentDate = new Date();
 
-  if (currentDate.getTime() <= endDateTime.getTime()) {
+  if (isBefore(currentDate, endDateTime) || isEqual(currentDate, endDateTime)) {
     times.forEach((alarmTime: AlarmTime) => {
       const [hours, minutes] = alarmTime.time.split(':');
       let scheduleDate = new Date(currentDate);
       scheduleDate.setHours(parseInt(hours), parseInt(minutes), 0, 0);
 
-      if (scheduleDate.getTime() <= endDateTime.getTime()) {
-        if (scheduleDate.getTime() >= currentDate.getTime()) {
+      if (isBefore(scheduleDate, endDateTime) || isEqual(scheduleDate, endDateTime)) {
+        if (isAfter(scheduleDate, currentDate) || isEqual(scheduleDate, currentDate)) {
           const job = schedule.scheduleJob(scheduleDate, async () => {
             try {
-              const emailSent = await sendEmail(userId, name, alarmTime.time);
-              if (!emailSent) {
-                console.error(`알람 ${id}의 이메일 전송 실패`);
-              }
+              await producer.connect();
+              await producer.send({
+                topic: 'alarm-email',
+                messages: [{ value: JSON.stringify({alarm, userId: alarm.userId, name: alarm.name}) }]
+              });
             } catch (error) {
-              console.error(`알람 ${id}의 이메일 전송 중 오류 발생:`, error);
+              console.error(`알람 ${alarm.id}의 이메일 전송 중 오류 발생:`, error);
+            } finally {
+              await producer.disconnect();
             }
           });
 
@@ -267,6 +271,7 @@ export const scheduleAlarmService = (alarm: Alarm) => {
     });
   }
 };
+
 
 export const getAlarmsByUserId = async (userId: string): Promise<Alarm[]> => {
   try {
@@ -318,48 +323,6 @@ export const deleteAlarm = async (id: string): Promise<boolean> => {
       '알람 삭제 중 데이터베이스 오류가 발생했습니다.',
       500
     );
-  }
-};
-
-const sendEmail = async (
-  recipientEmail: string,
-  alarmName: string,
-  alarmTime: string
-) => {
-  const transporter = nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
-      user: process.env.EMAIL_USER,
-      pass: process.env.EMAIL_PASS
-    }
-  });
-
-  const mailOptions = {
-    from: process.env.EMAIL_USER,
-    to: recipientEmail,
-    subject: '이약뭐약 약 알람 서비스입니다.',
-    html: `
-    <h1>이약뭐약 약 알람 서비스</h1>
-    <br/>
-    <p>알람 이름: <strong>${alarmName}</strong></p>
-    <p>알람 시간: <strong>${alarmTime}</strong></p>
-    <br/>
-    <p>안녕하세요!</p>
-    <p>지금은 약을 드실 시간입니다. 복용 방법에 따라 정확히 복용해주세요.</p>
-    <br/>
-    <br/>
-    <img src="https://res.cloudinary.com/dnxyampqy/image/upload/v1723135153/llflxzkmg9qlfw1pi4xu.png" alt="약 이미지" style="width:201px;height:auto;">
-    <br/>
-    <p>서비스를 이용해 주셔서 감사합니다.</p>
-  `
-  };
-
-  try {
-    await transporter.sendMail(mailOptions);
-    return true;
-  } catch (error) {
-    console.error('이메일 발송 실패:', error);
-    return false;
   }
 };
 
