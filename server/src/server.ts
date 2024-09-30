@@ -19,8 +19,6 @@ import favoriteRouter from './routes/favorite_route';
 import mypillRouter from './routes/mypill_route';
 import pillRouter from './routes/pill_route';
 
-import { rescheduleAllAlarms } from './services/alarmService';
-
 dotenv.config();
 
 const app = express();
@@ -61,11 +59,6 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieParser());
-
-//테스트 404
-app.get('/', (req, res) => {
-  res.send('Hello World! Welcome to the API');
-});
 
 app.use('/api/reviews', reviewRouter);
 app.use('/api/auth', authRouter);

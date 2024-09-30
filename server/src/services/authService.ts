@@ -5,7 +5,7 @@ import { pool } from '../db';
 import nodemailer from 'nodemailer';
 import axiosRequest from '../utils/axios';
 import axios from 'axios';
-
+import redisClient from '../config/redisConfig';
 const transporter = nodemailer.createTransport({
   service: 'Gmail',
   auth: {
@@ -289,18 +289,27 @@ export const refreshTokenService = async (
     throw createError('NoRefreshToken', '토큰이 없습니다.', 401);
   }
 
-  let payload;
   try {
-    payload = jwt.verify(refreshToken, REFRESH_TOKEN_SECRET_KEY);
+    const payload = jwt.verify(refreshToken, REFRESH_TOKEN_SECRET_KEY);
 
     if (typeof payload !== 'string' && 'id' in payload) {
-      const query = 'SELECT email, role FROM users WHERE userid = $1';
-      const values = [payload.id];
-      const result = await pool.query(query, values);
-      const user = result.rows[0];
+      const cachedUser = await redisClient.get(`user:${payload.id}`);
+      let user;
 
-      if (!user) {
-        throw createError('UserNotFound', '사용자를 찾을 수 없습니다.', 404);
+      if (cachedUser) {
+        user = JSON.parse(cachedUser);
+      } else {
+        const query = 'SELECT email, role FROM users WHERE userid = $1';
+        const values = [payload.id];
+        const result = await pool.query(query, values);
+        user = result.rows[0];
+
+        if (!user) {
+          throw createError('UserNotFound', '사용자를 찾을 수 없습니다.', 404);
+        }
+
+        // 사용자 정보를 Redis에 캐싱 (예: 1시간 동안)
+        await redisClient.setEx(`user:${payload.id}`, 3600, JSON.stringify(user));
       }
 
       const newPayload = { id: payload.id, email: user.email, role: user.role };
@@ -312,6 +321,9 @@ export const refreshTokenService = async (
         REFRESH_TOKEN_SECRET_KEY,
         { expiresIn: '7d' }
       );
+
+      // 새로운 리프레시 토큰을 Redis에 저장
+      await redisClient.setEx(`refreshToken:${payload.id}`, 7 * 24 * 60 * 60, newRefreshToken);
 
       return { token: newToken, refreshToken: newRefreshToken };
     } else {

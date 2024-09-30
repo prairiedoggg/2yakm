@@ -194,3 +194,5 @@ export const getUserAlarmsController = async (
     console.error('사용자 알람 조회 오류', error);
   }
 };
+
+// TODO - 카프카 전환, 알람 추가 시 카프카 토픽에 메시지 전달

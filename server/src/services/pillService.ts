@@ -9,6 +9,7 @@ import { v4 as uuidv4 } from 'uuid';
 import iconv from 'iconv-lite';
 import { QueryResult } from 'pg';
 import { stopwords } from '../utils/stopwords';
+import redisClient from '../config/redisConfig';
 
 const client = new vision.ImageAnnotatorClient({
   keyFilename: process.env.GOOGLE_APPLICATION_CREDENTIALS
@@ -131,6 +132,15 @@ export const searchPillsbyName = async (
   limit: number,
   offset: number
 ): Promise<GetPillsResult> => {
+
+  const cacheKey = `pills:${name}:${limit}:${offset}`;
+  
+  // Redis에서 캐시된 결과 확인
+  const cachedResult = await redisClient.get(cacheKey);
+  if (cachedResult) {
+    return JSON.parse(cachedResult);
+  }
+
   const query = `SELECT id, name, engname, companyname, ingredientname, type, efficacy, dosage, caution, storagemethod, source, imgurl, boxurl 
                  FROM pills 
                  WHERE name ILIKE $1 OR engname ILIKE $1
@@ -159,13 +169,18 @@ export const searchPillsbyName = async (
 
     const totalCount = result.rowCount ?? 0;
 
-    return {
+    const resultData = {
       pills,
       totalCount,
       totalPages: Math.ceil(totalCount / limit),
       limit,
       offset
     };
+
+    // 결과를 Redis에 캐싱 (예: 1시간 동안)
+    await redisClient.setEx(cacheKey, 3600, JSON.stringify(resultData));
+
+    return resultData;
   } catch (error: unknown) {
     if (error instanceof Error) {
       console.error('DatabaseError', error);
